@@ -1,0 +1,681 @@
+.cricket_detail_section {
+    width: 100%;
+    margin: 15px 0px;
+}
+
+.match_vs_team_list ul li {
+    flex-shrink: 0;
+    min-width: 150px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background-color: #1C1C1C;
+    min-height: 50px;
+    white-space: nowrap;
+    padding: 5px 10px;
+    border-radius: 8px;
+}
+
+.match_vs_team_list ul li span {
+    font-size: 12px;
+    font-weight: 400;
+    color: #ffffffab;
+}
+
+.match_vs_team_list ul li p {
+    font-size: 11px;
+    font-weight: 400;
+    color: #ffffff85;
+    margin: 0px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    justify-content: center;
+}
+
+.match_vs_team_list ul li p span {
+    font-size: 12px;
+    font-weight: 400;
+    color: #ffffffab;
+}
+
+.match_vs_team_list {
+    margin-top: 15px;
+}
+
+.match_vs_team_list_inner {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    /* Thin scrollbar for Firefox */
+    scrollbar-color: transparent transparent;
+    /* Hide by default */
+    transition: scrollbar-color 0.3s ease;
+    cursor: grab;
+}
+
+.removebgsports{ background-image: none; }
+
+.match_vs_team_list_inner:active {
+    cursor: grabbing;
+}
+
+.match_vs_team_list_inner:hover,
+.match_vs_team_list_inner:active {
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    /* Light background color */
+}
+
+/* Webkit scrollbar styling */
+.match_vs_team_list_inner::-webkit-scrollbar {
+    height: 6px;
+}
+
+.match_vs_team_list_inner::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.match_vs_team_list_inner::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+.match_vs_team_list_inner:hover::-webkit-scrollbar-thumb,
+.match_vs_team_list_inner:active::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    /* Light background color */
+}
+
+.match_vs_team_list_inner::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.match_vs_team_list_inner ul {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-wrap: nowrap;
+    min-width: max-content;
+    width: max-content;
+}
+
+.selected_match_country button {
+    background-color: #1C1C1C;
+    border: none;
+    color: #fff;
+    min-height: 64px;
+    border-radius: 8px;
+    height: 100%;
+    position: relative;
+    top: -4px;
+}
+
+.match_vs_team_list ul li.active span {
+    font-size: 12px;
+    font-weight: 400;
+    color: #fff;
+}
+
+.match_vs_team_list ul li.active p {
+    color: #fff;
+}
+
+.match_vs_team_list ul li.active p span {
+    font-size: 12px;
+    font-weight: 400;
+    color: #ffffffab;
+}
+
+.match_info_section_wrapper {
+    width: 100%;
+    display: block;
+    padding: 24px;
+    text-align: center;
+    margin: 10px 0px;
+    background-image: url('../../public/images/cricket_infobg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.cricket_info_inner {
+    max-width: 532px;
+    margin: 0 auto;
+    padding: 20px 0px;
+}
+
+.cricket_info_content {
+    width: 100%;
+    position: relative;
+}
+
+.vs_vector_icon {
+    position: absolute;
+    margin: 0 auto;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+}
+
+img.team_bg_img {
+    margin-top: 30px;
+}
+
+.team_dlex {
+    justify-content: space-between;
+    gap: 10px;
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    padding: 0px 12px;
+}
+
+.team_cricket_bl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.team_cricket_bl p {
+    width: 110px;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0px;
+}
+
+.team_cricket_bl.rightreverse {
+    flex-direction: row-reverse;
+}
+
+.team_logo_lft {
+    width: 56px;
+    height: 56px;
+    border-radius: 100%;
+    border: 2px solid #fff;
+    overflow: hidden;
+}
+
+.cricket_info_inner h2 {
+    font-size: 22px;
+    margin: 12px 0px 6px;
+}
+
+.cricket_vector_icon {
+    max-width: 160px;
+    margin: 0 auto;
+}
+
+.cricket_summary_details_wrapper {
+    width: 100%;
+    display: block;
+    margin: 20px 0px;
+}
+
+.top_tabs_cricket {
+    width: 100%;
+}
+
+.top_tabs_cricket ul {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin: 0;
+}
+
+.top_tabs_cricket ul li button {
+    background-color: transparent;
+    border: none;
+    color: #ffffffa2;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 10px;
+    border-radius: 50px;
+}
+
+.top_tabs_cricket ul li button span {
+    font-size: 11px;
+    background-color: #121212;
+    border-radius: 50px;
+    padding: 2px 5px;
+    margin-left: 6px;
+}
+
+.top_tabs_cricket ul li.active button {
+    background-color: #1C1C1C;
+    color: #fff;
+}
+
+.top_tabs_cricket ul li.active button span {
+    background-color: #333333;
+}
+
+.match_block {
+    width: 100%;
+    background-color: #1A1A19;
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.match_block .top_hd {
+    gap: 20px;
+    position: relative;
+    cursor: pointer;
+}
+
+.match_block h6 {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0px;
+}
+
+.match_block h6 span {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background-color: #303030;
+    border: 1px solid #6e6e6e3d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button.toggleup_btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background-color: #303030;
+    border: 1px solid #6e6e6e3d;
+    display: flex;
+    align-items: center;
+    color: #fff;
+    justify-content: center;
+    line-height: 23px;
+}
+
+.team_cricket_bl_name {
+    width: 100%;
+    background-color: #1A1A19;
+    border: 1px solid #6E6E6E20;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    box-shadow: inset 0 7px 10px rgb(56 56 56 / 50%);
+    color: #ffffff80;
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 10px;
+}
+
+.team_cricket_bl_name span{ font-weight: 500; color: #fff; }
+
+.match_summary_content_tabs {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.match_block .hidden {
+    display: none !important;
+}
+
+.match_block .rotated {
+    transform: rotate(180deg);
+    transition: transform 0.3s ease;
+}
+
+/* Betslip Panel Styles */
+.betslip_overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.betslip_panel {
+    position: fixed;
+    bottom: 0;
+    right: 5px;
+    width: 280px;
+    max-height: 90vh;
+    background-color: #1A1A19;
+    border-radius: 12px 12px 0 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -2px -2px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 10px 10px 0px 0px;
+    overflow: hidden;
+}
+
+.betslip_header {
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #F97A31;
+}
+
+.betslip_header h3 {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.betslip_close_btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.betslip_tabs {
+    display: flex;
+    border-bottom: 1px solid #2A2A2A;
+}
+
+.betslip_tabs button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    color: #ffffff80;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.betslip_tabs button.active {
+    color: #fff;
+    border-bottom-color: #F97A31;
+}
+
+.betslip_content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+}
+
+.betslip_bet_item {
+    background-color: #D9D9D910;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 12px;
+    border: 1px solid #62606025;
+}
+
+.betslip_bet_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.betslip_bet_name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.betslip_remove_btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    color: #ffffff80;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.betslip_bet_market {
+    font-size: 11px;
+    color: #ffffff80;
+    margin-bottom: 4px;
+}
+
+.betslip_bet_odds {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.betslip_stake_section {
+    margin-top:15px;
+}
+
+.betslip_stake_input_wrapper {
+    position: relative;
+    margin-bottom: 0px;
+}
+
+.betslip_stake_input {
+    width: 100%;
+    padding: 6px 76px 7px 12px;
+    background-color: #D9D9D910;
+    border:none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 12px;
+}
+
+.betslip_stake_currency {
+    position: absolute;
+    right: 66px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ffffff80;
+    font-size: 14px;
+}
+
+.betslip_max_btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 4px 12px;
+    background-color: #D9D9D920;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.betslip_quick_stakes {
+    display: flex;
+    gap: 8px;
+}
+
+.betslip_quick_stakes button {
+    flex: 1 1;
+    padding: 8px;
+    background-color: #D9D9D910;
+    border: 1px solid #2A2A2A;
+    border-radius: 50px;
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.betslip_quick_stakes button:hover {
+    background-color: #D9D9D910;
+    border-color: #F97A31;
+}
+
+.betslip_summary {
+    margin-top: 0px;
+    padding: 12px 0px;
+    border-top: none;
+}
+
+.betslip_summary_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.betslip_summary_row span:first-child {
+    font-size: 12px;
+    color: #ffffff80;
+}
+
+.betslip_summary_row span:last-child {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.betslip_place_bet_btn {
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+    padding: 7px 20px;
+    width: 100%;
+    border-radius: 8px;
+    border: none;
+    color: #ffffffd4;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all 0.5s ease;
+}
+
+.betslip_place_bet_btn:hover {
+    background: linear-gradient(1turn, #F97A31 .8%, #AC5422);
+}
+
+.betslip_empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #ffffff80;
+    font-size: 14px;
+}
+
+.betslip_footer {
+    padding: 12px 20px;
+    border-top: 1px solid #2A2A2A;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.betslip_share_btn {
+    flex: 1;
+    margin-top: 15px;
+    padding: 7px 20px;
+    width: 100%;
+    background-color: #252525;
+    border: 1px solid #2A2A2A;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.betslip_settings_btn {
+    width: 40px;
+    height: 40px;
+    background-color: #D9D9D910;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.betslip_setting_btn{   
+     background-color: #D9D9D910;
+    border: none;
+    border-radius: 6px;
+    color: #ffffff60;
+    cursor: pointer;
+    padding: 10px;
+    display: block;
+    /* align-items: center; */
+    width: 100%;
+    font-size: 12px;}
+
+.team_cricket_bl_name {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.team_cricket_bl_name:hover {
+    background-color: #252525 !important;
+    border-color: #F97A31 !important;
+}
+
+.team_cricket_bl_name.selected {
+    background-color: #F97A31 !important;
+    border-color: #F97A31 !important;
+    color: #fff !important;
+    box-shadow: none;
+}
+
+.team_cricket_bl_name.selected span {
+    color: #fff !important;
+}
+
+.betslip_content {
+    overflow-y: auto;
+    max-height: calc(90vh - 200px);
+}
+
+.betslip_stake_input:focus-visible{ outline: none !important; }
+span.quicktext {
+    font-size: 11px;
+    color: #fff;
+}
+
+.betslip_content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.betslip_content::-webkit-scrollbar-track {
+    background: #1A1A19;
+}
+
+.betslip_content::-webkit-scrollbar-thumb {
+    background: #2A2A2A;
+    border-radius: 3px;
+}
+
+.betslip_content::-webkit-scrollbar-thumb:hover {
+    background: #3A3A3A;
+}

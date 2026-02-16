@@ -1,0 +1,306 @@
+.withdrawal_overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 99999998;
+    backdrop-filter: blur(5px);
+}
+
+.withdrawal_modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 680px;
+    max-height: 90vh;
+    background-color: #121212;
+    border-radius: 15px;
+    z-index: 99999999;
+    overflow-y: auto;
+    border: 1px solid #656565ba;
+    transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(249, 122, 49, 0.4) rgba(255, 255, 255, 0.1);
+}
+
+.withdrawal_modal::-webkit-scrollbar {
+    width: 6px;
+}
+
+.withdrawal_modal::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.withdrawal_modal::-webkit-scrollbar-thumb {
+    background-color: rgba(249, 122, 49, 0.4);
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.withdrawal_modal::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(249, 122, 49, 0.6);
+}
+
+/* Mobile view - bottom slide animation */
+@media (max-width: 991px) {
+    .withdrawal_modal {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+        transform: translateY(100%);
+        border-radius: 20px 20px 0 0;
+        animation: slideUpFromBottom 0.4s ease-out forwards;
+    }
+
+    @keyframes slideUpFromBottom {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+}
+
+.withdrawal_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 18px 10px 18px;
+}
+
+.withdrawal_back_btn {
+    background: #292929;
+    border: none;
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    font-size: 22px;
+    border-radius: 5px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+
+.withdrawal_header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+
+.withdrawal_contentpop .withdrawal_content_left {
+    width: 50%;
+    background: linear-gradient(41deg, rgba(3, 3, 3, 1) 0%, rgba(22, 12, 6, 1) 42%, rgba(53, 27, 12, 1) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 0px;
+}
+
+.withdrawal_contentpop .withdrawal_content_right {
+    width: 50%;
+}
+
+.girlefire_img {
+    max-width: 238px;
+}
+
+button.withdrawal_close_btn {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    padding: 0px;
+    font-size: 24px;
+}
+
+.withdrawal_form_group {
+    width: 100%;
+    background-color: #000;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    padding: 5px;
+    min-height: 40px;
+    max-height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+form.withdrawalform {
+    width: 100%;
+    padding: 18px;
+    color: #fff;
+}
+
+form.withdrawalform legend {
+    font-size: 9px;
+    margin-top: 5px;
+    color: #999;
+}
+
+form.withdrawalform .bankdetil_cnt legend{ 
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 4px 0px; }
+
+.withdrawal_form_checkbox {
+    font-size: 13px;
+}
+
+.withdrawal_form_checkbox .policy_link {
+    margin-left: 5px;
+}
+
+.otp_btn button {
+    background-color: #191919;
+    padding: 6px 9px;
+    border-radius: 4px;
+    border: none;
+    font-size: 12px;
+    font-weight: 500;
+    color: #999;
+}
+
+.withdrawal_form_checkbox span {
+    line-height: 14px;
+    margin-right: 5px;
+}
+
+form.withdrawalform legend span {
+    color: #fff;
+}
+
+button.withdrawal_submit_btn {
+    width: 100%;
+    padding: 7px;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 15px 0px 10px;
+    transition: all 0.3s;
+}
+
+button.withdrawal_submit_btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+}
+
+
+.select_box {
+    background-color: #191919;
+    padding: 4px 7px;
+    border-radius: 4px;
+    border: none;
+}
+
+.select_box select {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    padding: 0px;
+    font-weight: 500;
+    cursor: pointer;
+    appearance: none;
+    outline: none;
+}
+
+.select_box.phone_country_code {
+    flex-shrink: 0;
+    min-width: 60px;
+}
+
+.select_box.phone_country_code select {
+    width: 100%;
+}
+
+.withdrawal_amount_input {
+    width: 100%;
+}
+
+.withdrawal_form_group input {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    padding: 0px 4px;
+    font-weight: 500;
+    width: 100%;
+}
+
+.max {
+    background-color: #191919;
+    padding: 6px 9px;
+    border-radius: 4px;
+    border: none;
+    font-size: 12px;
+    font-weight: 500;
+    color: #999;
+}
+
+.withdrawal_form_group input:focus-visible {
+    outline: none;
+}
+
+.fullwidth {
+    width: 100%;
+}
+
+.min_amount {
+    display: flex;
+    flex-direction: column;
+    font-size: 9px;
+    text-align: right;
+    margin-right: 5px;
+    text-transform: capitalize;
+}
+
+.min_amount span {
+    font-weight: 600;
+    color: #fff;
+}
+
+form.withdrawalform .d-flex.align-items-center.gap-1 {
+    width: 100%;
+}
+
+form.withdrawalform label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+
+@media (max-width: 580px) {
+
+.withdrawal_contentpop .withdrawal_content_left { display: none; }
+
+.withdrawal_contentpop .withdrawal_content_right {
+        width: 100%;
+    }
+}

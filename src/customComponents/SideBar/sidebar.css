@@ -1,0 +1,242 @@
+.sidebar_overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.sidebar_overlay.active {
+    display: block;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 200px;
+    height: 100vh;
+    background-color: #0B0A0A;
+    z-index: 1000;
+    transition: left 0.3s ease-in-out;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+    border-right: 1px solid #141315;
+    scrollbar-width: thin; /* Firefox - always thin to prevent shift */
+    scrollbar-color: transparent transparent; /* Transparent by default */
+}
+
+.sidebar:hover,
+.sidebar.scrolling {
+    scrollbar-width: thin; /* Same width - no shift */
+    scrollbar-color: #202a39 transparent; /* Visible on hover/scroll */
+}
+
+/* Webkit Scrollbar (Chrome, Safari, Edge) */
+.sidebar::-webkit-scrollbar {
+    width: 6px; /* Always 6px to prevent content shift */
+    transition: none;
+}
+
+.sidebar:hover::-webkit-scrollbar,
+.sidebar.scrolling::-webkit-scrollbar {
+    width: 6px; /* Same width - no shift */
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: transparent; /* Transparent by default */
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.sidebar:hover::-webkit-scrollbar-thumb,
+.sidebar.scrolling::-webkit-scrollbar-thumb {
+    background: #202a39; /* Visible on hover/scroll */
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #202a39;
+}
+
+.sidebar.sidebar_open {
+    left: 0;
+}
+
+.sidebar_header {
+    padding: 40px 15px 0px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-direction: column;
+}
+
+.sidebar_search {
+    flex: 1;
+    position: relative;
+}
+
+.sidebar_search_input {
+    width: 100%;
+    padding: 7px 30px 7px 2px;
+    background-color: transparent;
+    border: none;
+    border-radius: 0px;
+    color: #fff;
+    font-size: 14px;
+    border-bottom: 1px solid #7a200f;
+}
+
+.sidebar_search_input:focus {
+    outline: none;
+    border-color: #E36F2B;
+    background-color: #353535;
+}
+
+.sidebar_search_input::placeholder {
+    color: #ffffff75;
+}
+
+.sidebar_search i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ffffff75;
+    font-size: 18px;
+}
+
+.sidebar_close_btn {
+    background: none;
+    border: none;
+    color: #fff;
+    position: absolute;
+    font-size: 24px;
+    top:0px;
+    cursor: pointer;
+    right: 0px;
+    justify-content: center;
+    transition: color 0.3s;
+}
+
+.sidebar_close_btn:hover {
+    color: #E36F2B;
+}
+
+.sidebar_content {
+    padding: 20px 0;
+}
+
+.sidebar_nav {
+    width: 100%;
+}
+
+.sidebar_menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar_menu_item {
+    width: 100%;
+}
+
+.sidebar_menu_item a {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    color: #ffffffd6;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.sidebar_menu_item.active span img {
+    filter: brightness(0) saturate(100%) invert(28%) sepia(98%) saturate(2000%) hue-rotate(350deg) brightness(0.95) contrast(1.2);
+}
+
+.sidebar_menu_item a:hover {
+    color: #fff;
+}
+
+.sidebar_menu_item.active a {
+    color: #fff;
+}
+
+.sidebar_menu_item a i {
+    font-size: 18px;
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar_menu_item a span {
+    flex: 1 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sidebar_submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+}
+
+.sidebar_menu_item.active .sidebar_submenu {
+    max-height: 780px;
+}
+
+.sidebar_submenu li {
+    width: 100%;
+}
+
+.sidebar_submenu li a {
+    flex-direction: row;
+    display: flex;
+    padding: 12px 20px;
+    color: #ffffff75;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.sidebar_submenu li a:hover {
+    color: #fff;
+}
+
+/* Responsive */
+@media (max-width:991px) {
+    .sidebar {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .sidebar_search {
+        width: 100%;
+    }
+
+    .sidebar_content {
+        padding: 20px 0 60px;
+    }
+}
+
+@media (max-width:767px) {
+
+.sidebar_content {
+    padding: 20px 0 80px;
+}
+
+}

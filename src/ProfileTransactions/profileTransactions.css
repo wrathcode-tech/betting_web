@@ -1,0 +1,247 @@
+.profile_transactions_section {
+    width: 100%;
+    margin: 15px 0px;
+}
+
+.transactions_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.profile_transactions_section h1 {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.transactions_header_right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.date_range_picker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.date_input_wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #ffffff1c;
+    padding: 4px 15px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.date_input_wrapper:hover {
+    background-color: #ffffff25;
+}
+
+.date_input {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    padding: 5px 25px 5px 0px;
+    outline: none;
+    cursor: pointer;
+    width: 140px;
+}
+
+.date_input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.date_input::-webkit-datetime-edit-text {
+    color: #fff;
+}
+
+.date_input::-webkit-datetime-edit-month-field {
+    color: #fff;
+}
+
+.date_input::-webkit-datetime-edit-day-field {
+    color: #fff;
+}
+
+.date_input::-webkit-datetime-edit-year-field {
+    color: #fff;
+}
+
+.date_arrow {
+    position: absolute;
+    right: 5px;
+    font-size: 18px;
+    color: #fff;
+    pointer-events: none;
+}
+
+.date_separator {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn.deposit_btn {
+    color: #fff;
+    border: none;
+    padding: 6px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+}
+
+.btn.deposit_btn:hover {
+    background-color: #E3472B;
+}
+
+.btn.deposit_btn i {
+    font-size: 16px;
+}
+
+.transactions_table_wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.transactions_table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #fff;
+}
+
+.transactions_table thead {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.transactions_table th {
+    padding: 15px 10px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 400;
+    color: #ffffffab;
+    white-space: nowrap;
+}
+
+.transactions_table tbody tr {
+    border-bottom:1px solid rgb(255 255 255 / 14%);
+    transition: background-color 0.2s ease;
+}
+
+.transactions_table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.transactions_table td {
+    padding: 15px 10px;
+    font-size: 14px;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.status_badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status_approved {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+.view_btn {
+    background-color: transparent;
+    border: none;
+    color: #F97A31;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.3s ease;
+}
+
+.view_btn:hover {
+    color: #E3472B;
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+    .transactions_table_wrapper {
+        overflow-x: auto;
+    }
+    
+    .transactions_table {
+        min-width: 1200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .transactions_header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .transactions_header_right {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .date_range_picker {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .profile_transactions_section h1 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width:767px) {
+    .transactions_table_wrapper {
+        padding: 15px;
+    }
+    
+    .transactions_table th,
+    .transactions_table td {
+        padding: 10px 5px;
+        font-size: 11px;
+    }
+    
+    .profile_transactions_section h1 {
+        font-size: 18px;
+    }
+
+    .date_input {
+        font-size: 12px; }
+
+    .date_range_picker {
+        min-width: 100%;
+    }
+
+    .date_input {
+        width: 100%;
+    }
+
+
+}

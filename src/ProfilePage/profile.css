@@ -1,0 +1,207 @@
+.profile_page {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #030303;
+    color: #fff;
+    padding: 40px 0;
+}
+
+.profile_content {
+    width: 100%;
+}
+
+.profile_content h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.profile_content p {
+    font-size: 16px;
+    color: #ffffff75;
+    line-height: 1.6;
+}
+
+.dashboard_page {
+    width: 100%;
+    display: block;
+    min-height: 100vh;
+    padding: 20px 0px;
+    color: #fff;
+    background-image: url('../../public/images/profilebg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.dashboard_page h1 {
+    font-size: 24px;
+}
+
+.profile_bio_info {
+    margin-top: 10px;
+}
+
+.profile_bio_info_img {
+    max-width: 75px;
+    position: relative;
+}
+
+.profile_bio_info_img img.user {
+    width: 75px;
+    height: 75px;
+    object-fit: cover;
+    border-radius: 100%;
+    border: 2px solid #E784B4;
+}
+
+.profile_bio_info_cnt h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0px;
+}
+
+.profile_bio_info_cnt span {
+    font-size: 12px;
+}
+
+.profile_bio_info_cnt p {
+    color: #CE6C0D;
+    font-size: 10px;
+    font-weight: 600;
+    margin: 0px;
+}
+
+button.profilebtn {
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+    padding: 7px 12px;
+    border-radius: 8px;
+    margin-left: 50px;
+    border: none;
+    color: #ffffffd4;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.user_active {
+    width: 15px;
+    height: 15px;
+    background-color: #25B655;
+    border-radius: 100%;
+    position: absolute;
+    right: 0px;
+    bottom: 10px;
+}
+
+.ranklist {
+    width: 100%;
+    display: block;
+    margin-top: 32px;
+}
+
+.ranklist ul {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 24px;
+}
+
+.ranklist ul li {
+    min-width: 100px;
+    font-weight: 900;
+    background-color: #151515;
+    border-radius: 15px;
+    text-align: center;
+    font-size: 18px;
+    display: flex;
+    padding: 15px;
+    flex-direction: column;
+}
+
+.ranklist ul li span {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.statistics_profile {
+    width: 100%;
+    margin-top: 30px;
+    display: block;
+}
+
+.statistics_profile h2 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.statistics_profile ul {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 24px;
+}
+
+.statistics_profile ul li {
+    width: 100%;
+    font-weight: 900;
+    background-color: #151515;
+    border-radius: 15px;
+    text-align: center;
+    font-size: 18px;
+    display: flex;
+    padding: 15px;
+    flex-direction: column;
+}
+
+.statistics_profile ul li span {
+    color: #b6b6b6;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.profile_right_section {
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+.profile_section .row {
+    align-items: center;
+}
+
+
+@media (max-width: 991px) {
+
+    .statistics_profile ul li {
+        border-radius: 10px;
+        font-size: 15px;
+        padding: 10px;
+    }
+
+    .statistics_profile ul li {
+        font-size: 15px;
+    }
+
+
+    .statistics_profile ul li img {
+        width: 65px;
+    }
+
+
+}
+
+@media (max-width: 767px) {
+
+    .statistics_profile h2 {
+        font-size: 16px;
+    }
+
+    .ranklist ul {
+        gap: 10px;
+    }
+
+    .profile_right_section{ margin-top: 24px; }
+
+}

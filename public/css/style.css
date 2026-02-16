@@ -1,0 +1,1827 @@
+body {
+    font-family: "Montserrat", sans-serif;
+    background-color: #030303;
+    position: relative;
+    overflow-x: hidden;
+}
+
+html {
+    position: relative;
+    overflow-x: hidden;
+}
+
+a {
+    text-decoration: none !important;
+    transition: 0.5s all;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+ul {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+p {
+    line-height: 130%;
+    font-weight: 300;
+}
+
+body .h2,
+h2 {
+    font-size: 2.5rem;
+}
+
+.container,
+.container-lg,
+.container-md,
+.container-sm,
+.container-xl,
+.container-xxl {
+    max-width: 1200px;
+    padding: 0px 20px;
+}
+
+header {
+    width: 100%;
+    padding: 15px 24px;
+    background-color: #1A1A19;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header_lft {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.toggle_menu {
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.toggle_menu:hover {
+    opacity: 0.8;
+}
+
+@media (max-width: 991px) {
+    .toggle_menu {
+        display: none;
+    }
+}
+
+.header_logo {
+    width: 124px;
+}
+
+.header_right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: end;
+}
+
+.searchbtn {
+    width: 32px;
+    height: 32px;
+    background-color: #353535;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login_hdr {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.login_hdr button {
+    padding: 9px 20px;
+    background-color: #353535;
+    border-radius: 8px;
+    border: none;
+    color: #ffffffd4;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.login_hdr button.signup_btn {
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+    padding: 7px 20px;
+}
+
+.setting_hdr {
+    padding: 6px 10px;
+    background-color: #353535;
+    border-radius: 8px;
+    gap: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.setting_icon {
+    border-left: 1px solid #3C485C;
+    padding-left: 10px;
+}
+
+.comment_hdr {
+    padding: 6px 8px;
+    cursor: pointer;
+    background-color: #353535;
+    border-radius: 8px;
+}
+
+.casino_hero_s {
+    width: 100%;
+    display: flex;
+    min-height: 600px;
+    align-items: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+
+.casino_hero_s::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.casino_hero_s .container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+}
+
+.casino_hero_s .row {
+    position: relative;
+    z-index: 10;
+}
+
+.casino_hero_s .casino_hero_s_lft {
+    position: relative;
+    z-index: 10;
+}
+
+.casino_hero_s .casino_bnr_img {
+    position: relative;
+    z-index: 10;
+    top: 15px;
+}
+
+.hero_bg_video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    transition: opacity 0.8s ease-in-out;
+    opacity: 1;
+    will-change: opacity;
+}
+
+.casino_hero_s .row {
+    align-items: center;
+}
+
+.casino_bnr_img {
+    max-width: 470px;
+    margin: 0 auto;
+}
+
+.casino_hero_s h1 {
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 120%;
+}
+
+.casino_hero_s h1 span {
+    color: #E46F2C;
+    display: block;
+}
+
+.casino_hero_s p {
+    color: #ffffff75;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+button.btnbnr {
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    color: #ffffffd4;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.social_icons li a {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background-color: #ffffff12;
+}
+
+.top_slot_outer {
+    width: 100%;
+    display: block;
+    padding: 20px 0px;
+    color: #fff;
+}
+
+h2.heading_h2 {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0px;
+    line-height: 120%;
+}
+
+button.slotbtn {
+    font-size: 14px;
+    background-color: transparent;
+    color: #E36F2B;
+    border: none;
+    padding: 0px;
+    font-weight: 500;
+}
+
+.slider_arrows {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.slider_arrow_btn {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, rgba(53, 53, 53, 1) 0%, rgba(30, 30, 30, 1) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 22px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.slider_arrow_btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transition: left 0.5s ease;
+}
+
+.slider_arrow_btn:hover::before {
+    left: 100%;
+}
+
+.slider_arrow_btn:hover {
+    background: linear-gradient(135deg, rgba(249, 122, 49, 1) 0%, rgba(228, 111, 44, 1) 100%);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(249, 122, 49, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border-color: rgba(249, 122, 49, 0.5);
+}
+
+.slider_arrow_btn:hover i {
+    transform: scale(1.1);
+}
+
+.slider_arrow_btn i {
+    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.slider_arrow_btn:active {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 2px 8px rgba(249, 122, 49, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider_arrow_btn.left:hover i {
+    transform: translateX(-2px) scale(1.1);
+}
+
+.slider_arrow_btn.right:hover i {
+    transform: translateX(2px) scale(1.1);
+}
+
+.top_slot_outer {
+    position: relative;
+    width: 100%;
+    overflow: visible;
+}
+
+.top_slot_outer .container {
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 32px;
+}
+
+.game_items_slider_wrapper {
+    margin-top: 18px;
+    width: 100%;
+    position: relative;
+}
+
+.game_items_slider {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    transition: transform 0.6s ease-in-out;
+    will-change: transform;
+}
+
+.game_items_inner {
+    min-width: 178px;
+    max-width: 178px;
+    width: 178px;
+    flex-shrink: 0;
+    position: relative;
+    cursor: pointer;
+    transition: 1s;
+}
+
+.game_items_inner:before {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    content: "";
+    transition: 1s;
+    top: 0px;
+    bottom: 0px;
+    background-color: hsl(4deg 0% 1% / 76%);
+    opacity: 0;
+}
+
+.game_items_inner:hover:before {
+    opacity: 1;
+}
+
+.playbtn {
+    width: 70px;
+    opacity: 0;
+    transition: 0.5s;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game_items_inner:hover .playbtn {
+    opacity: 1;
+}
+
+.game_items_inner:hover {
+    transform: scale(1.1);
+}
+
+.top_ads {
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    background-color: #ED1D49;
+    font-size: 10px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 50px;
+}
+
+.casino_sport_section {
+    width: 100%;
+    display: block;
+    padding: 50px 0px 10px;
+    color: #fff;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.casino_sport_section_lft {
+    width: 100%;
+    background: linear-gradient(90deg, rgba(21, 21, 21, 1) 0%, rgba(14, 90, 104, 1) 100%);
+    border-radius: 10px;
+    display: flex;
+    padding: 10px 20px;
+    height: 120px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideInFade 0.6s ease-out forwards;
+}
+
+.casino_sport_section_lft:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.casino_sport_section_lft:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.casino_sport_section_lft:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes slideInFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.casino_sport_section_lft:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.casino_sport_section_lft.sport_bg {
+    background: linear-gradient(90deg, rgba(21, 21, 21, 1) 0%, rgba(107, 79, 14, 1) 100%);
+}
+
+.casino_sport_section_lft.sport_bg:hover {
+    box-shadow: 0 10px 30px rgba(107, 79, 14, 0.3);
+}
+
+.casino_sport_section_lft.casino_bg2 {
+    background: linear-gradient(90deg, rgba(21, 21, 21, 1) 70%, rgba(162, 49, 0, 1) 100%);
+}
+
+.casino_sport_section_lft.casino_bg2:hover {
+    box-shadow: 0 10px 30px rgba(162, 49, 0, 0.3);
+}
+
+.casino_sport_section_lft .gameimg {
+    min-width: 100px;
+    transition: transform 0.3s ease;
+}
+
+.casino_sport_section_lft:hover .gameimg {
+    transform: scale(1.03);
+}
+
+.casino_sport_section_lft:hover .gameimg img {
+    filter: brightness(1.05);
+}
+
+.casino_sport_section_lft .gameimg img {
+    transition: filter 0.3s ease;
+}
+
+.casino_sport_section_lft h3 {
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 120%;
+    transition: color 0.3s ease;
+}
+
+.casino_sport_section_lft:hover h3 {
+    color: #fff;
+}
+
+.casino_sport_section_lft p {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 140%;
+    margin: 0px;
+    color: #ffffffaa;
+    transition: color 0.3s ease;
+}
+
+.casino_sport_section_lft:hover p {
+    color: #ffffffdd;
+}
+
+.casino_sport_section .row {
+    row-gap: 20px;
+}
+
+.top_match_section {
+    width: 100%;
+    display: block;
+    padding: 50px 0px;
+    color: #fff;
+}
+
+.top_match_section .container {
+    position: relative;
+    overflow: hidden;
+}
+
+.match_slider_wrapper {
+    width: 100%;
+    overflow: hidden;
+    margin-top: 10px;
+    position: relative;
+}
+
+.match_slider_wrapper .match_slider_container {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    transition: transform 0.6s ease-in-out;
+    will-change: transform;
+}
+
+.match_slider {
+    min-width: calc((100% - 60px) / 3);
+    max-width: calc((100% - 60px) / 3);
+    flex-shrink: 0;
+    position: relative;
+    padding: 24px;
+    background-color: #151515;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+@media (max-width: 991px) {
+    .match_slider {
+        min-width: calc((100% - 20px) / 2);
+        max-width: calc((100% - 20px) / 2);
+    }
+}
+
+@media (max-width: 767px) {
+    .match_slider {
+        min-width: 100%;
+        max-width: 100%;
+    }
+}
+
+.match_slider h3 {
+    color: #E36F2B;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 120%;
+    margin-bottom: 0px;
+}
+
+.matchtp_hd ul {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.matchtp_hd ul li {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 10px;
+    background-color: #E36F2B;
+    color: #000;
+    font-weight: 500;
+}
+
+.match_slider_wrapper p {
+    font-size: 12px;
+    color: #E36F2B;
+    margin: 7px 0px 0px;
+}
+
+.match_info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    margin: 24px 0px 20px;
+}
+
+.match_slider_wrapper p.match_team {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.match_slider_wrapper .match_info span {
+    font-size: 10px;
+}
+
+.view_matchlike {
+    display: flex;
+    border-radius: 50px;
+    overflow: hidden;
+    align-items: center;
+}
+
+
+.view_matchlike button {
+    background-color: #F0B4B4;
+    border: none;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #000;
+    width: 50px;
+    min-height: 34px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-align: center;
+    line-height: 11px;
+    display: flex;
+    flex-direction: column;
+}
+
+.view_matchlike button i {
+    font-size: 15px;
+}
+
+.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.view_matchlike button span {
+    font-size: 8px;
+    display: block;
+}
+
+.view_matchlike button.view_match {
+    background-color: #7D93C2;
+}
+
+.match_slider:before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(227, 111, 43);
+    z-index: 1;
+    width: 220px;
+    height: 40px;
+    filter: blur(26px);
+    margin: 0 auto;
+    top: 10px;
+}
+
+.match_slider_inner {
+    position: relative;
+    z-index: 999;
+}
+
+.match_slider_sports {
+    width: 100%;
+    margin-top: 15px;
+    justify-content: flex-start;
+    transition: transform 1.2s ease-in-out;
+    will-change: transform;
+}
+
+.match_slider_sports_item {
+    min-width: 188px;
+    width: 188px;
+    position: relative;
+    padding: 12px;
+    background-color: #151515;
+    border-radius: 12px;
+    overflow: hidden;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.match_slider_sports_item:before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(227, 111, 43);
+    z-index: 1;
+    width: 120px;
+    height: 22px;
+    filter: blur(26px);
+    margin: 0 auto;
+    top: 10px;
+}
+
+.spot_value {
+    font-size: 9px;
+    text-transform: uppercase;
+    font-weight: 600;
+    background-color: #ED1D4920;
+    display: inline-block;
+    align-items: start;
+    position: absolute;
+    left: 10px;
+    top: 6px;
+    padding: 3px 6px;
+    border-radius: 50px;
+    color: #ED1D49;
+}
+
+.match_slider_sports_item img {
+    margin: 15px 0px 10px;
+}
+
+.match_slider_sports_item h3 {
+    font-size: 16px;
+}
+
+.playearn_section {
+    width: 100%;
+    display: block;
+    color: #fff;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.playearn_big_lft {
+    width: 100%;
+    display: flex;
+    background: linear-gradient(136deg, rgba(19, 25, 26, 1) 20%, rgba(0, 216, 255, 1) 100%);
+    position: relative;
+    padding: 32px;
+    border-radius: 8px;
+    min-height: 370px;
+    align-items: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateX(-30px);
+    animation: slideInFromLeft 0.7s ease-out forwards;
+    animation-delay: 0.1s;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.playearn_big_lft:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 15px 40px rgba(0, 216, 255, 0.3);
+}
+
+.playearn_big_rgt {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    max-width: 546px;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.playearn_big_lft:hover .playearn_big_rgt {
+    transform: scale(1.02);
+}
+
+.playearn_big_lft:hover .playearn_big_rgt img {
+    filter: brightness(1.05);
+}
+
+.playearn_big_rgt img {
+    transition: filter 0.4s ease;
+}
+
+.playearn_big_lft h2 {
+    font-size: 54px;
+    font-weight: 600;
+    text-shadow: 0px 2px 10px #ffffff40;
+    line-height: 115%;
+    transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+.playearn_big_lft:hover h2 {
+    transform: translateY(-3px);
+    text-shadow: 0px 4px 15px #ffffff60;
+}
+
+.playearn_big_lft_cnt {
+    max-width: 310px;
+}
+
+.playearn_big_lft p {
+    font-size: 22px;
+    font-weight: 400;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.playearn_big_lft:hover p {
+    transform: translateY(-2px);
+    color: #ffffffdd;
+}
+
+.playearn_btn {
+    background: linear-gradient(1turn, #919191 .8%, #FFFFFF);
+    box-shadow: 0 3px 0px #9c9c9cfc;
+    padding: 7px 20px;
+    border-radius: 8px;
+    border: none;
+    color: #000;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.playearn_btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.playearn_btn:hover::before {
+    left: 100%;
+}
+
+.playearn_btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+}
+
+.playearn_btn:active {
+    transform: translateY(0) scale(1.02);
+}
+
+.gameright_s {
+    display: flex;
+    gap: 18px;
+    flex-direction: column;
+}
+
+.gameright_s_item {
+    width: 100%;
+    display: flex;
+    background: linear-gradient(144deg, rgba(73, 25, 4, 1) 0%, rgba(162, 49, 0, 1) 100%);
+    position: relative;
+    padding: 20px 0px 0px 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 176px;
+    align-items: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateX(30px);
+    animation: slideInFromRight 0.7s ease-out forwards;
+}
+
+.gameright_s_item:nth-child(1) {
+    animation-delay: 0.2s;
+}
+
+.gameright_s_item:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.gameright_s_item:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+}
+
+.gameright_s_item h4 {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 130%;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.gameright_s_item:hover h4 {
+    transform: translateY(-2px);
+    color: #fff;
+}
+
+.top_icon {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    transition: transform 0.4s ease;
+}
+
+.gameright_s_item:hover .top_icon {
+    transform: scale(1.05);
+}
+
+.gameright_s_item p {
+    font-size: 13px;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.gameright_s_item:hover p {
+    transform: translateY(-2px);
+    color: #ffffffdd;
+}
+
+.gameright_s_item_img {
+    min-width: 140px;
+    position: absolute;
+    right: -12px;
+    bottom: 0px;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gameright_s_item:hover .gameright_s_item_img {
+    transform: scale(1.05) translateY(-2px);
+}
+
+.gameright_s_item:hover .gameright_s_item_img img {
+    filter: brightness(1.08);
+}
+
+.gameright_s_item_img img {
+    transition: filter 0.4s ease;
+}
+
+.gameright_s_item_cnt {
+    width: 60%;
+}
+
+.gameright_s_item.rewardsbg {
+    background: linear-gradient(144deg, rgba(19, 49, 19, 1) 0%, rgba(23, 210, 19, 1) 100%);
+}
+
+.gameright_s_item.rewardsbg:hover {
+    box-shadow: 0 12px 35px rgba(23, 210, 19, 0.3);
+}
+
+.gameright_s_item.rewardsbg .gameright_s_item_img {
+    right: 0px;
+}
+
+.height0.gameright_s_item {
+    min-height: 110px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideInUp 0.6s ease-out forwards;
+}
+
+.height0.gameright_s_item:nth-of-type(1) {
+    animation-delay: 0.4s;
+}
+
+.height0.gameright_s_item:nth-of-type(2) {
+    animation-delay: 0.5s;
+}
+
+.height0.gameright_s_item:nth-of-type(3) {
+    animation-delay: 0.6s;
+}
+
+.height0.gameright_s_item:nth-of-type(4) {
+    animation-delay: 0.7s;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.height0.gameright_s_item:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.height0 .gameright_s_item_img {
+    min-width: auto;
+    right: 0px;
+}
+
+.casinozone_s {
+    background: linear-gradient(101deg, #B445C1 0%, rgba(77, 15, 84, 1) 82%);
+}
+
+.casinozone_s:hover {
+    box-shadow: 0 10px 30px rgba(180, 69, 193, 0.3);
+}
+
+.gameright_s_item.sportsbg2 {
+    background: linear-gradient(101deg, rgba(187, 105, 105, 1) 0%, rgba(95, 53, 53, 1) 100%);
+}
+
+.gameright_s_item.sportsbg2:hover {
+    box-shadow: 0 10px 30px rgba(187, 105, 105, 0.3);
+}
+
+.gameright_s_item.rewardsbg2 {
+    background: linear-gradient(101deg, rgba(74, 54, 176, 1) 0%, rgba(46, 41, 70, 1) 100%);
+}
+
+.gameright_s_item.rewardsbg2:hover {
+    box-shadow: 0 10px 30px rgba(74, 54, 176, 0.3);
+}
+
+.gameright_s_item.battlebg {
+    background: linear-gradient(101deg, rgba(165, 119, 8, 1) 0%, rgba(47, 39, 19, 1) 100%);
+}
+
+.gameright_s_item.battlebg:hover {
+    box-shadow: 0 10px 30px rgba(165, 119, 8, 0.3);
+}
+
+.playearn_section .row {
+    row-gap: 20px;
+}
+
+.support_help_s {
+    width: 100%;
+    background-color: #E36F2B;
+    text-align: center;
+    padding: 20px;
+    color: #000;
+    margin: 32px 0px 24px;
+}
+
+.support_help_s p {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0px;
+}
+
+footer {
+    color: #fff;
+}
+
+.topfooter {
+    align-items: center;
+    gap: 32px;
+}
+
+.topfooter p {
+    margin-bottom: 0px;
+}
+
+.footermain {
+    width: 100%;
+    display: block;
+    border-top: 1px solid #E36F2B;
+    margin-top: 24px;
+    padding-top: 24px;
+}
+
+
+
+/* Login Modal Styles */
+.login_modal_content {
+    background-color: #121212;
+    border-radius: 16px;
+    border: 1px solid #656565b3;
+    color: #fff;
+    overflow: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(249, 122, 49, 0.4) rgba(255, 255, 255, 0.1);
+}
+
+.login_modal_content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.login_modal_content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.login_modal_content::-webkit-scrollbar-thumb {
+    background-color: rgba(249, 122, 49, 0.4);
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.login_modal_content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(249, 122, 49, 0.6);
+}
+
+.modal-dialog.loginpopup {
+    max-width: 690px;
+    transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+    z-index: 99999999;
+}
+
+.modal.show.loginpopup {
+    z-index: 99999998;
+}
+
+.modal-backdrop.show {
+    z-index: 99999998 !important;
+}
+
+/* Mobile view - bottom slide animation for login modal */
+@media (max-width: 991px) {
+    .modal-dialog.loginpopup {
+        max-width: 100%;
+        margin: 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        transform: translateY(100%);
+        animation: slideUpFromBottom 0.4s ease-out forwards;
+    }
+
+    .login_modal_content {
+        border-radius: 20px 20px 0 0;
+        max-height: 90vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(249, 122, 49, 0.4) rgba(255, 255, 255, 0.1);
+    }
+
+    .login_modal_content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .login_modal_content::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    .login_modal_content::-webkit-scrollbar-thumb {
+        background-color: rgba(249, 122, 49, 0.4);
+        border-radius: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    .login_modal_content::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(249, 122, 49, 0.6);
+    }
+
+    @keyframes slideUpFromBottom {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+}
+
+.login_modal_close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 10;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    opacity: 0.8;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login_modal_close:hover {
+    opacity: 1;
+    color: #fff;
+}
+
+.login_modal_body {
+    position: relative;
+}
+
+.login_modal_tabs {
+    display: flex;
+    gap: 0;
+    background-color: #191919;
+    border-radius: 7px;
+    max-width: 230px;
+    margin: 0 auto;
+    padding: 8px;
+}
+
+.login_tab {
+    padding: 11px 12px;
+    background: transparent;
+    border: none;
+    color: #6A3E25;
+    width: 100%;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: none;
+    transition: all 0.3s;
+}
+
+.login_tab.active {
+    color: #fff;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+}
+
+.login_modal_inner {
+    display: flex;
+    gap: 0px;
+    align-items: center;
+}
+
+.login_modal_left {
+    flex: 1;
+    text-align: center;
+    background: linear-gradient(101deg, rgba(3, 3, 3, 1) 0%, rgba(53, 27, 12, 1) 100%);
+    padding: 70px 30px;
+}
+
+.login_modal_character {
+    margin-bottom: 20px;
+}
+
+.login_modal_character img {
+    max-width: 200px;
+    height: auto;
+}
+
+.login_modal_bonus {
+    font-size: 32px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 120%;
+    margin: 0;
+    width: 70%;
+    margin: 0 auto;
+}
+
+.login_modal_right {
+    flex: 1;
+    padding: 20px;
+}
+
+.login_modal_methods_text {
+    text-align: center;
+    font-size: 14px;
+    color: #9F9F9F;
+    font-weight: 600;
+    margin: 15px 0px;
+    text-transform: uppercase;
+    letter-spacing: 0px;
+    position: relative;
+}
+
+.login_modal_methods_text span {
+    background-color: #121212;
+    padding: 2px 10px;
+}
+
+.login_method_tabs {
+    display: flex;
+    margin-bottom: 25px;
+    justify-content: center;
+}
+
+.method_tab {
+    padding: 10px 0px;
+    background: none;
+    border: none;
+    border-radius: 0px;
+    color: #616161;
+    width: 100%;
+    font-size: 15px;
+    font-weight: 600;
+    border-bottom: 1px solid #656565;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.method_tab.active {
+    /* background: #E36F2B; */
+    color: #E36F2B;
+    border-bottom: 1px solid #E36F2B;
+}
+
+.login_form {
+    width: 100%;
+}
+
+.form_group {
+    margin-bottom: 20px;
+    display: block;
+    width: 100%;
+}
+
+.login_input {
+    background-color: #121212 !important;
+    border: 1px solid #494949;
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #919191 !important;
+    font-size: 14px;
+    width: 100%;
+}
+
+.login_input:focus {
+    background-color: #121212;
+    border-color: #787878;
+    color: #fff;
+    box-shadow: none;
+    outline: none;
+}
+
+.login_input::placeholder {
+    color: #ffffff75;
+}
+
+.password_input_wrapper {
+    position: relative;
+}
+
+.password_toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #616161;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password_toggle:hover {
+    color: #fff;
+}
+
+.forget_password_link {
+    display: block;
+    text-align: right;
+    color: #E36F2B;
+    font-size: 12px;
+    text-decoration: none;
+    margin-bottom: 20px;
+    transition: color 0.3s;
+}
+
+.forget_password_link:hover {
+    color: #F97A31;
+}
+
+.login_submit_btn {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+}
+
+.login_submit_btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+}
+
+.login_or_text {
+    text-align: center;
+    color: #ffffff;
+    font-size: 14px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.login_or_text span {
+    background-color: #121212;
+    position: relative;
+    z-index: 999;
+    padding: 0px 10px;
+}
+
+.login_or_text::before,
+.login_or_text::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: #353535;
+}
+
+.login_or_text::before {
+    left: 0;
+}
+
+.login_or_text::after {
+    right: 0;
+}
+
+.login_google_btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(0deg, rgba(169, 168, 168, 1) 0%, rgba(255, 255, 255, 1) 100%);
+    border: 1px solid #353535;
+    border-radius: 8px;
+    color: #000000;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s;
+}
+
+.login_google_btn img {
+    width: 20px;
+    height: 20px;
+}
+
+
+/* Checkbox and Referral Code Styles */
+.checkbox_group {
+    margin-bottom: 20px;
+}
+
+.checkbox_label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #919191;
+    font-size: 12px;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.login_checkbox {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: #E36F2B;
+    flex-shrink: 0;
+}
+
+.checkbox_label span {
+    flex: 1;
+}
+
+.policy_link {
+    color: #E36F2B;
+    text-decoration: underline;
+    transition: color 0.3s;
+}
+
+.policy_link:hover {
+    color: #F97A31;
+}
+
+
+ul.mobile-menu {
+    align-items: center;
+    background: #111923;
+    border-color: #2a3546;
+    border-radius: 12px 12px 0 0;
+    border-style: solid;
+    border-width: 1px 0 0;
+    display: flex;
+    height: 58px;
+    justify-content: space-between;
+    padding: 10px 32px;
+    position: relative;
+    transition: border-radius .1s ease-in-out;
+    z-index: 222;
+}
+
+ul.mobile-menu li a {
+    align-items: center;
+    color: #a7b5ca;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    position: relative;
+    transition: color .1s ease-in-out;
+}
+
+ul.mobile-menu li a i {
+    font-size: 18px;
+}
+
+.mobile-menu-wrapper {
+    position: fixed !important;
+    display: none;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 9999999 !important;
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+button.deposit_btn {
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+    padding: 7px 20px;
+    border-radius: 8px;
+    border: none;
+    color: #ffffffd4;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+@media (max-width: 1200px) {
+
+    .casino_hero_s h1 {
+        font-size: 38px;
+    }
+
+    .playearn_big_lft h2 {
+        font-size: 40px;
+    }
+
+    .gameright_s_item h4 {
+        font-size: 16px;
+    }
+
+    .height0 .gameright_s_item_img {
+        min-width: 100px;
+        width: 100px;
+    }
+
+}
+
+
+
+@media (max-width: 991px) {
+
+
+    .searchbtn {
+        display: none;
+    }
+
+    .setting_hdr {
+        max-width: 88%;
+        margin: 10px auto;
+    }
+
+    .playearn_big_lft h2 {
+        font-size: 32px;
+    }
+
+    .gameright_s_item {
+        padding: 10px 0px 0px 10px;
+    }
+
+    .playearn_big_lft {
+        align-items: start;
+    }
+
+    .height0 .gameright_s_item_img {
+        min-width: 70px;
+        width: 70px;
+    }
+
+    header .setting_hdr {
+        display: none;
+    }
+
+    button.btnbnr {
+        padding: 8px 15px;
+        font-size: 11px;
+    }
+
+    .mobile-menu-wrapper {
+        display: block !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        z-index: 9999999 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    body {
+        padding-bottom: 0 !important;
+    }
+
+    footer {
+        padding-bottom: 70px;
+    }
+
+    p {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 767px) {
+
+    .login_modal_left {
+        display: none; }
+
+.modal-dialog.loginpopup .login_modal_right {
+            padding: 20px 20px 40px;
+        }       
+
+    .casino_hero_s h1 {
+        font-size: 24px;
+        text-align: center;
+    }
+
+    .casino_hero_s p {
+        text-align: center;
+    }
+
+    button.btnbnr {
+        padding: 7px 10px;
+        font-size: 11px;
+    }
+
+    .social_icons li a {
+        width: 32px;
+        height: 32px;
+    }
+
+    .casino_hero_s .d-flex {
+        justify-content: center;
+    }
+
+    .casino_hero_s .casino_bnr_img {
+        top: 26px;
+    }
+
+    h2.heading_h2 {
+        font-size: 15px;
+    }
+
+    button.slotbtn {
+        font-size: 12px;
+    }
+
+    .slider_arrow_btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 5px;
+        font-size: 15px;
+    }
+
+    .casino_sport_section {
+        padding: 20px 0px 10px;
+    }
+
+    .top_slot_outer .container {
+        padding-bottom: 0px;
+    }
+
+    .casino_sport_section_lft h3 {
+        font-size: 14px;
+    }
+
+    .top_match_section {
+        padding: 24px 0px;
+    }
+
+    .match_slider_sports_item h3 {
+        font-size: 14px;
+    }
+
+
+    .playearn_big_lft h2 {
+        font-size: 28px;
+    }
+
+    .playearn_big_lft p {
+        font-size: 15px;
+    }
+
+    .playearn_big_lft {
+        align-items: start;
+    }
+
+    .gameright_s_item h4 {
+        font-size: 16px;
+    }
+
+    .support_help_s {
+        margin: 15px 0px 18px;
+    }
+
+    .support_help_s p {
+        font-size: 13px;
+    }
+
+    footer h5 {
+        font-size: 13px;
+    }
+
+    .footermain {
+        margin-top: 18px;
+        padding-top: 15px;
+    }
+
+    ul.mobile-menu li a {
+        font-size: 12px;
+    }
+
+    .game_items_slider {
+        gap: 18px;
+    }
+
+}
+
+@media (max-width: 360px) {
+
+
+    ul.mobile-menu {
+        padding: 10px 16px;
+    }
+
+}

@@ -1,0 +1,260 @@
+.sports_game_section {
+    width: 100%;
+    margin: 15px 0px;
+}
+
+.sports_top_tabs {
+    width: 100%;
+    background-color: #ffffff1c;
+    padding: 22px;
+}
+
+.sports_top_tabs ul {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    justify-content: space-between;
+}
+
+/* Mobile scroll for sports_top_tabs */
+@media (max-width: 991px) {
+    .sports_top_tabs {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(249, 122, 49, 0.3) transparent;
+    }
+
+    /* Thin scrollbar, visible on hover/scroll */
+    .sports_top_tabs::-webkit-scrollbar {
+        height: 3px;
+    }
+
+    .sports_top_tabs::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .sports_top_tabs::-webkit-scrollbar-thumb {
+        background-color: rgba(249, 122, 49, 0.3);
+        border-radius: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    .sports_top_tabs:hover::-webkit-scrollbar-thumb,
+    .sports_top_tabs:active::-webkit-scrollbar-thumb {
+        background-color: rgba(249, 122, 49, 0.6);
+    }
+
+    .sports_top_tabs ul {
+        justify-content: flex-start;
+        min-width: max-content;
+        flex-wrap: nowrap;
+    }
+}
+
+.sports_top_tabs ul li {
+    width: 22px;
+    height: 22px;
+}
+
+.sports_top_tabs ul li button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0px;
+}
+
+.sports_top_tabs ul li button img {
+    opacity: 0.6;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.sports_top_tabs ul li.active button img {
+    opacity: 1 !important;
+    filter: brightness(2) contrast(1.2) !important;
+}
+
+.sports_hero_banr {
+    width: 100%;
+    margin-top: 20px;
+    background-image: url('/public/images/cricketbg.jpg');
+    background-size: cover;
+    border-radius: 10px;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    color: #fff; 
+    justify-content: space-between;
+    align-items: center;
+    padding:10px 40px;
+}
+
+.sports_hero_banr .bnr_cnt {
+    padding-left: 32px;
+}
+
+.sports_hero_banr h1{ font-size: 40px; font-weight: 900; text-transform: uppercase; }
+.sports_hero_banr p{ font-size: 12px; font-weight: 500; letter-spacing: 0.5px; }
+
+button.btn.betnow {
+    background: linear-gradient(0deg, rgba(145, 145, 145, 1) 0%, rgba(255, 255, 255, 1) 100%);
+    font-size: 14px;
+    margin-top: 10px;
+    font-weight: 600;
+    color: #000;
+    padding: 11px 36px;
+    border: none;
+    box-shadow: 0px 3px #a6a6a6;
+}
+
+.sports_banr_img {
+    max-width: 275px;
+    margin-right: 70px;
+}
+
+
+.sports_top_match_section .match_slider_wrapper {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.sports_top_match_section .match_slider:before{ display: none; }
+
+ul.match_type_tabs {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 10px 0px 20px;
+}
+
+ul.match_type_tabs li button {
+    background-color: #686868;
+    border: none;
+    cursor: pointer;
+    padding: 7px 20px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 12px;
+    color: #ffffffba;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0px 3px #ffffff00;
+}
+
+ul.match_type_tabs li.active button { background-color: #F97A31; 
+    box-shadow: 0px 3px #5A2304; color: #fff;}
+
+.match_slider_wrapper.hidden {
+    display: none !important;
+}
+
+
+.sports_game_section .match_slider {
+    min-width: 100%;
+    max-width: 100%; }
+
+
+
+@media (max-width: 1200px) {
+
+    .sports_top_match_section .match_slider_wrapper {
+        grid-template-columns: repeat(2, 1fr);
+    } 
+
+}
+
+@media (max-width: 991px) {
+
+.sports_hero_banr .bnr_cnt {
+    padding-left: 0px;
+}
+
+.sports_hero_banr h1 {
+    font-size: 32px; }
+
+    ul.match_type_tabs {
+        gap: 10px;
+        margin: 10px -10px 15px;
+        padding: 0 10px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(249, 122, 49, 0.3) transparent;
+    }
+
+    /* Thin scrollbar, visible on hover/scroll */
+    ul.match_type_tabs::-webkit-scrollbar {
+        height: 3px;
+    }
+
+    ul.match_type_tabs::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ul.match_type_tabs::-webkit-scrollbar-thumb {
+        background-color: rgba(249, 122, 49, 0.3);
+        border-radius: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    ul.match_type_tabs:hover::-webkit-scrollbar-thumb,
+    ul.match_type_tabs:active::-webkit-scrollbar-thumb {
+        background-color: rgba(249, 122, 49, 0.6);
+    }
+
+    ul.match_type_tabs li {
+        flex-shrink: 0;
+    }
+
+    ul.match_type_tabs li button {
+        padding: 5px 12px;
+        font-size: 11px; }
+
+}
+
+@media (max-width: 767px) { 
+
+    .sports_hero_banr h1 {
+        font-size: 24px;
+    }
+
+    button.btn.betnow {
+        font-size: 12px;
+        padding: 7px 26px; }
+
+        .sports_top_tabs {
+            padding: 10px;
+        }
+
+        .sports_banr_img {
+            max-width: 200px;
+            margin-right: 0px;
+        }
+
+
+}
+
+@media (max-width: 580px) { 
+
+    .sports_top_match_section .match_slider_wrapper {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .sports_hero_banr h1 {
+        font-size: 18px;
+    }
+    .sports_hero_banr {
+        padding: 10px 20px;
+    }
+
+    .dashboard_page {
+        padding: 10px 0px; }
+
+}
