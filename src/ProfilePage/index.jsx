@@ -1,11 +1,11 @@
 import React from 'react'
 import './profile.css'
-import AuthHeader from '../customComponents/AuthHeader'
+import UserHeader from '../customComponents/UserHeader'
 
 function ProfilePage() {
   return (
     <>
-      <AuthHeader />
+    <UserHeader />
       <div className='dashboard_page'>
         <div className='container'>
           <div className='profile_section'>

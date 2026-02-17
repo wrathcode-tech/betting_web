@@ -92,6 +92,7 @@ header {
     height: 32px;
     background-color: #353535;
     border-radius: 8px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -312,7 +313,6 @@ button.slotbtn {
 
 .slider_arrow_btn:hover {
     background: linear-gradient(135deg, rgba(249, 122, 49, 1) 0%, rgba(228, 111, 44, 1) 100%);
-    transform: translateY(-2px) scale(1.05);
     box-shadow: 0 6px 20px rgba(249, 122, 49, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     border-color: rgba(249, 122, 49, 0.5);
 }
@@ -366,10 +366,27 @@ button.slotbtn {
     will-change: transform;
 }
 
+.depositheader {
+    background-color: #ffffff29;
+    border-radius: 10px;
+    color: #fff;
+}
+
+.depositheader .currency_balance {
+    font-size: 12px;
+    padding: 8px 10px 9px;
+}
+
+.depositheader .currency_balance span {
+    padding-left: 3px;
+}
+
 .game_items_inner {
     min-width: 178px;
     max-width: 178px;
     width: 178px;
+    border-radius: 18px;
+    overflow: hidden;
     flex-shrink: 0;
     position: relative;
     cursor: pointer;
@@ -1220,6 +1237,7 @@ footer {
         background-color: rgba(249, 122, 49, 0.6);
     }
 
+
     @keyframes slideUpFromBottom {
         from {
             transform: translateY(100%);
@@ -1361,6 +1379,10 @@ footer {
     border-bottom: 1px solid #656565;
     cursor: pointer;
     transition: all 0.3s;
+}
+
+button.deposit_btn.mobile {
+    display: none;
 }
 
 .method_tab.active {
@@ -1616,6 +1638,110 @@ button.deposit_btn {
     cursor: pointer;
 }
 
+.user_header_right {
+    padding: 4px 6px;
+    background-color: #353535;
+    border-radius: 50px 18px 18px 50px;
+    gap: 8px;
+    min-width: 75px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: #fff;
+}
+
+.user_header_right i{ font-size: 18px; }
+.user_header_right .d-flex{ gap: 10px; align-items: center; }
+
+img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px solid #fff; object-fit: cover; }
+
+.user_top_dropdown_header {
+    flex-direction: column;
+}
+
+.user_top_dropdown_header img.user_img{ width: 48px; height: 48px; border-radius: 100%; border: 1px solid #fff; object-fit: cover; }
+
+/* User Profile Dropdown */
+.user_profile_dropdown {
+    position: absolute;
+    top: calc(100% + 16px);
+    right: 0;
+    background-color: #1A1A19;
+    border: 1px solid #242424;
+    border-top: none;
+    border-radius: 0px 0px 12px 12px;
+    min-width: 210px;
+    box-shadow: none;
+    z-index: 99999999;
+    overflow: hidden;
+}
+
+.user_profile_dropdown_header {
+    padding: 16px 18px;
+    border-bottom:1px solid #303030;
+}
+
+.user_profile_dropdown_header h4 {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0px;
+}
+
+.user_profile_dropdown_menu {
+    padding: 8px 0;
+}
+
+.dropdown_menu_item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 18px;
+    color: #fff;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.dropdown_menu_item:hover {
+    background-color: #2a2a2a;
+}
+
+.dropdown_menu_item i {
+    font-size: 18px;
+    color: #d0d0d0;
+}
+
+.dropdown_menu_item span {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.dropdown_logout_btn {
+    width: 100%;
+    padding: 9px 18px;
+    background-color: #323232;
+    border: none;
+    border-top: 1px solid #303030;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+.dropdown_logout_btn:hover {
+    background-color: #2a2a2a;
+}
+
+
+@media (max-width: 991px) {
+    .user_profile_dropdown {
+        right: -10px;
+        min-width: 260px;
+    }
+}
+
 @media (max-width: 1200px) {
 
     .casino_hero_s h1 {
@@ -1634,6 +1760,14 @@ button.deposit_btn {
         min-width: 100px;
         width: 100px;
     }
+
+    .login_modal_bonus {
+        font-size: 22px;
+        width: 100%;
+    }
+
+    .login_modal_close {
+        font-size: 18px; }
 
 }
 
@@ -1689,6 +1823,10 @@ button.deposit_btn {
         opacity: 1 !important;
     }
 
+    .login_modal_bonus {
+        font-size: 24px;
+        width: 100%; }
+
     body {
         padding-bottom: 0 !important;
     }
@@ -1700,16 +1838,98 @@ button.deposit_btn {
     p {
         font-size: 13px;
     }
+
+    .login_google_btn {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .login_tab {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .login_modal_methods_text {
+        font-size: 12px;
+    }
+
+    .login_input {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .login_submit_btn {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .modal-dialog.loginpopup{ min-height: auto; }
+    .modal.fade {
+        z-index: 99999999;
+    }
+    .match_slider_sports {
+        margin-top: 0px; }
+
 }
 
 @media (max-width: 767px) {
 
-    .login_modal_left {
-        display: none; }
+    button.deposit_btn.mobile {
+        display: block;
+    }
 
-.modal-dialog.loginpopup .login_modal_right {
-            padding: 20px 20px 40px;
-        }       
+    .login_modal_left {
+        display: none;
+    }
+
+    .header_logo {
+        width: 100px;
+    }
+
+    .login_hdr button {
+        padding: 6px 16px;
+    }
+
+    .topfooter {
+        gap: 12px;
+    }
+
+    .height0 .gameright_s_item_img {
+        min-width: 110px;
+        width: 110px;
+    }
+
+    .login_hdr button.signup_btn {
+        padding: 5px 20px;
+    }
+
+    header {
+        padding: 5px 15px;
+    }
+
+    button.deposit_btn.desktop {
+        display: none;
+    }
+
+    button.deposit_btn {
+        background: none;
+        box-shadow: none;
+        padding: 0px;
+        border-radius: 0px;
+    }
+
+    .depositheader {
+        background-color: transparent;
+        border-radius: 0px;
+    }
+
+    .depositheader .currency_balance {
+        display: none !important;
+    }
+
+    .modal-dialog.loginpopup .login_modal_right {
+        padding: 20px 20px 40px;
+    }
 
     .casino_hero_s h1 {
         font-size: 24px;
@@ -1814,6 +2034,7 @@ button.deposit_btn {
     .game_items_slider {
         gap: 18px;
     }
+
 
 }
 

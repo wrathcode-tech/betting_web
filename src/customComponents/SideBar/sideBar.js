@@ -139,6 +139,7 @@ export default function SideBar({ isOpen, onClose }) {
               <img src="images/settingicon.svg" alt="setting" />
             </div>
           </div>
+          
         </div>
 
    

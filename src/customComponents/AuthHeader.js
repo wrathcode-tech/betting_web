@@ -4,6 +4,7 @@ import SideBar from './SideBar/sideBar'
 import Chat from '../cricket/Chat'
 import Deposit from './Deposit'
 import Withdrawal from './Withdrawal'
+import Search from './Search'
 
 export default function AuthHeader() {
   const [showModal, setShowModal] = useState(false);
@@ -12,6 +13,7 @@ export default function AuthHeader() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawalOpen, setIsWithdrawalOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const handleLoginClick = () => {
     setModalTab('login');
@@ -34,11 +36,20 @@ export default function AuthHeader() {
             <img src="images/logo.png" alt="logo" />
           </div>
         </div>
+
+      <div className='d-flex align-items-center gap-2 depositheader'>  
+        <div className='d-flex align-items-center gap-0 currency_balance'>
+      <img src="images/digital_currency.svg" alt="balance" />
+      <span>0.00000000</span>
+      </div>
+        <button className="deposit_btn desktop" onClick={() => setIsDepositOpen(true)}>Deposit</button>
+        <button className="deposit_btn mobile" onClick={() => setIsDepositOpen(true)}><img src="images/deposithdr_icon.svg" alt="withdraw" /></button>
+        {/* <button className="deposit_btn" onClick={() => setIsWithdrawalOpen(true)}>Withdraw</button> */}
+      </div>
     
         <div className="header_right">
-          <button className="deposit_btn" onClick={() => setIsDepositOpen(true)}>Deposit</button>
-          <button className="deposit_btn" onClick={() => setIsWithdrawalOpen(true)}>Withdraw</button>
-          <div className="searchbtn">
+     
+          <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>
             <img src="images/search-icon.svg" alt="search" />
           </div>
           <div className="login_hdr">
@@ -64,6 +75,7 @@ export default function AuthHeader() {
       <Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <Deposit isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} />
       <Withdrawal isOpen={isWithdrawalOpen} onClose={() => setIsWithdrawalOpen(false)} />
+      <Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
     </>
   )

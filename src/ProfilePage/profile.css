@@ -198,10 +198,44 @@ button.profilebtn {
         font-size: 16px;
     }
 
+    .dashboard_page h1 {
+        font-size: 20px;
+    }
+
+    .statistics_profile ul {
+        gap: 12px;
+    }
+
     .ranklist ul {
         gap: 10px;
     }
 
-    .profile_right_section{ margin-top: 24px; }
+    .profile_right_section {
+        margin-top: 24px;
+    }
+
+}
+
+@media (max-width: 420px) {
+
+    .statistics_profile ul li {
+        font-size: 13px;
+    }
+
+    .ranklist ul li {
+        min-width: 85px;
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .statistics_profile ul li img {
+        width: 48px;
+    }
+
+    .profile_bio_info_img img.user {
+        width: 60px;
+        height: 60px;
+    }
+
 
 }
