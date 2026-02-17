@@ -1734,6 +1734,8 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
     background-color: #2a2a2a;
 }
 
+.sidebar .setting_hdr { display: none; }
+
 
 @media (max-width: 991px) {
     .user_profile_dropdown {
@@ -1870,6 +1872,8 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
     .match_slider_sports {
         margin-top: 0px; }
 
+.sidebar .setting_hdr { display: flex; 
+
 }
 
 @media (max-width: 767px) {
@@ -1877,6 +1881,12 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
     button.deposit_btn.mobile {
         display: block;
     }
+
+    .user_profile_dropdown {
+        right: 0px;
+        min-width: 190px;
+        top: calc(100% + 5px);
+    }    
 
     .login_modal_left {
         display: none;

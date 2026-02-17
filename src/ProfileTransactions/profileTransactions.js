@@ -1,4 +1,5 @@
 import React from 'react'
+import MobileMenu from '../customComponents/MobileMenu'
 import './profileTransactions.css'
 import AuthHeader from '../customComponents/AuthHeader'
 
@@ -164,6 +165,7 @@ function ProfileTransactions() {
                     </div>
                 </div>
             </div>
+            <MobileMenu />
         </>
     )
 }

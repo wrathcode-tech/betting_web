@@ -1,6 +1,7 @@
 import React from 'react'
 import './rankSystem.css'
 import AuthHeader from '../customComponents/AuthHeader'
+import MobileMenu from '../customComponents/MobileMenu'
 
 function RankSystem() {
     return (
@@ -129,7 +130,7 @@ function RankSystem() {
 
                 </div>
             </div>
-
+            <MobileMenu />
         </>
     );
 }

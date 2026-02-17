@@ -27,9 +27,9 @@ function App() {
     //     </a>
     //   </header>
     // </div>
-    <LandingPage />
-    // <ProfilePage/>
-    //  <CasinoGame/>
+   //  <LandingPage />
+     // <ProfilePage/>
+       <CasinoGame/>
     //  <GamePlay/>
     // <SportsGame/>
     // <ProfileTransactions/>

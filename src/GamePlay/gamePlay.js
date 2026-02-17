@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
 import './gamePlay.css'
 import AuthHeader from '../customComponents/AuthHeader'
+import MobileMenu from '../customComponents/MobileMenu'
 
 function GamePlay() {
     const [isInfoExpanded, setIsInfoExpanded] = useState(false)
@@ -429,6 +430,7 @@ function GamePlay() {
                 </div>
                 </div>
             </div>
+            <MobileMenu />
         </>
     )
 }

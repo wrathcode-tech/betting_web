@@ -1,6 +1,7 @@
 import React from 'react'
 import './profile.css'
 import UserHeader from '../customComponents/UserHeader'
+import MobileMenu from '../customComponents/MobileMenu'
 
 function ProfilePage() {
   return (
@@ -108,6 +109,7 @@ function ProfilePage() {
           </div>
         </div>
       </div>
+      <MobileMenu />
     </>
   )
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import './sportsGame.css'
 import AuthHeader from '../customComponents/AuthHeader'
+import MobileMenu from '../customComponents/MobileMenu'
 
 function SportsGame() {
     const [activeTab, setActiveTab] = useState('cricket')
@@ -179,6 +180,7 @@ function SportsGame() {
                     </div>
                 </div>
             </div>
+            <MobileMenu />
         </>
     )
 }

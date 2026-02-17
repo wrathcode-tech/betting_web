@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import './referralProgram.css'
 import AuthHeader from '../customComponents/AuthHeader'
+import MobileMenu from '../customComponents/MobileMenu'
 
 function ReferralProgram() {
     const [activeTab, setActiveTab] = useState('dashboard')
@@ -479,6 +480,7 @@ function ReferralProgram() {
                     </div>
                 </div>
             </div>
+            <MobileMenu />
         </>
     )
 }

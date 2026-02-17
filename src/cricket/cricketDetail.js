@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import './cricketDetail.css'
 import AuthHeader from '../customComponents/AuthHeader'
+import MobileMenu from '../customComponents/MobileMenu'
 
 function CricketDetail() {
     const scrollContainerRef = useRef(null)
@@ -806,6 +807,7 @@ function CricketDetail() {
                     </div>
                 </>
             )}
+            <MobileMenu />
         </>
     )
 }

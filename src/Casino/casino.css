@@ -325,12 +325,22 @@ ul.lobbytabs_list li.active span {
         padding: 6px 10px;
     }
 
+    .casinobnr_slider_bl.active .casinobnr_slider_item_content h3{ font-size: 16px; }
+
     .lobby_section .d-flex.align-items-center.justify-content-between {
         gap: 18px;
     }
     .casino_hero_section {
         margin: 20px 0px;
     }
+
+    .price_value{ font-size: 18px;}
+
+    .searchright_lobby input {
+        width: 100%;
+    }
+
+    .searchright_lobby{ min-width: 160px; }
 
 }
 

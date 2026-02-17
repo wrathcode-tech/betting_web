@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './casino.css'
 import AuthHeader from '../customComponents/AuthHeader'
+import MobileMenu from '../customComponents/MobileMenu'
 
 function CasinoGame() {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -551,7 +552,7 @@ function CasinoGame() {
                 </div>
             </div>
             </div>
-
+            <MobileMenu />
         </>
     )
 }
