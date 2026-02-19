@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import SideBar from './SideBar/sideBar'
 import Chat from '../cricket/Chat'
 
@@ -37,48 +38,48 @@ function Footer() {
       <div className='mobile-menu-wrapper'>
         <ul className="mobile-menu">
           <li className="mobile-menu__item">
-            <a href="#" className="mobile-menu__link" onClick={(e) => { e.preventDefault(); setSidebarOpen(true); }}>
+            <button type="button" className="mobile-menu__link" onClick={() => setSidebarOpen(true)}>
               <span className="icon mobile-menu__icon">
                 <i className="ri-menu-line"></i>
               </span>
               <span className="mobile-menu__name">Menu</span>
-            </a>
+            </button>
           </li>
 
           <li className="mobile-menu__item">
-            <a href="#" className="mobile-menu__link">
+            <Link to="/rank" className="mobile-menu__link">
               <span className="icon mobile-menu__icon">
                 <i className="ri-trophy-line"></i>
               </span>
               <span className="mobile-menu__name">Contests</span>
-            </a>
+            </Link>
           </li>
 
           <li className="mobile-menu__item">
-            <a href="#" className="mobile-menu__link">
+            <Link to="/casino" className="mobile-menu__link">
               <span className="icon mobile-menu__icon">
                 <i className="ri-poker-spades-fill"></i>
               </span>
               <span className="mobile-menu__name">Casino</span>
-            </a>
+            </Link>
           </li>
 
           <li className="mobile-menu__item mobile-menu__item--sports">
-            <a href="#" className="mobile-menu__link">
+            <Link to="/sports" className="mobile-menu__link">
               <span className="icon mobile-menu__icon">
                 <i className="ri-basketball-fill"></i>
               </span>
               <span className="mobile-menu__name">Sports</span>
-            </a>
+            </Link>
           </li>
 
           <li className="mobile-menu__item">
-            <a href="#" className="mobile-menu__link" onClick={(e) => { e.preventDefault(); setIsChatOpen(!isChatOpen); }}>
+            <button type="button" className="mobile-menu__link" onClick={() => setIsChatOpen(!isChatOpen)}>
               <span className="icon mobile-menu__icon">
                 <i className="ri-discuss-line"></i>
               </span>
               <span className="mobile-menu__name">Chat</span>
-            </a>
+            </button>
           </li>
         </ul>
       </div>

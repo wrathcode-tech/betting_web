@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import LoginModal from './LoginModal'
 import SideBar from './SideBar/sideBar'
 import Chat from '../cricket/Chat'
@@ -7,6 +8,7 @@ import Withdrawal from './Withdrawal'
 import Search from './Search'
 
 export default function UserHeader() {
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [modalTab, setModalTab] = useState('login');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -16,16 +18,6 @@ export default function UserHeader() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  const handleLoginClick = () => {
-    setModalTab('login');
-    setShowModal(true);
-  };
-
-  const handleSignupClick = () => {
-    setModalTab('signup');
-    setShowModal(true);
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -51,9 +43,9 @@ export default function UserHeader() {
           <div className="toggle_menu" onClick={() => setSidebarOpen(true)}>
             <img src="images/toggle_menu.svg" alt="menu" />
           </div>
-          <div className="header_logo">
+          <Link to="/" className="header_logo">
             <img src="images/logo.png" alt="logo" />
-          </div>
+          </Link>
         </div>
 
       <div className='d-flex align-items-center gap-2 depositheader'>  
@@ -88,37 +80,45 @@ export default function UserHeader() {
               </div>
               
               <div className="user_profile_dropdown_menu">
-                <a href="#" className="dropdown_menu_item" onClick={(e) => { e.preventDefault(); setIsProfileDropdownOpen(false); }}>
+                <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-wallet-3-line"></i>
                   <span>Wallet</span>
-                </a>
-                <a href="#" className="dropdown_menu_item" onClick={(e) => { e.preventDefault(); setIsProfileDropdownOpen(false); }}>
+                </Link>
+                <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-user-line"></i>
                   <span>My Profile</span>
-                </a>
-                <a href="#" className="dropdown_menu_item" onClick={(e) => { e.preventDefault(); setIsProfileDropdownOpen(false); }}>
+                </Link>
+                <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-settings-3-line"></i>
                   <span>Account</span>
-                </a>
-                <a href="#" className="dropdown_menu_item" onClick={(e) => { e.preventDefault(); setIsProfileDropdownOpen(false); }}>
+                </Link>
+                <Link to="/transactions" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-file-list-3-line"></i>
                   <span>Transaction History</span>
-                </a>
-                <a href="#" className="dropdown_menu_item" onClick={(e) => { e.preventDefault(); setIsProfileDropdownOpen(false); }}>
+                </Link>
+                <Link to="/game" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-history-line"></i>
                   <span>Game History</span>
-                </a>
-                <a href="#" className="dropdown_menu_item" onClick={(e) => { e.preventDefault(); setIsProfileDropdownOpen(false); }}>
+                </Link>
+                <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-time-line"></i>
                   <span>Sessions</span>
-                </a>
-                <a href="#" className="dropdown_menu_item" onClick={(e) => { e.preventDefault(); setIsProfileDropdownOpen(false); }}>
+                </Link>
+                <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-safe-2-line"></i>
                   <span>Vault</span>
-                </a>
+                </Link>
               </div>
               
-              <button className="dropdown_logout_btn" onClick={() => setIsProfileDropdownOpen(false)}>
+              <button
+                type="button"
+                className="dropdown_logout_btn"
+                onClick={() => {
+                  sessionStorage.removeItem('token');
+                  setIsProfileDropdownOpen(false);
+                  navigate('/', { replace: true });
+                }}
+              >
                 Log out
               </button>
             </div>
@@ -138,7 +138,7 @@ export default function UserHeader() {
         </div>
       </header>
 
-      <LoginModal show={showModal} onHide={() => setShowModal(false)} initialTab={modalTab} />
+      <LoginModal show={showModal} onHide={() => { setShowModal(false); setModalTab('login'); }} initialTab={modalTab} />
       <SideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <Deposit isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} />
