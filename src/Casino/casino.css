@@ -316,6 +316,14 @@ ul.lobbytabs_list li.active span {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 12px;
     }
+
+
+    .casino_outer {
+        padding: 0px 0px 36px;
+    }
+    .gameplay_outer {
+        padding-bottom: 24px;
+    }
 }
 
 @media (max-width: 767px) {

@@ -212,6 +212,7 @@ button.profilebtn {
 
     .profile_right_section {
         margin-top: 24px;
+        max-width: 220px;
     }
 
 }

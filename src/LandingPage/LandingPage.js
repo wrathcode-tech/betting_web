@@ -576,7 +576,7 @@ function LandingPage() {
           <div className="game_items_slider_wrapper">
             <div className="game_items_slider" ref={sliderRef}>
               {duplicatedItems.map((item, index) => (
-                <Link key={`${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                <Link key={`${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='playbtn'>
                     <img src="images/playbtn.png" alt="game" />
                   </div>
@@ -629,7 +629,7 @@ function LandingPage() {
         <div className="container">
           <div className="row">
             <div className="col-md-6">
-              <Link to="/casino" className="casino_sport_section_lft" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+              <Link to="/casino" className="casino_sport_section_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className="cntlft">
                   <h3>Casino</h3>
                   <p>Enjoy BetFury Originals and other casino games from top providers.</p>
@@ -640,7 +640,7 @@ function LandingPage() {
               </Link>
             </div>
             <div className="col-md-6">
-              <Link to="/sports" className="casino_sport_section_lft sport_bg" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+              <Link to="/sports" className="casino_sport_section_lft sport_bg" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className="cntlft">
                   <h3>Sport</h3>
                   <p>Bet on popular sports events with high odds and other great features.</p>

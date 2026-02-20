@@ -691,10 +691,11 @@ function CricketDetail() {
                     <div className='betslip_panel'>
                         <div className='betslip_header'>
                             <h3><img alt="sports" src="images/betslip_icon.svg"/> Betslip {selectedBets.length}</h3>
-                            {/* <button className='betslip_close_btn' onClick={() => setIsBetslipOpen(false)}>
-                                <i className="ri-close-line"></i>
-                            </button> */}
+                         
                                          <span className='quicktext'><strong>QUICK BET</strong></span>
+                                         <button className='betslip_close_btn' onClick={() => setIsBetslipOpen(false)}>
+                                <i className="ri-close-line"></i>
+                            </button>
                         </div>
 
                         <div className='betslip_tabs'>

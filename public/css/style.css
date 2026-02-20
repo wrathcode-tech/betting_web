@@ -575,7 +575,7 @@ button.slotbtn {
 .top_match_section {
     width: 100%;
     display: block;
-    padding:0px;
+    padding: 0px;
     color: #fff;
 }
 
@@ -797,6 +797,7 @@ button.slotbtn {
 .playearn_section {
     width: 100%;
     display: block;
+    margin-top: 48px;
     color: #fff;
     animation: fadeInUp 0.8s ease-out;
 }
@@ -1602,7 +1603,7 @@ ul.mobile-menu li a {
     align-items: center;
     color: #a7b5ca;
     font-size: 13px;
-    gap:0px;
+    gap: 0px;
     display: flex;
     flex-direction: column;
     font-weight: 600;
@@ -1610,7 +1611,7 @@ ul.mobile-menu li a {
     transition: color .1s ease-in-out;
 }
 
-ul.mobile-menu li button{
+ul.mobile-menu li button {
     align-items: center;
     color: #a7b5ca;
     border: none;
@@ -1626,6 +1627,7 @@ ul.mobile-menu li button{
 ul.mobile-menu li a i {
     font-size: 18px;
 }
+
 ul.mobile-menu li button i {
     font-size: 18px;
 }
@@ -1671,16 +1673,34 @@ button.deposit_btn {
     color: #fff;
 }
 
-.user_header_right i{ font-size: 18px; }
-.user_header_right .d-flex{ gap: 10px; align-items: center; }
+.user_header_right i {
+    font-size: 18px;
+}
 
-img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px solid #fff; object-fit: cover; }
+.user_header_right .d-flex {
+    gap: 10px;
+    align-items: center;
+}
+
+img.user_header_img {
+    width: 30px;
+    height: 30px;
+    border-radius: 100%;
+    border: 1px solid #fff;
+    object-fit: cover;
+}
 
 .user_top_dropdown_header {
     flex-direction: column;
 }
 
-.user_top_dropdown_header img.user_img{ width: 48px; height: 48px; border-radius: 100%; border: 1px solid #fff; object-fit: cover; }
+.user_top_dropdown_header img.user_img {
+    width: 48px;
+    height: 48px;
+    border-radius: 100%;
+    border: 1px solid #fff;
+    object-fit: cover;
+}
 
 /* User Profile Dropdown */
 .user_profile_dropdown {
@@ -1699,7 +1719,7 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
 
 .user_profile_dropdown_header {
     padding: 16px 18px;
-    border-bottom:1px solid #303030;
+    border-bottom: 1px solid #303030;
 }
 
 .user_profile_dropdown_header h4 {
@@ -1755,7 +1775,9 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
     background-color: #2a2a2a;
 }
 
-.sidebar .setting_hdr { display: none; }
+.sidebar .setting_hdr {
+    display: none;
+}
 
 
 @media (max-width: 991px) {
@@ -1791,7 +1813,11 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
     }
 
     .login_modal_close {
-        font-size: 18px; }
+        font-size: 18px;
+    }
+
+    .casino_hero_s {
+        min-height: 100%; }
 
 }
 
@@ -1799,7 +1825,7 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
 
 @media (max-width: 991px) {
 
- .searchbtn {
+    .searchbtn {
         display: none;
     }
 
@@ -1848,7 +1874,8 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
 
     .login_modal_bonus {
         font-size: 24px;
-        width: 100%; }
+        width: 100%;
+    }
 
     body {
         padding-bottom: 0 !important;
@@ -1886,16 +1913,22 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
         font-size: 12px;
     }
 
-    .modal-dialog.loginpopup{ min-height: auto; }
+    .modal-dialog.loginpopup {
+        min-height: auto;
+    }
+
     .modal.fade {
         z-index: 99999999;
     }
+
     .match_slider_sports {
-        margin-top: 0px; }
+        margin-top: 0px;
+    }
 
-.sidebar .setting_hdr { display: flex; 
+    .sidebar .setting_hdr {
+        display: flex;
 
-}
+    }
 
 }
 
@@ -1905,12 +1938,16 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
         display: block;
     }
 
+    ul.mobile-menu li button i {
+        font-size: 14px;
+    }
+
     .user_profile_dropdown {
         right: 0px;
         min-width: 190px;
         top: calc(100% + 5px);
     }
-        
+
 
     .login_modal_left {
         display: none;
@@ -1989,7 +2026,8 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
     }
 
     .casino_hero_s .casino_bnr_img {
-        top: 26px; max-width: 250px;
+        top: 26px;
+        max-width: 250px;
     }
 
     .casino_hero_s {
@@ -2000,6 +2038,7 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
     .casino_hero_s .d-flex {
         gap: 10px !important;
     }
+
     ul.social_icons.d-flex.align-items-center.gap-2 {
         gap: 5px !important;
     }
@@ -2012,8 +2051,9 @@ img.user_header_img{ width: 30px; height: 30px; border-radius: 100%; border: 1px
         font-size: 12px;
     }
 
-ul.mobile-menu {
-        padding: 10px 10px; }
+    ul.mobile-menu {
+        padding: 10px 10px;
+    }
 
     .slider_arrow_btn {
         width: 28px;
@@ -2023,16 +2063,14 @@ ul.mobile-menu {
     }
 
     ul.mobile-menu li button {
-        font-size: 11px; }
+        font-size: 11px;
+    }
 
-        ul.mobile-menu li a {
-            font-size: 11px; }
+    ul.mobile-menu li a {
+        font-size: 11px;
+    }
 
-            ul.mobile-menu li a i {
-                font-size: 14px;
-            }
-
-    ul.mobile-menu li button i {
+    ul.mobile-menu li a i {
         font-size: 14px;
     }
 
@@ -2051,6 +2089,7 @@ ul.mobile-menu {
     .top_match_section {
         padding: 20px 0px 0px;
     }
+
     .top_match_section.sportsmatch_s {
         margin: 0px 0px 10px;
     }
@@ -2073,11 +2112,13 @@ ul.mobile-menu {
     }
 
     .playearn_big_rgt {
-        max-width: 260px; }
+        max-width: 260px;
+    }
 
-        .playearn_big_lft {
-            padding: 20px;
-            min-height: 270px; }
+    .playearn_big_lft {
+        padding: 20px;
+        min-height: 270px;
+    }
 
     .gameright_s_item h4 {
         font-size: 16px;
@@ -2101,7 +2142,7 @@ ul.mobile-menu {
     }
 
     ul.mobile-menu li a {
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .game_items_slider {
@@ -2158,18 +2199,20 @@ ul.mobile-menu {
 
 @media (max-width: 480px) {
 
-.playearn_big_lft h2 {
-    font-size: 22px;
-}
+    .playearn_big_lft h2 {
+        font-size: 22px;
+    }
 
-.game_items_inner {
-    min-width: 130px;
-    max-width: 130px;
-    width: 130px;
-    border-radius: 15px; }
+    .game_items_inner {
+        min-width: 130px;
+        max-width: 130px;
+        width: 130px;
+        border-radius: 15px;
+    }
 
     .playbtn {
-        width: 48px; }
+        width: 48px;
+    }
 
 }
 
