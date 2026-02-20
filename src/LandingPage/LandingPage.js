@@ -561,7 +561,7 @@ function LandingPage() {
           <div className="top_hd d-flex align-items-center justify-content-between">
             <h2 className="heading_h2">TOP SLOTS</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <Link to="/game"><button type="button" className="slotbtn">Go to Slots</button></Link>
+              <Link to="/casino"><button type="button" className="slotbtn">Go to Slots</button></Link>
               <div className="slider_arrows d-flex align-items-center gap-1">
                 <button className="slider_arrow_btn" onClick={handleTopSlotsPrev}>
                   <i className="ri-arrow-left-s-line"></i>
@@ -576,7 +576,7 @@ function LandingPage() {
           <div className="game_items_slider_wrapper">
             <div className="game_items_slider" ref={sliderRef}>
               {duplicatedItems.map((item, index) => (
-                <Link key={`${item.id}-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                <Link key={`${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='playbtn'>
                     <img src="images/playbtn.png" alt="game" />
                   </div>
@@ -599,7 +599,7 @@ function LandingPage() {
           <div className="top_hd d-flex align-items-center justify-content-between">
             <h2 className="heading_h2">TOP Sports</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <button className="slotbtn">Go to Sports</button>
+              <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
               <div className="slider_arrows d-flex align-items-center gap-1">
                 <button className="slider_arrow_btn" onClick={handleTopSportsPrev}>
                   <i className="ri-arrow-left-s-line"></i>
@@ -878,7 +878,7 @@ function LandingPage() {
           <div className="game_items_slider_wrapper">
             <div className="game_items_slider mt-2" ref={betCasinoSliderRef}>
               {[...betCasinoItems, ...betCasinoItems, ...betCasinoItems].map((item, index) => (
-                <Link key={`betcasino-${item.id}-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                <Link key={`betcasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='playbtn'>
                     <img src="images/playbtn.png" alt="game" />
                   </div>
@@ -900,7 +900,7 @@ function LandingPage() {
           <div className="top_hd d-flex align-items-center justify-content-between">
             <h2 className="heading_h2"><img src="images/live_icon.svg" alt="game" /> Live Casino</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <Link to="/game"><button type="button" className="slotbtn">All 1159</button></Link>
+              <Link to="/casino"><button type="button" className="slotbtn">All 1159</button></Link>
               <div className="slider_arrows d-flex align-items-center gap-1">
                 <button className="slider_arrow_btn" onClick={handleLiveCasinoPrev}>
                   <i className="ri-arrow-left-s-line"></i>
@@ -915,7 +915,7 @@ function LandingPage() {
           <div className="game_items_slider_wrapper">
             <div className="game_items_slider mt-2" ref={liveCasinoSliderRef}>
               {[...liveCasinoItems, ...liveCasinoItems, ...liveCasinoItems].map((item, index) => (
-                <Link key={`livecasino-${item.id}-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                <Link key={`livecasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='playbtn'>
                     <img src="images/playbtn.png" alt="game" />
                   </div>
@@ -938,7 +938,7 @@ function LandingPage() {
           <div className="top_hd d-flex align-items-center justify-content-between">
             <h2 className="heading_h2"><img src="images/crownicon.svg" alt="game" /> Highroller Hall</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <Link to="/game"><button type="button" className="slotbtn">All 20</button></Link>
+              <Link to="/casino"><button type="button" className="slotbtn">All 20</button></Link>
               <div className="slider_arrows d-flex align-items-center gap-1">
                 <button className="slider_arrow_btn" onClick={handleHighrollerPrev}>
                   <i className="ri-arrow-left-s-line"></i>
@@ -953,7 +953,7 @@ function LandingPage() {
           <div className="game_items_slider_wrapper">
             <div className="game_items_slider mt-2" ref={highrollerSliderRef}>
               {[...highrollerItems, ...highrollerItems, ...highrollerItems].map((item, index) => (
-                <Link key={`highroller-${item.id}-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                <Link key={`highroller-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='playbtn'>
                     <img src="images/playbtn.png" alt="game" />
                   </div>

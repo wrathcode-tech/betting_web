@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './sportsGame.css'
 import AuthHeader from '../customComponents/AuthHeader'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function SportsGame() {
+    const navigate = useNavigate()
     const [activeTab, setActiveTab] = useState('cricket')
 
     const tabs = [
@@ -55,9 +57,25 @@ function SportsGame() {
         return matchData[sportId] || matchData.cricket
     }
 
+    // Handle match card click
+    const handleMatchCardClick = (e) => {
+        // Prevent navigation if clicking on buttons
+        if (e.target.closest('button')) {
+            e.preventDefault()
+            e.stopPropagation()
+            return
+        }
+        navigate('/cricket')
+    }
+
     // Function to render match card
     const renderMatchCard = (match, index) => (
-        <div key={index} className='match_slider'>
+        <div 
+            key={index} 
+            className='match_slider' 
+            onClick={handleMatchCardClick}
+            style={{ display: 'block', cursor: 'pointer' }}
+        >
             <div className='match_slider_inner'>
                 <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
                     <div className='hd_match d-flex align-items-center gap-2'>
@@ -77,16 +95,34 @@ function SportsGame() {
                 </div>
                 <div className='d-flex justify-content-between align-items-center gap-2'>
                     <div className='view_matchlike'>
-                        <button className='view_match'>3.12 <span>357K</span></button>
-                        <button className='like_match'>3.12 <span>357K</span></button>
+                        <button 
+                            className='view_match'
+                            onClick={(e) => e.stopPropagation()}
+                        >3.12 <span>357K</span></button>
+                        <button 
+                            className='like_match'
+                            onClick={(e) => e.stopPropagation()}
+                        >3.12 <span>357K</span></button>
                     </div>
                     <div className='view_matchlike'>
-                        <button className='view_match disabled'><i className="ri-lock-line"></i></button>
-                        <button className='like_match disabled'><i className="ri-lock-line"></i></button>
+                        <button 
+                            className='view_match disabled'
+                            onClick={(e) => e.stopPropagation()}
+                        ><i className="ri-lock-line"></i></button>
+                        <button 
+                            className='like_match disabled'
+                            onClick={(e) => e.stopPropagation()}
+                        ><i className="ri-lock-line"></i></button>
                     </div>
                     <div className='view_matchlike'>
-                        <button className='view_match'>3.12 <span>357K</span></button>
-                        <button className='like_match'>3.12 <span>357K</span></button>
+                        <button 
+                            className='view_match'
+                            onClick={(e) => e.stopPropagation()}
+                        >3.12 <span>357K</span></button>
+                        <button 
+                            className='like_match'
+                            onClick={(e) => e.stopPropagation()}
+                        >3.12 <span>357K</span></button>
                     </div>
                 </div>
             </div>

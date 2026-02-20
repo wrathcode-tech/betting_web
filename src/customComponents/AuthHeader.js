@@ -35,6 +35,14 @@ export default function AuthHeader() {
     return () => window.removeEventListener('openLoginModal', openModal);
   }, []);
 
+  useEffect(() => {
+    const openChat = () => {
+      setIsChatOpen(true);
+    };
+    window.addEventListener('openChat', openChat);
+    return () => window.removeEventListener('openChat', openChat);
+  }, []);
+
   return (
     <>
       <header>

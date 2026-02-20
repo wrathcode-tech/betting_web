@@ -36,6 +36,14 @@ export default function UserHeader() {
     };
   }, [isProfileDropdownOpen]);
 
+  useEffect(() => {
+    const openChat = () => {
+      setIsChatOpen(true);
+    };
+    window.addEventListener('openChat', openChat);
+    return () => window.removeEventListener('openChat', openChat);
+  }, []);
+
   return (
     <>
       <header>
@@ -108,6 +116,18 @@ export default function UserHeader() {
                   <i className="ri-safe-2-line"></i>
                   <span>Vault</span>
                 </Link>
+                <a 
+                  href="#!" 
+                  className="dropdown_menu_item" 
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsProfileDropdownOpen(false)
+                    setIsWithdrawalOpen(true)
+                  }}
+                >
+                  <i className="ri-bank-line"></i>
+                  <span>Withdrawal</span>
+                </a>
               </div>
               
               <button

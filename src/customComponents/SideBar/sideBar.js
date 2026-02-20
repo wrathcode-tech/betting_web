@@ -132,9 +132,16 @@ export default function SideBar({ isOpen, onClose }) {
                 </Link>
               </li>
               <li className="sidebar_menu_item">
-                <Link to="/profile" onClick={onClose}>
+                <a 
+                  href="#!" 
+                  onClick={(e) => {
+                    e.preventDefault()
+                    onClose()
+                    window.dispatchEvent(new CustomEvent('openChat'))
+                  }}
+                >
                   <span><img src="images/referral_icon.svg" alt="referral" />Live Support</span>
-                </Link>
+                </a>
               </li>
               
             </ul>
