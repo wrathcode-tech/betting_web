@@ -21,6 +21,15 @@ function MobileMenu() {
                     </li>
 
                     <li className="mobile-menu__item">
+                        <Link to="/" className="mobile-menu__link">
+                            <span className="icon mobile-menu__icon">
+                                <i className="ri-home-4-line"></i>
+                            </span>
+                            <span className="mobile-menu__name">Home</span>
+                        </Link>
+                    </li>
+
+                    <li className="mobile-menu__item">
                         <Link to="/rank" className="mobile-menu__link">
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-trophy-line"></i>

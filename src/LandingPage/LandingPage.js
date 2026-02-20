@@ -706,7 +706,7 @@ function LandingPage() {
 </div>
 
             <div className='col-md-3'>
-              <div className='gameright_s_item height0 casinozone_s'>
+              <Link to="/casino" className='gameright_s_item height0 casinozone_s' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div className='gameright_s_item_cnt'>
                   <h4>Casino Zone</h4>
                   <p>Slots, cards & instant win games</p>
@@ -714,47 +714,47 @@ function LandingPage() {
                 <div className='gameright_s_item_img'>
                   <img src="images/3d_casino_games.svg" alt="Casino Zone" />
                 </div>
-              </div>
+              </Link>
 
             </div>
 
             <div className='col-md-3'>
-              <div className='gameright_s_item height0 sportsbg2'>
+              <Link to="/sports" className='gameright_s_item height0 sportsbg2' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div className='gameright_s_item_cnt'>
                   <h4>Sports Arena</h4>
                   <p>Live matches & smart predictions</p>
                 </div>
                 <div className='gameright_s_item_img'>
-                  <img src="images/astronaut_spacesuit.svg" alt="Casino Zone" />
+                  <img src="images/astronaut_spacesuit.svg" alt="Sports Arena" />
                 </div>
-              </div>
+              </Link>
 
             </div>
 
             <div className='col-md-3'>
-              <div className='gameright_s_item height0 rewardsbg2'>
+              <Link to="/rank" className='gameright_s_item height0 rewardsbg2' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div className='gameright_s_item_cnt'>
                   <h4>Daily Rewards</h4>
                   <p>Log in daily and unlock exciting gifts.</p>
                 </div>
                 <div className='gameright_s_item_img'>
-                  <img src="images/3d_gift_box_isolated.svg" alt="Casino Zone" />
+                  <img src="images/3d_gift_box_isolated.svg" alt="Daily Rewards" />
       </div>
-        </div>
+        </Link>
 
       </div>
 
 
             <div className='col-md-3'>
-              <div className='gameright_s_item height0 battlebg'>
+              <Link to="/rank" className='gameright_s_item height0 battlebg' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div className='gameright_s_item_cnt'>
                   <h4>Battle Mode</h4>
                   <p>Compete with others and climb the leaderboard.</p>
                 </div>
                 <div className='gameright_s_item_img'>
-                  <img src="images/alien_head.svg" alt="Casino Zone" />
+                  <img src="images/alien_head.svg" alt="Battle Mode" />
     </div>
-      </div>
+      </Link>
 
         </div>
 
@@ -766,7 +766,7 @@ function LandingPage() {
       <div className="top_match_section">
         <div className="container">
           <div className="top_hd d-flex align-items-center justify-content-between">
-            <h2 className="heading_h2">TOP Matches</h2>
+            <Link to="/sports" style={{ textDecoration: 'none', color: 'inherit' }}><h2 className="heading_h2" style={{ cursor: 'pointer' }}>TOP Matches</h2></Link>
             <div className="top_hd_right d-flex align-items-center gap-2">
               <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
               <div className="slider_arrows d-flex align-items-center gap-1">
@@ -783,7 +783,7 @@ function LandingPage() {
           <div className='match_slider_wrapper'>
             <div className='match_slider_container' ref={topMatchesSliderRef}>
               {duplicatedTopMatchesItems.map((match, index) => (
-                <div key={`topmatch-${match.id}-${index}`} className='match_slider'>
+                <Link key={`topmatch-${match.id}-${index}`} to="/sports" className='match_slider' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='match_slider_inner'>
                     <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
                       <div className='hd_match d-flex align-items-center gap-2'>
@@ -803,20 +803,20 @@ function LandingPage() {
                     </div>
                     <div className='d-flex justify-content-between align-items-center gap-2'>
                       <div className='view_matchlike'>
-                        <button className='view_match'>{match.viewCount} <span>{match.viewK}</span></button>
-                        <button className='like_match'>{match.likeCount} <span>{match.likeK}</span></button>
+                        <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
+                        <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
                       </div>
                       <div className='view_matchlike'>
-                        <button className='view_match disabled'><i className="ri-lock-line"></i></button>
-                        <button className='like_match disabled'><i className="ri-lock-line"></i></button>
+                        <button type="button" className='view_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
+                        <button type="button" className='like_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
                       </div>
                       <div className='view_matchlike'>
-                        <button className='view_match'>{match.viewCount} <span>{match.viewK}</span></button>
-                        <button className='like_match'>{match.likeCount} <span>{match.likeK}</span></button>
+                        <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
+                        <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

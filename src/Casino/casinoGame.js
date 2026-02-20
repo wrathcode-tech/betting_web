@@ -403,7 +403,7 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">BetCasino Original </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_slider_wrapper">
          <div className="game_items_slider mt-2" ref={lobbySlider1Ref}>
@@ -422,7 +422,7 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">BetCasino Original </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_slider_wrapper">
          <div className="game_items_slider mt-2" ref={lobbySlider2Ref}>
@@ -441,7 +441,7 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">BetCasino Original </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_slider_wrapper">
          <div className="game_items_slider mt-2" ref={lobbySlider3Ref}>
@@ -465,7 +465,7 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">Originals </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
@@ -487,7 +487,7 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">Slots </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
@@ -507,7 +507,7 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">Live Casino </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
@@ -527,7 +527,7 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">Table Games </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (

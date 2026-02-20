@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './referralProgram.css'
 import AuthHeader from '../customComponents/AuthHeader'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function ReferralProgram() {
+    const navigate = useNavigate()
     const [activeTab, setActiveTab] = useState('dashboard')
 
     return (
@@ -430,7 +432,7 @@ function ReferralProgram() {
                                         <img src="images/comming_img.png" alt="commingsoon" />
                                         <button>Coming soon</button>
                                     </div>
-                                    <button className="leaderboard_btn">Go to leaderboard</button>
+                                    <button type="button" className="leaderboard_btn" onClick={() => navigate('/rank')}>Go to leaderboard</button>
                                 </div>
                             </div>
                         </div>

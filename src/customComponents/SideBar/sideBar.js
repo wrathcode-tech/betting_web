@@ -47,6 +47,11 @@ export default function SideBar({ isOpen, onClose }) {
         <div className="sidebar_content">
           <nav className="sidebar_nav">
             <ul className="sidebar_menu">
+              <li className="sidebar_menu_item">
+                <Link to="/" onClick={onClose}>
+                  <span><img src="images/casino_icon.svg" alt="home" />Home</span>
+                </Link>
+              </li>
               <li className={`sidebar_menu_item ${openSubmenu === 'casino' ? 'active' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('casino'); }}>
                   <i className={openSubmenu === 'casino' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
@@ -109,6 +114,11 @@ export default function SideBar({ isOpen, onClose }) {
               <li className="sidebar_menu_item">
                 <Link to="/referral" onClick={onClose}>
                   <span><img src="images/referral_icon.svg" alt="referral" />Referral</span>
+                </Link>
+              </li>
+              <li className="sidebar_menu_item">
+                <Link to="/transactions" onClick={onClose}>
+                  <span><img src="images/referral_icon.svg" alt="transactions" />Transactions</span>
                 </Link>
               </li>
               <li className="sidebar_menu_item">

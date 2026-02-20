@@ -28,7 +28,26 @@ function Footer() {
               placing bets on casino games or sports, our platform ensures quick and hassle-free transactions. Enjoy the convenience of
               seamless deposits and withdrawals, and focus on the thrill of the game.</p>
 
-            <p>© Copyright 2024. All Rights Reserved. Powered by Play.</p>
+            <div className="footer_quick_links d-flex flex-wrap align-items-center gap-2 gap-md-3 mt-3" style={{ fontSize: '14px' }}>
+              <Link to="/" style={{ color: 'inherit', opacity: 0.9 }}>Home</Link>
+              <span style={{ opacity: 0.5 }}>|</span>
+              <Link to="/casino" style={{ color: 'inherit', opacity: 0.9 }}>Casino</Link>
+              <span style={{ opacity: 0.5 }}>|</span>
+              <Link to="/sports" style={{ color: 'inherit', opacity: 0.9 }}>Sports</Link>
+              <span style={{ opacity: 0.5 }}>|</span>
+              <Link to="/game" style={{ color: 'inherit', opacity: 0.9 }}>Slots</Link>
+              <span style={{ opacity: 0.5 }}>|</span>
+              <Link to="/cricket" style={{ color: 'inherit', opacity: 0.9 }}>Cricket</Link>
+              <span style={{ opacity: 0.5 }}>|</span>
+              <Link to="/profile" style={{ color: 'inherit', opacity: 0.9 }}>Profile</Link>
+              <span style={{ opacity: 0.5 }}>|</span>
+              <Link to="/transactions" style={{ color: 'inherit', opacity: 0.9 }}>Transactions</Link>
+              <span style={{ opacity: 0.5 }}>|</span>
+              <Link to="/referral" style={{ color: 'inherit', opacity: 0.9 }}>Referral</Link>
+              <span style={{ opacity: 0.5 }}>|</span>
+              <Link to="/rank" style={{ color: 'inherit', opacity: 0.9 }}>Rank</Link>
+            </div>
+            <p className="mt-2">© Copyright 2024. All Rights Reserved. Powered by Play.</p>
 
           </div>
 
@@ -44,6 +63,15 @@ function Footer() {
               </span>
               <span className="mobile-menu__name">Menu</span>
             </button>
+          </li>
+
+          <li className="mobile-menu__item">
+            <Link to="/" className="mobile-menu__link">
+              <span className="icon mobile-menu__icon">
+                <i className="ri-home-4-line"></i>
+              </span>
+              <span className="mobile-menu__name">Home</span>
+            </Link>
           </li>
 
           <li className="mobile-menu__item">
