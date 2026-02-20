@@ -26,7 +26,7 @@
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
-        scrollbar-color: rgba(249, 122, 49, 0.3) transparent;
+        scrollbar-color: rgb(78 77 77 / 30%) transparent;
     }
 
     /* Thin scrollbar, visible on hover/scroll */
@@ -87,18 +87,27 @@
     background-position: center;
     background-repeat: no-repeat;
     display: flex;
-    color: #fff; 
+    color: #fff;
     justify-content: space-between;
     align-items: center;
-    padding:10px 40px;
+    padding: 10px 40px;
 }
 
 .sports_hero_banr .bnr_cnt {
     padding-left: 32px;
 }
 
-.sports_hero_banr h1{ font-size: 40px; font-weight: 900; text-transform: uppercase; }
-.sports_hero_banr p{ font-size: 12px; font-weight: 500; letter-spacing: 0.5px; }
+.sports_hero_banr h1 {
+    font-size: 40px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.sports_hero_banr p {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
 
 button.btn.betnow {
     background: linear-gradient(0deg, rgba(145, 145, 145, 1) 0%, rgba(255, 255, 255, 1) 100%);
@@ -116,6 +125,11 @@ button.btn.betnow {
     margin-right: 70px;
 }
 
+.sports_top_match_section {
+    width: 100%;
+    display: block;
+    margin-top: 40px;
+}
 
 .sports_top_match_section .match_slider_wrapper {
     display: grid;
@@ -123,7 +137,9 @@ button.btn.betnow {
     gap: 18px;
 }
 
-.sports_top_match_section .match_slider:before{ display: none; }
+.sports_top_match_section .match_slider:before {
+    display: none;
+}
 
 ul.match_type_tabs {
     display: flex;
@@ -147,8 +163,11 @@ ul.match_type_tabs li button {
     box-shadow: 0px 3px #ffffff00;
 }
 
-ul.match_type_tabs li.active button { background-color: #F97A31; 
-    box-shadow: 0px 3px #5A2304; color: #fff;}
+ul.match_type_tabs li.active button {
+    background-color: #F97A31;
+    box-shadow: 0px 3px #5A2304;
+    color: #fff;
+}
 
 .match_slider_wrapper.hidden {
     display: none !important;
@@ -157,7 +176,8 @@ ul.match_type_tabs li.active button { background-color: #F97A31;
 
 .sports_game_section .match_slider {
     min-width: 100%;
-    max-width: 100%; }
+    max-width: 100%;
+}
 
 
 
@@ -165,28 +185,29 @@ ul.match_type_tabs li.active button { background-color: #F97A31;
 
     .sports_top_match_section .match_slider_wrapper {
         grid-template-columns: repeat(2, 1fr);
-    } 
+    }
 
 }
 
 @media (max-width: 991px) {
 
-.sports_hero_banr .bnr_cnt {
-    padding-left: 0px;
-}
+    .sports_hero_banr .bnr_cnt {
+        padding-left: 0px;
+    }
 
-.sports_hero_banr h1 {
-    font-size: 32px; }
+    .sports_hero_banr h1 {
+        font-size: 32px;
+    }
 
     ul.match_type_tabs {
         gap: 10px;
         margin: 10px -10px 15px;
-        padding: 0 10px;
+        padding: 7px 10px;
         overflow-x: auto;
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
-        scrollbar-color: rgba(249, 122, 49, 0.3) transparent;
+        scrollbar-color: rgb(72 72 72 / 30%) transparent;
     }
 
     /* Thin scrollbar, visible on hover/scroll */
@@ -215,33 +236,49 @@ ul.match_type_tabs li.active button { background-color: #F97A31;
 
     ul.match_type_tabs li button {
         padding: 5px 12px;
-        font-size: 11px; }
+        font-size: 11px;
+    }
+
+    .sports_banr_img {
+        max-width: 230px;
+        margin-right: 0px;
+    }
+
+    button.btn.betnow {
+        font-size: 12px;
+        padding: 7px 32px;
+    }
 
 }
 
-@media (max-width: 767px) { 
+@media (max-width: 767px) {
 
     .sports_hero_banr h1 {
         font-size: 24px;
     }
 
+    .sports_top_match_section {
+        margin-top: 10px;
+    }
+
     button.btn.betnow {
         font-size: 12px;
-        padding: 7px 26px; }
+        padding: 7px 26px;
+    }
 
-        .sports_top_tabs {
-            padding: 10px;
-        }
+    .sports_top_tabs {
+        padding: 10px;
+    }
 
-        .sports_banr_img {
-            max-width: 200px;
-            margin-right: 0px;
-        }
+    .sports_banr_img {
+        max-width: 200px;
+        margin-right: 0px;
+    }
 
 
 }
 
-@media (max-width: 580px) { 
+@media (max-width: 580px) {
 
     .sports_top_match_section .match_slider_wrapper {
         grid-template-columns: repeat(1, 1fr);
@@ -250,11 +287,13 @@ ul.match_type_tabs li.active button { background-color: #F97A31;
     .sports_hero_banr h1 {
         font-size: 18px;
     }
+
     .sports_hero_banr {
         padding: 10px 20px;
     }
 
     .dashboard_page {
-        padding: 10px 0px; }
+        padding: 10px 0px;
+    }
 
 }

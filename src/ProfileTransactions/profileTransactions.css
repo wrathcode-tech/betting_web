@@ -217,15 +217,135 @@
     }
 }
 
+/* Mobile Card Styles */
+.transactions_cards_wrapper {
+    display: none;
+    width: 100%;
+    gap: 15px;
+    flex-direction: column;
+}
+
+.transaction_card {
+    background-color: #1A1A19;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.transaction_card:hover {
+    border-color: rgba(249, 122, 49, 0.3);
+    box-shadow: 0 4px 12px rgba(249, 122, 49, 0.1);
+}
+
+.transaction_card_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.transaction_card_title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.transaction_card_title h3 {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.status_badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status_approved {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+.status_pending {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #FFC107;
+}
+
+.status_rejected {
+    background-color: rgba(244, 67, 54, 0.2);
+    color: #F44336;
+}
+
+.transaction_card_body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.transaction_card_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.transaction_label {
+    color: #ffffffab;
+    font-size: 13px;
+    font-weight: 400;
+    flex-shrink: 0;
+}
+
+.transaction_value {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: right;
+    word-break: break-word;
+}
+
+.transaction_value.amount_value {
+    color: #F97A31;
+    font-weight: 600;
+    font-size: 14px;
+}
+
 @media (max-width:767px) {
     .transactions_table_wrapper {
-        padding: 15px;
+        display: none;
     }
     
-    .transactions_table th,
-    .transactions_table td {
-        padding: 10px 5px;
-        font-size: 11px;
+    .transactions_cards_wrapper {
+        display: flex;
+    }
+    
+    .transaction_card {
+        padding: 14px;
+    }
+    
+    .transaction_card_title h3 {
+        font-size: 15px;
+    }
+    
+    .transaction_label,
+    .transaction_value {
+        font-size: 12px;
+    }
+    
+    .transaction_value.amount_value {
+        font-size: 13px;
+    }
+    
+    .view_btn {
+        font-size: 12px;
     }
     
     .profile_transactions_section h1 {
@@ -233,14 +353,12 @@
     }
 
     .date_input {
-        font-size: 12px; }
+        font-size: 12px;
+        width: 100%;
+    }
 
     .date_range_picker {
         min-width: 100%;
-    }
-
-    .date_input {
-        width: 100%;
     }
 
 

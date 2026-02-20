@@ -37,7 +37,7 @@ function LandingPage() {
     { id: 5, badge: 'Hot', image: 'images/game_itemslider5.png' },
     { id: 6, badge: null, image: 'images/game_itemslider6.png' },
     { id: 7, badge: null, image: 'images/game_itemslider7.png' },
-    { id: 8, badge: null, image: 'images/game_itemslider.png' },
+    { id: 8, badge: null, image: 'images/game_itemslider4.png' },
   ];
 
   // BetCasino Original items
@@ -49,7 +49,7 @@ function LandingPage() {
     { id: 5, badge: 'Hot', image: 'images/betcasino_img5.png' },
     { id: 6, badge: null, image: 'images/betcasino_img6.png' },
     { id: 7, badge: null, image: 'images/betcasino_img7.png' },
-    { id: 8, badge: null, image: 'images/betcasino_img.png' },
+    { id: 8, badge: null, image: 'images/betcasino_img3.png' },
   ];
 
   // Live Casino items
@@ -61,7 +61,7 @@ function LandingPage() {
     { id: 5, icon: 'worldicon', image: 'images/casino_gallery_img5.png' },
     { id: 6, icon: null, image: 'images/casino_gallery_img6.png' },
     { id: 7, icon: null, image: 'images/casino_gallery_img7.png' },
-    { id: 8, icon: null, image: 'images/casino_gallery_img.png' },
+    { id: 8, icon: null, image: 'images/casino_gallery_img3.png' },
   ];
 
   // Highroller Hall items
@@ -73,7 +73,7 @@ function LandingPage() {
     { id: 5, icon: 'worldicon', image: 'images/highroller_gallery_img5.png' },
     { id: 6, icon: null, image: 'images/highroller_gallery_img6.png' },
     { id: 7, icon: null, image: 'images/highroller_gallery_img7.png' },
-    { id: 8, icon: null, image: 'images/highroller_gallery_img.png' },
+    { id: 8, icon: null, image: 'images/highroller_gallery_img2.png' },
   ];
 
   // TOP Sports items
@@ -554,6 +554,7 @@ function LandingPage() {
   </div>
 </div>
 
+      <div className="landing_page_content">
       <div className="top_slot_outer">
         <div className="container">
           <div className="top_hd d-flex align-items-center justify-content-between">
@@ -588,6 +589,38 @@ function LandingPage() {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+
+      <div className="top_match_section">
+        <div className="container">
+          <div className="top_hd d-flex align-items-center justify-content-between">
+            <h2 className="heading_h2">TOP Sports</h2>
+            <div className="top_hd_right d-flex align-items-center gap-2">
+              <button className="slotbtn">Go to Sports</button>
+              <div className="slider_arrows d-flex align-items-center gap-1">
+                <button className="slider_arrow_btn" onClick={handleTopSportsPrev}>
+                  <i className="ri-arrow-left-s-line"></i>
+                </button>
+                <button className="slider_arrow_btn" onClick={handleTopSportsNext}>
+                  <i className="ri-arrow-right-s-line"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="game_items_slider_wrapper">
+            <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
+              {duplicatedTopSportsItems.map((item, index) => (
+                <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
+                  <div className='spot_value'>{item.badge}</div>
+                  <img src={`images/${item.icon}`} alt="match" />
+                  <h3>{item.title}</h3>
+                </div>
+              ))}
+            </div>
+      </div>
         </div>
       </div>
 
@@ -626,37 +659,6 @@ function LandingPage() {
                   <img src="images/gold_img.png" alt="game" />
                 </div>
               </div>
-            </div>
-      </div>
-        </div>
-      </div>
-
-      <div className="top_match_section">
-        <div className="container">
-          <div className="top_hd d-flex align-items-center justify-content-between">
-            <h2 className="heading_h2">TOP Sports</h2>
-            <div className="top_hd_right d-flex align-items-center gap-2">
-              <button className="slotbtn">Go to Sports</button>
-              <div className="slider_arrows d-flex align-items-center gap-1">
-                <button className="slider_arrow_btn" onClick={handleTopSportsPrev}>
-                  <i className="ri-arrow-left-s-line"></i>
-                </button>
-                <button className="slider_arrow_btn" onClick={handleTopSportsNext}>
-                  <i className="ri-arrow-right-s-line"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="game_items_slider_wrapper">
-            <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
-              {duplicatedTopSportsItems.map((item, index) => (
-                <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
-                  <div className='spot_value'>{item.badge}</div>
-                  <img src={`images/${item.icon}`} alt="match" />
-                  <h3>{item.title}</h3>
-                </div>
-              ))}
             </div>
       </div>
         </div>
@@ -762,7 +764,7 @@ function LandingPage() {
       </div>
 
 
-      <div className="top_match_section">
+      <div className="top_match_section sportsmatch_s">
         <div className="container">
           <div className="top_hd d-flex align-items-center justify-content-between">
             <h2 className="heading_h2">TOP Matches</h2>
@@ -936,12 +938,12 @@ function LandingPage() {
         </div>
       </div>
 
-      <div className='container'>
+      <div className='container support_help_container'>
         <div className='support_help_s'>
           <p>Need help? Our 24/7 support team is here for you anytime!</p>
         </div>
       </div>
-    
+      </div>
 
 <Footer/>
     </>

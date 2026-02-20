@@ -502,6 +502,7 @@ html {
 
 
 @media (max-width: 767px) {
+
     .rank_system_hero_s h1 {
         animation-duration: 0.6s;
         font-size: 24px;
@@ -527,6 +528,7 @@ html {
 
     .how_work_section p.subtext {
         font-size: 13px;
+        max-width: 100%;
     }
 
     .how_work_section {
@@ -535,6 +537,7 @@ html {
 
     .rank_system_hero_s ul li {
         animation-duration: 0.6s;
+        padding: 5px;
     }
 
     .work_steps_bl_item p {
@@ -581,6 +584,14 @@ html {
         font-size: 15px;
     }
 
+    .rank_system_hero_s_img {
+        max-width: 250px;
+        margin: 0 auto; }
+
+        .work_steps_bl_item_img {
+            max-width: 220px;
+        }
+
     .work_level_reach_s ul {
         flex-direction: column;
         top: 10px;
@@ -603,4 +614,12 @@ html {
     .work_level_reach_s ul li {
         animation-duration: 0.6s;
     }
+}
+
+@media (max-width: 480px) {
+
+.rank_system_hero_s ul li img {
+    width: 50px;
+}
+
 }

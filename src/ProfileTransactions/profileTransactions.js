@@ -162,6 +162,49 @@ function ProfileTransactions() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Mobile Card View */}
+                        <div className='transactions_cards_wrapper'>
+                            {transactions.map((transaction, index) => (
+                                <div key={index} className='transaction_card'>
+                                    <div className='transaction_card_header'>
+                                        <div className='transaction_card_title'>
+                                            <h3>{transaction.type}</h3>
+                                            <span className={`status_badge status_${transaction.status.toLowerCase()}`}>
+                                                {transaction.status}
+                                            </span>
+                                        </div>
+                                        <button className='view_btn'>View</button>
+                                    </div>
+                                    <div className='transaction_card_body'>
+                                        <div className='transaction_card_row'>
+                                            <span className='transaction_label'>Transaction Time</span>
+                                            <span className='transaction_value'>{transaction.time}</span>
+                                        </div>
+                                        <div className='transaction_card_row'>
+                                            <span className='transaction_label'>Transaction ID</span>
+                                            <span className='transaction_value'>{transaction.id}</span>
+                                        </div>
+                                        <div className='transaction_card_row'>
+                                            <span className='transaction_label'>Amount</span>
+                                            <span className='transaction_value amount_value'>{transaction.amount}</span>
+                                        </div>
+                                        <div className='transaction_card_row'>
+                                            <span className='transaction_label'>Approved Amount</span>
+                                            <span className='transaction_value'>{transaction.approvedAmount}</span>
+                                        </div>
+                                        <div className='transaction_card_row'>
+                                            <span className='transaction_label'>Payment Method</span>
+                                            <span className='transaction_value'>{transaction.paymentMethod}</span>
+                                        </div>
+                                        <div className='transaction_card_row'>
+                                            <span className='transaction_label'>Notes</span>
+                                            <span className='transaction_value'>{transaction.notes}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

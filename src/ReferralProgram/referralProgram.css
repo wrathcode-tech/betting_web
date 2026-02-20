@@ -781,31 +781,35 @@ table {
         right: 10px;
         max-width: 180px;
     }
-    
-    .referral_linkcopy {
+
+
+    .referral_campaign_section .d-flex.align-items-center.justify-content-between.gap-4 {
         flex-direction: column;
-        gap: 12px;
     }
     
     .referral_input_group {
-        flex-direction: column;
         gap: 10px;
     }
-    
-    button.referral_copy_btn {
-        width: 100%;
-    }
+
+    .referral_input_group input {
+        font-size: 15px; }
     
     .referral_share_cnt {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .d-flex.align-items-center.justify-content-between.gap-4.mt-4 {
+        margin-top: 15px !important;
     }
     
     .referral_share_btn {
         flex-direction: column;
         width: 100%;
         gap: 10px;
+    }
+
+    .balance_section .balance_list .d-flex {
+        flex-direction:row;
     }
     
     button.referral_share_btn {
@@ -840,7 +844,7 @@ table {
     }
     
     .referral_program_section h2 {
-        font-size: 28px;
+        font-size: 22px;
         margin-bottom: 20px;
     }
     
@@ -855,7 +859,6 @@ table {
     }
     
     .referral_profit_tl ul {
-        flex-direction: column;
         gap: 15px;
         padding: 0px 15px;
     }
@@ -870,9 +873,6 @@ table {
     }
     
     .notification_icon {
-        position: relative;
-        right: auto;
-        top: auto;
         max-width: 150px;
         margin-top: 15px;
     }
@@ -903,15 +903,23 @@ table {
     .rewards_history_data_left {
         padding: 18px;
     }
+    .dashboard_page {
+        padding: 10px 0px 60px;
+    }
     
     .my_referrals_title {
         font-size: 18px;
     }
     
     .referrals_filter_bar {
-        flex-direction: column;
         gap: 12px !important;
     }
+
+    .referrals_filter_dropdown select {
+        font-size: 12px; }
+
+        .download_csv_btn {
+            font-size: 12px; }
     
     .referrals_filter_dropdown {
         width: 100%;
@@ -924,6 +932,14 @@ table {
 
 /* Mobile (576px to 767px) */
 @media (max-width: 767px) {
+
+
+    .referral_program_content.tabcontent_referrals2 .d-flex.align-items-center.justify-content-between.gap-4 {
+        flex-direction: column;
+        gap: 5px !important;
+        align-items: start !important;
+    }
+
     .referral_program_section h2 {
         font-size: 24px;
         margin-bottom: 15px;
@@ -1055,13 +1071,15 @@ table {
     }
     
     .balance_list ul li .balance_list_cnt_lft p span {
-        font-size: 16px;
+        font-size: 14px;
     }
     
     button.balance_list_btn {
         font-size: 12px;
         padding: 8px 16px;
     }
+    .balance_list_cnt_rgt span {
+        font-size: 14px; }
     
     .referrals_profit_data_left h5 {
         font-size: 16px;
@@ -1144,6 +1162,12 @@ table {
         font-size: 16px;
         right: 10px;
     }
+
+    .notification_icon {
+        max-width: 80px;
+        margin-top: 15px;
+        right: -8px;
+    }
     
     .download_csv_btn {
         font-size: 12px;
@@ -1157,6 +1181,10 @@ table {
     .no_data_icon {
         width: 150px;
         height: 150px;
+    }
+
+    .referral_campaign_section .d-flex.align-items-center.justify-content-between.gap-4 {
+        gap: 10px !important;
     }
     
     .no_data_message {
@@ -1214,6 +1242,7 @@ table {
     
     .invite_users_bl {
         padding: 12px;
+        margin-top: 6px;
     }
     
     .invite_users_bl h5 {
@@ -1230,6 +1259,7 @@ table {
     
     .referral_linkcopy {
         padding: 8px;
+        gap:5px;
     }
     
     .referral_linkcopy i {
@@ -1247,7 +1277,6 @@ table {
     button.referral_copy_btn {
         min-height: 35px;
         font-size: 11px;
-        width: 100%;
     }
     
     .referral_share_cnt p {
@@ -1339,6 +1368,109 @@ html {
 .referral_profit_tl:hover .referral_profit_tl_item img,
 .balance_list:hover .balance_list_cnt_lft img {
     transform: scale(1.1) rotate(5deg);
+}
+
+/* Mobile Card Styles for Tables */
+.referral_cards_wrapper {
+    display: none;
+    width: 100%;
+    gap: 12px;
+    flex-direction: column;
+    margin-top: 15px;
+}
+
+.referral_card {
+    background-color: #1A1A19;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 14px;
+    transition: all 0.3s ease;
+}
+
+.referral_card:hover {
+    border-color: rgba(249, 122, 49, 0.3);
+    box-shadow: 0 4px 12px rgba(249, 122, 49, 0.1);
+}
+
+.referral_card_body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.referral_card_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.referral_label {
+    color: #ffffffab;
+    font-size: 12px;
+    font-weight: 400;
+    flex-shrink: 0;
+}
+
+.referral_value {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: right;
+    word-break: break-word;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.referral_value img {
+    width: 12px;
+    height: 12px;
+}
+
+.referral_value span {
+    font-size: 10px;
+    color: #9F9F9F;
+    font-weight: 300;
+}
+
+.referral_value.pricevalue {
+    color: #3C8C57;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.profitbg_data .referral_value.pricevalue {
+    color: #740031;
+}
+
+/* Mobile Responsive - Hide Tables, Show Cards */
+@media (max-width: 767px) {
+    .table-responsive {
+        display: none;
+    }
+    
+    .referral_cards_wrapper {
+        display: flex;
+    }
+    
+    .referral_card {
+        padding: 12px;
+    }
+    
+    .referral_label,
+    .referral_value {
+        font-size: 11px;
+    }
+    
+    .referral_value.pricevalue {
+        font-size: 12px;
+    }
+    
+    .referral_value img {
+        width: 10px;
+        height: 10px;
+    }
 }
 
 /* Add your referral program styles here */

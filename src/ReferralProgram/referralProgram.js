@@ -238,6 +238,94 @@ function ReferralProgram() {
                                         </table>
                                     </div>
 
+                                    {/* Mobile Card View - My Referrals */}
+                                    <div className='referral_cards_wrapper'>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
 
                                 <div className='referrals_profit_data_left profitbg_data'>
@@ -282,6 +370,94 @@ function ReferralProgram() {
                                                 </tr>
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    {/* Mobile Card View - My Profit */}
+                                    <div className='referral_cards_wrapper'>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className='referral_card'>
+                                            <div className='referral_card_body'>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>User</span>
+                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                                </div>
+                                                <div className='referral_card_row'>
+                                                    <span className='referral_label'>Price</span>
+                                                    <span className='referral_value pricevalue'>$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                 </div>
@@ -372,6 +548,218 @@ function ReferralProgram() {
                                         </tbody>
                                     </table>
                                 </div>
+
+                                {/* Mobile Card View - Rewards History */}
+                                <div className='referral_cards_wrapper'>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Time</span>
+                                                <span className='referral_value'>03:27:40 AM</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'>User8736113</span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$1.19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className='live_rewards_right'>
@@ -423,6 +811,94 @@ function ReferralProgram() {
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
+
+                                {/* Mobile Card View - Live Rewards */}
+                                <div className='referral_cards_wrapper'>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='referral_card'>
+                                        <div className='referral_card_body'>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>User</span>
+                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
+                                            </div>
+                                            <div className='referral_card_row'>
+                                                <span className='referral_label'>Price</span>
+                                                <span className='referral_value pricevalue'>$0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="live_rewards_right_bottom">
                                     <h5>Live rewards</h5>

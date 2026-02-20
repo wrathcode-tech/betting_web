@@ -27,14 +27,15 @@ function App() {
     //     </a>
     //   </header>
     // </div>
-   //  <LandingPage />
+     // <LandingPage />
      // <ProfilePage/>
-       <CasinoGame/>
+        // <CasinoGame/>
     //  <GamePlay/>
-    // <SportsGame/>
-    // <ProfileTransactions/>
-    //  <LandingPage/>
-    // <RankSystem/>
+     <SportsGame/>
+  // <ProfileTransactions/>
+   //  <LandingPage/>
+  // <RankSystem/>
+  //<ReferralProgram/>
   );
 }
 
