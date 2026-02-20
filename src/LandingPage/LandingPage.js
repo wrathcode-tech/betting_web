@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import AuthHeader from '../customComponents/AuthHeader';
 import Footer from '../customComponents/footer';
 
@@ -534,12 +535,12 @@ function LandingPage() {
                                   <p>+ 225 Free Spins</p>
 
                 <div className="d-flex align-items-center gap-3 mt-4">
-                  <button className="btnbnr">Sign Up and Play</button>
+                  <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
                   <ul className="social_icons d-flex align-items-center gap-2">
-                    <li><a href="#"><img src="images/googleicon.svg" alt="google" /></a></li>
-                    <li><a href="#"><img src="images/telegramicon.svg" alt="telegram" /></a></li>
-                    <li><a href="#"><img src="images/walleticon.svg" alt="wallet" /></a></li>
-                    <li><a href="#"><img src="images/trusticon.svg" alt="trust" /></a></li>
+                    <li><button type="button" className="social_icon_btn"><img src="images/googleicon.svg" alt="google" /></button></li>
+                    <li><button type="button" className="social_icon_btn"><img src="images/telegramicon.svg" alt="telegram" /></button></li>
+                    <li><button type="button" className="social_icon_btn"><img src="images/walleticon.svg" alt="wallet" /></button></li>
+                    <li><button type="button" className="social_icon_btn"><img src="images/trusticon.svg" alt="trust" /></button></li>
                                   </ul>
                                   </div>
                                 </div>
@@ -560,7 +561,7 @@ function LandingPage() {
           <div className="top_hd d-flex align-items-center justify-content-between">
             <h2 className="heading_h2">TOP SLOTS</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <button className="slotbtn">Go to Slots</button>
+              <Link to="/game"><button type="button" className="slotbtn">Go to Slots</button></Link>
               <div className="slider_arrows d-flex align-items-center gap-1">
                 <button className="slider_arrow_btn" onClick={handleTopSlotsPrev}>
                   <i className="ri-arrow-left-s-line"></i>
@@ -575,7 +576,7 @@ function LandingPage() {
           <div className="game_items_slider_wrapper">
             <div className="game_items_slider" ref={sliderRef}>
               {duplicatedItems.map((item, index) => (
-                <div key={`${item.id}-${index}`} className="game_items_inner">
+                <Link key={`${item.id}-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='playbtn'>
                     <img src="images/playbtn.png" alt="game" />
                   </div>
@@ -585,7 +586,7 @@ function LandingPage() {
                     </div>
                   )}
                   <img src={item.image} alt="game" />
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -628,7 +629,7 @@ function LandingPage() {
         <div className="container">
           <div className="row">
             <div className="col-md-6">
-              <div className="casino_sport_section_lft">
+              <Link to="/casino" className="casino_sport_section_lft" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div className="cntlft">
                   <h3>Casino</h3>
                   <p>Enjoy BetFury Originals and other casino games from top providers.</p>
@@ -636,10 +637,10 @@ function LandingPage() {
                 <div className="gameimg">
                   <img src="images/gold_img.png" alt="game" />
                 </div>
-              </div>
+              </Link>
             </div>
             <div className="col-md-6">
-              <div className="casino_sport_section_lft sport_bg">
+              <Link to="/sports" className="casino_sport_section_lft sport_bg" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div className="cntlft">
                   <h3>Sport</h3>
                   <p>Bet on popular sports events with high odds and other great features.</p>
@@ -647,7 +648,7 @@ function LandingPage() {
                 <div className="gameimg">
                   <img src="images/sports_img.png" alt="game" />
                 </div>
-              </div>
+              </Link>
             </div>
             <div className="col-md-12">
               <div className="casino_sport_section_lft casino_bg2">
@@ -664,6 +665,37 @@ function LandingPage() {
         </div>
       </div>
 
+      <div className="top_match_section">
+        <div className="container">
+          <div className="top_hd d-flex align-items-center justify-content-between">
+            <h2 className="heading_h2">TOP Sports</h2>
+            <div className="top_hd_right d-flex align-items-center gap-2">
+              <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
+              <div className="slider_arrows d-flex align-items-center gap-1">
+                <button className="slider_arrow_btn" onClick={handleTopSportsPrev}>
+                  <i className="ri-arrow-left-s-line"></i>
+                </button>
+                <button className="slider_arrow_btn" onClick={handleTopSportsNext}>
+                  <i className="ri-arrow-right-s-line"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="game_items_slider_wrapper">
+            <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
+              {duplicatedTopSportsItems.map((item, index) => (
+                <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
+                  <div className='spot_value'>{item.badge}</div>
+                  <img src={`images/${item.icon}`} alt="match" />
+                  <h3>{item.title}</h3>
+                </div>
+              ))}
+            </div>
+      </div>
+        </div>
+      </div>
+
       <div className='playearn_section'>
         <div className='container'>
           <div className='row'>
@@ -672,7 +704,7 @@ function LandingPage() {
                 <div className='playearn_big_lft_cnt'>
                   <h2>PLAY & EARN BIG</h2>
                   <p>Daily rewards, instant wins aur non-stop fun.</p>
-                  <button className='playearn_btn'>Start Playing</button>
+                  <Link to="/game"><button type="button" className='playearn_btn'>Start Playing</button></Link>
                 </div>
                 <div className='playearn_big_rgt'>
                   <img src="images/golden_treasure.svg" alt="PLAY & EARN BIG" />
@@ -707,7 +739,7 @@ function LandingPage() {
 </div>
 
             <div className='col-md-3'>
-              <div className='gameright_s_item height0 casinozone_s'>
+              <Link to="/casino" className='gameright_s_item height0 casinozone_s' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div className='gameright_s_item_cnt'>
                   <h4>Casino Zone</h4>
                   <p>Slots, cards & instant win games</p>
@@ -715,47 +747,47 @@ function LandingPage() {
                 <div className='gameright_s_item_img'>
                   <img src="images/3d_casino_games.svg" alt="Casino Zone" />
                 </div>
-              </div>
+              </Link>
 
             </div>
 
             <div className='col-md-3'>
-              <div className='gameright_s_item height0 sportsbg2'>
+              <Link to="/sports" className='gameright_s_item height0 sportsbg2' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div className='gameright_s_item_cnt'>
                   <h4>Sports Arena</h4>
                   <p>Live matches & smart predictions</p>
                 </div>
                 <div className='gameright_s_item_img'>
-                  <img src="images/astronaut_spacesuit.svg" alt="Casino Zone" />
+                  <img src="images/astronaut_spacesuit.svg" alt="Sports Arena" />
                 </div>
-              </div>
+              </Link>
 
             </div>
 
             <div className='col-md-3'>
-              <div className='gameright_s_item height0 rewardsbg2'>
+              <Link to="/rank" className='gameright_s_item height0 rewardsbg2' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div className='gameright_s_item_cnt'>
                   <h4>Daily Rewards</h4>
                   <p>Log in daily and unlock exciting gifts.</p>
                 </div>
                 <div className='gameright_s_item_img'>
-                  <img src="images/3d_gift_box_isolated.svg" alt="Casino Zone" />
+                  <img src="images/3d_gift_box_isolated.svg" alt="Daily Rewards" />
       </div>
-        </div>
+        </Link>
 
       </div>
 
 
             <div className='col-md-3'>
-              <div className='gameright_s_item height0 battlebg'>
+              <Link to="/rank" className='gameright_s_item height0 battlebg' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div className='gameright_s_item_cnt'>
                   <h4>Battle Mode</h4>
                   <p>Compete with others and climb the leaderboard.</p>
                 </div>
                 <div className='gameright_s_item_img'>
-                  <img src="images/alien_head.svg" alt="Casino Zone" />
+                  <img src="images/alien_head.svg" alt="Battle Mode" />
     </div>
-      </div>
+      </Link>
 
         </div>
 
@@ -767,9 +799,9 @@ function LandingPage() {
       <div className="top_match_section sportsmatch_s">
         <div className="container">
           <div className="top_hd d-flex align-items-center justify-content-between">
-            <h2 className="heading_h2">TOP Matches</h2>
+            <Link to="/sports" style={{ textDecoration: 'none', color: 'inherit' }}><h2 className="heading_h2" style={{ cursor: 'pointer' }}>TOP Matches</h2></Link>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <button className="slotbtn">Go to Sports</button>
+              <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
               <div className="slider_arrows d-flex align-items-center gap-1">
                 <button className="slider_arrow_btn" onClick={handleTopMatchesPrev}>
                   <i className="ri-arrow-left-s-line"></i>
@@ -784,7 +816,7 @@ function LandingPage() {
           <div className='match_slider_wrapper'>
             <div className='match_slider_container' ref={topMatchesSliderRef}>
               {duplicatedTopMatchesItems.map((match, index) => (
-                <div key={`topmatch-${match.id}-${index}`} className='match_slider'>
+                <Link key={`topmatch-${match.id}-${index}`} to="/sports" className='match_slider' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='match_slider_inner'>
                     <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
                       <div className='hd_match d-flex align-items-center gap-2'>
@@ -804,20 +836,20 @@ function LandingPage() {
                     </div>
                     <div className='d-flex justify-content-between align-items-center gap-2'>
                       <div className='view_matchlike'>
-                        <button className='view_match'>{match.viewCount} <span>{match.viewK}</span></button>
-                        <button className='like_match'>{match.likeCount} <span>{match.likeK}</span></button>
+                        <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
+                        <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
                       </div>
                       <div className='view_matchlike'>
-                        <button className='view_match disabled'><i className="ri-lock-line"></i></button>
-                        <button className='like_match disabled'><i className="ri-lock-line"></i></button>
+                        <button type="button" className='view_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
+                        <button type="button" className='like_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
                       </div>
                       <div className='view_matchlike'>
-                        <button className='view_match'>{match.viewCount} <span>{match.viewK}</span></button>
-                        <button className='like_match'>{match.likeCount} <span>{match.likeK}</span></button>
+                        <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
+                        <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -831,7 +863,7 @@ function LandingPage() {
           <div className="top_hd d-flex align-items-center justify-content-between">
             <h2 className="heading_h2">BetCasino Original</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <button className="slotbtn">Go to Casino</button>
+              <Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link>
               <div className="slider_arrows d-flex align-items-center gap-1">
                 <button className="slider_arrow_btn" onClick={handleBetCasinoPrev}>
                   <i className="ri-arrow-left-s-line"></i>
@@ -846,7 +878,7 @@ function LandingPage() {
           <div className="game_items_slider_wrapper">
             <div className="game_items_slider mt-2" ref={betCasinoSliderRef}>
               {[...betCasinoItems, ...betCasinoItems, ...betCasinoItems].map((item, index) => (
-                <div key={`betcasino-${item.id}-${index}`} className="game_items_inner">
+                <Link key={`betcasino-${item.id}-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='playbtn'>
                     <img src="images/playbtn.png" alt="game" />
                   </div>
@@ -856,7 +888,7 @@ function LandingPage() {
                     </div>
                   )}
                   <img src={item.image} alt="game" />
-                </div>
+                </Link>
               ))}
     </div>
   </div>
@@ -868,7 +900,7 @@ function LandingPage() {
           <div className="top_hd d-flex align-items-center justify-content-between">
             <h2 className="heading_h2"><img src="images/live_icon.svg" alt="game" /> Live Casino</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <button className="slotbtn">All 1159</button>
+              <Link to="/game"><button type="button" className="slotbtn">All 1159</button></Link>
               <div className="slider_arrows d-flex align-items-center gap-1">
                 <button className="slider_arrow_btn" onClick={handleLiveCasinoPrev}>
                   <i className="ri-arrow-left-s-line"></i>
@@ -883,7 +915,7 @@ function LandingPage() {
           <div className="game_items_slider_wrapper">
             <div className="game_items_slider mt-2" ref={liveCasinoSliderRef}>
               {[...liveCasinoItems, ...liveCasinoItems, ...liveCasinoItems].map((item, index) => (
-                <div key={`livecasino-${item.id}-${index}`} className="game_items_inner">
+                <Link key={`livecasino-${item.id}-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='playbtn'>
                     <img src="images/playbtn.png" alt="game" />
                   </div>
@@ -893,7 +925,7 @@ function LandingPage() {
                     </div>
                   )}
                   <img src={item.image} alt="game" />
-                </div>
+                </Link>
               ))}
       </div>
     </div>
@@ -906,7 +938,7 @@ function LandingPage() {
           <div className="top_hd d-flex align-items-center justify-content-between">
             <h2 className="heading_h2"><img src="images/crownicon.svg" alt="game" /> Highroller Hall</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <button className="slotbtn">All 20</button>
+              <Link to="/game"><button type="button" className="slotbtn">All 20</button></Link>
               <div className="slider_arrows d-flex align-items-center gap-1">
                 <button className="slider_arrow_btn" onClick={handleHighrollerPrev}>
                   <i className="ri-arrow-left-s-line"></i>
@@ -921,7 +953,7 @@ function LandingPage() {
           <div className="game_items_slider_wrapper">
             <div className="game_items_slider mt-2" ref={highrollerSliderRef}>
               {[...highrollerItems, ...highrollerItems, ...highrollerItems].map((item, index) => (
-                <div key={`highroller-${item.id}-${index}`} className="game_items_inner">
+                <Link key={`highroller-${item.id}-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className='playbtn'>
                     <img src="images/playbtn.png" alt="game" />
                   </div>
@@ -931,7 +963,7 @@ function LandingPage() {
                     </div>
                   )}
                   <img src={item.image} alt="game" />
-                </div>
+                </Link>
               ))}
             </div>
           </div>

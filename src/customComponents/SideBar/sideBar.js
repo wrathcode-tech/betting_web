@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import './sidebar.css'
 
 export default function SideBar({ isOpen, onClose }) {
@@ -46,6 +47,11 @@ export default function SideBar({ isOpen, onClose }) {
         <div className="sidebar_content">
           <nav className="sidebar_nav">
             <ul className="sidebar_menu">
+              <li className="sidebar_menu_item">
+                <Link to="/" onClick={onClose}>
+                  <span><img src="images/casino_icon.svg" alt="home" />Home</span>
+                </Link>
+              </li>
               <li className={`sidebar_menu_item ${openSubmenu === 'casino' ? 'active' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('casino'); }}>
                   <i className={openSubmenu === 'casino' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
@@ -53,21 +59,21 @@ export default function SideBar({ isOpen, onClose }) {
                 </a>
                 {openSubmenu === 'casino' && (
                   <ul className="sidebar_submenu">
-                    <li><a href="#!"><img src="images/original_icon.svg" alt="originals" />Originals</a></li>
-                    <li><a href="#!"><img src="images/slots_icon.svg" alt="slots" />Slots</a></li>
-                    <li><a href="#!"><img src="images/livecasion_icon.svg" alt="live casino" />Live Casino</a></li>
-                    <li><a href="#!"><img src="images/referral_icon.svg" alt="table game" />Table Game</a></li>
-                    <li><a href="#!"><img src="images/setting_icon.svg" alt="slots" />Providers</a></li>
-                    <li><a href="#!"><img src="images/original_icon.svg" alt="slots" />Hot Picks</a></li>
-                    <li><a href="#!"><img src="images/slots_icon.svg" alt="slots" />Exclusives</a></li>
-                    <li><a href="#!"><img src="images/livecasion_icon.svg" alt="slots" />Buy Feature</a></li>
-                    <li><a href="#!"><img src="images/referral_icon.svg" alt="slots" />New Releases</a></li>
-                    <li><a href="#!"><img src="images/setting_icon.svg" alt="slots" />Highroller Hall</a></li>
-                    <li><a href="#!"><img src="images/original_icon.svg" alt="slots" />Game Shows</a></li>
-                    <li><a href="#!"><img src="images/slots_icon.svg" alt="slots" />Roulette</a></li>
-                    <li><a href="#!"><img src="images/livecasion_icon.svg" alt="slots" />Blackjack</a></li>
-                    <li><a href="#!"><img src="images/referral_icon.svg" alt="slots" />Baccarat</a></li>
-                    <li><a href="#!"><img src="images/slots_icon.svg" alt="slots" />Drops & Wins</a></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/original_icon.svg" alt="originals" />Originals</Link></li>
+                    <li><Link to="/game" onClick={onClose}><img src="images/slots_icon.svg" alt="slots" />Slots</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/livecasion_icon.svg" alt="live casino" />Live Casino</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/referral_icon.svg" alt="table game" />Table Game</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/setting_icon.svg" alt="slots" />Providers</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/original_icon.svg" alt="slots" />Hot Picks</Link></li>
+                    <li><Link to="/game" onClick={onClose}><img src="images/slots_icon.svg" alt="slots" />Exclusives</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/livecasion_icon.svg" alt="slots" />Buy Feature</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/referral_icon.svg" alt="slots" />New Releases</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/setting_icon.svg" alt="slots" />Highroller Hall</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/original_icon.svg" alt="slots" />Game Shows</Link></li>
+                    <li><Link to="/game" onClick={onClose}><img src="images/slots_icon.svg" alt="slots" />Roulette</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/livecasion_icon.svg" alt="slots" />Blackjack</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="images/referral_icon.svg" alt="slots" />Baccarat</Link></li>
+                    <li><Link to="/game" onClick={onClose}><img src="images/slots_icon.svg" alt="slots" />Drops & Wins</Link></li>
                   </ul>
                 )}
               </li>
@@ -78,11 +84,11 @@ export default function SideBar({ isOpen, onClose }) {
                 </a>
                 {openSubmenu === 'sports' && (
                   <ul className="sidebar_submenu">
-                    <li><a href="#!">Football</a></li>
-                    <li><a href="#!">Basketball</a></li>
-                    <li><a href="#!">Tennis</a></li>
-                    <li><a href="#!">Cricket</a></li>
-                    <li><a href="#!">Horse Racing</a></li>
+                    <li><Link to="/sports" onClick={onClose}>Football</Link></li>
+                    <li><Link to="/sports" onClick={onClose}>Basketball</Link></li>
+                    <li><Link to="/sports" onClick={onClose}>Tennis</Link></li>
+                    <li><Link to="/cricket" onClick={onClose}>Cricket</Link></li>
+                    <li><Link to="/sports" onClick={onClose}>Horse Racing</Link></li>
                   </ul>
                 )}
               </li>
@@ -93,42 +99,42 @@ export default function SideBar({ isOpen, onClose }) {
                 </a>
                 {openSubmenu === 'other' && (
                   <ul className="sidebar_submenu">
-                    <li><a href="#!">Virtual Sports</a></li>
-                    <li><a href="#!">Lottery</a></li>
-                    <li><a href="#!">Poker</a></li>
-                    <li><a href="#!">Bingo</a></li>
+                    <li><Link to="/sports" onClick={onClose}>Virtual Sports</Link></li>
+                    <li><Link to="/game" onClick={onClose}>Lottery</Link></li>
+                    <li><Link to="/game" onClick={onClose}>Poker</Link></li>
+                    <li><Link to="/game" onClick={onClose}>Bingo</Link></li>
                   </ul>
                 )}
               </li>
               <li className="sidebar_menu_item">
-                <a href="#!">
-                  <span>
-                  <img src="images/promotions_icon.svg" alt="promotions" />Promotions</span>
-                </a>
+                <Link to="/" onClick={onClose}>
+                  <span><img src="images/promotions_icon.svg" alt="promotions" />Promotions</span>
+                </Link>
               </li>
               <li className="sidebar_menu_item">
-                <a href="#!">
-                  <span>
-                  <img src="images/referral_icon.svg" alt="referral" />Referral</span>
-                </a>
+                <Link to="/referral" onClick={onClose}>
+                  <span><img src="images/referral_icon.svg" alt="referral" />Referral</span>
+                </Link>
               </li>
               <li className="sidebar_menu_item">
-                <a href="#!">
-                  <span>
-                  <img src="images/referral_icon.svg" alt="referral" />VIP Club</span>
-                </a>
+                <Link to="/transactions" onClick={onClose}>
+                  <span><img src="images/referral_icon.svg" alt="transactions" />Transactions</span>
+                </Link>
               </li>
               <li className="sidebar_menu_item">
-                <a href="#!">
-                  <span>
-                  <img src="images/referral_icon.svg" alt="referral" />News</span>
-                </a>
+                <Link to="/rank" onClick={onClose}>
+                  <span><img src="images/referral_icon.svg" alt="referral" />VIP Club</span>
+                </Link>
               </li>
               <li className="sidebar_menu_item">
-                <a href="#!">
-                  <span>
-                  <img src="images/referral_icon.svg" alt="referral" />Live Support</span>
-                </a>
+                <Link to="/" onClick={onClose}>
+                  <span><img src="images/referral_icon.svg" alt="referral" />News</span>
+                </Link>
+              </li>
+              <li className="sidebar_menu_item">
+                <Link to="/profile" onClick={onClose}>
+                  <span><img src="images/referral_icon.svg" alt="referral" />Live Support</span>
+                </Link>
               </li>
               
             </ul>

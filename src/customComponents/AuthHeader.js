@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import LoginModal from './LoginModal'
 import SideBar from './SideBar/sideBar'
 import Chat from '../cricket/Chat'
@@ -25,6 +26,15 @@ export default function AuthHeader() {
     setShowModal(true);
   };
 
+  useEffect(() => {
+    const openModal = (e) => {
+      setModalTab(e.detail === 'signup' ? 'signup' : 'login');
+      setShowModal(true);
+    };
+    window.addEventListener('openLoginModal', openModal);
+    return () => window.removeEventListener('openLoginModal', openModal);
+  }, []);
+
   return (
     <>
       <header>
@@ -32,9 +42,9 @@ export default function AuthHeader() {
           <div className="toggle_menu" onClick={() => setSidebarOpen(true)}>
             <img src="images/toggle_menu.svg" alt="menu" />
           </div>
-          <div className="header_logo">
+          <Link to="/" className="header_logo">
             <img src="images/logo.png" alt="logo" />
-          </div>
+          </Link>
         </div>
 
       <div className='d-flex align-items-center gap-2 depositheader'>  
@@ -53,7 +63,7 @@ export default function AuthHeader() {
             <img src="images/search-icon.svg" alt="search" />
           </div>
           <div className="login_hdr">
-            <button onClick={handleLoginClick}>Login</button>
+            <button type="button" onClick={handleLoginClick}>Login</button>
             <button className="signup_btn" onClick={handleSignupClick}>Sign Up</button>
           </div>
     

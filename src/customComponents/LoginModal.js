@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function LoginModal({ show, onHide, initialTab = 'login' }) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [activeMethod, setActiveMethod] = useState('mobile');
   const [showPassword, setShowPassword] = useState(false);
@@ -168,7 +170,15 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
                         </div>
                       )}
 
-                      <button className="login_submit_btn">
+                      <button
+                        type="button"
+                        className="login_submit_btn"
+                        onClick={() => {
+                          sessionStorage.setItem('token', 'demo_logged_in');
+                          onHide();
+                          navigate('/', { replace: true });
+                        }}
+                      >
                         {activeTab === 'login' ? 'Login' : 'Sign Up'}
                       </button>
 

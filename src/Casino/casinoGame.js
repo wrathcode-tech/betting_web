@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import './casino.css'
 import AuthHeader from '../customComponents/AuthHeader'
 import MobileMenu from '../customComponents/MobileMenu'
@@ -402,16 +403,16 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">BetCasino Original </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_slider_wrapper">
          <div className="game_items_slider mt-2" ref={lobbySlider1Ref}>
             {duplicatedItems.map((item, index) => (
-               <div key={`slider1-${index}`} className="game_items_inner">
+               <Link key={`slider1-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
                   {item.badge && <div className="top_ads">{item.badge}</div>}
                   <img alt="game" src={item.image} />
-               </div>
+               </Link>
             ))}
          </div>
       </div>
@@ -421,16 +422,16 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">BetCasino Original </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_slider_wrapper">
          <div className="game_items_slider mt-2" ref={lobbySlider2Ref}>
             {duplicatedItems.map((item, index) => (
-               <div key={`slider2-${index}`} className="game_items_inner">
+               <Link key={`slider2-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
                   {item.badge && <div className="top_ads">{item.badge}</div>}
                   <img alt="game" src={item.image} />
-               </div>
+               </Link>
             ))}
          </div>
       </div>
@@ -440,16 +441,16 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">BetCasino Original </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_slider_wrapper">
          <div className="game_items_slider mt-2" ref={lobbySlider3Ref}>
             {duplicatedItems.map((item, index) => (
-               <div key={`slider3-${index}`} className="game_items_inner">
+               <Link key={`slider3-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
                   {item.badge && <div className="top_ads">{item.badge}</div>}
                   <img alt="game" src={item.image} />
-               </div>
+               </Link>
             ))}
          </div>
       </div>
@@ -464,15 +465,15 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">Originals </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
-            <div key={`grid-${index}`} className="game_items_inner">
+            <Link key={`grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
                {item.badge && <div className="top_ads">{item.badge}</div>}
                <img alt="game" src={item.image} />
-            </div>
+            </Link>
          ))}
       </div>
  
@@ -486,15 +487,15 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">Slots </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
-            <div key={`slots-grid-${index}`} className="game_items_inner">
+            <Link key={`slots-grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
                {item.badge && <div className="top_ads">{item.badge}</div>}
                <img alt="game" src={item.image} />
-            </div>
+            </Link>
          ))}
       </div>
 </div>
@@ -506,15 +507,15 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">Live Casino </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
-            <div key={`live-grid-${index}`} className="game_items_inner">
+            <Link key={`live-grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
                {item.badge && <div className="top_ads">{item.badge}</div>}
                <img alt="game" src={item.image} />
-            </div>
+            </Link>
          ))}
       </div>
 </div>
@@ -526,15 +527,15 @@ function CasinoGame() {
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
          <h2 className="heading_h2">Table Games </h2>
-         <div className="top_hd_right"><button className="slotbtn">Go to Casino</button></div>
+         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
-            <div key={`table-grid-${index}`} className="game_items_inner">
+            <Link key={`table-grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
                {item.badge && <div className="top_ads">{item.badge}</div>}
                <img alt="game" src={item.image} />
-            </div>
+            </Link>
          ))}
       </div>
 </div>
