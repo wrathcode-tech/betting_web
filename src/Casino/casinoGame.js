@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import './casino.css'
-import UserHeader from '../customComponents/UserHeader'
+import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function CasinoGame() {
@@ -21,6 +21,22 @@ function CasinoGame() {
     
     const [lobbySlider4Index, setLobbySlider4Index] = useState(0);
     const lobbySlider4Ref = useRef(null);
+    
+    const [lobbySlider5Index, setLobbySlider5Index] = useState(0);
+    const lobbySlider5Ref = useRef(null);
+    
+    const [lobbySlider6Index, setLobbySlider6Index] = useState(0);
+    const lobbySlider6Ref = useRef(null);
+    
+    // Lobby category sections (replacing BetCasino Original)
+    const lobbyCategories = [
+        { id: 'fun', name: 'Fun Games', ref: lobbySlider1Ref, index: lobbySlider1Index, setIndex: setLobbySlider1Index },
+        { id: 'live', name: 'Live', ref: lobbySlider2Ref, index: lobbySlider2Index, setIndex: setLobbySlider2Index },
+        { id: 'prediction', name: 'Prediction', ref: lobbySlider3Ref, index: lobbySlider3Index, setIndex: setLobbySlider3Index },
+        { id: 'virtuals', name: 'Virtuals', ref: lobbySlider4Ref, index: lobbySlider4Index, setIndex: setLobbySlider4Index },
+        { id: 'color', name: 'Color', ref: lobbySlider5Ref, index: lobbySlider5Index, setIndex: setLobbySlider5Index },
+        { id: 'chicken', name: 'Chicken Games', ref: lobbySlider6Ref, index: lobbySlider6Index, setIndex: setLobbySlider6Index },
+    ];
     
     // Game items for sliders (7 items each)
     const gameItems = [
@@ -82,6 +98,18 @@ function CasinoGame() {
             lobbySlider4Ref.current.style.transform = `translateX(${tx}px)`;
         }
     }, [lobbySlider4Index]);
+    useEffect(() => {
+        if (lobbySlider5Ref.current) {
+            const tx = -lobbySlider5Index * itemWidth;
+            lobbySlider5Ref.current.style.transform = `translateX(${tx}px)`;
+        }
+    }, [lobbySlider5Index]);
+    useEffect(() => {
+        if (lobbySlider6Ref.current) {
+            const tx = -lobbySlider6Index * itemWidth;
+            lobbySlider6Ref.current.style.transform = `translateX(${tx}px)`;
+        }
+    }, [lobbySlider6Index]);
 
     // Mouse drag-to-scroll (no auto)
     const dragStateRef = useRef({
@@ -165,6 +193,7 @@ function CasinoGame() {
     };
     const [slidesPerView, setSlidesPerView] = useState(getSlidesPerView);
     const [layoutKey, setLayoutKey] = useState(0);
+
     useEffect(() => {
         const mq3 = window.matchMedia('(min-width: 1025px)');
         const mq2 = window.matchMedia('(min-width: 769px)');
@@ -237,7 +266,7 @@ function CasinoGame() {
 
     return (
         <>
-            <UserHeader />
+            <Header />
             <div className='dashboard_page'>
             <div className='casino_outer'>
                 <div className='container'>
@@ -333,25 +362,26 @@ function CasinoGame() {
 <>
 <div className={`inner_tabs_block ${activeTab === 'lobby' ? 'show' : ''}`}>
 
-<div className="top_slot_outer">
+{lobbyCategories.map((cat) => (
+<div key={cat.id} className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
-         <h2 className="heading_h2">BetCasino Original </h2>
-         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
+         <h2 className="heading_h2">{cat.name}</h2>
+         <div className="top_hd_right"><Link to={`/casino/category/${cat.id}`}><button type="button" className="slotbtn">Go to {cat.name}</button></Link></div>
       </div>
       <div
             className="game_items_slider_wrapper"
             onMouseDown={(e) => handleSliderMouseDown(e, {
-                sliderRef: lobbySlider1Ref,
+                sliderRef: cat.ref,
                 getItemWidth: itemWidth,
                 itemsPerSet: lobbyItemsPerSet,
-                currentIndex: lobbySlider1Index,
-                setIndex: setLobbySlider1Index,
+                currentIndex: cat.index,
+                setIndex: cat.setIndex,
             })}
             onClickCapture={handleSliderClickCapture}
           >
-         <div className="game_items_slider mt-2" ref={lobbySlider1Ref}>
+         <div className="game_items_slider mt-2" ref={cat.ref}>
             {duplicatedItems.map((item, index) => (
-               <Link key={`slider1-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+               <Link key={`${cat.id}-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
                   {item.badge && <div className="top_ads">{item.badge}</div>}
                   <img alt="game" src={item.image} />
@@ -359,66 +389,8 @@ function CasinoGame() {
             ))}
          </div>
       </div>
- 
 </div>
-
-<div className="top_slot_outer">
-      <div className="top_hd d-flex align-items-center justify-content-between">
-         <h2 className="heading_h2">BetCasino Original </h2>
-         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
-      </div>
-      <div
-            className="game_items_slider_wrapper"
-            onMouseDown={(e) => handleSliderMouseDown(e, {
-                sliderRef: lobbySlider2Ref,
-                getItemWidth: itemWidth,
-                itemsPerSet: lobbyItemsPerSet,
-                currentIndex: lobbySlider2Index,
-                setIndex: setLobbySlider2Index,
-            })}
-            onClickCapture={handleSliderClickCapture}
-          >
-         <div className="game_items_slider mt-2" ref={lobbySlider2Ref}>
-            {duplicatedItems.map((item, index) => (
-               <Link key={`slider2-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                  <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
-                  {item.badge && <div className="top_ads">{item.badge}</div>}
-                  <img alt="game" src={item.image} />
-               </Link>
-            ))}
-         </div>
-      </div>
- 
-</div>
-
-<div className="top_slot_outer">
-      <div className="top_hd d-flex align-items-center justify-content-between">
-         <h2 className="heading_h2">BetCasino Original </h2>
-         <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
-      </div>
-      <div
-            className="game_items_slider_wrapper"
-            onMouseDown={(e) => handleSliderMouseDown(e, {
-                sliderRef: lobbySlider3Ref,
-                getItemWidth: itemWidth,
-                itemsPerSet: lobbyItemsPerSet,
-                currentIndex: lobbySlider3Index,
-                setIndex: setLobbySlider3Index,
-            })}
-            onClickCapture={handleSliderClickCapture}
-          >
-         <div className="game_items_slider mt-2" ref={lobbySlider3Ref}>
-            {duplicatedItems.map((item, index) => (
-               <Link key={`slider3-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                  <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
-                  {item.badge && <div className="top_ads">{item.badge}</div>}
-                  <img alt="game" src={item.image} />
-               </Link>
-            ))}
-         </div>
-      </div>
- 
-</div>
+))}
 
 </div>
 

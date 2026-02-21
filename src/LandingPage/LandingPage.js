@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import UserHeader from '../customComponents/UserHeader';
+import Header from '../customComponents/Header';
 import Footer from '../customComponents/footer';
 
 function LandingPage() {
@@ -371,32 +371,54 @@ function LandingPage() {
 
   return (
     <>
-      <UserHeader />
+      <Header />
       <div className="casino_hero_s">
-        <video
-          ref={videoRef}
-          className="hero_bg_video"
-          autoPlay
-          loop
-          muted
-          playsInline
-        >
-          <source src="images/herobg.mp4" type="video/mp4" />
-        </video>
+        {/* Desktop: video background */}
+        <div className="hero_bg_video_wrapper">
+          <video
+            ref={videoRef}
+            className="hero_bg_video"
+            autoPlay
+            loop
+            muted
+            playsInline
+          >
+            <source src="images/herobg.mp4" type="video/mp4" />
+          </video>
+        </div>
+        {/* Mobile only: Aviator (lift+right), Cricket, Casino – full animations */}
+        <div className="hero_mobile_animation" aria-hidden="true">
+          <div className="hero_mobile_anim_bg">
+            <div className="hero_mobile_bg_planet" />
+            <div className="hero_mobile_bg_glow" />
+          </div>
+          {/* Aviator: plane lifts up then flies right */}
+          <div className="hero_mob_aviator_plane">
+            <i className="ri-plane-fill" aria-hidden="true" />
+          </div>
+          <div className="hero_mob_aviator_trail" />
+          {/* Cricket: ball in arc + stumps */}
+          <div className="hero_mob_cricket_ball" />
+          <div className="hero_mob_cricket_stumps" />
+          {/* Casino: dice roll + cards float */}
+          <div className="hero_mob_casino_dice"><i className="ri-dice-5-fill" aria-hidden="true" /></div>
+          <div className="hero_mob_casino_card"><i className="ri-poker-spades-fill" aria-hidden="true" /></div>
+          <div className="hero_mob_casino_chip" />
+        </div>
         <div className="container">
           <div className="row">
             <div className="col-md-6">
               <div className="casino_hero_s_lft">
-                <h1><span>WELCOME BONUS</span> UP TO 590%</h1>
-                <p>+ 225 Free Spins</p>
+                <h1><span>Your Ultimate</span> Casino &amp; Sports Gaming Hub</h1>
+                <p>Play Casino. Bet on Sports. Win Big.</p>
 
                 <div className="d-flex align-items-center gap-3 mt-4">
                   <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
-                  <ul className="social_icons d-flex align-items-center gap-2">
-                    <li><button type="button" className="social_icon_btn"><img src="images/googleicon.svg" alt="google" /></button></li>
-                    <li><button type="button" className="social_icon_btn"><img src="images/telegramicon.svg" alt="telegram" /></button></li>
-                    <li><button type="button" className="social_icon_btn"><img src="images/walleticon.svg" alt="wallet" /></button></li>
-                    <li><button type="button" className="social_icon_btn"><img src="images/trusticon.svg" alt="trust" /></button></li>
+                  <ul className="social_icons d-flex align-items-center gap-2 hero_activity_icons">
+                    <li><Link to="/casino" className="social_icon_btn" title="Casino" aria-label="Casino"><i className="ri-poker-spades-fill" /></Link></li>
+                    <li><Link to="/sports" className="social_icon_btn" title="Sports" aria-label="Sports"><i className="ri-basketball-fill" /></Link></li>
+                    <li><Link to="/game" className="social_icon_btn" title="Slots" aria-label="Slots"><i className="ri-dice-5-fill" /></Link></li>
+                    <li><Link to="/casino" className="social_icon_btn" title="Games" aria-label="Games"><i className="ri-focus-3-fill" /></Link></li>
                   </ul>
                 </div>
               </div>
@@ -874,8 +896,9 @@ function LandingPage() {
         </div>
 
         <div className='container support_help_container'>
-          <div className='support_help_s'>
-            <p>Need help? Our 24/7 support team is here for you anytime!</p>
+          <div className='support_help_card'>
+            <i className='ri-customer-service-2-fill support_help_card_icon' aria-hidden="true" />
+            <p className='support_help_card_text'>Need help? Our 24/7 support is here for you.</p>
           </div>
         </div>
       </div>

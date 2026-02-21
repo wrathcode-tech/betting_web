@@ -1,3 +1,28 @@
+/* Category detail page header */
+.casino_category_page_header {
+    margin: 24px 0 28px;
+}
+.casino_category_back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #f97a31;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    transition: color 0.2s;
+}
+.casino_category_back:hover {
+    color: #ff9f6b;
+}
+.casino_category_title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
 .casino_hero_section {
     width: 100%;
     display: block;

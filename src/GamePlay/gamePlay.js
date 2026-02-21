@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
 import './gamePlay.css'
-import UserHeader from '../customComponents/UserHeader'
+import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function GamePlay() {
@@ -204,7 +204,7 @@ function GamePlay() {
 
     return (
         <>
-            <UserHeader />
+            <Header />
             <div className='dashboard_page'>
                 <div className='gameplay_outer'>
                 <div className='container'>

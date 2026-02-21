@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import SideBar from './SideBar/sideBar'
 import Chat from '../cricket/Chat'
+import './Footer.css'
 
 const FOOTER_MOBILE_MENU = [
     {
@@ -210,9 +211,8 @@ function Footer() {
   </ul>
 </div>
 
-<p>This site offers gaming and involves risk. You must be 18 or older to use our services. We are not responsible for any breach of your local laws regarding online gaming. Please play responsibly.</p>
-
-            <p className="mt-2">© {new Date().getFullYear()} All Rights Reserved.</p>
+<p className="footer_disclaimer">This site offers gaming and involves risk. You must be 18 or older to use our services. We are not responsible for any breach of your local laws regarding online gaming. Please play responsibly.</p>
+            <p className="footer_copyright">© {new Date().getFullYear()} All Rights Reserved.</p>
             </div>
 
           </div>
@@ -260,9 +260,9 @@ function Footer() {
           <li className="mobile-menu__item mobile-menu__item--sports">
             <NavLink to="/profile" className={({ isActive }) => `mobile-menu__link ${isActive ? 'active' : ''}`}>
               <span className="icon mobile-menu__icon">
-                <i className="ri-wallet-line"></i>
+                <i className="ri-user-line"></i>
               </span>
-              <span className="mobile-menu__name">Wallet</span>
+              <span className="mobile-menu__name">Profile</span>
             </NavLink>
           </li>
 

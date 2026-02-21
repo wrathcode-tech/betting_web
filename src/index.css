@@ -113,3 +113,297 @@ a.dropdown_menu_item {
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active::before {
   display: none;
 }
+
+/* Hero: desktop = video, mobile = Aviator + Cricket animations */
+.hero_bg_video_wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+.hero_bg_video_wrapper .hero_bg_video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Hero: content from reference – icons (spade, basketball, slots, target) */
+.casino_hero_s .hero_activity_icons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 12px;
+}
+.casino_hero_s .hero_activity_icons .social_icon_btn {
+  color: #fff;
+  font-size: 26px;
+  opacity: 0.95;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.casino_hero_s .hero_activity_icons .social_icon_btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.hero_mobile_animation {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Base background + depth */
+.hero_mobile_anim_bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #0a0e14 0%, #0d131c 30%, #1a2332 60%, #0f1620 100%);
+  overflow: hidden;
+}
+.hero_mobile_bg_planet {
+  position: absolute;
+  left: -20%;
+  bottom: -20%;
+  width: 85%;
+  max-width: 280px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #4a7a9a, #1e3a52 50%, #0f1f30 100%);
+  box-shadow: inset -10px -10px 30px rgba(0,0,0,0.35);
+  opacity: 0.85;
+}
+.hero_mobile_bg_glow {
+  position: absolute;
+  top: -15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  height: 45%;
+  background: radial-gradient(ellipse at center, rgba(249, 122, 49, 0.18) 0%, transparent 65%);
+}
+
+/* ========== AVIATOR: plane lift then fly right ========== */
+.hero_mob_aviator_plane {
+  display: none;
+  position: absolute;
+  left: 15%;
+  bottom: 8%;
+  width: 56px;
+  height: 56px;
+  color: #f97a31;
+  font-size: 56px;
+  animation: heroAviatorLiftRight 5s ease-in-out infinite;
+  filter: drop-shadow(0 0 16px rgba(249, 122, 49, 0.7));
+}
+.hero_mob_aviator_plane i {
+  display: block;
+}
+.hero_mob_aviator_trail {
+  display: none;
+  position: absolute;
+  left: 15%;
+  bottom: 8%;
+  width: 4px;
+  height: 80px;
+  background: linear-gradient(180deg, transparent, rgba(249, 122, 49, 0.9) 30%, rgba(249, 122, 49, 0.4) 100%);
+  border-radius: 2px;
+  transform-origin: bottom center;
+  animation: heroAviatorTrail 5s ease-in-out infinite;
+}
+
+/* ========== CRICKET: ball in arc + stumps ========== */
+.hero_mob_cricket_ball {
+  display: none;
+  position: absolute;
+  left: 10%;
+  top: 35%;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #f0e6d8, #c4a574 40%, #8b6914);
+  box-shadow: inset -3px -3px 6px rgba(0,0,0,0.25);
+  animation: heroCricketBallArc 4s ease-in-out infinite;
+}
+.hero_mob_cricket_stumps {
+  display: none;
+  position: absolute;
+  right: 12%;
+  bottom: 18%;
+  width: 6px;
+  height: 45px;
+  background: linear-gradient(180deg, #8b6914, #5c4510);
+  border-radius: 2px;
+  box-shadow: 8px 0 0 -2px #8b6914, 16px 0 0 -2px #8b6914;
+  animation: heroCricketStumps 3s ease-in-out infinite;
+}
+
+/* ========== CASINO: dice roll + card + chip ========== */
+.hero_mob_casino_dice {
+  display: none;
+  position: absolute;
+  right: 15%;
+  top: 25%;
+  width: 44px;
+  height: 44px;
+  color: rgba(249, 122, 49, 0.95);
+  font-size: 44px;
+  animation: heroCasinoDiceRoll 3.5s ease-in-out infinite;
+}
+.hero_mob_casino_dice i {
+  display: block;
+}
+.hero_mob_casino_card {
+  display: none;
+  position: absolute;
+  right: 22%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 40px;
+  animation: heroCasinoCardFloat 4s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+.hero_mob_casino_card i {
+  display: block;
+}
+.hero_mob_casino_chip {
+  display: none;
+  position: absolute;
+  left: 25%;
+  top: 22%;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 4px solid #f97a31;
+  background: radial-gradient(circle at 30% 30%, #2a2a2a, #1a1a1a);
+  box-shadow: 0 0 12px rgba(249, 122, 49, 0.4);
+  animation: heroCasinoChipFloat 3.8s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+/* Keyframes: Aviator – lift up then fly right */
+@keyframes heroAviatorLiftRight {
+  0% {
+    transform: translate(0, 0) rotate(-50deg) scale(0.9);
+    opacity: 0.95;
+  }
+  30% {
+    transform: translate(0, -32vh) rotate(-50deg) scale(1);
+    opacity: 1;
+  }
+  65% {
+    transform: translate(42vw, -52vh) rotate(-35deg) scale(0.98);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(75vw, -38vh) rotate(-25deg) scale(0.88);
+    opacity: 0.15;
+  }
+}
+@keyframes heroAviatorTrail {
+  0%, 30% { transform: scaleY(0); opacity: 0; }
+  35% { transform: scaleY(1); opacity: 0.8; }
+  70% { transform: scaleY(0.5); opacity: 0.3; }
+  100% { transform: scaleY(0); opacity: 0; }
+}
+
+/* Keyframes: Cricket – ball in arc */
+@keyframes heroCricketBallArc {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(25px, -30px); }
+  50% { transform: translate(50px, -15px); }
+  75% { transform: translate(35px, -25px); }
+}
+@keyframes heroCricketStumps {
+  0%, 100% { transform: scaleY(1); opacity: 0.9; }
+  50% { transform: scaleY(1.05); opacity: 1; }
+}
+
+/* Keyframes: Casino – dice roll */
+@keyframes heroCasinoDiceRoll {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.05); }
+  50% { transform: rotate(180deg) scale(1); }
+  75% { transform: rotate(270deg) scale(1.05); }
+}
+@keyframes heroCasinoCardFloat {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-12px) rotate(5deg); }
+}
+@keyframes heroCasinoChipFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.1); }
+}
+
+@media (max-width: 991px) {
+  .hero_bg_video_wrapper {
+    display: none !important;
+  }
+  .hero_mobile_animation {
+    display: block;
+  }
+  .hero_mob_aviator_plane,
+  .hero_mob_aviator_trail,
+  .hero_mob_cricket_ball,
+  .hero_mob_cricket_stumps,
+  .hero_mob_casino_dice,
+  .hero_mob_casino_card,
+  .hero_mob_casino_chip {
+    display: block;
+  }
+}
+
+/* Support help – simple, clean card */
+.support_help_container {
+  margin: 28px 0 24px;
+}
+.support_help_card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px;
+  max-width: 420px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #f97a31 0%, #e86d2a 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(249, 122, 49, 0.25);
+  transition: box-shadow 0.2s;
+}
+.support_help_card:hover {
+  box-shadow: 0 6px 28px rgba(249, 122, 49, 0.35);
+}
+.support_help_card_icon {
+  font-size: 22px;
+  color: rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+.support_help_card_text {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a0f0a;
+  line-height: 1.35;
+}
+@media (max-width: 768px) {
+  .support_help_card {
+    padding: 14px 18px;
+    gap: 10px;
+  }
+  .support_help_card_text {
+    font-size: 14px;
+  }
+  .support_help_card_icon {
+    font-size: 20px;
+  }
+}

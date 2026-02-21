@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import './cricketDetail.css'
-import UserHeader from '../customComponents/UserHeader'
+import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function CricketDetail() {
@@ -101,7 +101,7 @@ function CricketDetail() {
 
     return (
         <>
-            <UserHeader />
+            <Header />
             <div className='dashboard_page removebgsports'>
                 <div className='container'>
                     <div className='cricket_detail_section'>

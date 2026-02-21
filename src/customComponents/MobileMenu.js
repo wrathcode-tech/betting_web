@@ -48,9 +48,9 @@ function MobileMenu() {
                     <li className="mobile-menu__item">
                         <NavLink to="/profile" className={({ isActive }) => `mobile-menu__link ${isActive ? 'active' : ''}`}>
                             <span className="icon mobile-menu__icon">
-                                <i className="ri-wallet-line"></i>
+                                <i className="ri-user-line"></i>
                             </span>
-                            <span className="mobile-menu__name">Wallet</span>
+                            <span className="mobile-menu__name">Profile</span>
                         </NavLink>
                     </li>
                 </ul>

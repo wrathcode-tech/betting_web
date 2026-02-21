@@ -17,6 +17,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     sessionStorage.setItem('token', 'demo_logged_in')
+    window.dispatchEvent(new CustomEvent('loginStateChange'))
     onHide()
     navigate('/', { replace: true })
   }

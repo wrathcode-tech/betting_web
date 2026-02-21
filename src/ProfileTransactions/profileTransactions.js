@@ -1,7 +1,7 @@
 import React from 'react'
 import MobileMenu from '../customComponents/MobileMenu'
 import './profileTransactions.css'
-import UserHeader from '../customComponents/UserHeader'
+import Header from '../customComponents/Header'
 
 function ProfileTransactions() {
     // Sample transaction data
@@ -100,7 +100,7 @@ function ProfileTransactions() {
 
     return (
         <>
-            <UserHeader />
+            <Header />
             <div className='dashboard_page'>
                 <div className='container'>
                     <div className='profile_transactions_section'>

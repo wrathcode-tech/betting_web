@@ -1,1 +1,178 @@
-/* Footer styles are in public/css/style.css */
+/* Footer improvements – cleaner layout, spacing, typography */
+
+footer {
+  background: linear-gradient(180deg, #0d131c 0%, #0a0e14 100%);
+  padding: 32px 0 24px;
+}
+
+footer .container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Top strip – Secure & Private */
+.topfooter {
+  align-items: center;
+  gap: 20px;
+  padding: 16px 0;
+}
+.secure_img img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+.safe_cnt h5 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px;
+}
+.safe_cnt p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  line-height: 1.5;
+  max-width: 320px;
+}
+
+/* Main footer block */
+.footermain {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 24px;
+  padding-top: 24px;
+}
+
+.footer_description_container {
+  margin-bottom: 16px;
+}
+
+.footer_description_content h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 10px;
+  line-height: 1.35;
+}
+
+.footer_description_content p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.footer_description_content ul {
+  padding-left: 18px;
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.footer_description_content ul li {
+  margin-bottom: 4px;
+}
+
+.footer_show_more_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  margin-top: 4px;
+  background: rgba(249, 122, 49, 0.15);
+  border: 1px solid rgba(249, 122, 49, 0.35);
+  border-radius: 10px;
+  font-weight: 600;
+  color: #f97a31;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.footer_show_more_btn:hover {
+  background: rgba(249, 122, 49, 0.25);
+  border-color: rgba(249, 122, 49, 0.5);
+  color: #ff9f6b;
+}
+
+/* Quick links – desktop */
+.footer_quick_links {
+  gap: 6px 4px;
+  font-size: 14px;
+}
+.footer_quick_links a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+.footer_quick_links a:hover {
+  color: #f97a31;
+  background: rgba(255, 255, 255, 0.06);
+}
+.footer_quick_links span {
+  color: rgba(255, 255, 255, 0.25);
+  user-select: none;
+}
+
+/* Mobile footer block */
+.mobilebgfooter {
+  background: rgba(22, 33, 44, 0.6);
+  border-radius: 12px;
+  padding: 20px 18px;
+  margin-top: 20px;
+}
+
+.footer_disclaimer {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.6;
+  margin: 16px 0 0;
+}
+.footer_copyright {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 12px 0 0;
+}
+
+/* Trust icons row */
+.footer-info__icons ul {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-start;
+  align-items: center;
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+.footer-info__icons ul li img {
+  height: 32px;
+  width: auto;
+  opacity: 0.9;
+}
+
+/* Mobile accordion */
+.footer_mobile_menu_heading {
+  padding: 12px 0 !important;
+  font-size: 13px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+.footer_mobile_menu_link {
+  padding: 8px 0 !important;
+  font-size: 14px !important;
+}
+.footer_mobile_menu_content.is-open {
+  max-height: 500px;
+}
+
+@media (min-width: 768px) {
+  footer .container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .p_space_footer {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}

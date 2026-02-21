@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import LandingPage from "./LandingPage/LandingPage";
 import ProfilePage from "./ProfilePage";
 import CasinoGame from "./Casino/casinoGame";
+import CasinoCategoryPage from "./Casino/CasinoCategoryPage";
 import GamePlay from "./GamePlay/gamePlay";
 import SportsGame from "./sports/SportsGame";
 import ProfileTransactions from "./ProfileTransactions/profileTransactions";
@@ -17,6 +18,7 @@ const Routing = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/casino" element={<CasinoGame />} />
+        <Route path="/casino/category/:categoryId" element={<CasinoCategoryPage />} />
         <Route path="/game" element={<GamePlay />} />
         <Route path="/sports" element={<SportsGame />} />
         <Route path="/transactions" element={<ProfileTransactions />} />
