@@ -102,12 +102,13 @@ a.dropdown_menu_item {
 }
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active {
   color: #fff;
-  background: rgba(175, 9, 57, 0.15);
-  box-shadow: 0 0 16px rgba(175, 9, 57, 0.4);
 }
+
+
+.mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active .mobile-menu__name{  font-size: 12px; }
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active .mobile-menu__icon,
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active i {
-  color: #fff;
+  color: #fff; font-size: 18px;
 }
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active::before {
   display: none;
