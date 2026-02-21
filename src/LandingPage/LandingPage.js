@@ -30,23 +30,7 @@ function LandingPage() {
   const [topMatchesIndex, setTopMatchesIndex] = useState(0);
   const topMatchesSliderRef = useRef(null);
 
-  // Auto-slide intervals (ms) - different for each slider
-  const SLIDER_INTERVAL_TOP_SLOTS = 3500;
-  const SLIDER_INTERVAL_BET_CASINO = 4000;
-  const SLIDER_INTERVAL_LIVE_CASINO = 3800;
-  const SLIDER_INTERVAL_HIGHROLLER = 4200;
-  const SLIDER_INTERVAL_TOP_SPORTS = 3000;
-  const SLIDER_INTERVAL_TOP_MATCHES = 4500;
-
-  // Refs for auto-slide intervals (to clear on hover/unmount)
-  const topSlotsIntervalRef = useRef(null);
-  const betCasinoIntervalRef = useRef(null);
-  const liveCasinoIntervalRef = useRef(null);
-  const highrollerIntervalRef = useRef(null);
-  const topSportsIntervalRef = useRef(null);
-  const topMatchesIntervalRef = useRef(null);
-
-  // Mouse drag-to-scroll state (shared for all sliders)
+  // Mouse drag-to-scroll state (shared for all sliders) – no auto-slide
   const dragStateRef = useRef({
     isDragging: false,
     startX: 0,
@@ -56,9 +40,59 @@ function LandingPage() {
     getItemWidth: null,
     itemsPerSet: null,
     setIndex: null,
-    startAuto: null,
   });
   const justDraggedRef = useRef(false);
+
+  // Reset each slider to start when its section goes out of view and comes back
+  const topSlotsSectionRef = useRef(null);
+  const topSportsSectionRef = useRef(null);
+  const topMatchesSectionRef = useRef(null);
+  const betCasinoSectionRef = useRef(null);
+  const liveCasinoSectionRef = useRef(null);
+  const highrollerSectionRef = useRef(null);
+  const sectionWasOutRef = useRef(new Map());
+  const sectionResetFnsRef = useRef(new Map());
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const el = entry.target;
+          if (entry.isIntersecting) {
+            if (sectionWasOutRef.current.get(el)) {
+              const reset = sectionResetFnsRef.current.get(el);
+              if (reset) reset();
+              sectionWasOutRef.current.set(el, false);
+            }
+          } else {
+            sectionWasOutRef.current.set(el, true);
+          }
+        });
+      },
+      { threshold: 0, rootMargin: '-10% 0px -10% 0px' }
+    );
+    const pairs = [
+      [topSlotsSectionRef, () => setCurrentIndex(0)],
+      [topSportsSectionRef, () => setTopSportsIndex(0)],
+      [topMatchesSectionRef, () => setTopMatchesIndex(0)],
+      [betCasinoSectionRef, () => setBetCasinoIndex(0)],
+      [liveCasinoSectionRef, () => setLiveCasinoIndex(0)],
+      [highrollerSectionRef, () => setHighrollerIndex(0)],
+    ];
+    const observed = [];
+    pairs.forEach(([ref, reset]) => {
+      const el = ref.current;
+      if (el) {
+        sectionResetFnsRef.current.set(el, reset);
+        observer.observe(el);
+        observed.push(el);
+      }
+    });
+    return () => {
+      observed.forEach((el) => observer.unobserve(el));
+      observer.disconnect();
+    };
+  }, []);
 
   const gameItems = [
     { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
@@ -181,38 +215,24 @@ function LandingPage() {
     },
   ];
 
-  const betCasinoItemsPerSet = betCasinoItems.length;
-  const liveCasinoItemsPerSet = liveCasinoItems.length;
-  const highrollerItemsPerSet = highrollerItems.length;
-  const topSportsItemsPerSet = topSportsItems.length;
-  const topMatchesItemsPerSet = topMatchesItems.length;
+  const MAX_SLIDER_ITEMS = 15;
+  const MAX_CONTENT_BEFORE_VIEW_ALL = MAX_SLIDER_ITEMS - 1;
 
-  // Duplicate items for seamless infinite loop
-  const duplicatedItems = [...gameItems, ...gameItems, ...gameItems];
-  const duplicatedTopSportsItems = [...topSportsItems, ...topSportsItems, ...topSportsItems];
-  const duplicatedTopMatchesItems = [...topMatchesItems, ...topMatchesItems, ...topMatchesItems];
-  const itemsPerSet = gameItems.length;
+  const topSlotsDisplayItems = [...gameItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }];
+  const betCasinoDisplayItems = [...betCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }];
+  const liveCasinoDisplayItems = [...liveCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }];
+  const highrollerDisplayItems = [...highrollerItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }];
+  const topSportsDisplayItems = [...topSportsItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }];
+  const topMatchesDisplayItems = [...topMatchesItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }];
 
-  // TOP SLOTS slider handlers
-  const handleTopSlotsNext = () => {
-    setCurrentIndex((prevIndex) => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex >= itemsPerSet * 2) {
-        requestAnimationFrame(() => {
-          if (sliderRef.current) {
-            const itemWidth = 178 + 18;
-            sliderRef.current.style.transition = 'none';
-            sliderRef.current.style.transform = `translateX(${-itemsPerSet * itemWidth}px)`;
-            void sliderRef.current.offsetWidth;
-            sliderRef.current.style.transition = 'transform 0.6s ease-in-out';
-          }
-        });
-        return itemsPerSet;
-      }
-      return nextIndex;
-    });
-  };
+  const itemsPerSet = topSlotsDisplayItems.length;
+  const betCasinoItemsPerSet = betCasinoDisplayItems.length;
+  const liveCasinoItemsPerSet = liveCasinoDisplayItems.length;
+  const highrollerItemsPerSet = highrollerDisplayItems.length;
+  const topSportsItemsPerSet = topSportsDisplayItems.length;
+  const topMatchesItemsPerSet = topMatchesDisplayItems.length;
 
+  // TOP SLOTS slider – sync transform to index (mouse drag only)
   useEffect(() => {
     if (sliderRef.current) {
       const itemWidth = 178 + 18;
@@ -221,26 +241,7 @@ function LandingPage() {
     }
   }, [currentIndex]);
 
-  // BetCasino Original slider handlers
-  const handleBetCasinoNext = () => {
-    setBetCasinoIndex((prevIndex) => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex >= betCasinoItemsPerSet * 2) {
-        requestAnimationFrame(() => {
-          if (betCasinoSliderRef.current) {
-            const itemWidth = 178 + 18;
-            betCasinoSliderRef.current.style.transition = 'none';
-            betCasinoSliderRef.current.style.transform = `translateX(${-betCasinoItemsPerSet * itemWidth}px)`;
-            void betCasinoSliderRef.current.offsetWidth;
-            betCasinoSliderRef.current.style.transition = 'transform 0.6s ease-in-out';
-          }
-        });
-        return betCasinoItemsPerSet;
-      }
-      return nextIndex;
-    });
-  };
-
+  // BetCasino Original slider – sync transform to index
   useEffect(() => {
     if (betCasinoSliderRef.current) {
       const itemWidth = 178 + 18;
@@ -249,26 +250,7 @@ function LandingPage() {
     }
   }, [betCasinoIndex]);
 
-  // Live Casino slider handlers
-  const handleLiveCasinoNext = () => {
-    setLiveCasinoIndex((prevIndex) => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex >= liveCasinoItemsPerSet * 2) {
-        requestAnimationFrame(() => {
-          if (liveCasinoSliderRef.current) {
-            const itemWidth = 178 + 18;
-            liveCasinoSliderRef.current.style.transition = 'none';
-            liveCasinoSliderRef.current.style.transform = `translateX(${-liveCasinoItemsPerSet * itemWidth}px)`;
-            void liveCasinoSliderRef.current.offsetWidth;
-            liveCasinoSliderRef.current.style.transition = 'transform 0.6s ease-in-out';
-          }
-        });
-        return liveCasinoItemsPerSet;
-      }
-      return nextIndex;
-    });
-  };
-
+  // Live Casino slider – sync transform to index
   useEffect(() => {
     if (liveCasinoSliderRef.current) {
       const itemWidth = 178 + 18;
@@ -277,26 +259,7 @@ function LandingPage() {
     }
   }, [liveCasinoIndex]);
 
-  // Highroller Hall slider handlers
-  const handleHighrollerNext = () => {
-    setHighrollerIndex((prevIndex) => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex >= highrollerItemsPerSet * 2) {
-        requestAnimationFrame(() => {
-          if (highrollerSliderRef.current) {
-            const itemWidth = 178 + 18;
-            highrollerSliderRef.current.style.transition = 'none';
-            highrollerSliderRef.current.style.transform = `translateX(${-highrollerItemsPerSet * itemWidth}px)`;
-            void highrollerSliderRef.current.offsetWidth;
-            highrollerSliderRef.current.style.transition = 'transform 0.6s ease-in-out';
-          }
-        });
-        return highrollerItemsPerSet;
-      }
-      return nextIndex;
-    });
-  };
-
+  // Highroller Hall slider – sync transform to index
   useEffect(() => {
     if (highrollerSliderRef.current) {
       const itemWidth = 178 + 18;
@@ -305,26 +268,7 @@ function LandingPage() {
     }
   }, [highrollerIndex]);
 
-  // TOP Sports slider handlers
-  const handleTopSportsNext = () => {
-    setTopSportsIndex((prevIndex) => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex >= topSportsItemsPerSet * 2) {
-        requestAnimationFrame(() => {
-          if (topSportsSliderRef.current) {
-            const itemWidth = 178 + 8;
-            topSportsSliderRef.current.style.transition = 'none';
-            topSportsSliderRef.current.style.transform = `translateX(${-topSportsItemsPerSet * itemWidth}px)`;
-            void topSportsSliderRef.current.offsetWidth;
-            topSportsSliderRef.current.style.transition = 'transform 0.6s ease-in-out';
-          }
-        });
-        return topSportsItemsPerSet;
-      }
-      return nextIndex;
-    });
-  };
-
+  // TOP Sports slider – sync transform to index
   useEffect(() => {
     if (topSportsSliderRef.current) {
       const itemWidth = 178 + 8;
@@ -351,25 +295,7 @@ function LandingPage() {
     }
   };
 
-  const handleTopMatchesNext = () => {
-    setTopMatchesIndex((prevIndex) => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex >= topMatchesItemsPerSet * 2) {
-        requestAnimationFrame(() => {
-          if (topMatchesSliderRef.current) {
-            const itemWidth = getTopMatchesItemWidth();
-            topMatchesSliderRef.current.style.transition = 'none';
-            topMatchesSliderRef.current.style.transform = `translateX(${-topMatchesItemsPerSet * itemWidth}px)`;
-            void topMatchesSliderRef.current.offsetWidth;
-            topMatchesSliderRef.current.style.transition = 'transform 0.6s ease-in-out';
-          }
-        });
-        return topMatchesItemsPerSet;
-      }
-      return nextIndex;
-    });
-  };
-
+  // TOP Matches – sync transform to index
   useEffect(() => {
     if (topMatchesSliderRef.current) {
       const itemWidth = getTopMatchesItemWidth();
@@ -392,99 +318,7 @@ function LandingPage() {
     return () => window.removeEventListener('resize', handleResize);
   }, [topMatchesIndex]);
 
-  // Auto-slide start/stop helpers (pause on mouse hover)
-  const startTopSlotsAuto = () => {
-    if (topSlotsIntervalRef.current) return;
-    topSlotsIntervalRef.current = setInterval(handleTopSlotsNext, SLIDER_INTERVAL_TOP_SLOTS);
-  };
-  const stopTopSlotsAuto = () => {
-    if (topSlotsIntervalRef.current) {
-      clearInterval(topSlotsIntervalRef.current);
-      topSlotsIntervalRef.current = null;
-    }
-  };
-  const startBetCasinoAuto = () => {
-    if (betCasinoIntervalRef.current) return;
-    betCasinoIntervalRef.current = setInterval(handleBetCasinoNext, SLIDER_INTERVAL_BET_CASINO);
-  };
-  const stopBetCasinoAuto = () => {
-    if (betCasinoIntervalRef.current) {
-      clearInterval(betCasinoIntervalRef.current);
-      betCasinoIntervalRef.current = null;
-    }
-  };
-  const startLiveCasinoAuto = () => {
-    if (liveCasinoIntervalRef.current) return;
-    liveCasinoIntervalRef.current = setInterval(handleLiveCasinoNext, SLIDER_INTERVAL_LIVE_CASINO);
-  };
-  const stopLiveCasinoAuto = () => {
-    if (liveCasinoIntervalRef.current) {
-      clearInterval(liveCasinoIntervalRef.current);
-      liveCasinoIntervalRef.current = null;
-    }
-  };
-  const startHighrollerAuto = () => {
-    if (highrollerIntervalRef.current) return;
-    highrollerIntervalRef.current = setInterval(handleHighrollerNext, SLIDER_INTERVAL_HIGHROLLER);
-  };
-  const stopHighrollerAuto = () => {
-    if (highrollerIntervalRef.current) {
-      clearInterval(highrollerIntervalRef.current);
-      highrollerIntervalRef.current = null;
-    }
-  };
-  const startTopSportsAuto = () => {
-    if (topSportsIntervalRef.current) return;
-    topSportsIntervalRef.current = setInterval(handleTopSportsNext, SLIDER_INTERVAL_TOP_SPORTS);
-  };
-  const stopTopSportsAuto = () => {
-    if (topSportsIntervalRef.current) {
-      clearInterval(topSportsIntervalRef.current);
-      topSportsIntervalRef.current = null;
-    }
-  };
-  const startTopMatchesAuto = () => {
-    if (topMatchesIntervalRef.current) return;
-    topMatchesIntervalRef.current = setInterval(handleTopMatchesNext, SLIDER_INTERVAL_TOP_MATCHES);
-  };
-  const stopTopMatchesAuto = () => {
-    if (topMatchesIntervalRef.current) {
-      clearInterval(topMatchesIntervalRef.current);
-      topMatchesIntervalRef.current = null;
-    }
-  };
-
-  // Auto-slide useEffects (each slider has different timing) - run once on mount
-  useEffect(() => {
-    startTopSlotsAuto();
-    return () => stopTopSlotsAuto();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  useEffect(() => {
-    startBetCasinoAuto();
-    return () => stopBetCasinoAuto();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  useEffect(() => {
-    startLiveCasinoAuto();
-    return () => stopLiveCasinoAuto();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  useEffect(() => {
-    startHighrollerAuto();
-    return () => stopHighrollerAuto();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  useEffect(() => {
-    startTopSportsAuto();
-    return () => stopTopSportsAuto();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  useEffect(() => {
-    startTopMatchesAuto();
-    return () => stopTopMatchesAuto();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Sliders scroll only on mouse drag – no auto-slide
 
   // Prevent link click when user just finished dragging
   const handleSliderClickCapture = (e) => {
@@ -495,40 +329,48 @@ function LandingPage() {
     }
   };
 
-  // Mouse drag-to-scroll: start drag (call from each wrapper's onMouseDown)
-  const handleSliderMouseDown = (e, config) => {
-    if (e.button !== 0 || !config.sliderRef?.current) return;
-    e.preventDefault();
-    config.stopAuto();
+  // Start drag (shared for mouse and touch)
+  const startSliderDrag = (clientX, config) => {
+    if (!config.sliderRef?.current) return;
     const itemWidth = typeof config.getItemWidth === 'function' ? config.getItemWidth() : config.getItemWidth;
     const startTranslate = -config.currentIndex * itemWidth;
     dragStateRef.current = {
       isDragging: true,
-      startX: e.clientX,
+      startX: clientX,
       startTranslate,
       lastTranslate: startTranslate,
       sliderEl: config.sliderRef.current,
       getItemWidth: config.getItemWidth,
       itemsPerSet: config.itemsPerSet,
       setIndex: config.setIndex,
-      startAuto: config.startAuto,
     };
     document.body.style.cursor = 'grabbing';
     document.body.style.userSelect = 'none';
   };
 
-  // Window listeners for drag (mousemove + mouseup)
+  const handleSliderMouseDown = (e, config) => {
+    if (e.button !== 0 || !config.sliderRef?.current) return;
+    e.preventDefault();
+    startSliderDrag(e.clientX, config);
+  };
+
+  const handleSliderTouchStart = (e, config) => {
+    if (!e.touches.length || !config.sliderRef?.current) return;
+    startSliderDrag(e.touches[0].clientX, config);
+  };
+
+  // Window listeners for drag (mouse + touch)
   useEffect(() => {
-    const onMouseMove = (e) => {
+    const applyMove = (clientX) => {
       const d = dragStateRef.current;
       if (!d.isDragging || !d.sliderEl) return;
-      const deltaX = e.clientX - d.startX;
+      const deltaX = clientX - d.startX;
       const newTranslate = d.startTranslate - deltaX;
       d.sliderEl.style.transition = 'none';
       d.sliderEl.style.transform = `translateX(${newTranslate}px)`;
       d.lastTranslate = newTranslate;
     };
-    const onMouseUp = () => {
+    const endDrag = () => {
       const d = dragStateRef.current;
       if (!d.isDragging || !d.sliderEl) return;
       const moved = Math.abs(d.lastTranslate - d.startTranslate) > 5;
@@ -539,16 +381,30 @@ function LandingPage() {
       const itemWidth = typeof d.getItemWidth === 'function' ? d.getItemWidth() : d.getItemWidth;
       let nearestIndex = Math.round(-d.lastTranslate / itemWidth);
       if (nearestIndex < 0) nearestIndex = 0;
-      if (nearestIndex >= d.itemsPerSet * 2) nearestIndex = d.itemsPerSet * 2 - 1;
+      if (nearestIndex >= d.itemsPerSet) nearestIndex = d.itemsPerSet - 1;
       d.setIndex(nearestIndex);
       d.sliderEl.style.transition = '';
-      if (d.startAuto) d.startAuto();
     };
+    const onMouseMove = (e) => applyMove(e.clientX);
+    const onMouseUp = () => endDrag();
+    const onTouchMove = (e) => {
+      if (dragStateRef.current.isDragging && e.touches.length) {
+        e.preventDefault();
+        applyMove(e.touches[0].clientX);
+      }
+    };
+    const onTouchEnd = () => endDrag();
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('touchcancel', onTouchEnd);
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('touchmove', onTouchMove, { passive: false });
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchEnd);
     };
   }, []);
 
@@ -655,7 +511,7 @@ function LandingPage() {
 </div>
 
       <div className="landing_page_content">
-        <div className="top_slot_outer">
+        <div className="top_slot_outer" ref={topSlotsSectionRef}>
           <div className="container">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2">TOP SLOTS</h2>
@@ -666,40 +522,49 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
-              onMouseEnter={stopTopSlotsAuto}
-              onMouseLeave={startTopSlotsAuto}
               onMouseDown={(e) => handleSliderMouseDown(e, {
                 sliderRef,
                 getItemWidth: 178 + 18,
                 itemsPerSet: itemsPerSet,
                 currentIndex,
                 setIndex: setCurrentIndex,
-                stopAuto: stopTopSlotsAuto,
-                startAuto: startTopSlotsAuto,
+              })}
+              onTouchStart={(e) => handleSliderTouchStart(e, {
+                sliderRef,
+                getItemWidth: 178 + 18,
+                itemsPerSet: itemsPerSet,
+                currentIndex,
+                setIndex: setCurrentIndex,
               })}
               onClickCapture={handleSliderClickCapture}
               style={{ cursor: 'grab' }}
             >
               <div className="game_items_slider" ref={sliderRef}>
-                {duplicatedItems.map((item, index) => (
-                  <Link key={`${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                    <div className='playbtn'>
-                      <img src="images/playbtn.png" alt="game" />
-                    </div>
-                    {item.badge && (
-                      <div className="top_ads">
-                        {item.badge}
+                {topSlotsDisplayItems.map((item, index) => (
+                  item.viewAll ? (
+                    <Link key="view-all-slots" to={item.to} className="game_items_inner slider_view_all_card" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <span className="slider_view_all_text">View All</span>
+                    </Link>
+                  ) : (
+                    <Link key={`${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <div className='playbtn'>
+                        <img src="images/playbtn.png" alt="game" />
                       </div>
-                    )}
-                    <img src={item.image} alt="game" />
-                  </Link>
+                      {item.badge && (
+                        <div className="top_ads">
+                          {item.badge}
+                        </div>
+                      )}
+                      <img src={item.image} alt="game" />
+                    </Link>
+                  )
                 ))}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="top_match_section">
+        <div className="top_match_section" ref={topSportsSectionRef}>
           <div className="container">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2">TOP Sports</h2>
@@ -710,27 +575,36 @@ function LandingPage() {
 
           <div
             className="game_items_slider_wrapper"
-            onMouseEnter={stopTopSportsAuto}
-            onMouseLeave={startTopSportsAuto}
             onMouseDown={(e) => handleSliderMouseDown(e, {
               sliderRef: topSportsSliderRef,
               getItemWidth: 178 + 8,
               itemsPerSet: topSportsItemsPerSet,
               currentIndex: topSportsIndex,
               setIndex: setTopSportsIndex,
-              stopAuto: stopTopSportsAuto,
-              startAuto: startTopSportsAuto,
+            })}
+            onTouchStart={(e) => handleSliderTouchStart(e, {
+              sliderRef: topSportsSliderRef,
+              getItemWidth: 178 + 8,
+              itemsPerSet: topSportsItemsPerSet,
+              currentIndex: topSportsIndex,
+              setIndex: setTopSportsIndex,
             })}
             onClickCapture={handleSliderClickCapture}
             style={{ cursor: 'grab' }}
           >
             <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
-              {duplicatedTopSportsItems.map((item, index) => (
-                <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
-                  <div className='spot_value'>{item.badge}</div>
-                  <img src={`images/${item.icon}`} alt="match" />
-                  <h3>{item.title}</h3>
-                </div>
+              {topSportsDisplayItems.map((item, index) => (
+                item.viewAll ? (
+                  <Link key="view-all-sports" to={item.to} className="match_slider_sports_item slider_view_all_card sports_view_all" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <span className="slider_view_all_text">View All</span>
+                  </Link>
+                ) : (
+                  <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
+                    <div className='spot_value'>{item.badge}</div>
+                    <img src={`images/${item.icon}`} alt="match" />
+                    <h3>{item.title}</h3>
+                  </div>
+                )
               ))}
             </div>
       </div>
@@ -879,7 +753,7 @@ function LandingPage() {
         </div>
 
 
-        <div className="top_match_section sportsmatch_s">
+        <div className="top_match_section sportsmatch_s" ref={topMatchesSectionRef}>
           <div className="container">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <Link to="/sports" style={{ textDecoration: 'none', color: 'inherit' }}><h2 className="heading_h2" style={{ cursor: 'pointer' }}>TOP Matches</h2></Link>
@@ -890,22 +764,30 @@ function LandingPage() {
 
           <div
             className='match_slider_wrapper'
-            onMouseEnter={stopTopMatchesAuto}
-            onMouseLeave={startTopMatchesAuto}
             onMouseDown={(e) => handleSliderMouseDown(e, {
               sliderRef: topMatchesSliderRef,
               getItemWidth: getTopMatchesItemWidth,
               itemsPerSet: topMatchesItemsPerSet,
               currentIndex: topMatchesIndex,
               setIndex: setTopMatchesIndex,
-              stopAuto: stopTopMatchesAuto,
-              startAuto: startTopMatchesAuto,
+            })}
+            onTouchStart={(e) => handleSliderTouchStart(e, {
+              sliderRef: topMatchesSliderRef,
+              getItemWidth: getTopMatchesItemWidth,
+              itemsPerSet: topMatchesItemsPerSet,
+              currentIndex: topMatchesIndex,
+              setIndex: setTopMatchesIndex,
             })}
             onClickCapture={handleSliderClickCapture}
             style={{ cursor: 'grab' }}
           >
             <div className='match_slider_container' ref={topMatchesSliderRef}>
-                {duplicatedTopMatchesItems.map((match, index) => (
+                {topMatchesDisplayItems.map((match, index) => (
+                  match.viewAll ? (
+                    <Link key="view-all-matches" to={match.to} className='match_slider slider_view_all_card matches_view_all' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <span className="slider_view_all_text">View All</span>
+                    </Link>
+                  ) : (
                   <Link key={`topmatch-${match.id}-${index}`} to="/sports" className='match_slider' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                     <div className='match_slider_inner'>
                       <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
@@ -940,6 +822,7 @@ function LandingPage() {
                       </div>
                     </div>
                   </Link>
+                  )
                 ))}
               </div>
             </div>
@@ -948,7 +831,7 @@ function LandingPage() {
           </div>
         </div>
 
-        <div className="top_slot_outer">
+        <div className="top_slot_outer" ref={betCasinoSectionRef}>
           <div className="container">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2">BetCasino Original</h2>
@@ -959,22 +842,30 @@ function LandingPage() {
 
           <div
             className="game_items_slider_wrapper"
-            onMouseEnter={stopBetCasinoAuto}
-            onMouseLeave={startBetCasinoAuto}
             onMouseDown={(e) => handleSliderMouseDown(e, {
               sliderRef: betCasinoSliderRef,
               getItemWidth: 178 + 18,
               itemsPerSet: betCasinoItemsPerSet,
               currentIndex: betCasinoIndex,
               setIndex: setBetCasinoIndex,
-              stopAuto: stopBetCasinoAuto,
-              startAuto: startBetCasinoAuto,
+            })}
+            onTouchStart={(e) => handleSliderTouchStart(e, {
+              sliderRef: betCasinoSliderRef,
+              getItemWidth: 178 + 18,
+              itemsPerSet: betCasinoItemsPerSet,
+              currentIndex: betCasinoIndex,
+              setIndex: setBetCasinoIndex,
             })}
             onClickCapture={handleSliderClickCapture}
             style={{ cursor: 'grab' }}
           >
             <div className="game_items_slider mt-2" ref={betCasinoSliderRef}>
-              {[...betCasinoItems, ...betCasinoItems, ...betCasinoItems].map((item, index) => (
+              {betCasinoDisplayItems.map((item, index) => (
+                  item.viewAll ? (
+                    <Link key="view-all-betcasino" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <span className="slider_view_all_text">View All</span>
+                    </Link>
+                  ) : (
                   <Link key={`betcasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                     <div className='playbtn'>
                       <img src="images/playbtn.png" alt="game" />
@@ -986,13 +877,14 @@ function LandingPage() {
                     )}
                     <img src={item.image} alt="game" />
                   </Link>
+                  )
                 ))}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="top_slot_outer">
+        <div className="top_slot_outer" ref={liveCasinoSectionRef}>
           <div className="container">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2"><img src="images/live_icon.svg" alt="game" /> Live Casino</h2>
@@ -1003,22 +895,30 @@ function LandingPage() {
 
           <div
             className="game_items_slider_wrapper"
-            onMouseEnter={stopLiveCasinoAuto}
-            onMouseLeave={startLiveCasinoAuto}
             onMouseDown={(e) => handleSliderMouseDown(e, {
               sliderRef: liveCasinoSliderRef,
               getItemWidth: 178 + 18,
               itemsPerSet: liveCasinoItemsPerSet,
               currentIndex: liveCasinoIndex,
               setIndex: setLiveCasinoIndex,
-              stopAuto: stopLiveCasinoAuto,
-              startAuto: startLiveCasinoAuto,
+            })}
+            onTouchStart={(e) => handleSliderTouchStart(e, {
+              sliderRef: liveCasinoSliderRef,
+              getItemWidth: 178 + 18,
+              itemsPerSet: liveCasinoItemsPerSet,
+              currentIndex: liveCasinoIndex,
+              setIndex: setLiveCasinoIndex,
             })}
             onClickCapture={handleSliderClickCapture}
             style={{ cursor: 'grab' }}
           >
             <div className="game_items_slider mt-2" ref={liveCasinoSliderRef}>
-              {[...liveCasinoItems, ...liveCasinoItems, ...liveCasinoItems].map((item, index) => (
+              {liveCasinoDisplayItems.map((item, index) => (
+                  item.viewAll ? (
+                    <Link key="view-all-livecasino" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <span className="slider_view_all_text">View All</span>
+                    </Link>
+                  ) : (
                   <Link key={`livecasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                     <div className='playbtn'>
                       <img src="images/playbtn.png" alt="game" />
@@ -1030,6 +930,7 @@ function LandingPage() {
                     )}
                     <img src={item.image} alt="game" />
                   </Link>
+                  )
                 ))}
               </div>
             </div>
@@ -1037,7 +938,7 @@ function LandingPage() {
         </div>
 
 
-        <div className="top_slot_outer">
+        <div className="top_slot_outer" ref={highrollerSectionRef}>
           <div className="container">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2"><img src="images/crownicon.svg" alt="game" /> Highroller Hall</h2>
@@ -1048,22 +949,30 @@ function LandingPage() {
 
           <div
             className="game_items_slider_wrapper"
-            onMouseEnter={stopHighrollerAuto}
-            onMouseLeave={startHighrollerAuto}
             onMouseDown={(e) => handleSliderMouseDown(e, {
               sliderRef: highrollerSliderRef,
               getItemWidth: 178 + 18,
               itemsPerSet: highrollerItemsPerSet,
               currentIndex: highrollerIndex,
               setIndex: setHighrollerIndex,
-              stopAuto: stopHighrollerAuto,
-              startAuto: startHighrollerAuto,
+            })}
+            onTouchStart={(e) => handleSliderTouchStart(e, {
+              sliderRef: highrollerSliderRef,
+              getItemWidth: 178 + 18,
+              itemsPerSet: highrollerItemsPerSet,
+              currentIndex: highrollerIndex,
+              setIndex: setHighrollerIndex,
             })}
             onClickCapture={handleSliderClickCapture}
             style={{ cursor: 'grab' }}
           >
             <div className="game_items_slider mt-2" ref={highrollerSliderRef}>
-              {[...highrollerItems, ...highrollerItems, ...highrollerItems].map((item, index) => (
+              {highrollerDisplayItems.map((item, index) => (
+                  item.viewAll ? (
+                    <Link key="view-all-highroller" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <span className="slider_view_all_text">View All</span>
+                    </Link>
+                  ) : (
                   <Link key={`highroller-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                     <div className='playbtn'>
                       <img src="images/playbtn.png" alt="game" />
@@ -1075,8 +984,9 @@ function LandingPage() {
                     )}
                     <img src={item.image} alt="game" />
                   </Link>
+                  )
                 ))}
-              </div>
+            </div>
             </div>
           </div>
         </div>

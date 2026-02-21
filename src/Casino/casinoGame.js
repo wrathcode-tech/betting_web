@@ -22,6 +22,35 @@ function CasinoGame() {
     const [lobbySlider4Index, setLobbySlider4Index] = useState(0);
     const lobbySlider4Ref = useRef(null);
     
+    // Reset sliders to start when user scrolls section out of view and comes back
+    const lobbySectionRef = useRef(null);
+    const wasOutOfViewRef = useRef(false);
+    useEffect(() => {
+        const el = lobbySectionRef.current;
+        if (!el) return;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const [entry] = entries;
+                if (!entry) return;
+                if (entry.isIntersecting) {
+                    if (wasOutOfViewRef.current) {
+                        setCurrentSlide(0);
+                        setLobbySlider1Index(0);
+                        setLobbySlider2Index(0);
+                        setLobbySlider3Index(0);
+                        setLobbySlider4Index(0);
+                        wasOutOfViewRef.current = false;
+                    }
+                } else {
+                    wasOutOfViewRef.current = true;
+                }
+            },
+            { threshold: 0.1, rootMargin: '0px' }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+    
     // Game items for sliders (7 items each)
     const gameItems = [
         { id: 1, badge: 'Top', image: 'images/betcasino_img.png' },
@@ -75,225 +104,134 @@ function CasinoGame() {
         }
     ];
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % slides.length);
-        }, 4000);
+    // No auto-slide: banner changes only on dot click; lobby sliders on mouse drag
 
-        return () => clearInterval(interval);
-    }, [slides.length]);
+    const itemWidth = 178 + 18;
+    const lobbyItemsPerSet = duplicatedItems.length;
 
-    // Slider 1 auto-scroll (4 seconds)
+    // Sync slider transform to index (mouse drag only)
     useEffect(() => {
         if (lobbySlider1Ref.current) {
-            const itemWidth = 178 + 18;
-            // Set initial position to 0 (no movement)
-            lobbySlider1Ref.current.style.transition = 'none';
-            lobbySlider1Ref.current.style.transform = `translateX(0px)`;
-            
-            // After delay, move to middle position and start auto-slide
-            setTimeout(() => {
-                if (lobbySlider1Ref.current) {
-                    lobbySlider1Ref.current.style.transition = 'transform 1.2s ease-in-out';
-                    lobbySlider1Ref.current.style.transform = `translateX(${-itemsPerSet * itemWidth}px)`;
-                    setLobbySlider1Index(itemsPerSet);
-                }
-            }, 500);
-        }
-    }, [itemsPerSet]);
-
-    useEffect(() => {
-        // Only start auto-slide if index is set (not 0)
-        if (lobbySlider1Index === 0) return;
-        
-        const interval = setInterval(() => {
-            setLobbySlider1Index((prevIndex) => {
-                const nextIndex = prevIndex + 1;
-                if (nextIndex >= itemsPerSet * 2) {
-                    requestAnimationFrame(() => {
-                        if (lobbySlider1Ref.current) {
-                            const itemWidth = 178 + 18;
-                            lobbySlider1Ref.current.style.transition = 'none';
-                            lobbySlider1Ref.current.style.transform = `translateX(${-itemsPerSet * itemWidth}px)`;
-                            void lobbySlider1Ref.current.offsetWidth;
-                            lobbySlider1Ref.current.style.transition = 'transform 1.2s ease-in-out';
-                        }
-                    });
-                    return itemsPerSet;
-                }
-                return nextIndex;
-            });
-        }, 4000);
-
-        return () => clearInterval(interval);
-    }, [itemsPerSet, lobbySlider1Index]);
-
-    useEffect(() => {
-        if (lobbySlider1Ref.current && lobbySlider1Index > 0) {
-            const itemWidth = 178 + 18;
-            const translateX = -lobbySlider1Index * itemWidth;
-            lobbySlider1Ref.current.style.transform = `translateX(${translateX}px)`;
+            const tx = -lobbySlider1Index * itemWidth;
+            lobbySlider1Ref.current.style.transform = `translateX(${tx}px)`;
         }
     }, [lobbySlider1Index]);
-
-    // Slider 2 auto-scroll (4.5 seconds)
     useEffect(() => {
         if (lobbySlider2Ref.current) {
-            const itemWidth = 178 + 18;
-            // Set initial position to 0 (no movement)
-            lobbySlider2Ref.current.style.transition = 'none';
-            lobbySlider2Ref.current.style.transform = `translateX(0px)`;
-            
-            // After delay, move to middle position and start auto-slide
-            setTimeout(() => {
-                if (lobbySlider2Ref.current) {
-                    lobbySlider2Ref.current.style.transition = 'transform 1.2s ease-in-out';
-                    lobbySlider2Ref.current.style.transform = `translateX(${-itemsPerSet * itemWidth}px)`;
-                    setLobbySlider2Index(itemsPerSet);
-                }
-            }, 600);
-        }
-    }, [itemsPerSet]);
-
-    useEffect(() => {
-        // Only start auto-slide if index is set (not 0)
-        if (lobbySlider2Index === 0) return;
-        
-        const interval = setInterval(() => {
-            setLobbySlider2Index((prevIndex) => {
-                const nextIndex = prevIndex + 1;
-                if (nextIndex >= itemsPerSet * 2) {
-                    requestAnimationFrame(() => {
-                        if (lobbySlider2Ref.current) {
-                            const itemWidth = 178 + 18;
-                            lobbySlider2Ref.current.style.transition = 'none';
-                            lobbySlider2Ref.current.style.transform = `translateX(${-itemsPerSet * itemWidth}px)`;
-                            void lobbySlider2Ref.current.offsetWidth;
-                            lobbySlider2Ref.current.style.transition = 'transform 1.2s ease-in-out';
-                        }
-                    });
-                    return itemsPerSet;
-                }
-                return nextIndex;
-            });
-        }, 4500);
-
-        return () => clearInterval(interval);
-    }, [itemsPerSet, lobbySlider2Index]);
-
-    useEffect(() => {
-        if (lobbySlider2Ref.current && lobbySlider2Index > 0) {
-            const itemWidth = 178 + 18;
-            const translateX = -lobbySlider2Index * itemWidth;
-            lobbySlider2Ref.current.style.transform = `translateX(${translateX}px)`;
+            const tx = -lobbySlider2Index * itemWidth;
+            lobbySlider2Ref.current.style.transform = `translateX(${tx}px)`;
         }
     }, [lobbySlider2Index]);
-
-    // Slider 3 auto-scroll (5 seconds)
     useEffect(() => {
         if (lobbySlider3Ref.current) {
-            const itemWidth = 178 + 18;
-            // Set initial position to 0 (no movement)
-            lobbySlider3Ref.current.style.transition = 'none';
-            lobbySlider3Ref.current.style.transform = `translateX(0px)`;
-            
-            // After delay, move to middle position and start auto-slide
-            setTimeout(() => {
-                if (lobbySlider3Ref.current) {
-                    lobbySlider3Ref.current.style.transition = 'transform 1.2s ease-in-out';
-                    lobbySlider3Ref.current.style.transform = `translateX(${-itemsPerSet * itemWidth}px)`;
-                    setLobbySlider3Index(itemsPerSet);
-                }
-            }, 700);
-        }
-    }, [itemsPerSet]);
-
-    useEffect(() => {
-        // Only start auto-slide if index is set (not 0)
-        if (lobbySlider3Index === 0) return;
-        
-        const interval = setInterval(() => {
-            setLobbySlider3Index((prevIndex) => {
-                const nextIndex = prevIndex + 1;
-                if (nextIndex >= itemsPerSet * 2) {
-                    requestAnimationFrame(() => {
-                        if (lobbySlider3Ref.current) {
-                            const itemWidth = 178 + 18;
-                            lobbySlider3Ref.current.style.transition = 'none';
-                            lobbySlider3Ref.current.style.transform = `translateX(${-itemsPerSet * itemWidth}px)`;
-                            void lobbySlider3Ref.current.offsetWidth;
-                            lobbySlider3Ref.current.style.transition = 'transform 1.2s ease-in-out';
-                        }
-                    });
-                    return itemsPerSet;
-                }
-                return nextIndex;
-            });
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, [itemsPerSet, lobbySlider3Index]);
-
-    useEffect(() => {
-        if (lobbySlider3Ref.current && lobbySlider3Index > 0) {
-            const itemWidth = 178 + 18;
-            const translateX = -lobbySlider3Index * itemWidth;
-            lobbySlider3Ref.current.style.transform = `translateX(${translateX}px)`;
+            const tx = -lobbySlider3Index * itemWidth;
+            lobbySlider3Ref.current.style.transform = `translateX(${tx}px)`;
         }
     }, [lobbySlider3Index]);
-
-    // Slider 4 auto-scroll (5.5 seconds)
     useEffect(() => {
         if (lobbySlider4Ref.current) {
-            const itemWidth = 178 + 18;
-            // Set initial position to 0 (no movement)
-            lobbySlider4Ref.current.style.transition = 'none';
-            lobbySlider4Ref.current.style.transform = `translateX(0px)`;
-            
-            // After delay, move to middle position and start auto-slide
-            setTimeout(() => {
-                if (lobbySlider4Ref.current) {
-                    lobbySlider4Ref.current.style.transition = 'transform 1.2s ease-in-out';
-                    lobbySlider4Ref.current.style.transform = `translateX(${-itemsPerSet * itemWidth}px)`;
-                    setLobbySlider4Index(itemsPerSet);
-                }
-            }, 800);
-        }
-    }, [itemsPerSet]);
-
-    useEffect(() => {
-        // Only start auto-slide if index is set (not 0)
-        if (lobbySlider4Index === 0) return;
-        
-        const interval = setInterval(() => {
-            setLobbySlider4Index((prevIndex) => {
-                const nextIndex = prevIndex + 1;
-                if (nextIndex >= itemsPerSet * 2) {
-                    requestAnimationFrame(() => {
-                        if (lobbySlider4Ref.current) {
-                            const itemWidth = 178 + 18;
-                            lobbySlider4Ref.current.style.transition = 'none';
-                            lobbySlider4Ref.current.style.transform = `translateX(${-itemsPerSet * itemWidth}px)`;
-                            void lobbySlider4Ref.current.offsetWidth;
-                            lobbySlider4Ref.current.style.transition = 'transform 1.2s ease-in-out';
-                        }
-                    });
-                    return itemsPerSet;
-                }
-                return nextIndex;
-            });
-        }, 5500);
-
-        return () => clearInterval(interval);
-    }, [itemsPerSet, lobbySlider4Index]);
-
-    useEffect(() => {
-        if (lobbySlider4Ref.current && lobbySlider4Index > 0) {
-            const itemWidth = 178 + 18;
-            const translateX = -lobbySlider4Index * itemWidth;
-            lobbySlider4Ref.current.style.transform = `translateX(${translateX}px)`;
+            const tx = -lobbySlider4Index * itemWidth;
+            lobbySlider4Ref.current.style.transform = `translateX(${tx}px)`;
         }
     }, [lobbySlider4Index]);
+
+    // Mouse drag-to-scroll (no auto)
+    const dragStateRef = useRef({
+        isDragging: false,
+        startX: 0,
+        startTranslate: 0,
+        lastTranslate: 0,
+        sliderEl: null,
+        getItemWidth: null,
+        itemsPerSet: null,
+        setIndex: null,
+    });
+    const justDraggedRef = useRef(false);
+
+    const handleSliderClickCapture = (e) => {
+        if (justDraggedRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            justDraggedRef.current = false;
+        }
+    };
+
+    const startSliderDrag = (clientX, config) => {
+        if (!config.sliderRef?.current) return;
+        const iw = typeof config.getItemWidth === 'function' ? config.getItemWidth() : config.getItemWidth;
+        const startTranslate = -config.currentIndex * iw;
+        dragStateRef.current = {
+            isDragging: true,
+            startX: clientX,
+            startTranslate,
+            lastTranslate: startTranslate,
+            sliderEl: config.sliderRef.current,
+            getItemWidth: config.getItemWidth,
+            itemsPerSet: config.itemsPerSet,
+            setIndex: config.setIndex,
+        };
+        document.body.style.cursor = 'grabbing';
+        document.body.style.userSelect = 'none';
+    };
+
+    const handleSliderMouseDown = (e, config) => {
+        if (e.button !== 0 || !config.sliderRef?.current) return;
+        e.preventDefault();
+        startSliderDrag(e.clientX, config);
+    };
+
+    const handleSliderTouchStart = (e, config) => {
+        if (!e.touches.length || !config.sliderRef?.current) return;
+        startSliderDrag(e.touches[0].clientX, config);
+    };
+
+    useEffect(() => {
+        const applyMove = (clientX) => {
+            const d = dragStateRef.current;
+            if (!d.isDragging || !d.sliderEl) return;
+            const deltaX = clientX - d.startX;
+            const newTranslate = d.startTranslate - deltaX;
+            d.sliderEl.style.transition = 'none';
+            d.sliderEl.style.transform = `translateX(${newTranslate}px)`;
+            d.lastTranslate = newTranslate;
+        };
+        const endDrag = () => {
+            const d = dragStateRef.current;
+            if (!d.isDragging || !d.sliderEl) return;
+            const moved = Math.abs(d.lastTranslate - d.startTranslate) > 5;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            d.isDragging = false;
+            if (moved) justDraggedRef.current = true;
+            const iw = typeof d.getItemWidth === 'function' ? d.getItemWidth() : d.getItemWidth;
+            let nearestIndex = Math.round(-d.lastTranslate / iw);
+            if (nearestIndex < 0) nearestIndex = 0;
+            if (nearestIndex >= d.itemsPerSet) nearestIndex = d.itemsPerSet - 1;
+            d.setIndex(nearestIndex);
+            d.sliderEl.style.transition = '';
+        };
+        const onMouseMove = (e) => applyMove(e.clientX);
+        const onMouseUp = () => endDrag();
+        const onTouchMove = (e) => {
+            if (dragStateRef.current.isDragging && e.touches.length) {
+                e.preventDefault();
+                applyMove(e.touches[0].clientX);
+            }
+        };
+        const onTouchEnd = () => endDrag();
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
+        window.addEventListener('touchend', onTouchEnd);
+        window.addEventListener('touchcancel', onTouchEnd);
+        return () => {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+            window.removeEventListener('touchmove', onTouchMove, { passive: false });
+            window.removeEventListener('touchend', onTouchEnd);
+            window.removeEventListener('touchcancel', onTouchEnd);
+        };
+    }, []);
 
     // Calculate which slides to show (current, prev, next)
     const getVisibleSlides = () => {
@@ -351,7 +289,7 @@ function CasinoGame() {
                     </div>
 
 
-                    <div className='lobby_section'>
+                    <div className='lobby_section' ref={lobbySectionRef}>
                         <div className='d-flex align-items-center justify-content-between'>
                             <ul className='lobbytabs_list'>
                                 <li 
@@ -405,7 +343,24 @@ function CasinoGame() {
          <h2 className="heading_h2">BetCasino Original </h2>
          <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
-      <div className="game_items_slider_wrapper">
+      <div
+            className="game_items_slider_wrapper"
+            onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: lobbySlider1Ref,
+                getItemWidth: itemWidth,
+                itemsPerSet: lobbyItemsPerSet,
+                currentIndex: lobbySlider1Index,
+                setIndex: setLobbySlider1Index,
+            })}
+            onTouchStart={(e) => handleSliderTouchStart(e, {
+                sliderRef: lobbySlider1Ref,
+                getItemWidth: itemWidth,
+                itemsPerSet: lobbyItemsPerSet,
+                currentIndex: lobbySlider1Index,
+                setIndex: setLobbySlider1Index,
+            })}
+            onClickCapture={handleSliderClickCapture}
+          >
          <div className="game_items_slider mt-2" ref={lobbySlider1Ref}>
             {duplicatedItems.map((item, index) => (
                <Link key={`slider1-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
@@ -424,7 +379,24 @@ function CasinoGame() {
          <h2 className="heading_h2">BetCasino Original </h2>
          <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
-      <div className="game_items_slider_wrapper">
+      <div
+            className="game_items_slider_wrapper"
+            onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: lobbySlider2Ref,
+                getItemWidth: itemWidth,
+                itemsPerSet: lobbyItemsPerSet,
+                currentIndex: lobbySlider2Index,
+                setIndex: setLobbySlider2Index,
+            })}
+            onTouchStart={(e) => handleSliderTouchStart(e, {
+                sliderRef: lobbySlider2Ref,
+                getItemWidth: itemWidth,
+                itemsPerSet: lobbyItemsPerSet,
+                currentIndex: lobbySlider2Index,
+                setIndex: setLobbySlider2Index,
+            })}
+            onClickCapture={handleSliderClickCapture}
+          >
          <div className="game_items_slider mt-2" ref={lobbySlider2Ref}>
             {duplicatedItems.map((item, index) => (
                <Link key={`slider2-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
@@ -443,7 +415,24 @@ function CasinoGame() {
          <h2 className="heading_h2">BetCasino Original </h2>
          <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
-      <div className="game_items_slider_wrapper">
+      <div
+            className="game_items_slider_wrapper"
+            onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: lobbySlider3Ref,
+                getItemWidth: itemWidth,
+                itemsPerSet: lobbyItemsPerSet,
+                currentIndex: lobbySlider3Index,
+                setIndex: setLobbySlider3Index,
+            })}
+            onTouchStart={(e) => handleSliderTouchStart(e, {
+                sliderRef: lobbySlider3Ref,
+                getItemWidth: itemWidth,
+                itemsPerSet: lobbyItemsPerSet,
+                currentIndex: lobbySlider3Index,
+                setIndex: setLobbySlider3Index,
+            })}
+            onClickCapture={handleSliderClickCapture}
+          >
          <div className="game_items_slider mt-2" ref={lobbySlider3Ref}>
             {duplicatedItems.map((item, index) => (
                <Link key={`slider3-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
