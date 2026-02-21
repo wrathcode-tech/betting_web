@@ -30,14 +30,19 @@ a.dropdown_menu_item {
   gap: 8px;
 }
 
-/* Simple scroll sliders - no arrows, no auto-scroll, no drag */
+/* Simple scroll sliders - no arrows, no auto-scroll, no drag; scrollbar hidden */
 .game_items_slider_wrapper,
 .match_slider_wrapper {
   overflow-x: auto !important;
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
+  scrollbar-width: none; /* Firefox – hide scrollbar */
+  -ms-overflow-style: none; /* IE/Edge – hide scrollbar */
   cursor: default;
+}
+.game_items_slider_wrapper::-webkit-scrollbar,
+.match_slider_wrapper::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera – hide scrollbar */
 }
 .game_items_slider_wrapper .game_items_slider,
 .match_slider_wrapper .match_slider_container,
