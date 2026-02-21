@@ -22,35 +22,6 @@ function CasinoGame() {
     const [lobbySlider4Index, setLobbySlider4Index] = useState(0);
     const lobbySlider4Ref = useRef(null);
     
-    // Reset sliders to start when user scrolls section out of view and comes back
-    const lobbySectionRef = useRef(null);
-    const wasOutOfViewRef = useRef(false);
-    useEffect(() => {
-        const el = lobbySectionRef.current;
-        if (!el) return;
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const [entry] = entries;
-                if (!entry) return;
-                if (entry.isIntersecting) {
-                    if (wasOutOfViewRef.current) {
-                        setCurrentSlide(0);
-                        setLobbySlider1Index(0);
-                        setLobbySlider2Index(0);
-                        setLobbySlider3Index(0);
-                        setLobbySlider4Index(0);
-                        wasOutOfViewRef.current = false;
-                    }
-                } else {
-                    wasOutOfViewRef.current = true;
-                }
-            },
-            { threshold: 0.1, rootMargin: '0px' }
-        );
-        observer.observe(el);
-        return () => observer.disconnect();
-    }, []);
-    
     // Game items for sliders (7 items each)
     const gameItems = [
         { id: 1, badge: 'Top', image: 'images/betcasino_img.png' },
@@ -71,37 +42,14 @@ function CasinoGame() {
     
     const itemsPerSet = gameItems.length;
     const duplicatedItems = [...gameItems, ...gameItems, ...gameItems];
-    const slides = [
-        {
-            image: "images/casino_slide_img.jpg",
-            days: "26 day left",
-            title: "Million Drops",
-            prize: "€90,000"
-        },
-        {
-            image: "images/casino_slide_img2.jpg",
-            days: "30 day left",
-            title: "Winter Edition",
-            prize: "€25,000,000"
-        },
-        {
-            image: "images/casino_slide_img.jpg",
-            days: "26 day left",
-            title: "Million Drops",
-            prize: "€90,000"
-        },
-        {
-            image: "images/casino_slide_img2.jpg",
-            days: "20 day left",
-            title: "Drops & Wins",
-            prize: "€50,000"
-        },
-        {
-            image: "images/casino_slide_img.jpg",
-            days: "15 day left",
-            title: "Big Win",
-            prize: "€100,000"
-        }
+    const gallerySlides = [
+        "images/casino_bnr_img.png",
+        "images/casino_bnr_img2.png",
+        "images/casino_bnr_img3.png",
+        "images/casino_bnr_img4.png",
+        "images/casino_bnr_img5.png",
+        "images/casino_bnr_img2.png",
+        "images/casino_bnr_img3.png",
     ];
 
     // No auto-slide: banner changes only on dot click; lobby sliders on mouse drag
@@ -156,13 +104,14 @@ function CasinoGame() {
         }
     };
 
-    const startSliderDrag = (clientX, config) => {
-        if (!config.sliderRef?.current) return;
+    const handleSliderMouseDown = (e, config) => {
+        if (e.button !== 0 || !config.sliderRef?.current) return;
+        e.preventDefault();
         const iw = typeof config.getItemWidth === 'function' ? config.getItemWidth() : config.getItemWidth;
         const startTranslate = -config.currentIndex * iw;
         dragStateRef.current = {
             isDragging: true,
-            startX: clientX,
+            startX: e.clientX,
             startTranslate,
             lastTranslate: startTranslate,
             sliderEl: config.sliderRef.current,
@@ -174,28 +123,17 @@ function CasinoGame() {
         document.body.style.userSelect = 'none';
     };
 
-    const handleSliderMouseDown = (e, config) => {
-        if (e.button !== 0 || !config.sliderRef?.current) return;
-        e.preventDefault();
-        startSliderDrag(e.clientX, config);
-    };
-
-    const handleSliderTouchStart = (e, config) => {
-        if (!e.touches.length || !config.sliderRef?.current) return;
-        startSliderDrag(e.touches[0].clientX, config);
-    };
-
     useEffect(() => {
-        const applyMove = (clientX) => {
+        const onMouseMove = (e) => {
             const d = dragStateRef.current;
             if (!d.isDragging || !d.sliderEl) return;
-            const deltaX = clientX - d.startX;
+            const deltaX = e.clientX - d.startX;
             const newTranslate = d.startTranslate - deltaX;
             d.sliderEl.style.transition = 'none';
             d.sliderEl.style.transform = `translateX(${newTranslate}px)`;
             d.lastTranslate = newTranslate;
         };
-        const endDrag = () => {
+        const onMouseUp = () => {
             const d = dragStateRef.current;
             if (!d.isDragging || !d.sliderEl) return;
             const moved = Math.abs(d.lastTranslate - d.startTranslate) > 5;
@@ -210,42 +148,92 @@ function CasinoGame() {
             d.setIndex(nearestIndex);
             d.sliderEl.style.transition = '';
         };
-        const onMouseMove = (e) => applyMove(e.clientX);
-        const onMouseUp = () => endDrag();
-        const onTouchMove = (e) => {
-            if (dragStateRef.current.isDragging && e.touches.length) {
-                e.preventDefault();
-                applyMove(e.touches[0].clientX);
-            }
-        };
-        const onTouchEnd = () => endDrag();
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
-        window.addEventListener('touchmove', onTouchMove, { passive: false });
-        window.addEventListener('touchend', onTouchEnd);
-        window.addEventListener('touchcancel', onTouchEnd);
         return () => {
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('mouseup', onMouseUp);
-            window.removeEventListener('touchmove', onTouchMove, { passive: false });
-            window.removeEventListener('touchend', onTouchEnd);
-            window.removeEventListener('touchcancel', onTouchEnd);
         };
     }, []);
 
-    // Calculate which slides to show (current, prev, next)
-    const getVisibleSlides = () => {
-        const visible = [];
-        for (let i = -1; i <= 1; i++) {
-            let index = currentSlide + i;
-            if (index < 0) index = slides.length + index;
-            if (index >= slides.length) index = index - slides.length;
-            visible.push({ slide: slides[index], position: i, index });
+    const getSlidesPerView = () => {
+        if (typeof window === 'undefined') return 1;
+        const w = window.innerWidth;
+        if (w >= 1025) return 3;
+        if (w >= 769) return 2;
+        return 1;
+    };
+    const [slidesPerView, setSlidesPerView] = useState(getSlidesPerView);
+    const [layoutKey, setLayoutKey] = useState(0);
+    useEffect(() => {
+        const mq3 = window.matchMedia('(min-width: 1025px)');
+        const mq2 = window.matchMedia('(min-width: 769px)');
+        const update = () => {
+            setSlidesPerView(mq3.matches ? 3 : mq2.matches ? 2 : 1);
+        };
+        update();
+        mq3.addEventListener('change', update);
+        mq2.addEventListener('change', update);
+        return () => {
+            mq3.removeEventListener('change', update);
+            mq2.removeEventListener('change', update);
+        };
+    }, []);
+    useEffect(() => {
+        const onResize = () => setLayoutKey((k) => k + 1);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
+    const maxIndex = Math.max(0, gallerySlides.length - slidesPerView);
+    const handleBannerPrev = () => {
+        if (slidesPerView === 1) {
+            setCurrentSlide((prev) => (prev <= 0 ? gallerySlides.length - 1 : prev - 1));
+        } else {
+            setCurrentSlide((prev) => (prev <= 0 ? maxIndex : prev - 1));
         }
-        return visible;
+    };
+    const handleBannerNext = () => {
+        if (slidesPerView === 1) {
+            setCurrentSlide((prev) => (prev >= gallerySlides.length - 1 ? 0 : prev + 1));
+        } else {
+            setCurrentSlide((prev) => (prev >= maxIndex ? 0 : prev + 1));
+        }
     };
 
-    const visibleSlides = getVisibleSlides();
+    const GALLERY_GAP = 18;
+    useEffect(() => {
+        if (!sliderRef.current) return;
+        if (slidesPerView === 1) {
+            sliderRef.current.style.transform = `translateX(-${currentSlide * 100}%)`;
+        } else {
+            const firstSlide = sliderRef.current.querySelector('.casinobnr_gallery_slide');
+            const slideWidth = firstSlide ? firstSlide.offsetWidth : 0;
+            const step = slideWidth + GALLERY_GAP;
+            sliderRef.current.style.transform = `translateX(-${currentSlide * step}px)`;
+        }
+    }, [currentSlide, slidesPerView, layoutKey]);
+
+    const dotCount = slidesPerView === 1 ? gallerySlides.length : maxIndex + 1;
+    const handleDotClick = (index) => setCurrentSlide(index);
+    const isDotActive = (index) => index === currentSlide;
+
+    const [arrowsVisible, setArrowsVisible] = useState(false);
+    const touchHideTimerRef = useRef(null);
+    const handleSliderEnter = () => setArrowsVisible(true);
+    const handleSliderLeave = () => setArrowsVisible(false);
+    const handleSliderTouchStart = () => {
+        if (touchHideTimerRef.current) clearTimeout(touchHideTimerRef.current);
+        setArrowsVisible(true);
+    };
+    const handleSliderTouchEnd = () => {
+        touchHideTimerRef.current = setTimeout(() => setArrowsVisible(false), 400);
+    };
+    useEffect(() => {
+        return () => {
+            if (touchHideTimerRef.current) clearTimeout(touchHideTimerRef.current);
+        };
+    }, []);
 
     return (
         <>
@@ -254,34 +242,34 @@ function CasinoGame() {
             <div className='casino_outer'>
                 <div className='container'>
                     <div className='casino_hero_section'>
-                        <div className='casinobnr_slider_wrapper'>
-                            <div
-                                className='casinobnr_slider'
-                                ref={sliderRef}
-                            >
-                                {visibleSlides.map((item, idx) => (
-                                    <div
-                                        key={`${item.index}-${currentSlide}`}
-                                        className={`casinobnr_slider_bl ${item.position === 0 ? 'active' : ''}`}
-                                    >
-                                        <img src={item.slide.image} alt="casino" />
-                                        <div className='casinobnr_slider_item_content'>
-                                            <h6>{item.slide.days}</h6>
-                                            <h3>{item.slide.title}</h3>
-                                            <div className='price_value'>
-                                                <span>Prize pool</span>
-                                                {item.slide.prize}
-                                            </div>
-                                        </div>
+                        <div
+                            className={`casinobnr_gallery_wrapper ${arrowsVisible ? 'casinobnr_arrows_visible' : ''}`}
+                            onMouseEnter={handleSliderEnter}
+                            onMouseLeave={handleSliderLeave}
+                            onTouchStart={handleSliderTouchStart}
+                            onTouchEnd={handleSliderTouchEnd}
+                        >
+                            <button type="button" className='casinobnr_arrow casinobnr_arrow_prev' onClick={handleBannerPrev} aria-label="Previous slide">
+                                <i className="ri-arrow-left-s-line"></i>
+                            </button>
+                            <button type="button" className='casinobnr_arrow casinobnr_arrow_next' onClick={handleBannerNext} aria-label="Next slide">
+                                <i className="ri-arrow-right-s-line"></i>
+                            </button>
+                            <div className='casinobnr_gallery_track' ref={sliderRef}>
+                                {gallerySlides.map((image, index) => (
+                                    <div key={index} className='casinobnr_gallery_slide'>
+                                        <img src={image} alt={`Casino gallery ${index + 1}`} />
                                     </div>
                                 ))}
                             </div>
                             <div className='casinobnr_slider_dots'>
-                                {slides.map((_, index) => (
+                                {Array.from({ length: dotCount }, (_, index) => (
                                     <button
                                         key={index}
-                                        className={`dot ${index === currentSlide ? 'active' : ''}`}
-                                        onClick={() => setCurrentSlide(index)}
+                                        type="button"
+                                        className={`dot ${isDotActive(index) ? 'active' : ''}`}
+                                        onClick={() => handleDotClick(index)}
+                                        aria-label={`Page ${index + 1}`}
                                     ></button>
                                 ))}
                             </div>
@@ -289,8 +277,8 @@ function CasinoGame() {
                     </div>
 
 
-                    <div className='lobby_section' ref={lobbySectionRef}>
-                        <div className='d-flex align-items-center justify-content-between'>
+                    <div className='lobby_section'>
+                        <div className='d-flex align-items-center justify-content-between casinotop_tabbar'>
                             <ul className='lobbytabs_list'>
                                 <li 
                                     className={activeTab === 'lobby' ? 'active' : ''}
@@ -324,9 +312,16 @@ function CasinoGame() {
                                 </li>
                             </ul>
 
-                            <div className='searchright_lobby'>
-                                <input type="text" placeholder='Search' />
-                                <button><i className="ri-search-line"></i></button>
+                            <div
+                                className='searchright_lobby'
+                                onClick={() => window.dispatchEvent(new CustomEvent('openSearchModal'))}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => e.key === 'Enter' && window.dispatchEvent(new CustomEvent('openSearchModal'))}
+                                aria-label="Open search"
+                            >
+                            <button type="button"><i className="ri-search-line"></i></button>
+                               <span>Search</span>
                             </div>
 
                         </div>
@@ -346,13 +341,6 @@ function CasinoGame() {
       <div
             className="game_items_slider_wrapper"
             onMouseDown={(e) => handleSliderMouseDown(e, {
-                sliderRef: lobbySlider1Ref,
-                getItemWidth: itemWidth,
-                itemsPerSet: lobbyItemsPerSet,
-                currentIndex: lobbySlider1Index,
-                setIndex: setLobbySlider1Index,
-            })}
-            onTouchStart={(e) => handleSliderTouchStart(e, {
                 sliderRef: lobbySlider1Ref,
                 getItemWidth: itemWidth,
                 itemsPerSet: lobbyItemsPerSet,
@@ -388,13 +376,6 @@ function CasinoGame() {
                 currentIndex: lobbySlider2Index,
                 setIndex: setLobbySlider2Index,
             })}
-            onTouchStart={(e) => handleSliderTouchStart(e, {
-                sliderRef: lobbySlider2Ref,
-                getItemWidth: itemWidth,
-                itemsPerSet: lobbyItemsPerSet,
-                currentIndex: lobbySlider2Index,
-                setIndex: setLobbySlider2Index,
-            })}
             onClickCapture={handleSliderClickCapture}
           >
          <div className="game_items_slider mt-2" ref={lobbySlider2Ref}>
@@ -418,13 +399,6 @@ function CasinoGame() {
       <div
             className="game_items_slider_wrapper"
             onMouseDown={(e) => handleSliderMouseDown(e, {
-                sliderRef: lobbySlider3Ref,
-                getItemWidth: itemWidth,
-                itemsPerSet: lobbyItemsPerSet,
-                currentIndex: lobbySlider3Index,
-                setIndex: setLobbySlider3Index,
-            })}
-            onTouchStart={(e) => handleSliderTouchStart(e, {
                 sliderRef: lobbySlider3Ref,
                 getItemWidth: itemWidth,
                 itemsPerSet: lobbyItemsPerSet,

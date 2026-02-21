@@ -12,7 +12,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    background-color: #1C1C1C;
+    background-color: rgb(22 31 43);
     min-height: 50px;
     white-space: nowrap;
     padding: 5px 10px;
@@ -112,7 +112,7 @@
 }
 
 .selected_match_country button {
-    background-color: #1C1C1C;
+    background-color: rgb(22 31 43);
     border: none;
     color: #fff;
     min-height: 64px;
@@ -263,7 +263,7 @@ img.team_bg_img {
 
 .match_block {
     width: 100%;
-    background-color: #1A1A19;
+    background-color: #161F2C;
     border-radius: 8px;
     padding: 14px;
 }
@@ -288,34 +288,36 @@ img.team_bg_img {
     width: 22px;
     height: 22px;
     border-radius: 6px;
-    background-color: #303030;
-    border: 1px solid #6e6e6e3d;
+    background-color: rgb(32, 42, 57);
+    border: 1px solid rgb(32, 42, 57);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.match_block h6 span img{ opacity: 0.7;}
+
 button.toggleup_btn {
     width: 22px;
     height: 22px;
     border-radius: 6px;
-    background-color: #303030;
-    border: 1px solid #6e6e6e3d;
+    background-color: rgb(32, 42, 57);
+    border: 1px solid rgb(32, 42, 57);
     display: flex;
     align-items: center;
-    color: #fff;
+    color: #898989;
     justify-content: center;
     line-height: 23px;
 }
 
 .team_cricket_bl_name {
     width: 100%;
-    background-color: #1A1A19;
-    border: 1px solid #6E6E6E20;
+    background-color: rgb(32, 42, 57);
+    border: 1px solid rgb(32, 42, 57);
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
-    box-shadow: inset 0 7px 10px rgb(56 56 56 / 50%);
+    /* box-shadow: inset 0 7px 10px rgb(56 56 56 / 50%); */
     color: #ffffff80;
     display: flex;
     justify-content: space-between;

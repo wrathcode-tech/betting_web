@@ -357,7 +357,6 @@ button.slotbtn {
     width: 100%;
     position: relative;
     cursor: grab;
-    touch-action: pan-y;
 }
 
 .game_items_slider {
@@ -642,7 +641,6 @@ button.slotbtn {
     overflow: hidden;
     margin-top: 10px;
     position: relative;
-    touch-action: pan-y;
 }
 
 .match_slider_wrapper .match_slider_container {
@@ -1733,22 +1731,7 @@ button.deposit_btn.mobile {
     color: #F97A31;
 }
 
-.login_submit_btn {
-    width: 100%;
-    padding: 10px;
-    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
-    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 20px;
-    transition: all 0.3s;
-}
-
-.login_submit_btn:hover {
+.premium_submit_btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 0px #5A2304, inset 0 4px 3px #ffffff4d;
 }

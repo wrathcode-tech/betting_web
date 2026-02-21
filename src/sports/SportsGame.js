@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './sportsGame.css'
 import AuthHeader from '../customComponents/AuthHeader'
@@ -7,6 +7,87 @@ import MobileMenu from '../customComponents/MobileMenu'
 function SportsGame() {
     const navigate = useNavigate()
     const [activeTab, setActiveTab] = useState('cricket')
+
+    const gallerySlides = [
+        'images/sports_slider_img.jpg',
+        'images/sports_slider_img2.jpg',
+        'images/sports_slider_img3.jpg',
+        'images/sports_slider_img4.jpg',
+        'images/sports_slider_img5.jpg',
+    ]
+    const [currentSlide, setCurrentSlide] = useState(0)
+    const sliderRef = useRef(null)
+
+    const getSlidesPerView = () => {
+        if (typeof window === 'undefined') return 1
+        const w = window.innerWidth
+        if (w >= 1025) return 3
+        if (w >= 769) return 2
+        return 1
+    }
+    const [slidesPerView, setSlidesPerView] = useState(getSlidesPerView)
+    const [layoutKey, setLayoutKey] = useState(0)
+    useEffect(() => {
+        const mq3 = window.matchMedia('(min-width: 1025px)')
+        const mq2 = window.matchMedia('(min-width: 769px)')
+        const update = () => setSlidesPerView(mq3.matches ? 3 : mq2.matches ? 2 : 1)
+        update()
+        mq3.addEventListener('change', update)
+        mq2.addEventListener('change', update)
+        return () => {
+            mq3.removeEventListener('change', update)
+            mq2.removeEventListener('change', update)
+        }
+    }, [])
+    useEffect(() => {
+        const onResize = () => setLayoutKey((k) => k + 1)
+        window.addEventListener('resize', onResize)
+        return () => window.removeEventListener('resize', onResize)
+    }, [])
+
+    const maxIndex = Math.max(0, gallerySlides.length - slidesPerView)
+    const handleBannerPrev = () => {
+        if (slidesPerView === 1) setCurrentSlide((prev) => (prev <= 0 ? gallerySlides.length - 1 : prev - 1))
+        else setCurrentSlide((prev) => (prev <= 0 ? maxIndex : prev - 1))
+    }
+    const handleBannerNext = () => {
+        if (slidesPerView === 1) setCurrentSlide((prev) => (prev >= gallerySlides.length - 1 ? 0 : prev + 1))
+        else setCurrentSlide((prev) => (prev >= maxIndex ? 0 : prev + 1))
+    }
+
+    const GALLERY_GAP = 18
+    useEffect(() => {
+        if (!sliderRef.current) return
+        if (slidesPerView === 1) {
+            sliderRef.current.style.transform = `translateX(-${currentSlide * 100}%)`
+        } else {
+            const firstSlide = sliderRef.current.querySelector('.sports_bnr_gallery_slide')
+            const slideWidth = firstSlide ? firstSlide.offsetWidth : 0
+            const step = slideWidth + GALLERY_GAP
+            sliderRef.current.style.transform = `translateX(-${currentSlide * step}px)`
+        }
+    }, [currentSlide, slidesPerView, layoutKey])
+
+    const dotCount = slidesPerView === 1 ? gallerySlides.length : maxIndex + 1
+    const handleDotClick = (index) => setCurrentSlide(index)
+    const isDotActive = (index) => index === currentSlide
+
+    const [arrowsVisible, setArrowsVisible] = useState(false)
+    const touchHideTimerRef = useRef(null)
+    const handleSliderEnter = () => setArrowsVisible(true)
+    const handleSliderLeave = () => setArrowsVisible(false)
+    const handleSliderTouchStart = () => {
+        if (touchHideTimerRef.current) clearTimeout(touchHideTimerRef.current)
+        setArrowsVisible(true)
+    }
+    const handleSliderTouchEnd = () => {
+        touchHideTimerRef.current = setTimeout(() => setArrowsVisible(false), 400)
+    }
+    useEffect(() => {
+        return () => {
+            if (touchHideTimerRef.current) clearTimeout(touchHideTimerRef.current)
+        }
+    }, [])
 
     const tabs = [
         { id: 'cricket', label: 'Cricket', icon: 'images/menu-icon19.svg' },
@@ -134,6 +215,41 @@ function SportsGame() {
             <AuthHeader />
             <div className='dashboard_page'>
                 <div className='container'>
+                    <div className='sports_hero_section'>
+                        <div
+                            className={`sports_bnr_gallery_wrapper ${arrowsVisible ? 'sports_bnr_arrows_visible' : ''}`}
+                            onMouseEnter={handleSliderEnter}
+                            onMouseLeave={handleSliderLeave}
+                            onTouchStart={handleSliderTouchStart}
+                            onTouchEnd={handleSliderTouchEnd}
+                        >
+                            <button type="button" className="sports_bnr_arrow sports_bnr_arrow_prev" onClick={handleBannerPrev} aria-label="Previous slide">
+                                <i className="ri-arrow-left-s-line"></i>
+                            </button>
+                            <button type="button" className="sports_bnr_arrow sports_bnr_arrow_next" onClick={handleBannerNext} aria-label="Next slide">
+                                <i className="ri-arrow-right-s-line"></i>
+                            </button>
+                            <div className="sports_bnr_gallery_track" ref={sliderRef}>
+                                {gallerySlides.map((image, index) => (
+                                    <div key={index} className="sports_bnr_gallery_slide">
+                                        <img src={image} alt={`Sports gallery ${index + 1}`} />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="sports_bnr_slider_dots">
+                                {Array.from({ length: dotCount }, (_, index) => (
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        className={`dot ${isDotActive(index) ? 'active' : ''}`}
+                                        onClick={() => handleDotClick(index)}
+                                        aria-label={`Page ${index + 1}`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
                     <div className='sports_game_section'>
 
                         {/* <div className='sports_top_tabs'>
@@ -168,7 +284,7 @@ function SportsGame() {
                             </ul>
                         </div> */}
 
-                        <div className='sports_hero_banr'>
+                        {/* <div className='sports_hero_banr'>
                             <div className='bnr_cnt'>
                                 <h1>LIVE CRICKET <br></br>BETTING</h1>
                                 <p>Har Ball • Har Run • Jeet Ka Mauka</p>
@@ -179,7 +295,7 @@ function SportsGame() {
                                 <img src="images/world_cup_trophy.png" alt="sports" />
                             </div>
 
-                        </div>
+                        </div> */}
 
                         <div className='sports_top_match_section'>
                             <div className="top_match_section">

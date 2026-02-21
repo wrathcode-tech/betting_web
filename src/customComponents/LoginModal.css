@@ -264,14 +264,13 @@
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(249, 122, 49, 0.35);
+  box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
   transition: transform 0.2s, box-shadow 0.2s;
   letter-spacing: 0.02em;
 }
 
 .premium_submit_btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(249, 122, 49, 0.4);
 }
 
 .premium_submit_btn:active {

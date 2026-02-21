@@ -4,101 +4,94 @@
     margin: 50px 0px;
 }
 
-.casinobnr_slider_wrapper {
+/* Gallery slider: one image at a time, arrows + dots */
+.casinobnr_gallery_wrapper {
     width: 100%;
     position: relative;
     overflow: hidden;
+    border-radius: 15px;
 }
 
-.casinobnr_slider {
+.casinobnr_gallery_track {
     display: flex;
-    gap: 24px;
+    width: 100%;
+    gap: 18px;
+    transition: transform 0.5s ease-in-out;
+}
+
+/* Mobile: 1 slide (100% width), full image visible */
+.casinobnr_gallery_slide {
+    flex: 0 0 100%;
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.casinobnr_slider_bl {
-    flex: 0 0 331px;
-    width: 331px;
-    border-radius: 15px;
-    overflow: hidden;
-    position: relative;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0.7;
-    transform: scale(0.95);
-    border: 2px solid transparent;
-}
-
-.casinobnr_slider_bl.active {
-    flex: 0 0 431px;
-    width: 431px;
-    opacity: 1;
-    transform: scale(1);
-    z-index: 2;
-}
-
-.casinobnr_slider_bl img {
+.casinobnr_gallery_slide img {
     width: 100%;
-    height: 175px;
+    height: auto;
     display: block;
-    object-fit: cover;
-    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    object-fit: contain;
 }
 
-.casinobnr_slider_bl.active img {
-    height: 236px;
+/* iPad / tablet: 2 slides visible */
+@media (min-width: 769px) {
+    .casinobnr_gallery_slide {
+        flex: 0 0 calc((100% - 18px) / 2);
+        width: calc((100% - 18px) / 2);
+    }
+
 }
 
-.casinobnr_slider_item_content {
+/* Desktop: 3 slides visible */
+@media (min-width: 1025px) {
+    .casinobnr_gallery_slide {
+        flex: 0 0 calc((100% - 36px) / 3);
+        width: calc((100% - 36px) / 3);
+    }
+}
+
+.casinobnr_arrow {
     position: absolute;
-    top: 0px;
-    padding: 20px 0px;
-    left: 20px;
-    height: 100%;
-}
-
-.casinobnr_slider_item_content h6 {
-    background-color: #365E2C;
-    padding: 5px 10px;
-    display: inline-block;
-    border-radius: 5px;
-    font-size: 12px;
-    font-weight: 700;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(0, 0, 0, 0.5);
     color: #fff;
-    text-transform: uppercase;
-}
-
-.casinobnr_slider_item_content h3 {
-    font-size: 18px;
-    font-weight: 900;
-    text-transform: uppercase;
-    margin: 18px 0px;
-}
-
-.casinobnr_slider_bl.active .casinobnr_slider_item_content h3 {
-    font-size: 22px;
-    margin: 24px 0px;
-}
-
-.price_value {
-    background-color: #fff;
-    border-radius: 8px;
-    color: #0D131C;
-    padding: 3px 10px;
     font-size: 24px;
-    font-weight: 900;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    z-index: 2;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
 }
 
-.price_value span {
-    font-size: 11px;
-    color: #0D131C;
-    text-transform: uppercase;
-    width: 40px;
-    font-weight: 700;
-    line-height: 12px;
+.casinobnr_gallery_wrapper:hover .casinobnr_arrow,
+.casinobnr_gallery_wrapper.casinobnr_arrows_visible .casinobnr_arrow {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.casinobnr_arrow:hover {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.casinobnr_arrow_prev {
+    left: 12px;
+}
+
+.casinobnr_arrow_next {
+    right: 12px;
 }
 
 .casinobnr_slider_dots {
@@ -106,7 +99,7 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 16px;
 }
 
 .casinobnr_slider_dots .dot {
@@ -223,7 +216,9 @@ ul.lobbytabs_list li.active span {
 .searchright_lobby {
     background-color: #151515;
     border-radius: 8px;
-    padding: 6px 10px;
+    padding: 6px 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 /* Mobile responsive for searchright_lobby */
@@ -235,22 +230,20 @@ ul.lobbytabs_list li.active span {
     }
 }
 
-.searchright_lobby input {
+.searchright_lobby span {
     background-color: transparent;
     border: none;
-    color: #ffffffb5;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.searchright_lobby input:focus-visible {
-    outline: none;
+    color: #afafafb5;
+    font-size: 14px;
+    font-weight: 500; padding-right: 15px;
+    padding-left: 5px;
 }
 
 .searchright_lobby button {
     background-color: transparent;
     border: none;
     color: #ffffffb5;
+    padding-left: 0px;
     font-size: 12px;
 }
 
@@ -263,32 +256,22 @@ ul.lobbytabs_list li.active span {
     display: block;
 }
 
-/* Mobile Responsive */
+/* Gallery slider mobile */
 @media (max-width: 768px) {
-    .casinobnr_slider {
-        gap: 0;
+
+
+    .casinobnr_arrow {
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
     }
 
-    .casinobnr_slider_bl {
-        flex: 0 0 100%;
-        width: 100%;
-        opacity: 0;
-        display: none;
+    .casinobnr_arrow_prev {
+        left: 8px;
     }
 
-    .casinobnr_slider_bl.active {
-        flex: 0 0 100%;
-        width: 100%;
-        opacity: 1;
-        display: block;
-    }
-
-    .casinobnr_slider_bl img {
-        height: 200px;
-    }
-
-    .casinobnr_slider_bl.active img {
-        height: 200px;
+    .casinobnr_arrow_next {
+        right: 8px;
     }
 }
 
@@ -332,8 +315,11 @@ ul.lobbytabs_list li.active span {
         font-size: 12px;
         padding: 6px 10px;
     }
+    .d-flex.casinotop_tabbar {
+        flex-direction: row-reverse;
+    }
 
-    .casinobnr_slider_bl.active .casinobnr_slider_item_content h3{ font-size: 16px; }
+    .searchright_lobby span{ display: none; }
 
     .lobby_section .d-flex.align-items-center.justify-content-between {
         gap: 18px;
@@ -342,13 +328,14 @@ ul.lobbytabs_list li.active span {
         margin: 20px 0px;
     }
 
-    .price_value{ font-size: 18px;}
-
     .searchright_lobby input {
         width: 100%;
     }
 
-    .searchright_lobby{ min-width: 160px; }
+    .searchright_lobby{ min-width: auto;
+        width: auto; min-height: 41px;  }
+
+        .casinobnr_gallery_track{ gap: 0px; }
 
 }
 

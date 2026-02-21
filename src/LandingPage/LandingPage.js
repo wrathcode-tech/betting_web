@@ -1,10 +1,47 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import AuthHeader from '../customComponents/AuthHeader';
 import Footer from '../customComponents/footer';
 
 function LandingPage() {
   const videoRef = useRef(null);
+
+  // TOP SLOTS slider state
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const sliderRef = useRef(null);
+
+  // BetCasino Original slider state
+  const [betCasinoIndex, setBetCasinoIndex] = useState(0);
+  const betCasinoSliderRef = useRef(null);
+
+  // Live Casino slider state
+  const [liveCasinoIndex, setLiveCasinoIndex] = useState(0);
+  const liveCasinoSliderRef = useRef(null);
+
+  // Highroller Hall slider state
+  const [highrollerIndex, setHighrollerIndex] = useState(0);
+  const highrollerSliderRef = useRef(null);
+
+  // TOP Sports slider state
+  const [topSportsIndex, setTopSportsIndex] = useState(0);
+  const topSportsSliderRef = useRef(null);
+
+  // TOP Matches slider state
+  const [topMatchesIndex, setTopMatchesIndex] = useState(0);
+  const topMatchesSliderRef = useRef(null);
+
+  // Mouse drag-to-scroll state (shared for all sliders) – no auto-slide
+  const dragStateRef = useRef({
+    isDragging: false,
+    startX: 0,
+    startTranslate: 0,
+    lastTranslate: 0,
+    sliderEl: null,
+    getItemWidth: null,
+    itemsPerSet: null,
+    setIndex: null,
+  });
+  const justDraggedRef = useRef(false);
 
   const gameItems = [
     { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
@@ -137,6 +174,164 @@ function LandingPage() {
   const topSportsDisplayItems = [...topSportsItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }];
   const topMatchesDisplayItems = [...topMatchesItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }];
 
+  const itemsPerSet = topSlotsDisplayItems.length;
+  const betCasinoItemsPerSet = betCasinoDisplayItems.length;
+  const liveCasinoItemsPerSet = liveCasinoDisplayItems.length;
+  const highrollerItemsPerSet = highrollerDisplayItems.length;
+  const topSportsItemsPerSet = topSportsDisplayItems.length;
+  const topMatchesItemsPerSet = topMatchesDisplayItems.length;
+
+  // TOP SLOTS slider – sync transform to index (mouse drag only)
+  useEffect(() => {
+    if (sliderRef.current) {
+      const itemWidth = 178 + 18;
+      const translateX = -currentIndex * itemWidth;
+      sliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [currentIndex]);
+
+  // BetCasino Original slider – sync transform to index
+  useEffect(() => {
+    if (betCasinoSliderRef.current) {
+      const itemWidth = 178 + 18;
+      const translateX = -betCasinoIndex * itemWidth;
+      betCasinoSliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [betCasinoIndex]);
+
+  // Live Casino slider – sync transform to index
+  useEffect(() => {
+    if (liveCasinoSliderRef.current) {
+      const itemWidth = 178 + 18;
+      const translateX = -liveCasinoIndex * itemWidth;
+      liveCasinoSliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [liveCasinoIndex]);
+
+  // Highroller Hall slider – sync transform to index
+  useEffect(() => {
+    if (highrollerSliderRef.current) {
+      const itemWidth = 178 + 18;
+      const translateX = -highrollerIndex * itemWidth;
+      highrollerSliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [highrollerIndex]);
+
+  // TOP Sports slider – sync transform to index
+  useEffect(() => {
+    if (topSportsSliderRef.current) {
+      const itemWidth = 178 + 8;
+      const translateX = -topSportsIndex * itemWidth;
+      topSportsSliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [topSportsIndex]);
+
+  // TOP Matches slider handlers
+  const getTopMatchesItemWidth = () => {
+    if (!topMatchesSliderRef.current) return 0;
+    const containerWidth = topMatchesSliderRef.current.offsetWidth;
+    const windowWidth = window.innerWidth;
+
+    if (windowWidth <= 767) {
+      // Mobile: 1 item per view
+      return containerWidth;
+    } else if (windowWidth <= 991) {
+      // Tablet: 2 items per view
+      return containerWidth / 2;
+    } else {
+      // Desktop: 3 items per view
+      return containerWidth / 3;
+    }
+  };
+
+  // TOP Matches – sync transform to index
+  useEffect(() => {
+    if (topMatchesSliderRef.current) {
+      const itemWidth = getTopMatchesItemWidth();
+      const translateX = -topMatchesIndex * itemWidth;
+      topMatchesSliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [topMatchesIndex]);
+
+  // Handle window resize for TOP Matches slider
+  useEffect(() => {
+    const handleResize = () => {
+      if (topMatchesSliderRef.current) {
+        const itemWidth = getTopMatchesItemWidth();
+        const translateX = -topMatchesIndex * itemWidth;
+        topMatchesSliderRef.current.style.transform = `translateX(${translateX}px)`;
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [topMatchesIndex]);
+
+  // Sliders scroll only on mouse drag – no auto-slide
+
+  // Prevent link click when user just finished dragging
+  const handleSliderClickCapture = (e) => {
+    if (justDraggedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      justDraggedRef.current = false;
+    }
+  };
+
+  // Mouse drag-to-scroll: start drag (call from each wrapper's onMouseDown)
+  const handleSliderMouseDown = (e, config) => {
+    if (e.button !== 0 || !config.sliderRef?.current) return;
+    e.preventDefault();
+    const itemWidth = typeof config.getItemWidth === 'function' ? config.getItemWidth() : config.getItemWidth;
+    const startTranslate = -config.currentIndex * itemWidth;
+    dragStateRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startTranslate,
+      lastTranslate: startTranslate,
+      sliderEl: config.sliderRef.current,
+      getItemWidth: config.getItemWidth,
+      itemsPerSet: config.itemsPerSet,
+      setIndex: config.setIndex,
+    };
+    document.body.style.cursor = 'grabbing';
+    document.body.style.userSelect = 'none';
+  };
+
+  // Window listeners for drag (mousemove + mouseup)
+  useEffect(() => {
+    const onMouseMove = (e) => {
+      const d = dragStateRef.current;
+      if (!d.isDragging || !d.sliderEl) return;
+      const deltaX = e.clientX - d.startX;
+      const newTranslate = d.startTranslate - deltaX;
+      d.sliderEl.style.transition = 'none';
+      d.sliderEl.style.transform = `translateX(${newTranslate}px)`;
+      d.lastTranslate = newTranslate;
+    };
+    const onMouseUp = () => {
+      const d = dragStateRef.current;
+      if (!d.isDragging || !d.sliderEl) return;
+      const moved = Math.abs(d.lastTranslate - d.startTranslate) > 5;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      d.isDragging = false;
+      if (moved) justDraggedRef.current = true;
+      const itemWidth = typeof d.getItemWidth === 'function' ? d.getItemWidth() : d.getItemWidth;
+      let nearestIndex = Math.round(-d.lastTranslate / itemWidth);
+      if (nearestIndex < 0) nearestIndex = 0;
+      if (nearestIndex >= d.itemsPerSet) nearestIndex = d.itemsPerSet - 1;
+      d.setIndex(nearestIndex);
+      d.sliderEl.style.transition = '';
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
+
   // Smooth video loop
   useEffect(() => {
     const video = videoRef.current;
@@ -192,16 +387,16 @@ function LandingPage() {
           <div className="row">
             <div className="col-md-6">
               <div className="casino_hero_s_lft">
-                <h1><span>Your Ultimate</span> Casino & Sports Gaming Hub</h1>
-                <p>Play Casino. Bet on Sports. Win Big.</p>
+                <h1><span>WELCOME BONUS</span> UP TO 590%</h1>
+                <p>+ 225 Free Spins</p>
 
                 <div className="d-flex align-items-center gap-3 mt-4">
                   <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
                   <ul className="social_icons d-flex align-items-center gap-2">
-                    <li><Link to="/casino" className="social_icon_btn" title="Casino"><img src="images/casino_icon.svg" alt="Casino" /></Link></li>
-                    <li><Link to="/sports" className="social_icon_btn" title="Sports"><img src="images/sports_icon.svg" alt="Sports" /></Link></li>
-                    <li><Link to="/game" className="social_icon_btn" title="Slots"><img src="images/slots_icon.svg" alt="Slots" /></Link></li>
-                    <li><Link to="/casino" className="social_icon_btn" title="Live Casino"><img src="images/live_icon.svg" alt="Live Casino" /></Link></li>
+                    <li><button type="button" className="social_icon_btn"><img src="images/googleicon.svg" alt="google" /></button></li>
+                    <li><button type="button" className="social_icon_btn"><img src="images/telegramicon.svg" alt="telegram" /></button></li>
+                    <li><button type="button" className="social_icon_btn"><img src="images/walleticon.svg" alt="wallet" /></button></li>
+                    <li><button type="button" className="social_icon_btn"><img src="images/trusticon.svg" alt="trust" /></button></li>
                   </ul>
                 </div>
               </div>
@@ -218,26 +413,26 @@ function LandingPage() {
 
 
       <div className="container mobileview">
-        <div className="casino_sport_mobile_section">
+<div className="casino_sport_mobile_section">
 
-          <div className="casinobox_item">
-            <Link to="/casino" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <h3>Casino <i class="ri-arrow-right-s-line"></i></h3>
-              <div className="gameimg">
-                <img src="images/casino_vector.svg" alt="game" />
-              </div>
-            </Link>
+      <div className="casinobox_item">
+        <Link to="/casino" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <h3>Casino <i class="ri-arrow-right-s-line"></i></h3>
+          <div className="gameimg">
+            <img src="images/casino_vector.svg" alt="game" />
           </div>
-          <div className="casinobox_item  sport_bg">
-            <Link to="/sports" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <h3>Sport <i class="ri-arrow-right-s-line"></i></h3>
-              <div className="gameimg">
-                <img src="images/sport_vector.svg" alt="game" />
-              </div>
-            </Link>
-          </div>
-        </div>
+        </Link>
       </div>
+      <div className="casinobox_item  sport_bg">
+        <Link to="/sports" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <h3>Sport <i class="ri-arrow-right-s-line"></i></h3>  
+          <div className="gameimg">
+            <img src="images/sport_vector.svg" alt="game" />
+          </div>
+        </Link>
+      </div>
+  </div>
+</div>
 
       <div className="landing_page_content">
         <div className="top_slot_outer">
@@ -249,8 +444,19 @@ function LandingPage() {
               </div>
             </div>
 
-            <div className="game_items_slider_wrapper">
-              <div className="game_items_slider">
+            <div
+              className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef,
+                getItemWidth: 178 + 18,
+                itemsPerSet: itemsPerSet,
+                currentIndex,
+                setIndex: setCurrentIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
+            >
+              <div className="game_items_slider" ref={sliderRef}>
                 {topSlotsDisplayItems.map((item, index) => (
                   item.viewAll ? (
                     <Link key="view-all-slots" to={item.to} className="game_items_inner slider_view_all_card" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
@@ -284,25 +490,36 @@ function LandingPage() {
               </div>
             </div>
 
-            <div className="game_items_slider_wrapper">
-              <div className='match_slider_sports d-flex align-items-center gap-2'>
-                {topSportsDisplayItems.map((item, index) => (
-                  item.viewAll ? (
-                    <Link key="view-all-sports" to={item.to} className="match_slider_sports_item slider_view_all_card sports_view_all" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                      <span className="slider_view_all_text">View All</span>
-                    </Link>
-                  ) : (
-                    <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
-                      <div className='spot_value'>{item.badge}</div>
-                      <img src={`images/${item.icon}`} alt="match" />
-                      <h3>{item.title}</h3>
-                    </div>
-                  )
-                ))}
-              </div>
+          <div
+            className="game_items_slider_wrapper"
+            onMouseDown={(e) => handleSliderMouseDown(e, {
+              sliderRef: topSportsSliderRef,
+              getItemWidth: 178 + 8,
+              itemsPerSet: topSportsItemsPerSet,
+              currentIndex: topSportsIndex,
+              setIndex: setTopSportsIndex,
+            })}
+            onClickCapture={handleSliderClickCapture}
+            style={{ cursor: 'grab' }}
+          >
+            <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
+              {topSportsDisplayItems.map((item, index) => (
+                item.viewAll ? (
+                  <Link key="view-all-sports" to={item.to} className="match_slider_sports_item slider_view_all_card sports_view_all" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <span className="slider_view_all_text">View All</span>
+                  </Link>
+                ) : (
+                  <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
+                    <div className='spot_value'>{item.badge}</div>
+                    <img src={`images/${item.icon}`} alt="match" />
+                    <h3>{item.title}</h3>
+                  </div>
+                )
+              ))}
             </div>
-          </div>
+      </div>
         </div>
+      </div>
 
         <div className="casino_sport_section">
           <div className="container">
@@ -344,9 +561,9 @@ function LandingPage() {
           </div>
         </div>
 
+   
 
-
-        <div className='playearn_section'>
+      <div className='playearn_section'>
           <div className='container'>
             <div className='row'>
               <div className='col-md-8'>
@@ -455,48 +672,59 @@ function LandingPage() {
               </div>
             </div>
 
-            <div className='match_slider_wrapper'>
-              <div className='match_slider_container'>
+          <div
+            className='match_slider_wrapper'
+            onMouseDown={(e) => handleSliderMouseDown(e, {
+              sliderRef: topMatchesSliderRef,
+              getItemWidth: getTopMatchesItemWidth,
+              itemsPerSet: topMatchesItemsPerSet,
+              currentIndex: topMatchesIndex,
+              setIndex: setTopMatchesIndex,
+            })}
+            onClickCapture={handleSliderClickCapture}
+            style={{ cursor: 'grab' }}
+          >
+            <div className='match_slider_container' ref={topMatchesSliderRef}>
                 {topMatchesDisplayItems.map((match, index) => (
                   match.viewAll ? (
                     <Link key="view-all-matches" to={match.to} className='match_slider slider_view_all_card matches_view_all' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`topmatch-${match.id}-${index}`} to="/sports" className='match_slider' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                      <div className='match_slider_inner'>
-                        <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
-                          <div className='hd_match d-flex align-items-center gap-2'>
-                            <img src="images/cricket_world.png" alt="match" />
-                            <h3>Match</h3>
-                          </div>
-                          <ul>
-                            <li>MO</li>
-                            <li>BM</li>
-                            <li>F</li>
-                          </ul>
+                  <Link key={`topmatch-${match.id}-${index}`} to="/sports" className='match_slider' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <div className='match_slider_inner'>
+                      <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
+                        <div className='hd_match d-flex align-items-center gap-2'>
+                          <img src="images/cricket_world.png" alt="match" />
+                          <h3>Match</h3>
                         </div>
-                        <p>{match.tournament}</p>
-                        <div className='match_info'>
-                          <p className='match_team'>{match.teams}</p>
-                          <span>{match.time}</span>
+                        <ul>
+                          <li>MO</li>
+                          <li>BM</li>
+                          <li>F</li>
+                        </ul>
+                      </div>
+                      <p>{match.tournament}</p>
+                      <div className='match_info'>
+                        <p className='match_team'>{match.teams}</p>
+                        <span>{match.time}</span>
+                      </div>
+                      <div className='d-flex justify-content-between align-items-center gap-2'>
+                        <div className='view_matchlike'>
+                          <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
+                          <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
                         </div>
-                        <div className='d-flex justify-content-between align-items-center gap-2'>
-                          <div className='view_matchlike'>
-                            <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
-                            <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
-                          </div>
-                          <div className='view_matchlike'>
-                            <button type="button" className='view_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
-                            <button type="button" className='like_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
-                          </div>
-                          <div className='view_matchlike'>
-                            <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
-                            <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
-                          </div>
+                        <div className='view_matchlike'>
+                          <button type="button" className='view_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
+                          <button type="button" className='like_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
+                        </div>
+                        <div className='view_matchlike'>
+                          <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
+                          <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
                         </div>
                       </div>
-                    </Link>
+                    </div>
+                  </Link>
                   )
                 ))}
               </div>
@@ -515,25 +743,36 @@ function LandingPage() {
               </div>
             </div>
 
-            <div className="game_items_slider_wrapper">
-              <div className="game_items_slider mt-2">
-                {betCasinoDisplayItems.map((item, index) => (
+          <div
+            className="game_items_slider_wrapper"
+            onMouseDown={(e) => handleSliderMouseDown(e, {
+              sliderRef: betCasinoSliderRef,
+              getItemWidth: 178 + 18,
+              itemsPerSet: betCasinoItemsPerSet,
+              currentIndex: betCasinoIndex,
+              setIndex: setBetCasinoIndex,
+            })}
+            onClickCapture={handleSliderClickCapture}
+            style={{ cursor: 'grab' }}
+          >
+            <div className="game_items_slider mt-2" ref={betCasinoSliderRef}>
+              {betCasinoDisplayItems.map((item, index) => (
                   item.viewAll ? (
                     <Link key="view-all-betcasino" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`betcasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                      <div className='playbtn'>
-                        <img src="images/playbtn.png" alt="game" />
+                  <Link key={`betcasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <div className='playbtn'>
+                      <img src="images/playbtn.png" alt="game" />
+                    </div>
+                    {item.badge && (
+                      <div className="top_ads">
+                        {item.badge}
                       </div>
-                      {item.badge && (
-                        <div className="top_ads">
-                          {item.badge}
-                        </div>
-                      )}
-                      <img src={item.image} alt="game" />
-                    </Link>
+                    )}
+                    <img src={item.image} alt="game" />
+                  </Link>
                   )
                 ))}
               </div>
@@ -550,25 +789,36 @@ function LandingPage() {
               </div>
             </div>
 
-            <div className="game_items_slider_wrapper">
-              <div className="game_items_slider mt-2">
-                {liveCasinoDisplayItems.map((item, index) => (
+          <div
+            className="game_items_slider_wrapper"
+            onMouseDown={(e) => handleSliderMouseDown(e, {
+              sliderRef: liveCasinoSliderRef,
+              getItemWidth: 178 + 18,
+              itemsPerSet: liveCasinoItemsPerSet,
+              currentIndex: liveCasinoIndex,
+              setIndex: setLiveCasinoIndex,
+            })}
+            onClickCapture={handleSliderClickCapture}
+            style={{ cursor: 'grab' }}
+          >
+            <div className="game_items_slider mt-2" ref={liveCasinoSliderRef}>
+              {liveCasinoDisplayItems.map((item, index) => (
                   item.viewAll ? (
                     <Link key="view-all-livecasino" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`livecasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                      <div className='playbtn'>
-                        <img src="images/playbtn.png" alt="game" />
+                  <Link key={`livecasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <div className='playbtn'>
+                      <img src="images/playbtn.png" alt="game" />
+                    </div>
+                    {item.icon && (
+                      <div className="top_icon">
+                        <img src={`images/${item.icon}.svg`} alt="game" />
                       </div>
-                      {item.icon && (
-                        <div className="top_icon">
-                          <img src={`images/${item.icon}.svg`} alt="game" />
-                        </div>
-                      )}
-                      <img src={item.image} alt="game" />
-                    </Link>
+                    )}
+                    <img src={item.image} alt="game" />
+                  </Link>
                   )
                 ))}
               </div>
@@ -586,28 +836,39 @@ function LandingPage() {
               </div>
             </div>
 
-            <div className="game_items_slider_wrapper">
-              <div className="game_items_slider mt-2">
-                {highrollerDisplayItems.map((item, index) => (
+          <div
+            className="game_items_slider_wrapper"
+            onMouseDown={(e) => handleSliderMouseDown(e, {
+              sliderRef: highrollerSliderRef,
+              getItemWidth: 178 + 18,
+              itemsPerSet: highrollerItemsPerSet,
+              currentIndex: highrollerIndex,
+              setIndex: setHighrollerIndex,
+            })}
+            onClickCapture={handleSliderClickCapture}
+            style={{ cursor: 'grab' }}
+          >
+            <div className="game_items_slider mt-2" ref={highrollerSliderRef}>
+              {highrollerDisplayItems.map((item, index) => (
                   item.viewAll ? (
                     <Link key="view-all-highroller" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`highroller-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                      <div className='playbtn'>
-                        <img src="images/playbtn.png" alt="game" />
+                  <Link key={`highroller-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <div className='playbtn'>
+                      <img src="images/playbtn.png" alt="game" />
+                    </div>
+                    {item.icon && (
+                      <div className="top_icon">
+                        <img src={`images/${item.icon}.svg`} alt="game" />
                       </div>
-                      {item.icon && (
-                        <div className="top_icon">
-                          <img src={`images/${item.icon}.svg`} alt="game" />
-                        </div>
-                      )}
-                      <img src={item.image} alt="game" />
-                    </Link>
+                    )}
+                    <img src={item.image} alt="game" />
+                  </Link>
                   )
                 ))}
-              </div>
+            </div>
             </div>
           </div>
         </div>

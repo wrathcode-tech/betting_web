@@ -43,6 +43,12 @@ export default function AuthHeader() {
     return () => window.removeEventListener('openChat', openChat);
   }, []);
 
+  useEffect(() => {
+    const openSearch = () => setIsSearchOpen(true);
+    window.addEventListener('openSearchModal', openSearch);
+    return () => window.removeEventListener('openSearchModal', openSearch);
+  }, []);
+
   return (
     <>
       <header>

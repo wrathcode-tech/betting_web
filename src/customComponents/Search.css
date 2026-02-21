@@ -34,8 +34,8 @@
 }
 .search_modal .top_slot_outer{ overflow: hidden; }
 
-.search_modal.game_items_inner:hover {
-    transform: scale(.98);
+.search_modal .game_items_inner:hover {
+    transform: scale(1.1);
 }
 
 .search_results_text {
@@ -134,7 +134,7 @@
 .search_close_btn {
     background: none;
     border: none;
-    color: #fff;
+    color: #848484;
     font-size: 24px;
     cursor: pointer;
     padding: 0;
@@ -152,4 +152,17 @@
 
 .search_content {
     padding:5px 20px;
+}
+
+
+@media (max-width: 767px) {
+
+.search_modal {
+    top: 0px;
+    bottom: 0;
+    max-height: 100vh;
+    border-radius: 0px;
+    padding:10px 0px;
+}
+
 }
