@@ -61,16 +61,6 @@ export default function AuthHeader() {
           </Link>
         </div>
 
-      <div className='d-flex align-items-center gap-2 depositheader'>  
-        <div className='d-flex align-items-center gap-0 currency_balance'>
-      <img src="images/digital_currency.svg" alt="balance" />
-      <span>0.00000000</span>
-      </div>
-        <button className="deposit_btn desktop" onClick={() => setIsDepositOpen(true)}>Deposit</button>
-        <button className="deposit_btn mobile" onClick={() => setIsDepositOpen(true)}><img src="images/deposithdr_icon.svg" alt="withdraw" /></button>
-        {/* <button className="deposit_btn" onClick={() => setIsWithdrawalOpen(true)}>Withdraw</button> */}
-      </div>
-    
         <div className="header_right">
      
           <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>

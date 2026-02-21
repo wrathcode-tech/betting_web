@@ -382,6 +382,132 @@ button.slotbtn {
     padding-left: 3px;
 }
 
+.currency_balance_wrapper {
+    position: relative;
+}
+
+.currency_balance_trigger {
+    cursor: pointer;
+    padding: 8px 10px 9px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.currency_balance_trigger:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.currency_balance_trigger .currency_caret {
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.currency_balance_trigger .currency_caret.open {
+    transform: rotate(180deg);
+}
+
+.currency_balance_trigger .currency_flag_emoji {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.currency_dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 6px;
+    min-width: 260px;
+    background-color: #2a3546;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.currency_dropdown_search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.currency_dropdown_search i {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.currency_dropdown_search input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+}
+
+.currency_dropdown_search input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.currency_dropdown_list {
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.currency_dropdown_item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    color: #fff;
+    font-size: 14px;
+}
+
+.currency_dropdown_item:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.currency_dropdown_item.selected {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.currency_dropdown_item img,
+.currency_dropdown_item .currency_flag_emoji {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.currency_dropdown_item .currency_flag_emoji {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    width: auto;
+    height: auto;
+}
+
+.currency_dropdown_item .currency_code {
+    flex: 1;
+    font-weight: 500;
+}
+
+
+.currency_dropdown_item .currency_balance_value {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+}
+
 .game_items_inner {
     min-width: 178px;
     max-width: 178px;
@@ -2287,24 +2413,30 @@ footer .container {
     }
 
     button.deposit_btn {
-        background: none;
-        box-shadow: none;
-        padding: 0px;
-        border-radius: 0px;
+           /* background: none; */
+        /* box-shadow: none; */
+        padding: 5px 10px;
+        font-size: 10px;
     }
-
-    .depositheader {
-        background-color: transparent;
-        border-radius: 0px;
-    }
+    .user_header_right .d-flex {
+        gap: 5px; }
 
     .depositheader .currency_balance {
-        display: none !important;
+        font-size: 10px;
+        padding: 3px 6px 4px;
     }
+
+    .user_header_right {
+        min-width: 65px;
+    padding: 3px 4px; }
 
     .modal-dialog.loginpopup .login_modal_right {
         padding: 20px 20px 40px;
     }
+
+    img.user_header_img {
+        width: 24px;
+        height: 24px; }
 
     .casino_hero_s h1 {
         font-size: 24px;
@@ -2509,6 +2641,13 @@ footer .container {
     .playearn_big_lft h2 {
         font-size: 22px;
     }
+
+    .depositheader .currency_balance {
+        gap: 2px !important;
+    } 
+
+    .currency_dropdown {
+        min-width: 230px; }
 
     .game_items_inner {
         min-width: 130px;

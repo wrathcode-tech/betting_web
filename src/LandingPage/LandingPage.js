@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import AuthHeader from '../customComponents/AuthHeader';
+import UserHeader from '../customComponents/UserHeader';
 import Footer from '../customComponents/footer';
 
 function LandingPage() {
@@ -371,7 +371,7 @@ function LandingPage() {
 
   return (
     <>
-      <AuthHeader />
+      <UserHeader />
       <div className="casino_hero_s">
         <video
           ref={videoRef}

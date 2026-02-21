@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './sportsGame.css'
-import AuthHeader from '../customComponents/AuthHeader'
+import UserHeader from '../customComponents/UserHeader'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function SportsGame() {
@@ -212,7 +212,7 @@ function SportsGame() {
 
     return (
         <>
-            <AuthHeader />
+            <UserHeader />
             <div className='dashboard_page'>
                 <div className='container'>
                     <div className='sports_hero_section'>

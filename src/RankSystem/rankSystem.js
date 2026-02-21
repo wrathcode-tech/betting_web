@@ -1,12 +1,12 @@
 import React from 'react'
 import './rankSystem.css'
-import AuthHeader from '../customComponents/AuthHeader'
+import UserHeader from '../customComponents/UserHeader'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function RankSystem() {
     return (
         <>
-            <AuthHeader />
+            <UserHeader />
             <div className='rank_system_hero_s'>
                 <div className='container'>
                     <div className='row align-items-center'>
