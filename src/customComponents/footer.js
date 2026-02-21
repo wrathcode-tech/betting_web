@@ -8,13 +8,14 @@ const FOOTER_MOBILE_MENU = [
         id: 'i-gaming',
         label: 'I-GAMING',
         links: [
+            { to: '/casino', label: 'Casino' },
+            { to: '/sports', label: 'Sports' },
             { to: '/casino', label: 'All games' },
-            { to: '/casino', label: 'Dice' },
             { to: '/game', label: 'Slots' },
-            { to: '/rank', label: 'Rank system' },
             { to: '/casino', label: 'Live casino' },
+            { to: '/casino', label: 'Dice' },
             { to: '/casino', label: 'Plinko' },
-            { to: '/casino', label: 'Crypto Poker' },
+            { to: '/rank', label: 'Rank system' },
         ],
     },
     {
@@ -38,7 +39,9 @@ const FOOTER_MOBILE_MENU = [
         id: 'about',
         label: 'ABOUT US',
         links: [
-            { to: '/', label: 'About CrownBet' },
+            { to: '/', label: 'About Us' },
+            { to: '/', label: 'Terms & Conditions' },
+            { to: '/', label: 'Privacy Policy' },
             { to: '/', label: 'Responsible gaming' },
         ],
     },
@@ -46,6 +49,7 @@ const FOOTER_MOBILE_MENU = [
         id: 'contact',
         label: 'CONTACT US',
         links: [
+            { to: '/', label: 'Contact Us' },
             { to: '/', label: 'Support' },
             { to: '/', label: 'FAQ' },
         ],
@@ -83,9 +87,8 @@ function Footer() {
               <img src="images/secure.png" alt="game" />
             </div>
             <div className='safe_cnt'>
-              <h5>100% Safe</h5>
-              <p>Your data is safe with encrypted protection. Enjoy a
-                secure and private connection.</p>
+              <h5>Secure &amp; Private</h5>
+              <p>Your data is protected with encryption. Bet and play with a secure, private connection.</p>
             </div>
           </div>
 
@@ -106,31 +109,17 @@ function Footer() {
                   position: 'relative',
                 }}
               >
-                <h3>CrownBet Online Crypto Casino and Sports Betting Platform</h3>
+                <h3>Online Casino &amp; Sports Betting Platform</h3>
 
-<p>CROWNBET provides a smooth and secure betting experience with a variety of reliable payment options. Whether you’re
-              placing bets on casino games or sports, our platform ensures quick and hassle-free transactions. Enjoy the convenience of
-              seamless deposits and withdrawals, and focus on the thrill of the game.</p>
+                <p>Our platform offers a secure and smooth betting experience with multiple payment options. Place bets on casino games, slots, live casino, and sports—with quick deposits and withdrawals so you can focus on the game.</p>
 
-              <h3>CrownBet Online Crypto Casino and Sports Betting Platform</h3>
-
-<p>CROWNBET provides a smooth and secure betting experience with a variety of reliable payment options. Whether you’re
-              placing bets on casino games or sports, our platform ensures quick and hassle-free transactions. Enjoy the convenience of
-              seamless deposits and withdrawals, and focus on the thrill of the game.</p>
-
-              <ul>
-                <li>AutoMode – unleash your smart strategies;</li>
-                <li>Profit Prediction – predict your winnings;</li>
-                <li>Fast Payouts – get your winnings instantly;</li>
-                <li>Secure Transactions – protect your data;</li>
-                <li>24/7 Support – get help anytime.</li>
-              </ul>
-
-              <h3>CrownBet Online Crypto Casino and Sports Betting Platform</h3>
-
-<p>CROWNBET provides a smooth and secure betting experience with a variety of reliable payment options. Whether you’re
-              placing bets on casino games or sports, our platform ensures quick and hassle-free transactions. Enjoy the convenience of
-              seamless deposits and withdrawals, and focus on the thrill of the game.</p>
+                <ul>
+                  <li>Slots, live casino, sports betting and more;</li>
+                  <li>Fast deposits and payouts;</li>
+                  <li>Secure transactions and encrypted data;</li>
+                  <li>Rank system, referrals and promotions;</li>
+                  <li>Support when you need it.</li>
+                </ul>
               </div>
 
               <button
@@ -221,14 +210,9 @@ function Footer() {
   </ul>
 </div>
 
-<p>This website offers gaming with risk experience. To be a user of our site you must be over 18 years old. We are not responsible
-   for the violation of your local laws related to i-gaming. Play
-    responsibly and have fun on CrownBet.</p>
+<p>This site offers gaming and involves risk. You must be 18 or older to use our services. We are not responsible for any breach of your local laws regarding online gaming. Please play responsibly.</p>
 
-
-
-
-            <p className="mt-2">© Copyright 2024. All Rights Reserved. Powered by Play.</p>
+            <p className="mt-2">© {new Date().getFullYear()} All Rights Reserved.</p>
             </div>
 
           </div>
@@ -274,12 +258,12 @@ function Footer() {
           </li>
 
           <li className="mobile-menu__item mobile-menu__item--sports">
-            <Link to="#" className="mobile-menu__link">
+            <NavLink to="/profile" className={({ isActive }) => `mobile-menu__link ${isActive ? 'active' : ''}`}>
               <span className="icon mobile-menu__icon">
                 <i className="ri-wallet-line"></i>
               </span>
               <span className="mobile-menu__name">Wallet</span>
-            </Link>
+            </NavLink>
           </li>
 
           {/* <li className="mobile-menu__item">

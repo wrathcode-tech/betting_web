@@ -70,9 +70,9 @@ function SportsGame() {
 
     // Function to render match card
     const renderMatchCard = (match, index) => (
-        <div 
-            key={index} 
-            className='match_slider' 
+        <div
+            key={index}
+            className='match_slider'
             onClick={handleMatchCardClick}
             style={{ display: 'block', cursor: 'pointer' }}
         >
@@ -95,31 +95,31 @@ function SportsGame() {
                 </div>
                 <div className='d-flex justify-content-between align-items-center gap-2'>
                     <div className='view_matchlike'>
-                        <button 
+                        <button
                             className='view_match'
                             onClick={(e) => e.stopPropagation()}
                         >3.12 <span>357K</span></button>
-                        <button 
+                        <button
                             className='like_match'
                             onClick={(e) => e.stopPropagation()}
                         >3.12 <span>357K</span></button>
                     </div>
                     <div className='view_matchlike'>
-                        <button 
+                        <button
                             className='view_match disabled'
                             onClick={(e) => e.stopPropagation()}
                         ><i className="ri-lock-line"></i></button>
-                        <button 
+                        <button
                             className='like_match disabled'
                             onClick={(e) => e.stopPropagation()}
                         ><i className="ri-lock-line"></i></button>
                     </div>
                     <div className='view_matchlike'>
-                        <button 
+                        <button
                             className='view_match'
                             onClick={(e) => e.stopPropagation()}
                         >3.12 <span>357K</span></button>
-                        <button 
+                        <button
                             className='like_match'
                             onClick={(e) => e.stopPropagation()}
                         >3.12 <span>357K</span></button>
@@ -136,7 +136,7 @@ function SportsGame() {
                 <div className='container'>
                     <div className='sports_game_section'>
 
-                        <div className='sports_top_tabs'>
+                        {/* <div className='sports_top_tabs'>
                             <ul>
                                 <li className='active'><button><img src="images/menu-icon.svg" alt="sports" /></button></li>
                                 <li><button><img src="images/menu-icon2.svg" alt="sports" /></button></li>
@@ -166,7 +166,7 @@ function SportsGame() {
                                 <li><button><img src="images/menu-icon26.svg" alt="sports" /></button></li>
 
                             </ul>
-                        </div>
+                        </div> */}
 
                         <div className='sports_hero_banr'>
                             <div className='bnr_cnt'>

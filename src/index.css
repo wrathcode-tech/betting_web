@@ -29,3 +29,81 @@ a.dropdown_menu_item {
   align-items: center;
   gap: 8px;
 }
+
+/* Simple scroll sliders - no arrows, no auto-scroll, no drag */
+.game_items_slider_wrapper,
+.match_slider_wrapper {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  cursor: default;
+}
+.game_items_slider_wrapper .game_items_slider,
+.match_slider_wrapper .match_slider_container,
+.match_slider_wrapper .match_slider_sports {
+  transform: none !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  will-change: auto;
+}
+/* Let sports row grow so wrapper can scroll (override width:100% in style.css) */
+.match_slider_wrapper .match_slider_sports {
+  width: max-content !important;
+  min-width: 100%;
+  gap: 8px;
+}
+.game_items_slider_wrapper .game_items_slider {
+  gap: 17px;
+}
+.match_slider_wrapper .match_slider_container {
+  gap: 20px;
+}
+
+/* Mobile bottom nav – dark bar, icon above text, active glow */
+.mobile-menu-wrapper .mobile-menu {
+  background: #161f2c;
+  border-color: #1e2a38;
+  padding: 8px 12px 10px;
+  height: 64px;
+  gap: 0;
+}
+.mobile-menu-wrapper .mobile-menu li {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.mobile-menu-wrapper .mobile-menu li .mobile-menu__link,
+.mobile-menu-wrapper .mobile-menu li button.mobile-menu__link {
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  color: #a7b5ca;
+  min-width: 0;
+  cursor: pointer;
+}
+.mobile-menu-wrapper .mobile-menu li .mobile-menu__link .mobile-menu__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+.mobile-menu-wrapper .mobile-menu li .mobile-menu__link .mobile-menu__name {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active {
+  color: #fff;
+  background: rgba(175, 9, 57, 0.15);
+  box-shadow: 0 0 16px rgba(175, 9, 57, 0.4);
+}
+.mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active .mobile-menu__icon,
+.mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active i {
+  color: #fff;
+}
+.mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active::before {
+  display: none;
+}
