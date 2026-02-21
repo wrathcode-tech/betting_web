@@ -1,6 +1,6 @@
 body {
     font-family: "Montserrat", sans-serif;
-    background-color: #030303;
+    background-color: #0d131c;
     position: relative;
     overflow-x: hidden;
 }
@@ -258,18 +258,18 @@ button.btnbnr {
 
 h2.heading_h2 {
     font-size: 18px;
-    font-weight: 500;
+    font-weight: 700;
     margin: 0px;
     line-height: 120%;
 }
 
 button.slotbtn {
-    font-size: 14px;
+    font-size: 16px;
     background-color: transparent;
-    color: #E36F2B;
+    color: #2283f6;
     border: none;
     padding: 0px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .slider_arrows {
@@ -445,7 +445,7 @@ button.slotbtn {
 .casino_sport_section {
     width: 100%;
     display: block;
-    padding: 50px 0px;
+    padding: 50px 0px 0px;
     color: #fff;
     animation: fadeInUp 0.8s ease-out;
 }
@@ -605,7 +605,7 @@ button.slotbtn {
     flex-shrink: 0;
     position: relative;
     padding: 24px;
-    background-color: #151515;
+    background-color: #161F2C;
     border-radius: 12px;
     overflow: hidden;
 }
@@ -625,7 +625,7 @@ button.slotbtn {
 }
 
 .match_slider h3 {
-    color: #E36F2B;
+    color: #fff;
     font-size: 16px;
     font-weight: 600;
     line-height: 120%;
@@ -653,8 +653,9 @@ button.slotbtn {
 
 .match_slider_wrapper p {
     font-size: 12px;
-    color: #E36F2B;
+    color: rgba(255, 255, 255, 0.5);
     margin: 7px 0px 0px;
+    font-weight: 500;
 }
 
 .match_info {
@@ -668,7 +669,7 @@ button.slotbtn {
 
 .match_slider_wrapper p.match_team {
     color: #fff;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 500;
 }
 
@@ -720,7 +721,7 @@ button.slotbtn {
     background-color: #7D93C2;
 }
 
-.match_slider:before {
+/* .match_slider:before {
     content: '';
     position: absolute;
     inset: 0;
@@ -731,7 +732,7 @@ button.slotbtn {
     filter: blur(26px);
     margin: 0 auto;
     top: 10px;
-}
+} */
 
 .match_slider_inner {
     position: relative;
@@ -749,16 +750,62 @@ button.slotbtn {
 .match_slider_sports_item {
     min-width: 188px;
     width: 188px;
-    position: relative;
     padding: 12px;
-    background-color: #151515;
+    backdrop-filter: blur(5px);
+    background: radial-gradient(90.16% 81.4% at 0 0, #168fff5c 0, #168fff00), #111923;
     border-radius: 12px;
+    position: relative;
+    transition: background-color .1s ease-in-out;
     overflow: hidden;
     text-align: center;
     flex-shrink: 0;
 }
 
-.match_slider_sports_item:before {
+.container.mobileview {
+    display: none;
+}
+
+.casino_sport_mobile_section {
+    display: flex;
+    gap: 12px;
+    margin: 24px 0px 10px;
+}
+.casinobox_item a {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    color: #fff;
+padding-block: 14px 5px;
+}
+
+.casinobox_item {
+    width: 100%;
+    background: radial-gradient(101.63% 77.85% at 50% 0, #ff0049a8 0, #ff004900), #111923;
+    align-items: center;
+    border-radius: 12px;
+    text-decoration: none;  width: 100%;
+}
+
+.casinobox_item h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+}
+
+.gameimg {
+    display: block;
+    min-width: 108px;
+    -o-object-fit: cover;
+    object-fit: cover;
+    margin: 0 auto;
+}
+
+.casinobox_item.sport_bg {
+background: radial-gradient(97.28% 75.95% at 50% 0, #168fffa8 0, #168fff00), #111923; }
+
+
+/* .match_slider_sports_item:before {
     content: '';
     position: absolute;
     inset: 0;
@@ -769,13 +816,13 @@ button.slotbtn {
     filter: blur(26px);
     margin: 0 auto;
     top: 10px;
-}
+} */
 
 .spot_value {
     font-size: 9px;
     text-transform: uppercase;
-    font-weight: 600;
-    background-color: #ED1D4920;
+    font-weight: 700;
+    background-color: #ED1D4935;
     display: inline-block;
     align-items: start;
     position: absolute;
@@ -783,7 +830,7 @@ button.slotbtn {
     top: 6px;
     padding: 3px 6px;
     border-radius: 50px;
-    color: #ED1D49;
+    color:#ED1D49;
 }
 
 .match_slider_sports_item img {
@@ -1155,7 +1202,170 @@ footer {
     padding-top: 24px;
 }
 
+.footer_description_container {
+    margin-bottom: 12px;
+}
 
+.footer_description_content h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 18px;
+    line-height: 140%;
+}
+
+.footer_description_content p,
+.footer_description_content ul {
+    margin-bottom: 12px;
+}
+
+.footer_show_more_btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    margin-top: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    font-weight: 600;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.footer_description_content ul{ padding-bottom: 15px; }
+
+.footer_description_content ul {
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-info__icons {
+    width: 100%;
+    display: block;
+    margin: 20px 0px;
+}
+
+footer p {
+    font-size: 13px;
+    color: #6b788c;
+}
+
+.footer-info__icons ul{ display: flex; gap: 10px; justify-content: space-between; align-items: center; list-style: none; margin: 0; padding: 0;}
+
+.footer-info__icons ul li{ display: flex; justify-content: center; align-items: center; }
+
+.footer-info__icons ul li img{     height: 28px;
+    }
+
+.footer_show_more_btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.footer_show_more_btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Footer mobile accordion menu – mobile only */
+.footer_mobile_menu {
+    display: none;
+}
+.footer-info__icons.mobileview {
+    display: none;
+}
+
+@media (max-width: 991px) {
+    .footer_mobile_menu {
+        display: block;
+        margin-top: 0px;
+        margin-bottom: 16px;
+    }
+
+    .footer_quick_links {
+        display: none !important;
+    }
+
+    .footer-info__icons.mobileview {
+        display: block;
+    }
+
+    .footer_mobile_menu_section {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer_mobile_menu_section:first-child {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer_mobile_menu_heading {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 9px 0;
+        background: transparent;
+        border: none;
+        color: #a7b5ca;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .footer_mobile_menu_heading i {
+        font-size: 20px;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .footer_mobile_menu_content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
+
+    .footer_mobile_menu_content.is-open {
+        max-height: 400px;
+    }
+
+    .footer_mobile_menu_links {
+        list-style: none;
+        margin: 0 0 12px 0;
+        padding: 0 0 12px 0;
+    }
+
+    .footer_mobile_menu_links li {
+        margin: 0;
+    }
+
+    .footer_mobile_menu_link {
+        display: block;
+        padding: 10px 0;
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 14px;
+        font-weight: 400;
+        text-decoration: none;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    .footer_mobile_menu_link:hover {
+        color: #fff;
+    }
+}
+
+@media (min-width: 992px) {
+    .footer_mobile_menu {
+        display: none !important;
+    }
+}
 
 /* Login Modal Styles */
 .login_modal_content {
@@ -1632,6 +1842,35 @@ ul.mobile-menu li button i {
     font-size: 18px;
 }
 
+/* Mobile menu active item – white text + bar under (::before) */
+ul.mobile-menu li a.mobile-menu__link {
+    position: relative;
+}
+
+ul.mobile-menu li a.mobile-menu__link.active {
+    color: #fff;
+}
+
+ul.mobile-menu li a.mobile-menu__link.active i {
+    color: #fff;
+}
+
+ul.mobile-menu li a.mobile-menu__link.active::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 13px;
+    /* border-radius: 2px; */
+    background: #af0939;
+    /* box-shadow: 0 0 10px rgba(249, 122, 49, 0.5); */
+    filter: blur(10px);
+}
+
+ul.mobile-menu li a.mobile-menu__link span{ position: relative; z-index: 999; }
+
 .mobile-menu-wrapper {
     position: fixed !important;
     display: none;
@@ -1779,6 +2018,10 @@ img.user_header_img {
     display: none;
 }
 
+
+footer .container {
+    padding: 0px;
+}
 
 @media (max-width: 991px) {
 
@@ -1930,6 +2173,23 @@ img.user_header_img {
 
     }
 
+    .mobilebgfooter {
+        background-color: #18212c;
+        padding: 18px;
+    }
+
+    .footer_mobile_menu_section {
+        border: none;
+    }
+
+    .footer_mobile_menu_section:first-child{
+        border: none;
+    }
+
+    .p_space_footer {
+        padding: 0px 18px;
+    }
+
 }
 
 @media (max-width: 767px) {
@@ -1937,10 +2197,8 @@ img.user_header_img {
     button.deposit_btn.mobile {
         display: block;
     }
-
-    ul.mobile-menu li button i {
-        font-size: 14px;
-    }
+    
+    .desktopview{display: none; }
 
     .user_profile_dropdown {
         right: 0px;
@@ -1948,9 +2206,17 @@ img.user_header_img {
         top: calc(100% + 5px);
     }
 
+    ul.mobile-menu li button i {
+        font-size: 14px;
+    }
+
 
     .login_modal_left {
         display: none;
+    }
+
+    .container.mobileview {
+        display: block;
     }
 
     .header_logo {
@@ -2046,6 +2312,8 @@ img.user_header_img {
     h2.heading_h2 {
         font-size: 15px;
     }
+
+
 
     button.slotbtn {
         font-size: 12px;
@@ -2189,6 +2457,7 @@ img.user_header_img {
 
     .playearn_section {
         order: 8;
+        margin-top: 12px;
     }
 
     .support_help_container {

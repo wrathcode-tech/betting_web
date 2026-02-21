@@ -63,7 +63,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
 
                     <p className="login_modal_methods_text"><span>SHOW ALL METHODS</span></p>
                     
-                    {/* Method Tabs */}
+                    {/* Method Tabs - only mobile, email tab commented */}
                     <div className="login_method_tabs">
                       <button 
                         className={`method_tab ${activeMethod === 'mobile' ? 'active' : ''}`}
@@ -71,15 +71,15 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
                       >
                         Mobile
                       </button>
-                      <button 
+                      {/* <button 
                         className={`method_tab ${activeMethod === 'email' ? 'active' : ''}`}
                         onClick={() => setActiveMethod('email')}
                       >
                         Email
-                      </button>
+                      </button> */}
                     </div>
 
-                    {/* Form */}
+                    {/* Form - only mobile (email form commented) */}
                     <div className="login_form" key={activeMethod}>
                       {activeMethod === 'mobile' ? (
                         <>
@@ -111,6 +111,8 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
                             </div>
                           </div>
                         </>
+                      ) : null}
+                      {/* Email form commented - only mobile for login & signup
                       ) : (
                         <>
                           <div className="form_group">
@@ -141,7 +143,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
                             </div>
                           </div>
                         </>
-                      )}
+                      ) */}
 
                       {/* Sign Up Additional Fields */}
                       {activeTab === 'signup' && (
@@ -182,12 +184,12 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
                         {activeTab === 'login' ? 'Login' : 'Sign Up'}
                       </button>
 
-                      <p className="login_or_text"><span>Or Continue With</span></p>
+                      {/* <p className="login_or_text"><span>Or Continue With</span></p>
 
                       <button className="login_google_btn">
                         <img src="images/google_icon.svg" alt="google" />
                         Sign In With Google
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>
