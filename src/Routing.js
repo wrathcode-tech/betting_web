@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import ScrollToTop from "./ScrollToTop";
 import LandingPage from "./LandingPage/LandingPage";
 import ProfilePage from "./ProfilePage";
 import CasinoGame from "./Casino/casinoGame";
@@ -14,6 +15,7 @@ import RankSystem from "./RankSystem/rankSystem";
 const Routing = () => {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/profile" element={<ProfilePage />} />

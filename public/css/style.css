@@ -123,7 +123,7 @@ header {
 
 .setting_hdr {
     padding: 6px 10px;
-    background-color: #353535;
+    background-color: #202f45;
     border-radius: 8px;
     gap: 8px;
     cursor: pointer;
@@ -1999,11 +1999,11 @@ ul.mobile-menu li button {
 }
 
 ul.mobile-menu li a i {
-    font-size: 18px;
+    font-size: 26px;
 }
 
 ul.mobile-menu li button i {
-    font-size: 18px;
+    font-size: 26px;
 }
 
 /* Mobile menu active item – white text + bar under (::before) */
@@ -2509,7 +2509,11 @@ footer .container {
     }
 
     ul.mobile-menu li a i {
-        font-size: 14px;
+        font-size: 22px;
+    }
+
+    ul.mobile-menu li button i {
+        font-size: 22px;
     }
 
     .casino_sport_section {

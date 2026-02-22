@@ -93,7 +93,7 @@ a.dropdown_menu_item {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 26px;
 }
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link .mobile-menu__name {
   font-size: 11px;
@@ -108,7 +108,7 @@ a.dropdown_menu_item {
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active .mobile-menu__name{  font-size: 12px; }
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active .mobile-menu__icon,
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active i {
-  color: #fff; font-size: 18px;
+  color: #fff; font-size: 28px;
 }
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active::before {
   display: none;

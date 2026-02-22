@@ -19,12 +19,12 @@
     left: -100%;
     width: 200px;
     height: 100vh;
-    background-color: #0B0A0A;
+    background-color: #161f2c;
     z-index: 1000;
     transition: left 0.3s ease-in-out;
     overflow-y: auto;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
-    border-right: 1px solid #141315;
+    border-right: 1px solid #1a2332;
     scrollbar-width: thin; /* Firefox - always thin to prevent shift */
     scrollbar-color: transparent transparent; /* Transparent by default */
 }
@@ -32,7 +32,7 @@
 .sidebar:hover,
 .sidebar.scrolling {
     scrollbar-width: thin; /* Same width - no shift */
-    scrollbar-color: #202a39 transparent; /* Visible on hover/scroll */
+    scrollbar-color: #1e2a38 transparent; /* Visible on hover/scroll */
 }
 
 /* Webkit Scrollbar (Chrome, Safari, Edge) */
@@ -58,11 +58,11 @@
 
 .sidebar:hover::-webkit-scrollbar-thumb,
 .sidebar.scrolling::-webkit-scrollbar-thumb {
-    background: #202a39; /* Visible on hover/scroll */
+    background: #1e2a38; /* Visible on hover/scroll */
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background: #202a39;
+    background: #1e2a38;
 }
 
 .sidebar.sidebar_open {
@@ -96,7 +96,7 @@
 .sidebar_search_input:focus {
     outline: none;
     border-color: #E36F2B;
-    background-color: #353535;
+    background-color: #161f2c;
 }
 
 .sidebar_search_input::placeholder {
