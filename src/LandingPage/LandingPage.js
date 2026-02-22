@@ -426,7 +426,7 @@ function LandingPage() {
 
             <div className="col-md-6">
               <div className="casino_bnr_img">
-                <img src="images/heroimg_chibi_fire.svg" alt="casino" />
+                <img fetchPriority="high" src="images/heroimg_chibi_fire.svg" alt="casino" />
               </div>
             </div>
           </div>
@@ -487,14 +487,14 @@ function LandingPage() {
                   ) : (
                     <Link key={`${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <div className='playbtn'>
-                        <img src="images/playbtn.png" alt="game" />
+                        <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
                       {item.badge && (
                         <div className="top_ads">
                           {item.badge}
                         </div>
                       )}
-                      <img src={item.image} alt="game" />
+                      <img loading="lazy" src={item.image} alt="game" />
                     </Link>
                   )
                 ))}
@@ -533,7 +533,7 @@ function LandingPage() {
                 ) : (
                   <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
                     <div className='spot_value'>{item.badge}</div>
-                    <img src={`images/${item.icon}`} alt="match" />
+                    <img loading="lazy" src={`images/${item.icon}`} alt="match" />
                     <h3>{item.title}</h3>
                   </div>
                 )
@@ -553,7 +553,7 @@ function LandingPage() {
                     <p>Enjoy BetFury Originals and other casino games from top providers.</p>
                   </div>
                   <div className="gameimg">
-                    <img src="images/gold_img.png" alt="game" />
+                    <img loading="lazy" src="images/gold_img.png" alt="game" />
                   </div>
                 </Link>
               </div>
@@ -564,7 +564,7 @@ function LandingPage() {
                     <p>Bet on popular sports events with high odds and other great features.</p>
                   </div>
                   <div className="gameimg">
-                    <img src="images/sports_img.png" alt="game" />
+                    <img loading="lazy" src="images/sports_img.png" alt="game" />
                   </div>
                 </Link>
               </div>
@@ -575,7 +575,7 @@ function LandingPage() {
                     <p>Bet on popular sports events with high odds and other great features.</p>
                   </div>
                   <div className="gameimg">
-                    <img src="images/gold_img.png" alt="game" />
+                    <img loading="lazy" src="images/gold_img.png" alt="game" />
                   </div>
                 </div>
               </div>
@@ -596,7 +596,7 @@ function LandingPage() {
                     <Link to="/game"><button type="button" className='playearn_btn'>Start Playing</button></Link>
                   </div>
                   <div className='playearn_big_rgt'>
-                    <img src="images/golden_treasure.svg" alt="PLAY & EARN BIG" />
+                    <img loading="lazy" src="images/golden_treasure.svg" alt="PLAY & EARN BIG" />
                   </div>
                 </div>
               </div>
@@ -610,7 +610,7 @@ function LandingPage() {
                       <p>Exclusive games. Real rewards. Zero boredom.</p>
                     </div>
                     <div className='gameright_s_item_img'>
-                      <img src="images/luxury_casino.svg" alt="YOUR LUCK STARTS HERE" />
+                      <img loading="lazy" src="images/luxury_casino.svg" alt="YOUR LUCK STARTS HERE" />
                     </div>
                   </div>
 
@@ -620,7 +620,7 @@ function LandingPage() {
                       <p>Spin, play, and unlock exciting prizes every day.</p>
                     </div>
                     <div className='gameright_s_item_img'>
-                      <img src="images/3d_gift_box.svg" alt="TURN FUN INTO REWARDS" />
+                      <img loading="lazy" src="images/3d_gift_box.svg" alt="TURN FUN INTO REWARDS" />
                     </div>
                   </div>
 
@@ -634,7 +634,7 @@ function LandingPage() {
                     <p>Slots, cards & instant win games</p>
                   </div>
                   <div className='gameright_s_item_img'>
-                    <img src="images/3d_casino_games.svg" alt="Casino Zone" />
+                    <img loading="lazy" src="images/3d_casino_games.svg" alt="Casino Zone" />
                   </div>
                 </Link>
 
@@ -647,7 +647,7 @@ function LandingPage() {
                     <p>Live matches & smart predictions</p>
                   </div>
                   <div className='gameright_s_item_img'>
-                    <img src="images/astronaut_spacesuit.svg" alt="Sports Arena" />
+                    <img loading="lazy" src="images/astronaut_spacesuit.svg" alt="Sports Arena" />
                   </div>
                 </Link>
 
@@ -660,7 +660,7 @@ function LandingPage() {
                     <p>Log in daily and unlock exciting gifts.</p>
                   </div>
                   <div className='gameright_s_item_img'>
-                    <img src="images/3d_gift_box_isolated.svg" alt="Daily Rewards" />
+                    <img loading="lazy" src="images/3d_gift_box_isolated.svg" alt="Daily Rewards" />
                   </div>
                 </Link>
 
@@ -674,7 +674,7 @@ function LandingPage() {
                     <p>Compete with others and climb the leaderboard.</p>
                   </div>
                   <div className='gameright_s_item_img'>
-                    <img src="images/alien_head.svg" alt="Battle Mode" />
+                    <img loading="lazy" src="images/alien_head.svg" alt="Battle Mode" />
                   </div>
                 </Link>
 
@@ -717,7 +717,7 @@ function LandingPage() {
                     <div className='match_slider_inner'>
                       <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
                         <div className='hd_match d-flex align-items-center gap-2'>
-                          <img src="images/cricket_world.png" alt="match" />
+                          <img loading="lazy" src="images/cricket_world.png" alt="match" />
                           <h3>Match</h3>
                         </div>
                         <ul>
@@ -786,14 +786,14 @@ function LandingPage() {
                   ) : (
                   <Link key={`betcasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                     <div className='playbtn'>
-                      <img src="images/playbtn.png" alt="game" />
+                      <img loading="lazy" src="images/playbtn.png" alt="game" />
                     </div>
                     {item.badge && (
                       <div className="top_ads">
                         {item.badge}
                       </div>
                     )}
-                    <img src={item.image} alt="game" />
+                    <img loading="lazy" src={item.image} alt="game" />
                   </Link>
                   )
                 ))}
@@ -805,7 +805,7 @@ function LandingPage() {
         <div className="top_slot_outer">
           <div className="container">
             <div className="top_hd d-flex align-items-center justify-content-between">
-              <h2 className="heading_h2"><img src="images/live_icon.svg" alt="game" /> Live Casino</h2>
+              <h2 className="heading_h2"><img loading="lazy" src="images/live_icon.svg" alt="game" /> Live Casino</h2>
               <div className="top_hd_right d-flex align-items-center gap-2">
                 <Link to="/casino"><button type="button" className="slotbtn">All 1159</button></Link>
               </div>
@@ -832,14 +832,14 @@ function LandingPage() {
                   ) : (
                   <Link key={`livecasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                     <div className='playbtn'>
-                      <img src="images/playbtn.png" alt="game" />
+                      <img loading="lazy" src="images/playbtn.png" alt="game" />
                     </div>
                     {item.icon && (
                       <div className="top_icon">
-                        <img src={`images/${item.icon}.svg`} alt="game" />
+                        <img loading="lazy" src={`images/${item.icon}.svg`} alt="game" />
                       </div>
                     )}
-                    <img src={item.image} alt="game" />
+                    <img loading="lazy" src={item.image} alt="game" />
                   </Link>
                   )
                 ))}
@@ -852,7 +852,7 @@ function LandingPage() {
         <div className="top_slot_outer">
           <div className="container">
             <div className="top_hd d-flex align-items-center justify-content-between">
-              <h2 className="heading_h2"><img src="images/crownicon.svg" alt="game" /> Highroller Hall</h2>
+              <h2 className="heading_h2"><img loading="lazy" src="images/crownicon.svg" alt="game" /> Highroller Hall</h2>
               <div className="top_hd_right d-flex align-items-center gap-2">
                 <Link to="/casino"><button type="button" className="slotbtn">All 20</button></Link>
               </div>
@@ -879,14 +879,14 @@ function LandingPage() {
                   ) : (
                   <Link key={`highroller-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                     <div className='playbtn'>
-                      <img src="images/playbtn.png" alt="game" />
+                      <img loading="lazy" src="images/playbtn.png" alt="game" />
                     </div>
                     {item.icon && (
                       <div className="top_icon">
-                        <img src={`images/${item.icon}.svg`} alt="game" />
+                        <img loading="lazy" src={`images/${item.icon}.svg`} alt="game" />
                       </div>
                     )}
-                    <img src={item.image} alt="game" />
+                    <img loading="lazy" src={item.image} alt="game" />
                   </Link>
                   )
                 ))}

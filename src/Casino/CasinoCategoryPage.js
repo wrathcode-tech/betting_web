@@ -40,7 +40,7 @@ export default function CasinoCategoryPage() {
                       <img src={`${process.env.PUBLIC_URL || ''}/images/playbtn.png`} alt="play" />
                     </div>
                     {game.badge && <div className="top_ads">{game.badge}</div>}
-                    <img src={`${process.env.PUBLIC_URL || ''}/${game.image}`} alt={category.name} />
+                    <img loading="lazy" src={`${process.env.PUBLIC_URL || ''}/${game.image}`} alt={category.name} />
                   </Link>
                 ))}
               </div>

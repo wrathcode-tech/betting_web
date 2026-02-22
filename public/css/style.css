@@ -2384,7 +2384,21 @@ footer .container {
     }
 
     .header_logo {
-        width: 100px;
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .header_logo img {
+        width: auto;
+        height: 100%;
+        max-width: none;
+        object-fit: cover;
+        object-position: left center;
     }
 
     .login_hdr button {

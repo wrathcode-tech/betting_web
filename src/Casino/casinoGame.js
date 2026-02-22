@@ -287,7 +287,7 @@ function CasinoGame() {
                             <div className='casinobnr_gallery_track' ref={sliderRef}>
                                 {gallerySlides.map((image, index) => (
                                     <div key={index} className='casinobnr_gallery_slide'>
-                                        <img src={image} alt={`Casino gallery ${index + 1}`} />
+                                        <img loading="lazy" src={image} alt={`Casino gallery ${index + 1}`} />
                                     </div>
                                 ))}
                             </div>
@@ -382,9 +382,9 @@ function CasinoGame() {
          <div className="game_items_slider mt-2" ref={cat.ref}>
             {duplicatedItems.map((item, index) => (
                <Link key={`${cat.id}-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                  <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
+                  <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
                   {item.badge && <div className="top_ads">{item.badge}</div>}
-                  <img alt="game" src={item.image} />
+                  <img loading="lazy" alt="game" src={item.image} />
                </Link>
             ))}
          </div>
@@ -405,9 +405,9 @@ function CasinoGame() {
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
             <Link key={`grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-               <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
+               <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
                {item.badge && <div className="top_ads">{item.badge}</div>}
-               <img alt="game" src={item.image} />
+               <img loading="lazy" alt="game" src={item.image} />
             </Link>
          ))}
       </div>
@@ -427,9 +427,9 @@ function CasinoGame() {
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
             <Link key={`slots-grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-               <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
+               <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
                {item.badge && <div className="top_ads">{item.badge}</div>}
-               <img alt="game" src={item.image} />
+               <img loading="lazy" alt="game" src={item.image} />
             </Link>
          ))}
       </div>
@@ -447,9 +447,9 @@ function CasinoGame() {
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
             <Link key={`live-grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-               <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
+               <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
                {item.badge && <div className="top_ads">{item.badge}</div>}
-               <img alt="game" src={item.image} />
+               <img loading="lazy" alt="game" src={item.image} />
             </Link>
          ))}
       </div>
@@ -467,9 +467,9 @@ function CasinoGame() {
       <div className="game_items_grid">
          {originalsItems.map((item, index) => (
             <Link key={`table-grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-               <div className="playbtn"><img alt="game" src="images/playbtn.png" /></div>
+               <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
                {item.badge && <div className="top_ads">{item.badge}</div>}
-               <img alt="game" src={item.image} />
+               <img loading="lazy" alt="game" src={item.image} />
             </Link>
          ))}
       </div>
