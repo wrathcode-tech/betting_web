@@ -3,8 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import LoginModal from './LoginModal'
 import SideBar from './SideBar/sideBar'
 import Chat from '../cricket/Chat'
-import Deposit from './Deposit'
-import Withdrawal from './Withdrawal'
 import Search from './Search'
 
 export default function UserHeader() {
@@ -13,8 +11,6 @@ export default function UserHeader() {
   const [modalTab, setModalTab] = useState('login');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isDepositOpen, setIsDepositOpen] = useState(false);
-  const [isWithdrawalOpen, setIsWithdrawalOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
@@ -132,7 +128,7 @@ export default function UserHeader() {
           </div>
           )}
         </div>
-        <button className="deposit_btn" onClick={() => setIsDepositOpen(true)}>Deposit</button>
+        <button className="deposit_btn" onClick={() => navigate('/deposit')}>Deposit</button>
    </div>
     
         <div className="header_right">
@@ -185,18 +181,14 @@ export default function UserHeader() {
                   <i className="ri-safe-2-line"></i>
                   <span>Vault</span>
                 </Link>
-                <a 
-                  href="#!" 
+                <Link 
+                  to="/withdrawal" 
                   className="dropdown_menu_item" 
-                  onClick={(e) => {
-                    e.preventDefault()
-                    setIsProfileDropdownOpen(false)
-                    setIsWithdrawalOpen(true)
-                  }}
+                  onClick={() => setIsProfileDropdownOpen(false)}
                 >
                   <i className="ri-bank-line"></i>
                   <span>Withdrawal</span>
-                </a>
+                </Link>
               </div>
               
               <button
@@ -230,8 +222,6 @@ export default function UserHeader() {
       <LoginModal show={showModal} onHide={() => { setShowModal(false); setModalTab('login'); }} initialTab={modalTab} />
       <SideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
-      <Deposit isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} />
-      <Withdrawal isOpen={isWithdrawalOpen} onClose={() => setIsWithdrawalOpen(false)} />
       <Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
     </>

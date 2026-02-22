@@ -68,6 +68,14 @@ p.bank {
   justify-content: center;
   display: flex;
   padding: 7px 10px;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.payment_selected_dl ul li button.active {
+  background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+  box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+  border: 1px solid transparent;
+  color: #fff;
 }
 
 p.note_text{ font-size: 13px; color: #E46F2C; margin: 15px 24px; }
@@ -136,7 +144,25 @@ input:focus-visible{ outline: none; }
   gap: 10px;
 }
 
-.account_detail_payment ul li{ display: flex; align-items: center; gap:32px; }
+.account_detail_payment .add_bank_btn {
+  margin-top: 12px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+  box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+  color: #fff;
+  transition: opacity 0.2s ease;
+}
+
+.account_detail_payment .add_bank_btn:hover {
+  opacity: 0.95;
+}
+
+.account_detail_payment ul li{ display: flex; font-size: 13px; align-items: center; gap:32px; }
 .account_detail_payment ul li span{ min-width: 300px; }
 
 @media (max-width: 991px) {
