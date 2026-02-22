@@ -1,0 +1,129 @@
+/* Withdrawal page uses same layout as deposit (newDeposit.css).
+   Add any withdrawal-specific overrides below. */
+.new_withdrawal_page {
+  /* Same as .new_deposit_page – shared via class new_deposit_page */
+}
+
+/* Choose Payment Option – Add Account (file upload) – same design as reference */
+.choose_payment_option {
+  width: 100%;
+  margin: 24px 0;
+}
+
+.choose_payment_option_title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 16px 0;
+}
+
+.add_account_upload {
+  width: 100%;
+  min-height: 200px;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  background: rgb(26 26 25 / 0%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.add_account_upload:hover,
+.add_account_upload.dragging {
+  border-color: rgba(249, 122, 49, 0.8);
+  background: rgba(26, 26, 25, 0.9);
+}
+
+.add_account_file_input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.add_account_icon_wrap {
+
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add_account_plus_icon {
+  font-size: 28px;
+  color: #fff;
+}
+
+.add_account_label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.add_account_file_list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add_account_file_list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #1A1A19;
+  border-radius: 8px;
+  border: 1px solid rgba(110, 110, 110, 0.25);
+}
+
+.add_account_file_name {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 80%;
+}
+
+.add_account_remove_btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.add_account_remove_btn:hover {
+  color: #f97a31;
+}
+
+.withdrawal_from_dl .enter_amount_deposit { padding-top: 10px;
+  margin-top:10px; }
+
+  .withdrawal_from_dl h5 { margin-bottom: 20px; }
+
+  .enter_filed.d-flex button.otp_btn{
+    /* background: none; */
+    border: none;
+    color: #fff;
+    font-weight: 500;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+    border-radius: 50px;
+    padding: 4px 15px;
+}

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import MobileMenu from '../customComponents/MobileMenu'
 import './profileTransactions.css'
 import Header from '../customComponents/Header'
@@ -117,10 +118,10 @@ function ProfileTransactions() {
                                         <i className="ri-arrow-down-s-line date_arrow"></i>
                                     </div>
                                 </div>
-                                <button className='btn deposit_btn'>
+                                <Link to="/deposit" className='btn deposit_btn'>
                                     Deposit
                                 <i className="ri-arrow-down-s-line"></i>
-                                </button>
+                                </Link>
                             </div>
                         </div>
 

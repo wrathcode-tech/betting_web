@@ -13,6 +13,8 @@ const ProfileTransactions = lazy(() => import("./ProfileTransactions/profileTran
 const CricketDetail = lazy(() => import("./cricket/cricketDetail"));
 const ReferralProgram = lazy(() => import("./ReferralProgram/referralProgram"));
 const RankSystem = lazy(() => import("./RankSystem/rankSystem"));
+const NewDeposit = lazy(() => import("./newDeposit/newDeposit"));
+const NewWithdrawal = lazy(() => import("./newWithdrawal/newWithdrawal"));
 
 function PageFallback() {
   return (
@@ -38,6 +40,8 @@ const Routing = () => {
           <Route path="/cricket" element={<CricketDetail />} />
           <Route path="/referral" element={<ReferralProgram />} />
           <Route path="/rank" element={<RankSystem />} />
+          <Route path="/deposit" element={<NewDeposit />} />
+          <Route path="/withdrawal" element={<NewWithdrawal />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
