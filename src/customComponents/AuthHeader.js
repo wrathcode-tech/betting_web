@@ -57,7 +57,8 @@ export default function AuthHeader() {
             <img src="images/toggle_menu.svg" alt="menu" />
           </div>
           <Link to="/" className="header_logo">
-            <img src="images/logo.png" alt="logo" />
+            <img className="desktopview" src="images/logo.png" alt="logo" />
+            <img className="mobileview" src="images/logo_mobile.svg" alt="logo" />
           </Link>
         </div>
 

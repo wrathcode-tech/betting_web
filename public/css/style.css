@@ -1178,6 +1178,10 @@ background: radial-gradient(97.28% 75.95% at 50% 0, #168fffa8 0, #168fff00), #11
     animation-delay: 0.3s;
 }
 
+.header_lft img.mobileview {
+    display: none;
+}
+
 @keyframes slideInFromRight {
     from {
         opacity: 0;
@@ -2553,7 +2557,9 @@ footer .container {
     .match_slider_sports_item h3 {
         font-size: 14px;
     }
-
+    .header_lft img.mobileview {
+        display: block;
+    }
 
     .playearn_big_lft h2 {
         font-size: 28px;
@@ -2561,6 +2567,10 @@ footer .container {
 
     .playearn_big_lft p {
         font-size: 15px;
+    }
+
+    .dashboard_page {
+        padding: 10px 0px 60px !important;
     }
 
     .playearn_big_lft {
@@ -2692,4 +2702,40 @@ footer .container {
         padding: 10px 16px;
     }
 
+}
+
+/* Scroll to top button – theme: #0d131c, #F97A31 */
+.scroll_to_top_btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e2a38 0%, #0d131c 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(249, 122, 49, 0.2);
+    color: #F97A31;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+.scroll_to_top_btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(249, 122, 49, 0.25), 0 4px 12px rgba(0, 0, 0, 0.4);
+    color: #ff8f4a;
+}
+.scroll_to_top_btn:active {
+    transform: translateY(0);
+}
+@media (max-width: 576px) {
+    .scroll_to_top_btn {
+        bottom: 16px;
+        right: 16px;
+        width: 44px;
+        height: 44px;
+    }
 }
