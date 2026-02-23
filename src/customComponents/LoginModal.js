@@ -6,11 +6,14 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState(initialTab)
   const [showPassword, setShowPassword] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [showForgotConfirmPassword, setShowForgotConfirmPassword] = useState(false)
 
   useEffect(() => {
     if (show) {
       setActiveTab(initialTab)
       setShowPassword(false)
+      setShowForgotPassword(false)
     }
   }, [show, initialTab])
 
@@ -49,6 +52,74 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
 
           <div className="premium_login_inner">
             <div className="premium_login_right">
+              <div className="premium_login_logo">
+                <img alt="logo" src="images/logo.png" />
+              </div>
+              {showForgotPassword ? (
+                <>
+                  <h3 id="login-modal-title" className="premium_forgot_title">Forget Password</h3>
+                  <form className="premium_login_form" onSubmit={(e) => e.preventDefault()}>
+                    <div className="premium_form_group">
+                      <div className="premium_email_otp_box">
+                        <input
+                          type="email"
+                          className="premium_email_otp_input"
+                          placeholder="Enter Email"
+                          autoComplete="email"
+                        />
+                        <button type="button" className="premium_otp_btn">Get OTP</button>
+                      </div>
+                    </div>
+                    <div className="premium_form_group">
+                      <div className="premium_email_otp_box">
+                        <input
+                          type="text"
+                          className="premium_email_otp_input"
+                          placeholder="Enter Verification Code"
+                          autoComplete="one-time-code"
+                        />
+                      </div>
+                    </div>
+                    <div className="premium_form_group">
+                      <div className="premium_password_wrap">
+                        <input
+                          type={showForgotConfirmPassword ? 'text' : 'password'}
+                          className="premium_form_input"
+                          placeholder="Password"
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          className="premium_password_toggle"
+                          onClick={() => setShowForgotConfirmPassword(!showForgotConfirmPassword)}
+                          aria-label={showForgotConfirmPassword ? 'Hide password' : 'Show password'}
+                        >
+                          <i className={showForgotConfirmPassword ? 'ri-eye-off-line' : 'ri-eye-line'} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="premium_form_group">
+                      <input
+                        type="password"
+                        className="premium_form_input"
+                        placeholder="Confirm Password"
+                        autoComplete="new-password"
+                      />
+                    </div>
+                    <div className="premium_form_footer premium_forgot_footer">
+                      <button
+                        type="button"
+                        className="premium_login_now_link"
+                        onClick={() => setShowForgotPassword(false)}
+                      >
+                        Login Now?
+                      </button>
+                    </div>
+                    <button type="submit" className="premium_submit_btn">Continue</button>
+                  </form>
+                </>
+              ) : (
+                <>
               <h3 id="login-modal-title" className="premium_login_title">
                 {activeTab === 'login' ? 'Log in' : 'Create account'}
               </h3>
@@ -114,7 +185,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
 
                 {activeTab === 'login' && (
                   <div className="premium_form_footer">
-                    <a href="#!" className="premium_forgot_link">Forgot password?</a>
+                    <button type="button" className="premium_forgot_link" onClick={() => setShowForgotPassword(true)}>Forgot password?</button>
                   </div>
                 )}
 
@@ -131,6 +202,8 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
                   {activeTab === 'login' ? 'Log in' : 'Sign up & play'}
                 </button>
               </form>
+                </>
+              )}
             </div>
           </div>
         </div>

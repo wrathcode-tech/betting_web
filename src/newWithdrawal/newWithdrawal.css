@@ -32,10 +32,14 @@
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 
-.add_account_upload:hover,
-.add_account_upload.dragging {
-  border-color: rgba(249, 122, 49, 0.8);
-  background: rgba(26, 26, 25, 0.9);
+/* When Add Account is a button – same design, no file input */
+.add_account_upload_btn {
+  font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
 }
 
 .add_account_file_input {

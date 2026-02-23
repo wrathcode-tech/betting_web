@@ -152,6 +152,7 @@
 
 .cricket_info_inner {
     max-width: 532px;
+    color: #fff;
     margin: 0 auto;
     padding: 20px 0px;
 }
@@ -295,7 +296,9 @@ img.team_bg_img {
     justify-content: center;
 }
 
-.match_block h6 span img{ opacity: 0.7;}
+.match_block h6 span img {
+    opacity: 0.7;
+}
 
 button.toggleup_btn {
     width: 22px;
@@ -696,6 +699,7 @@ span.quicktext {
 
     .top_tabs_cricket ul li button {
         font-size: 11px;
+        white-space: nowrap;
     }
 
     .top_tabs_cricket ul {
@@ -708,10 +712,38 @@ span.quicktext {
 
 }
 
+@media (max-width: 767px) {
 
+    .cricket_info_inner h2 {
+        font-size: 16px;
+    }
+
+    .footer_description_content p {
+        font-size: 12px;
+    }
+
+    .footer_description_content ul {
+        font-size: 12px;
+    }
+
+    .footer_show_more_btn {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+
+}
 
 
 @media (max-width: 480px) {
+
+    .team_dlex {
+        bottom: 16px;
+    }
+
+    .safe_cnt p {
+        font-size: 12px;
+        max-width: 100%;
+    }
 
     img.team_bg_img {
         margin-top: 30px;
@@ -738,6 +770,33 @@ span.quicktext {
     .team_cricket_bl {
         top: 5px;
         position: relative;
+    }
+
+    .team_cricket_bl_name {
+        font-size: 10px;
+    }
+
+
+}
+
+@media (max-width: 360px) {
+    .vs_vector_icon {
+        width: 54px;
+        top: 18px;
+    }
+
+    .team_dlex {
+        bottom: 13px;
+        padding: 0px 6px;
+    }
+
+    .team_cricket_bl p {
+        line-height: 9px;
+    }
+
+    .team_logo_lft {
+        width: 24px;
+        height: 24px;
     }
 
 

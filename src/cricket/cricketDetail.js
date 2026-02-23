@@ -105,7 +105,7 @@ function CricketDetail() {
             <div className='dashboard_page removebgsports'>
                 <div className='container'>
                     <div className='cricket_detail_section'>
-                        <div className='sports_top_tabs'>
+                        {/* <div className='sports_top_tabs'>
                             <ul>
                                 <li className='active'><button><img src="images/menu-icon.svg" alt="sports" /></button></li>
                                 <li><button><img src="images/menu-icon2.svg" alt="sports" /></button></li>
@@ -135,7 +135,7 @@ function CricketDetail() {
                                 <li><button><img src="images/menu-icon26.svg" alt="sports" /></button></li>
 
                             </ul>
-                        </div>
+                        </div> */}
 
                         <div className='match_vs_team_list d-flex align-items-center justify-content-between gap-2'>
                             <div className='selected_match_country'>

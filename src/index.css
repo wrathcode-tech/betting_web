@@ -368,16 +368,13 @@ a.dropdown_menu_item {
 }
 
 /* Support help – simple, clean card */
-.support_help_container {
-  margin: 28px 0 24px;
-}
 .support_help_card {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   padding: 16px 24px;
-  max-width: 420px;
+  max-width: 100%;
   margin: 0 auto;
   background: linear-gradient(135deg, #f97a31 0%, #e86d2a 100%);
   border-radius: 12px;
@@ -410,4 +407,9 @@ a.dropdown_menu_item {
   .support_help_card_icon {
     font-size: 20px;
   }
+
+  .support_help_card {
+    margin-top: 24px;
+} 
+
 }

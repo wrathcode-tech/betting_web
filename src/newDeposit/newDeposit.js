@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import '../customComponents/Deposit.css';
@@ -13,6 +13,9 @@ function NewDeposit() {
   const [amountInput, setAmountInput] = useState('');
   const [utrInput, setUtrInput] = useState('');
   const [hasBankDetails, setHasBankDetails] = useState(false);
+  const [hasUpiDetails, setHasUpiDetails] = useState(false);
+  const [selectedFileName, setSelectedFileName] = useState('');
+  const fileInputRef = useRef(null);
 
   const handleAmountOption = (value) => {
     setSelectedAmount(value);
@@ -49,7 +52,7 @@ function NewDeposit() {
               className={selectedPayment === 'bank' ? 'active' : ''}
               onClick={() => setSelectedPayment('bank')}
             >
-              Bank (5% Bonus)
+              Bank
             </button>
             <button
               type="button"
@@ -93,36 +96,98 @@ function NewDeposit() {
 
           {showAccountDetails && (
             <div className='account_detail_payment'>
-              <h3>Account Details</h3>
-              {/* Add bank only when user clicked Next without filling amount; if they filled details, show details */}
-              {!amountInput.trim() && !hasBankDetails ? (
-                <button
-                  type="button"
-                  className="add_bank_btn"
-                  onClick={() => setHasBankDetails(true)}
-                >
-                  Add bank
-                </button>
+              {selectedPayment === 'bank' ? (
+                <>
+                  <h5>Account Details</h5>
+                  {!hasBankDetails ? (
+                    <button
+                      type="button"
+                      className="add_bank_btn"
+                      onClick={() => setHasBankDetails(true)}
+                    >
+                      Add bank
+                    </button>
+                  ) : (
+                    <>
+                      <ul>
+                        <li><span>Bank name</span>----</li>
+                        <li><span>Account Name</span>----</li>
+                        <li><span>Account Number</span>----</li>
+                        <li><span>IFSC Code</span>----</li>
+                      </ul>
+                      <div className='enter_amount_deposit'>
+                        <h5>Enter Reference ID/UTR (Re-verify for correctness)</h5>
+                        <div className='enter_filed d-flex'>
+                          <input
+                            type="text"
+                            placeholder="Enter Reference ID/UTR"
+                            value={utrInput}
+                            onChange={(e) => setUtrInput(e.target.value)}
+                          />
+                          <button type="button" onClick={() => setUtrInput('')}>Clear</button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </>
               ) : (
                 <>
-                  <ul>
-                    <li><span>Bank name</span>----</li>
-                    <li><span>Account Name</span>----</li>
-                    <li><span>Account Number</span>----</li>
-                    <li><span>IFSC Code</span>----</li>
-                  </ul>
-                  <div className='enter_amount_deposit'>
-                    <h5>Enter Reference ID/UTR (Re-verify for correctness)</h5>
-                    <div className='enter_filed d-flex'>
-                      <input
-                        type="text"
-                        placeholder="Enter Reference ID/UTR"
-                        value={utrInput}
-                        onChange={(e) => setUtrInput(e.target.value)}
-                      />
-                      <button type="button" onClick={() => setUtrInput('')}>Clear</button>
-                    </div>
-                  </div>
+                  <h5>Account Details</h5>
+                  {!hasUpiDetails ? (
+                    <button
+                      type="button"
+                      className="add_bank_btn add_upi_btn"
+                      onClick={() => setHasUpiDetails(true)}
+                    >
+                      Add UPI
+                    </button>
+                  ) : (
+                    <>
+                      <div className="upi_details_capcha">
+                        <div className="upi_details_capcha_img">
+                        <img src="images/upi_capcha.svg" alt="capcha" />
+                        </div>
+                    <div className='capcha_text'>
+                    <p>LVTCU6RZKRPEQL3BKR3EU3TVMUQTGVBPH43G622YPMXCQS</p>
+                    <button type="button" className="capcha_refresh_btn"><i class="ri-file-copy-line"></i></button>
+                    </div>    
+                      </div>
+                      <div className='enter_amount_deposit'>
+                        <h5>Enter Reference ID/Transaction ID (Re-verify for correctness)</h5>
+                        <div className='enter_filed d-flex'>
+                          <input
+                            type="text"
+                            placeholder="Enter Reference ID / Transaction ID"
+                            value={utrInput}
+                            onChange={(e) => setUtrInput(e.target.value)}
+                          />
+                          <button type="button" onClick={() => setUtrInput('')}>Clear</button>
+                        </div>
+                      </div>
+                      <div className='enter_amount_deposit file_upload_section'>
+                        <div
+                          className='file_upload_trigger'
+                          onClick={() => fileInputRef.current?.click()}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+                        >
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            className="file_upload_input"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              setSelectedFileName(file ? file.name : '');
+                            }}
+                            aria-label="Choose a file"
+                          />
+                          <i className="ri-upload-cloud-line file_upload_icon" aria-hidden />
+                          <span className="file_upload_text">{selectedFileName || 'Choose a File'}</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
             </div>

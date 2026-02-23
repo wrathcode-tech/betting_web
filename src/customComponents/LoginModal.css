@@ -88,6 +88,17 @@
   margin: 0 auto;
 }
 
+.premium_login_logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.premium_login_logo img {
+  max-width: 140px;
+  height: auto;
+  display: inline-block;
+}
+
 .premium_login_title {
   font-size: 20px;
   font-weight: 700;
@@ -107,10 +118,10 @@
 }
 
 .premium_login_tab {
-  padding: 10px 24px;
+  padding: 8px 20px;
   border: none;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.6);
   background: transparent;
@@ -216,10 +227,100 @@
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 
 .premium_forgot_link:hover {
   color: #ff9f6b;
+}
+
+/* Forgot Password popup – same theme as login */
+.premium_forgot_title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 20px;
+  letter-spacing: -0.02em;
+}
+
+/* Email + OTP in same box (screenshot style) */
+.premium_email_otp_box {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  padding: 0 4px 0 16px;
+  background: #252b36;
+  border: 1px solid #3d4553;
+  border-radius: 12px;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.premium_email_otp_box:hover {
+  border-color: #4d5566;
+}
+
+.premium_email_otp_box:focus-within {
+  border-color: #f97a31;
+  box-shadow: 0 0 0 3px rgba(249, 122, 49, 0.25);
+}
+
+.premium_email_otp_input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 12px 14px 0;
+  font-size: 15px;
+  color: #fff;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.premium_email_otp_input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.premium_otp_btn {
+  padding: 8px 14px;
+  margin: 6px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #e86d2a 0%, #f97a31 50%, #d96a28 100%);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+  white-space: nowrap;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.premium_otp_btn:hover {
+  transform: translateY(-1px);
+}
+
+.premium_forgot_footer {
+  margin-bottom: 16px;
+}
+
+.premium_login_now_link {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.premium_login_now_link:hover {
+  color: #f97a31;
 }
 
 .premium_checkbox_wrap {
@@ -256,8 +357,8 @@
 
 .premium_submit_btn {
   width: 100%;
-  padding: 16px 24px;
-  font-size: 16px;
+  padding: 12px 20px;
+  font-size: 14px;
   font-weight: 700;
   color: #fff;
   background: linear-gradient(135deg, #e86d2a 0%, #f97a31 50%, #d96a28 100%);
