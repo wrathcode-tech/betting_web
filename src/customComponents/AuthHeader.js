@@ -72,7 +72,7 @@ export default function AuthHeader() {
             <button className="signup_btn" onClick={handleSignupClick}>Sign Up</button>
           </div>
     
-          <div className="setting_hdr">
+          {/* <div className="setting_hdr">
             <img src="images/en.png" alt="language" />
             <div className="setting_icon">
               <img src="images/settingicon.svg" alt="setting" />
@@ -81,7 +81,7 @@ export default function AuthHeader() {
     
           <div className="comment_hdr" onClick={() => setIsChatOpen(!isChatOpen)}>
             <img src="images/comment-icon.svg" alt="comment" />
-          </div>  
+          </div>   */}
         </div>
       </header>
 

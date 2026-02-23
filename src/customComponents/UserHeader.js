@@ -196,6 +196,7 @@ export default function UserHeader() {
                 className="dropdown_logout_btn"
                 onClick={() => {
                   sessionStorage.removeItem('token');
+                  window.dispatchEvent(new CustomEvent('loginStateChange'));
                   setIsProfileDropdownOpen(false);
                   navigate('/', { replace: true });
                 }}
