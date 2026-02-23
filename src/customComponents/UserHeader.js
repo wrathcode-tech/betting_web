@@ -14,31 +14,12 @@ export default function UserHeader() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
-  const [currencySearch, setCurrencySearch] = useState('');
   const dropdownRef = useRef(null);
-  const currencyDropdownRef = useRef(null);
-
-  const currencies = [
-    { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹', icon: 'images/digital_currency.svg' },
-    { code: 'USD', name: 'US Dollar', flag: '🇺🇸', symbol: '$', icon: 'images/dollar_icon.svg' },
-    { code: 'USDT', name: 'Tether', flag: null, symbol: '$', icon: 'images/digital_currency.svg' },
-    { code: 'BFG', name: 'BetFury Token', flag: null, symbol: 'BFG', icon: 'images/digital_currency.svg' },
-    { code: 'BTC', name: 'Bitcoin', flag: null, symbol: '₿', icon: 'images/digital_currency.svg' },
-    { code: 'ETH', name: 'Ethereum', flag: null, symbol: 'Ξ', icon: 'images/digital_currency.svg' },
-  ].map((c) => ({ ...c, balance: `${c.symbol}0.00` }));
-  const [selectedCurrency, setSelectedCurrency] = useState(currencies[0]);
-  const filteredCurrencies = currencies.filter(
-    (c) => c.code.toLowerCase().includes(currencySearch.toLowerCase()) || c.name.toLowerCase().includes(currencySearch.toLowerCase())
-  );
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProfileDropdownOpen(false);
-      }
-      if (currencyDropdownRef.current && !currencyDropdownRef.current.contains(event.target)) {
-        setCurrencyDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -73,64 +54,14 @@ export default function UserHeader() {
         </div>
 
       <div className='d-flex align-items-center gap-2 depositheader'>
-        <div className="currency_balance_wrapper" ref={currencyDropdownRef}>
-          <div
-            className='d-flex align-items-center gap-2 currency_balance currency_balance_trigger'
-            onClick={() => setCurrencyDropdownOpen((v) => !v)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && setCurrencyDropdownOpen((v) => !v)}
-            aria-expanded={currencyDropdownOpen}
-            aria-haspopup="listbox"
-          >
-            {selectedCurrency.flag ? (
-              <span className="currency_flag_emoji" aria-hidden>{selectedCurrency.flag}</span>
-            ) : (
-              <img src={selectedCurrency.icon} alt="" />
-            )}
-            <span>{selectedCurrency.balance}</span>
-            <i className={`ri-arrow-up-s-line currency_caret ${currencyDropdownOpen ? 'open' : ''}`} aria-hidden />
+        <div className="currency_balance_wrapper currency_balance_inr_only">
+          <div className='d-flex align-items-center gap-2 currency_balance'>
+            <span className="currency_flag_emoji" aria-hidden>🇮🇳</span>
+            <span>₹0.00</span>
           </div>
-          {currencyDropdownOpen && (
-          <div className="currency_dropdown">
-            <div className="currency_dropdown_search">
-              <i className="ri-search-line" aria-hidden />
-              <input
-                type="text"
-                placeholder="Search"
-                value={currencySearch}
-                onChange={(e) => setCurrencySearch(e.target.value)}
-                onKeyDown={(e) => e.stopPropagation()}
-              />
-            </div>
-            <ul className="currency_dropdown_list" role="listbox">
-              {filteredCurrencies.map((curr) => (
-                <li
-                  key={curr.code}
-                  role="option"
-                  aria-selected={selectedCurrency.code === curr.code}
-                  className={`currency_dropdown_item ${selectedCurrency.code === curr.code ? 'selected' : ''}`}
-                  onClick={() => {
-                    setSelectedCurrency(curr);
-                    setCurrencyDropdownOpen(false);
-                    setCurrencySearch('');
-                  }}
-                >
-                  {curr.flag ? (
-                    <span className="currency_flag_emoji" aria-hidden>{curr.flag}</span>
-                  ) : (
-                    <img src={curr.icon} alt="" />
-                  )}
-                  <span className="currency_code">{curr.code} ({curr.symbol})</span>
-                  <span className="currency_balance_value">{curr.balance}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          )}
         </div>
         <button className="deposit_btn" onClick={() => navigate('/deposit')}>Deposit</button>
-   </div>
+      </div>
     
         <div className="header_right">
      
@@ -155,10 +86,6 @@ export default function UserHeader() {
               
               <div className="user_profile_dropdown_menu">
                 <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
-                  <i className="ri-wallet-3-line"></i>
-                  <span>Wallet</span>
-                </Link>
-                <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-user-line"></i>
                   <span>My Profile</span>
                 </Link>
@@ -174,14 +101,14 @@ export default function UserHeader() {
                   <i className="ri-history-line"></i>
                   <span>Game History</span>
                 </Link>
-                <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                {/* <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-time-line"></i>
                   <span>Sessions</span>
-                </Link>
-                <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                </Link> */}
+                {/* <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-safe-2-line"></i>
                   <span>Vault</span>
-                </Link>
+                </Link> */}
                 <Link 
                   to="/withdrawal" 
                   className="dropdown_menu_item" 

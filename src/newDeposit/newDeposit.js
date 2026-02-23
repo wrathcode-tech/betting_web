@@ -41,9 +41,9 @@ function NewDeposit() {
   const [selectedFileName, setSelectedFileName] = useState('');
   const fileInputRef = useRef(null);
 
-  const savedBank = useMemo(() => getSavedBankDetails(), [showAccountDetails]);
+  const savedBank = useMemo(() => getSavedBankDetails(), []);
   const hasSavedBank = savedBank && (savedBank.bankName || savedBank.accountNumber || savedBank.ifscCode);
-  const savedUpi = useMemo(() => getSavedUpiDetails(), [showAccountDetails]);
+  const savedUpi = useMemo(() => getSavedUpiDetails(), []);
   const hasSavedUpi = savedUpi && (savedUpi.upiId || savedUpi.vpa);
   const hasAnyAccount = hasSavedBank || hasSavedUpi;
 

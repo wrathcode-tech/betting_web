@@ -27,7 +27,7 @@ function ProfilePage() {
                     <span>XYZ@gmail.com</span>
                     <div className='d-flex align-items-center gap-2 mt-2'>
                       <p><img src="images/noto_trophy.svg" alt="edit" /> Level 1</p>
-                      <button className='btn profilebtn'><i class="ri-pencil-line"></i> Edit Profile</button>
+                      {/* <button className='btn profilebtn'><i class="ri-pencil-line"></i> Edit Profile</button> */}
                     </div>
                   </div>
                 </div>
