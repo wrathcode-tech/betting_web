@@ -32,7 +32,31 @@
 .search_modal::-webkit-scrollbar {
     width: 6px;
 }
-.search_modal .top_slot_outer{ overflow: hidden; }
+/* Slider scroll: landing jaisa – parent clip na kare, wrapper overflow-x: auto (index.css) se scroll ho */
+.search_modal .top_slot_outer {
+    overflow: visible;
+}
+/* Landing page jaisa: native horizontal scroll, touch scroll enable */
+.search_modal .game_items_slider_wrapper {
+    width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    touch-action: pan-x;
+}
+.search_modal .game_items_slider_wrapper::-webkit-scrollbar {
+    display: none;
+}
+.search_modal .game_items_slider_wrapper .game_items_slider {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    transform: none !important;
+    gap: 17px;
+    width: max-content;
+    min-width: 100%;
+}
 
 .search_modal .game_items_inner:hover {
     transform: scale(1.1);
@@ -164,5 +188,14 @@
     border-radius: 0px;
     padding:10px 0px;
 }
+
+.search_box_bl input[type="text"] {
+    font-size: 12px; }
+
+    .search_box_bl {
+        height: 48px; }  
+        
+        .search_header h2 {
+            font-size: 16px; }        
 
 }

@@ -134,6 +134,7 @@
 .gameplay_info_summary_inner {
     width: 100%;
     padding: 20px;
+    color: #fff;
     border-radius: 12px;
     background-color: #151515;
     border: 1px solid #19212C;
@@ -189,6 +190,7 @@
 
 .playgame_info_cnt {
     width: 100%;
+    color: #fff;
     display: block;
     margin-top: 20px;
 }
@@ -220,7 +222,7 @@
 .playgame_info_cnt ul li {
     margin: 8px 0 0;
     font-size: 14px;
-    color: #A7B5CA;
+    color: #c6cbd3;
     font-weight: 400;
     line-height: 20px;
 }
@@ -258,8 +260,12 @@
     margin-top: 14px;
 }
 
+.best_popular_games .game_items_slider.mt-2{ margin: 0px !important; }
+
+.best_popular_games .slider-arrows-group{ display: none !important; }
+
 .playgame_info_toggle_btn {
-    background: #2F2828;
+    background: #4b4545;
     border: none;
     color: #e2e2e2;
     padding: 10px 16px;

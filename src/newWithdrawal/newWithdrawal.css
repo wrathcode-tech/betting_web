@@ -139,4 +139,14 @@
     margin-bottom: 10px;
     font-size: 16px;
 }
+
+.add_account_icon_wrap {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.9); }
+
+  .add_account_upload {
+    min-height: 120px; }
+
+
 }

@@ -39,9 +39,6 @@ export default function SideBar({ isOpen, onClose }) {
             <input type="text" placeholder="Search" className="sidebar_search_input" />
             <i className="ri-search-line"></i>
           </div>
-          <button className="sidebar_close_btn" onClick={onClose}>
-            <i className="ri-close-line"></i>
-          </button>
         </div>
 
         <div className="sidebar_content">

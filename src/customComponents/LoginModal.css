@@ -431,7 +431,7 @@
 
   .premium_form_input {
     padding: 12px 14px;
-    font-size: 16px;
+    font-size: 13px;
   }
 
   .premium_login_close {
@@ -441,4 +441,8 @@
     height: 36px;
     font-size: 20px;
   }
+
+
+  .premium_email_otp_input {
+    font-size: 13px; }
 }

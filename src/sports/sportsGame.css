@@ -132,8 +132,14 @@
         height: 36px;
         font-size: 20px;
     }
-    .sports_bnr_arrow_prev { left: 8px; }
-    .sports_bnr_arrow_next { right: 8px; }
+
+    .sports_bnr_arrow_prev {
+        left: 8px;
+    }
+
+    .sports_bnr_arrow_next {
+        right: 8px;
+    }
 }
 
 .sports_top_tabs {
@@ -385,6 +391,7 @@ ul.match_type_tabs li.active button {
 
 }
 
+
 @media (max-width: 767px) {
 
     .sports_hero_banr h1 {
@@ -409,6 +416,9 @@ ul.match_type_tabs li.active button {
         margin-right: 0px;
     }
 
+    .sports_hero_section {
+        margin: 0px 0px 20px;
+    }
 
 }
 

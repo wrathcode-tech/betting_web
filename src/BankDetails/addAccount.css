@@ -1,8 +1,205 @@
-/* Add Account page – same layout as withdrawal (uses newDeposit.css). */
+/* Add Account page – Bank Details: list + Add Bank. */
 
 .new_add_account_page p.note_text {
   margin: 10px 0px;
-  /* Same as .new_deposit_page – shared via class new_deposit_page */
+}
+
+/* Bank list section */
+.bank_list_section {
+  margin-top: 24px;
+  width: 100%;
+}
+
+.bank_list_header {
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bank_list_header h5 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.add_bank_btn_header {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+  box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+  color: #fff;
+  transition: opacity 0.2s ease;
+}
+
+.add_bank_btn_header:hover {
+  opacity: 0.95;
+}
+
+.add_bank_btn_header {
+  text-decoration: none;
+  color: #fff;
+}
+
+.bank_list_empty {
+  background: rgba(26, 26, 25, 0.6);
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.bank_list_empty p {
+  margin: 0 0 16px;
+  color: #a7b5ca;
+  font-size: 14px;
+}
+
+.bank_list_empty .add_bank_btn {
+  margin: 0;
+  text-decoration: none;
+  color: #fff;
+  display: inline-block;
+}
+
+.back_link_btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 22px;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.back_link_btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(249, 122, 49, 0.5);
+  color: #fff;
+}
+
+.bank_list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bank_list_item {
+  background: rgba(26, 26, 25, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+.bank_list_item_content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.bank_list_item_main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bank_list_detail_row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bank_list_detail_label {
+  min-width: 130px;
+  font-size: 13px;
+  color: #848484;
+  font-weight: 500;
+}
+
+.bank_list_detail_value_wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bank_list_detail_value {
+  font-size: 14px;
+  color: #fff;
+  word-break: break-all;
+  min-width: 0;
+}
+
+.bank_list_detail_value:empty::after {
+  content: '—';
+  color: #a7b5ca;
+}
+
+.bank_list_detail_copy {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #a7b5ca;
+  padding: 4px 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.bank_list_detail_copy i {
+  font-size: 16px;
+}
+
+.bank_list_detail_copy:hover {
+  color: #2ecc71;
+}
+
+.bank_list_item_actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bank_list_item_remove {
+  background: transparent;
+  border: none;
+  color: #a7b5ca;
+  padding: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  border-radius: 8px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.bank_list_item_remove:hover {
+  color: #f97a31;
+  background: rgba(249, 122, 49, 0.15);
 }
 
 /* Account cards row – My Card + Add Account (screenshot design) */
@@ -154,6 +351,27 @@
 
 
 @media (max-width: 767px) {
+  .bank_list_item {
+    padding: 14px 16px;
+  }
+
+  .bank_list_detail_row {
+    gap: 8px;
+  }
+
+  .bank_list_detail_label {
+    min-width: 110px;
+    font-size: 12px;
+  }
+
+  .bank_list_detail_value {
+    font-size: 13px;
+  }
+
+  .bank_list_detail_copy {
+    padding: 4px 0;
+  }
+
   .account_cards_row {
     flex-wrap: wrap;
   }
@@ -166,4 +384,10 @@
   .new_add_account_page.new_deposit_page h5 {
     font-size: 15px;
   }
+
+  .account_card_add_icon {
+    width: 30px;
+    height: 30px;
+    font-size: 18px; }
+
 }

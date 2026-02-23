@@ -19,6 +19,7 @@
     background-position: center;
     background-repeat: no-repeat;
     padding: 40px 0px;
+    margin-top: 40px;
     animation: fadeIn 0.8s ease-in;
 }
 
@@ -614,6 +615,8 @@ html {
     .work_level_reach_s ul li {
         animation-duration: 0.6s;
     }
+
+    .rank_system_hero_s{ margin-top: 0px; }
 }
 
 @media (max-width: 480px) {

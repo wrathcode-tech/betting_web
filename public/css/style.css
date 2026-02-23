@@ -53,6 +53,11 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
 }
 
 .header_lft {
@@ -66,14 +71,16 @@ header {
     transition: opacity 0.3s;
 }
 
+.toggle_menu img {
+    transition: none;
+}
+
 .toggle_menu:hover {
     opacity: 0.8;
 }
 
-@media (max-width: 991px) {
-    .toggle_menu {
-        display: none;
-    }
+.toggle_menu_open img {
+    transform: scaleX(-1);
 }
 
 .header_logo {
@@ -2358,6 +2365,8 @@ footer .container {
     .p_space_footer {
         padding: 0px 18px;
     }
+
+    .toggle_menu{ display: none; }
 
 }
 

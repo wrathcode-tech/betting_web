@@ -8,6 +8,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  margin-top: 30px;
 }
 
 .top_bar_hd {
@@ -254,6 +255,17 @@ input:focus-visible {
   opacity: 0.95;
 }
 
+.add_account_cta .add_account_text {
+  margin: 8px 0 14px;
+  color: #a7b5ca;
+  font-size: 14px;
+}
+
+.add_account_btns {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .account_detail_payment ul li {
   display: flex;
   font-size: 13px;
@@ -331,6 +343,8 @@ button.capcha_refresh_btn {
     font-size: 12px;
     margin: 12px 18px;
   }
+
+  .new_deposit_page{ margin-top: 0px; }
 
   .enter_amount_deposit h5 {
     font-size: 11px;

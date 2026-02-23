@@ -58,13 +58,11 @@ function CasinoGame() {
     
     const duplicatedItems = [...gameItems, ...gameItems, ...gameItems];
     const gallerySlides = [
-        "images/casino_bnr_img.png",
-        "images/casino_bnr_img2.png",
-        "images/casino_bnr_img3.png",
-        "images/casino_bnr_img4.png",
-        "images/casino_bnr_img5.png",
-        "images/casino_bnr_img2.png",
-        "images/casino_bnr_img3.png",
+        "images/casino_bnr_img.jpg",
+        "images/casino_bnr_img2.jpg",
+        "images/casino_bnr_img3.jpg",
+        "images/casino_bnr_img4.jpg",
+        "images/casino_bnr_img5.jpg",
     ];
 
     // No auto-slide: banner changes only on dot click; lobby sliders on mouse drag
@@ -185,27 +183,17 @@ function CasinoGame() {
 
     const getSlidesPerView = () => {
         if (typeof window === 'undefined') return 1;
-        const w = window.innerWidth;
-        if (w >= 1025) return 3;
-        if (w >= 769) return 2;
-        return 1;
+        return window.matchMedia('(min-width: 769px)').matches ? 2 : 1;
     };
     const [slidesPerView, setSlidesPerView] = useState(getSlidesPerView);
     const [layoutKey, setLayoutKey] = useState(0);
 
     useEffect(() => {
-        const mq3 = window.matchMedia('(min-width: 1025px)');
-        const mq2 = window.matchMedia('(min-width: 769px)');
-        const update = () => {
-            setSlidesPerView(mq3.matches ? 3 : mq2.matches ? 2 : 1);
-        };
+        const mq = window.matchMedia('(min-width: 769px)');
+        const update = () => setSlidesPerView(mq.matches ? 2 : 1);
         update();
-        mq3.addEventListener('change', update);
-        mq2.addEventListener('change', update);
-        return () => {
-            mq3.removeEventListener('change', update);
-            mq2.removeEventListener('change', update);
-        };
+        mq.addEventListener('change', update);
+        return () => mq.removeEventListener('change', update);
     }, []);
     useEffect(() => {
         const onResize = () => setLayoutKey((k) => k + 1);

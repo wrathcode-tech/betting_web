@@ -121,6 +121,10 @@ button.profilebtn {
     flex-direction: column;
 }
 
+.profile_section {
+    padding: 20px 0px;
+}
+
 .ranklist ul li span {
     font-size: 12px;
     font-weight: 500;
@@ -196,6 +200,10 @@ button.profilebtn {
 
     .statistics_profile h2 {
         font-size: 16px;
+    }
+
+    .profile_section {
+        padding: 0px;
     }
 
     .dashboard_page h1 {

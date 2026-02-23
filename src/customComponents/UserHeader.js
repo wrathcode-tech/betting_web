@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, Suspense, lazy } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import LoginModal from './LoginModal'
-import SideBar from './SideBar/sideBar'
-import Chat from '../cricket/Chat'
-import Search from './Search'
+
+const LoginModal = lazy(() => import('./LoginModal'))
+const SideBar = lazy(() => import('./SideBar/sideBar'))
+const Chat = lazy(() => import('../cricket/Chat'))
+const Search = lazy(() => import('./Search'))
 
 export default function UserHeader() {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ export default function UserHeader() {
     <>
       <header>
         <div className="header_lft">
-          <div className="toggle_menu" onClick={() => setSidebarOpen(true)}>
+          <div className={`toggle_menu ${sidebarOpen ? 'toggle_menu_open' : ''}`} onClick={() => setSidebarOpen((prev) => !prev)}>
             <img src="images/toggle_menu.svg" alt="menu" />
           </div>
           <Link to="/" className="header_logo">
@@ -220,10 +221,10 @@ export default function UserHeader() {
         </div>
       </header>
 
-      <LoginModal show={showModal} onHide={() => { setShowModal(false); setModalTab('login'); }} initialTab={modalTab} />
-      <SideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
-      <Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      {showModal && <Suspense fallback={null}><LoginModal show={showModal} onHide={() => { setShowModal(false); setModalTab('login'); }} initialTab={modalTab} /></Suspense>}
+      {sidebarOpen && <Suspense fallback={null}><SideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} /></Suspense>}
+      {isChatOpen && <Suspense fallback={null}><Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} /></Suspense>}
+      {isSearchOpen && <Suspense fallback={null}><Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} /></Suspense>}
 
     </>
   )

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import '../customComponents/Deposit.css';
@@ -6,10 +7,24 @@ import './newDeposit.css';
 
 const AMOUNT_OPTIONS = [500, 1000, 5000, 10000, 25000, 50000, 100000, 500000];
 const SAVED_BANK_DETAILS_KEY = 'saved_bank_details';
+const SAVED_UPI_DETAILS_KEY = 'saved_upi_details';
 
 function getSavedBankDetails() {
   try {
     const s = localStorage.getItem(SAVED_BANK_DETAILS_KEY);
+    if (!s) return null;
+    const parsed = JSON.parse(s);
+    if (Array.isArray(parsed) && parsed.length) return parsed[0];
+    if (parsed && typeof parsed === 'object') return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function getSavedUpiDetails() {
+  try {
+    const s = localStorage.getItem(SAVED_UPI_DETAILS_KEY);
     return s ? JSON.parse(s) : null;
   } catch {
     return null;
@@ -17,18 +32,20 @@ function getSavedBankDetails() {
 }
 
 function NewDeposit() {
+  const navigate = useNavigate();
   const [showAccountDetails, setShowAccountDetails] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState('bank'); // 'bank' | 'upi'
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [amountInput, setAmountInput] = useState('');
   const [utrInput, setUtrInput] = useState('');
-  const [hasBankDetails, setHasBankDetails] = useState(false);
-  const [hasUpiDetails, setHasUpiDetails] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState('');
   const fileInputRef = useRef(null);
 
   const savedBank = useMemo(() => getSavedBankDetails(), [showAccountDetails]);
   const hasSavedBank = savedBank && (savedBank.bankName || savedBank.accountNumber || savedBank.ifscCode);
+  const savedUpi = useMemo(() => getSavedUpiDetails(), [showAccountDetails]);
+  const hasSavedUpi = savedUpi && (savedUpi.upiId || savedUpi.vpa);
+  const hasAnyAccount = hasSavedBank || hasSavedUpi;
 
   const handleAmountOption = (value) => {
     setSelectedAmount(value);
@@ -107,19 +124,33 @@ function NewDeposit() {
             </div>
           </div>
 
+          {!hasAnyAccount && (
+            <div className='account_detail_payment add_account_cta'>
+              <h5>Add payment method</h5>
+              <p className='add_account_text'>Add Bank or UPI to deposit. Choose one:</p>
+              <div className='add_account_btns d-flex gap-2'>
+                <button type="button" className="add_bank_btn" onClick={() => navigate('/add-account')}>
+                  Add Bank
+                </button>
+                <button type="button" className="add_bank_btn add_upi_btn" onClick={() => navigate('/add-account')}>
+                  Add UPI
+                </button>
+              </div>
+            </div>
+          )}
+
           {showAccountDetails && (
             <div className='account_detail_payment'>
               {selectedPayment === 'bank' ? (
                 <>
                   <h5>Account Details</h5>
-                  {!hasSavedBank && !hasBankDetails ? (
-                    <button
-                      type="button"
-                      className="add_bank_btn"
-                      onClick={() => setHasBankDetails(true)}
-                    >
-                      Add bank
-                    </button>
+                  {!hasSavedBank ? (
+                    <div className='add_account_cta'>
+                      <p className='add_account_text'>Add bank account to continue.</p>
+                      <button type="button" className="add_bank_btn" onClick={() => navigate('/add-account')}>
+                        Add bank
+                      </button>
+                    </div>
                   ) : (
                     <>
                       <ul>
@@ -146,14 +177,13 @@ function NewDeposit() {
               ) : (
                 <>
                   <h5>Account Details</h5>
-                  {!hasUpiDetails ? (
-                    <button
-                      type="button"
-                      className="add_bank_btn add_upi_btn"
-                      onClick={() => setHasUpiDetails(true)}
-                    >
-                      Add UPI
-                    </button>
+                  {!hasSavedUpi ? (
+                    <div className='add_account_cta'>
+                      <p className='add_account_text'>Add UPI to continue.</p>
+                      <button type="button" className="add_bank_btn add_upi_btn" onClick={() => navigate('/add-account')}>
+                        Add UPI
+                      </button>
+                    </div>
                   ) : (
                     <>
                       <div className="upi_details_capcha">
@@ -162,7 +192,7 @@ function NewDeposit() {
                         </div>
                     <div className='capcha_text'>
                     <p>LVTCU6RZKRPEQL3BKR3EU3TVMUQTGVBPH43G622YPMXCQS</p>
-                    <button type="button" className="capcha_refresh_btn"><i class="ri-file-copy-line"></i></button>
+                    <button type="button" className="capcha_refresh_btn"><i className="ri-file-copy-line"></i></button>
                     </div>    
                       </div>
                       <div className='enter_amount_deposit'>
@@ -211,9 +241,9 @@ function NewDeposit() {
               <button type="button" className="confirm_payment_btn" onClick={handleConfirmPayment}>
                 Confirm Payment
               </button>
-            ) : (
+            ) : hasAnyAccount ? (
               <button type="button" onClick={handleNext}>Next</button>
-            )}
+            ) : null}
           </div>
 
 
