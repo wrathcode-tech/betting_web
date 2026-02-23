@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import '../newDeposit/newDeposit.css';
 import './newWithdrawal.css';
 
+const HAS_BANK_ACCOUNT_KEY = 'user_has_bank_account';
+
 function NewWithdrawal() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!localStorage.getItem(HAS_BANK_ACCOUNT_KEY)) {
+      navigate('/add-account', { replace: true });
+    }
+  }, [navigate]);
 
   return (
     <>
@@ -17,8 +25,6 @@ function NewWithdrawal() {
             <h2>Withdrawal</h2>
             <p>following payment withdrawal information:: <span>Cashable Amount : 0</span></p>
           </div>
-
-       
           <div className="payment_topbr">
             <button type="button" className="active">Bank</button>
           </div>
@@ -37,25 +43,20 @@ function NewWithdrawal() {
               <span className="add_account_label">Add Account</span>
             </button>
           </div>
-
 <div className='withdrawal_from_dl'>
-
           <h5>Enter Details</h5>
-
           <div className="enter_amount_deposit">
         <label>Account Number</label>
             <div className="enter_filed d-flex">
               <input type="text" placeholder="Enter Amount To Be Withdrawn" />
             </div>
           </div>
-
           <div className="enter_amount_deposit">
         <label>Account Holder Name</label>
             <div className="enter_filed d-flex">
               <input type="text" placeholder="Account Holder Name" />
             </div>
           </div>
-
           <div className="enter_amount_deposit">
         <label>Bank Name</label>
             <div className="enter_filed d-flex">

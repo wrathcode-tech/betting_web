@@ -708,6 +708,7 @@ button.slotbtn {
 .casino_sport_section_lft .gameimg {
     min-width: 100px;
     transition: transform 0.3s ease;
+    display: contents;
 }
 
 .casino_sport_section_lft:hover .gameimg {
@@ -2457,7 +2458,7 @@ footer .container {
         height: 24px; }
 
     .casino_hero_s h1 {
-        font-size: 24px;
+        font-size: 20px;
         text-align: center;
     }
 
@@ -2738,4 +2739,9 @@ footer .container {
         width: 44px;
         height: 44px;
     }
+
+    .casino_hero_s h1 {
+        font-size: 18px; }
+        .casinobox_item h3 {
+            font-size: 15px; }
 }

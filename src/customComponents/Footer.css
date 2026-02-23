@@ -166,6 +166,24 @@ footer .container {
   max-height: 500px;
 }
 
+@media (max-width: 991px) {
+footer {
+  padding: 32px 0 60px;
+}
+
+.footer_description_content p {
+  font-size: 12px; }
+
+  .footer_description_content ul {
+    font-size: 12px;
+} 
+
+.footer_show_more_btn {
+  padding: 8px 20px;
+  font-size: 12px; }
+
+}
+
 @media (min-width: 768px) {
   footer .container {
     padding-left: 24px;

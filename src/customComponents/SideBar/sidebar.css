@@ -133,6 +133,71 @@
     padding: 20px 0;
 }
 
+/* Deposit / Withdraw – mobile only, one row, 5px gap; desktop hidden */
+.deposit_withdrawal_btn {
+    display: none;
+    flex-direction: row;
+    gap: 5px;
+    padding: 0 15px 16px;
+    align-items: center;
+}
+
+.deposit_withdrawal_menu_btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    flex: 1;
+    min-width: 0;
+}
+
+.deposit_withdrawal_menu_btn.deposit_btn {
+    background: linear-gradient(180deg, #2d8a4e 0%, #1e6b3a 100%);
+    box-shadow: 0 2px 0 #0d3d1f, inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.deposit_withdrawal_menu_btn.withdraw_btn {
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 2px 0 #5A2304, inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.deposit_withdrawal_menu_btn:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+}
+
+.deposit_withdrawal_menu_btn.deposit_btn:hover {
+    box-shadow: 0 3px 0 #0d3d1f, inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.deposit_withdrawal_menu_btn.withdraw_btn:hover {
+    box-shadow: 0 3px 0 #5A2304, inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.deposit_withdrawal_menu_btn:active {
+    transform: translateY(0);
+}
+
+.deposit_withdrawal_menu_btn i {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 991px) {
+    .deposit_withdrawal_btn {
+        display: flex;
+    }
+}
+
 .sidebar_nav {
     width: 100%;
 }

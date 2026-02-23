@@ -42,10 +42,22 @@
   padding: 0;
   border-radius: 12px;
   background: transparent;
+  border: 2px solid transparent;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.account_card:hover {
+  border-color: rgba(249, 122, 49, 0.4);
+}
+
+.account_card.account_card_selected {
+  border-color: #f97a31;
+  box-shadow: 0 0 0 2px rgba(249, 122, 49, 0.35);
 }
 
 .account_card_delete {

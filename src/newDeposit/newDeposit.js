@@ -1,10 +1,20 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import '../customComponents/Deposit.css';
 import './newDeposit.css';
 
 const AMOUNT_OPTIONS = [500, 1000, 5000, 10000, 25000, 50000, 100000, 500000];
+const SAVED_BANK_DETAILS_KEY = 'saved_bank_details';
+
+function getSavedBankDetails() {
+  try {
+    const s = localStorage.getItem(SAVED_BANK_DETAILS_KEY);
+    return s ? JSON.parse(s) : null;
+  } catch {
+    return null;
+  }
+}
 
 function NewDeposit() {
   const [showAccountDetails, setShowAccountDetails] = useState(false);
@@ -16,6 +26,9 @@ function NewDeposit() {
   const [hasUpiDetails, setHasUpiDetails] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState('');
   const fileInputRef = useRef(null);
+
+  const savedBank = useMemo(() => getSavedBankDetails(), [showAccountDetails]);
+  const hasSavedBank = savedBank && (savedBank.bankName || savedBank.accountNumber || savedBank.ifscCode);
 
   const handleAmountOption = (value) => {
     setSelectedAmount(value);
@@ -99,7 +112,7 @@ function NewDeposit() {
               {selectedPayment === 'bank' ? (
                 <>
                   <h5>Account Details</h5>
-                  {!hasBankDetails ? (
+                  {!hasSavedBank && !hasBankDetails ? (
                     <button
                       type="button"
                       className="add_bank_btn"
@@ -110,10 +123,10 @@ function NewDeposit() {
                   ) : (
                     <>
                       <ul>
-                        <li><span>Bank name</span>----</li>
-                        <li><span>Account Name</span>----</li>
-                        <li><span>Account Number</span>----</li>
-                        <li><span>IFSC Code</span>----</li>
+                        <li><span>Bank name</span>{hasSavedBank?.bankName || '----'}</li>
+                        <li><span>Account Name</span>{hasSavedBank?.accountHolderName || '----'}</li>
+                        <li><span>Account Number</span>{hasSavedBank?.accountNumber || '----'}</li>
+                        <li><span>IFSC Code</span>{hasSavedBank?.ifscCode || '----'}</li>
                       </ul>
                       <div className='enter_amount_deposit'>
                         <h5>Enter Reference ID/UTR (Re-verify for correctness)</h5>

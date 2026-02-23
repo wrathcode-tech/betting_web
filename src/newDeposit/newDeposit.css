@@ -363,4 +363,8 @@ button.capcha_refresh_btn {
     padding: 7px 32px; }
 
 
+    .account_detail_payment .add_bank_btn {
+      padding: 8px 24px;
+      font-size: 12px; }
+
 }

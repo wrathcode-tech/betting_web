@@ -15,7 +15,7 @@ const ReferralProgram = lazy(() => import("./ReferralProgram/referralProgram"));
 const RankSystem = lazy(() => import("./RankSystem/rankSystem"));
 const NewDeposit = lazy(() => import("./newDeposit/newDeposit"));
 const NewWithdrawal = lazy(() => import("./newWithdrawal/newWithdrawal"));
-const AddAccount = lazy(() => import("./addAccount/addAccount"));
+const AddAccount = lazy(() => import("./BankDetails/addAccount"));
 
 function PageFallback() {
   return (

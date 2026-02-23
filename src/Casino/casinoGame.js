@@ -56,7 +56,6 @@ function CasinoGame() {
         originalsItems.push({ ...item, id: i + 1 });
     }
     
-    const itemsPerSet = gameItems.length;
     const duplicatedItems = [...gameItems, ...gameItems, ...gameItems];
     const gallerySlides = [
         "images/casino_bnr_img.png",
@@ -79,37 +78,37 @@ function CasinoGame() {
             const tx = -lobbySlider1Index * itemWidth;
             lobbySlider1Ref.current.style.transform = `translateX(${tx}px)`;
         }
-    }, [lobbySlider1Index]);
+    }, [lobbySlider1Index, itemWidth]);
     useEffect(() => {
         if (lobbySlider2Ref.current) {
             const tx = -lobbySlider2Index * itemWidth;
             lobbySlider2Ref.current.style.transform = `translateX(${tx}px)`;
         }
-    }, [lobbySlider2Index]);
+    }, [lobbySlider2Index, itemWidth]);
     useEffect(() => {
         if (lobbySlider3Ref.current) {
             const tx = -lobbySlider3Index * itemWidth;
             lobbySlider3Ref.current.style.transform = `translateX(${tx}px)`;
         }
-    }, [lobbySlider3Index]);
+    }, [lobbySlider3Index, itemWidth]);
     useEffect(() => {
         if (lobbySlider4Ref.current) {
             const tx = -lobbySlider4Index * itemWidth;
             lobbySlider4Ref.current.style.transform = `translateX(${tx}px)`;
         }
-    }, [lobbySlider4Index]);
+    }, [lobbySlider4Index, itemWidth]);
     useEffect(() => {
         if (lobbySlider5Ref.current) {
             const tx = -lobbySlider5Index * itemWidth;
             lobbySlider5Ref.current.style.transform = `translateX(${tx}px)`;
         }
-    }, [lobbySlider5Index]);
+    }, [lobbySlider5Index, itemWidth]);
     useEffect(() => {
         if (lobbySlider6Ref.current) {
             const tx = -lobbySlider6Index * itemWidth;
             lobbySlider6Ref.current.style.transform = `translateX(${tx}px)`;
         }
-    }, [lobbySlider6Index]);
+    }, [lobbySlider6Index, itemWidth]);
 
     // Mouse drag-to-scroll (no auto)
     const dragStateRef = useRef({

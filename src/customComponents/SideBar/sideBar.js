@@ -45,13 +45,23 @@ export default function SideBar({ isOpen, onClose }) {
         </div>
 
         <div className="sidebar_content">
+          <div className="deposit_withdrawal_btn">
+            <Link to="/deposit" className="deposit_withdrawal_menu_btn deposit_btn" onClick={onClose}>
+              <i className="ri-wallet-3-line" aria-hidden />
+              <span>Deposit</span>
+            </Link>
+            <Link to="/withdrawal" className="deposit_withdrawal_menu_btn withdraw_btn" onClick={onClose}>
+              <i className="ri-bank-line" aria-hidden />
+              <span>Withdraw</span>
+            </Link>
+          </div>
           <nav className="sidebar_nav">
             <ul className="sidebar_menu">
-              <li className="sidebar_menu_item">
+              {/* <li className="sidebar_menu_item">
                 <Link to="/" onClick={onClose}>
                   <span><img src="images/casino_icon.svg" alt="home" />Home</span>
                 </Link>
-              </li>
+              </li> */}
               <li className={`sidebar_menu_item ${openSubmenu === 'casino' ? 'active' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('casino'); }}>
                   <i className={openSubmenu === 'casino' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
