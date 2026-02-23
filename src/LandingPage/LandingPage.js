@@ -386,18 +386,17 @@ function LandingPage() {
             <source src="images/herobg.mp4" type="video/mp4" />
           </video>
         </div>
+        {/* Aviator SVG: float left-bottom → top-right, then restart (mobile) */}
+        <div className="hero_avitor_svg" aria-hidden="true">
+          <img src="images/avitor.svg" alt="" />
+        </div>
         {/* Mobile only: Aviator (lift+right), Cricket, Casino – full animations */}
         <div className="hero_mobile_animation" aria-hidden="true">
           <div className="hero_mobile_anim_bg">
             <div className="hero_mobile_bg_planet" />
             <div className="hero_mobile_bg_glow" />
           </div>
-          {/* Aviator: plane lifts up then flies right */}
-          <div className="hero_mob_aviator_plane">
-            <i className="ri-plane-fill" aria-hidden="true" />
-          </div>
-          <div className="hero_mob_aviator_trail" />
-          {/* Cricket: ball in arc + stumps */}
+          {/* Cricket: ball in arc + stumps (stumps on right) */}
           <div className="hero_mob_cricket_ball" />
           <div className="hero_mob_cricket_stumps" />
           {/* Casino: dice roll + cards float */}

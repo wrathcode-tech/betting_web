@@ -49,12 +49,12 @@
     }
 }
 
+/* Desktop: 2 slides (same as tablet) */
 @media (min-width: 1025px) {
     .sports_bnr_gallery_slide {
-        flex: 0 0 calc((100% - 36px) / 3);
-        width: calc((100% - 36px) / 3);
+        flex: 0 0 calc((100% - 18px) / 2);
+        width: calc((100% - 18px) / 2);
     }
-
 }
 
 .sports_bnr_arrow {

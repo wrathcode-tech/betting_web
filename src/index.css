@@ -257,7 +257,8 @@ a.dropdown_menu_item {
 .hero_mob_casino_dice {
   display: none;
   position: absolute;
-  right: 15%;
+  left: 12%;
+  right: auto;
   top: 25%;
   width: 44px;
   height: 44px;
@@ -271,7 +272,8 @@ a.dropdown_menu_item {
 .hero_mob_casino_card {
   display: none;
   position: absolute;
-  right: 22%;
+  left: 20%;
+  right: auto;
   top: 50%;
   width: 40px;
   height: 40px;
@@ -367,6 +369,20 @@ a.dropdown_menu_item {
   .hero_mob_casino_card,
   .hero_mob_casino_chip {
     display: block;
+  }
+
+  /* Two of them at right bottom */
+  .hero_mob_casino_dice {
+    left: auto;
+    right: 12%;
+    top: auto;
+    bottom: 22%;
+  }
+  .hero_mob_casino_card {
+    left: auto;
+    right: 22%;
+    top: auto;
+    bottom: 18%;
   }
 }
 

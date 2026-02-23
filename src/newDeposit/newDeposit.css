@@ -339,6 +339,10 @@ button.capcha_refresh_btn {
     font-size: 12px;
   }
 
+  .add_account_cta .add_account_text {
+    font-size: 12px;
+}
+
   p.note_text {
     font-size: 12px;
     margin: 12px 18px;

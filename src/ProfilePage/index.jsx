@@ -32,13 +32,13 @@ function ProfilePage() {
                   </div>
                 </div>
 
-                <div className='ranklist'>
+                {/* <div className='ranklist'>
                   <ul>
                     <li><span>Rank</span>45</li>
                     <li><span>Points</span>860</li>
                     <li><span>Level</span>1</li>
                   </ul>
-                </div>
+                </div> */}
 
                 <div className='statistics_profile'>
                   <h2>Statistics</h2>
@@ -76,7 +76,7 @@ function ProfilePage() {
                   </ul>
                 </div>
 
-                <div className='statistics_profile'>
+                <div className='statistics_profile top_played_games'>
                   <h2>Top Played Games</h2>
                   <ul>
                     <li>

@@ -58,10 +58,10 @@ function CasinoGame() {
     
     const duplicatedItems = [...gameItems, ...gameItems, ...gameItems];
     const gallerySlides = [
-        "images/casino_bnr_img.jpg",
-        "images/casino_bnr_img2.jpg",
-        "images/casino_bnr_img3.jpg",
         "images/casino_bnr_img4.jpg",
+        "images/casino_bnr_img2.jpg",
+        "images/casino_bnr_img.jpg",
+        "images/casino_bnr_img3.jpg",
         "images/casino_bnr_img5.jpg",
     ];
 

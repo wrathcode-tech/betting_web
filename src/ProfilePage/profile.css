@@ -175,8 +175,20 @@ button.profilebtn {
     align-items: center;
 }
 
-
+/* ========== Tablet ========== */
 @media (max-width: 991px) {
+    .profile_section .row {
+        flex-direction: column;
+    }
+
+    .profile_section .col-md-6 {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .profile_right_section {
+        margin-top: 20px;
+    }
 
     .statistics_profile ul li {
         border-radius: 10px;
@@ -184,67 +196,201 @@ button.profilebtn {
         padding: 10px;
     }
 
-    .statistics_profile ul li {
-        font-size: 15px;
-    }
-
-
     .statistics_profile ul li img {
         width: 65px;
     }
 
+    .statistics_profile ul {
+        flex-wrap: wrap;
+    }
 
+    .statistics_profile ul li {
+        flex: 1 1 calc(50% - 12px);
+        min-width: 120px;
+        box-sizing: border-box;
+    }
 }
 
+/* ========== Mobile ========== */
 @media (max-width: 767px) {
+    .dashboard_page {
+        padding: 16px 0 80px;
+    }
 
-    .statistics_profile h2 {
-        font-size: 16px;
+    .dashboard_page .container {
+        padding-left: 16px;
+        padding-right: 16px;
+        overflow-x: hidden;
     }
 
     .profile_section {
-        padding: 0px;
+        padding: 0;
+        overflow-x: hidden;
     }
 
-    .dashboard_page h1 {
+    .profile_section .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .profile_section h1 {
         font-size: 20px;
+        margin-bottom: 16px;
     }
 
-    .statistics_profile ul {
+    .profile_bio_info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
         gap: 12px;
+        margin-top: 0;
     }
 
-    .ranklist ul {
-        gap: 10px;
+    .profile_bio_info_cnt {
+        width: 100%;
     }
 
-    .profile_right_section {
-        margin-top: 24px;
-        max-width: 220px;
+    .profile_bio_info_cnt .d-flex {
+        justify-content: center;
     }
 
-}
+    .profile_bio_info_cnt h3 {
+        font-size: 18px;
+    }
 
-@media (max-width: 420px) {
-
-    .statistics_profile ul li {
+    .profile_bio_info_cnt span {
         font-size: 13px;
     }
 
+    .profile_right_section {
+        margin: 24px auto 0;
+        max-width: 200px;
+    }
+
+    .profile_right_section img {
+        width: 100%;
+        height: auto;
+    }
+
+    .statistics_profile {
+        margin-top: 20px;
+    }
+
+    .statistics_profile h2 {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    .statistics_profile ul {
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-start;
+    }
+
+    .statistics_profile ul li {
+        flex: 1 1 100%;
+        min-width: 0;
+        font-size: 14px;
+        padding: 12px;
+        border-radius: 12px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+    }
+
+    .statistics_profile ul li span {
+        font-size: 11px;
+    }
+
+    /* Top Played Games: 3 boxes in one line on mobile */
+    .statistics_profile.top_played_games ul {
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    .statistics_profile.top_played_games ul li {
+        flex: 1 1 0;
+        min-width: 0;
+        flex-direction: column;
+        text-align: center;
+        padding: 10px 6px;
+        font-size: 12px;
+    }
+
+    .statistics_profile.top_played_games ul li span {
+        margin-bottom: 4px;
+    }
+
+    .statistics_profile.top_played_games ul li img {
+        width: 44px;
+        height: 44px;
+        object-fit: contain;
+    }
+
+    .ranklist ul {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
     .ranklist ul li {
-        min-width: 85px;
+        flex: 1 1 calc(50% - 5px);
+        min-width: 0;
+    }
+}
+
+/* ========== Small mobile ========== */
+@media (max-width: 420px) {
+    .dashboard_page .container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .profile_bio_info_img img.user {
+        width: 64px;
+        height: 64px;
+    }
+
+    .profile_bio_info_img {
+        max-width: 64px;
+    }
+
+    .user_active {
+        right: -2px;
+        bottom: 8px;
+    }
+
+    .statistics_profile ul li {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    .statistics_profile ul li span {
+        font-size: 10px;
+    }
+
+    .ranklist ul li {
+        min-width: 0;
         font-size: 14px;
         padding: 10px;
     }
 
     .statistics_profile ul li img {
-        width: 48px;
+        width: 40px;
+        flex-shrink: 0;
     }
 
-    .profile_bio_info_img img.user {
-        width: 60px;
-        height: 60px;
+    .statistics_profile.top_played_games ul li {
+        padding: 8px 4px;
+        font-size: 11px;
     }
 
+    .statistics_profile.top_played_games ul li img {
+        width: 36px;
+        height: 36px;
+    }
 
+    .profile_right_section {
+        max-width: 160px;
+    }
 }

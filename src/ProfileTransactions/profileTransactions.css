@@ -362,6 +362,7 @@
     }
 
     .profile_transactions_section{ margin: 0px 0px 20px; }
-
+    .btn.deposit_btn {
+        font-size: 12px; }
 
 }

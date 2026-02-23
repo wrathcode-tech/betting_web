@@ -79,7 +79,9 @@ function Footer() {
     return (
         <>
         <footer>
-            
+            <div className="footer_vector_top" aria-hidden="true">
+                <img src="images/bottom_img.svg" alt="" />
+            </div>
         <div className='container'>
 
         <div className='p_space_footer'>

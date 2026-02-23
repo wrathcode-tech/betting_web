@@ -351,9 +351,16 @@
 
 
 @media (max-width: 767px) {
+
+
   .bank_list_item {
     padding: 14px 16px;
   }
+
+.add_bank_btn_header {
+    gap: 5px;
+    padding: 8px 20px;
+    font-size: 11px; }
 
   .bank_list_detail_row {
     gap: 8px;
