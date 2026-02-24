@@ -465,32 +465,46 @@ html {
     }
 
     .how_work_section h2 {
-        font-size: 28px;
+        font-size: 22px;
+    }
+
+    .rank_system_hero_s_cnt_item_cnt h3 {
+        font-size: 20px;
+    }
+    .rank_system_hero_s ul li p {
+        font-size: 15px;
     }
 
     .how_work_section p.subtext {
-        font-size: 16px;
+        font-size: 13px;
     }
 
     .work_steps_bl_item h3 {
-        font-size: 26px;
+        font-size: 22px;
     }
 
     .work_steps_bl_item p {
-        font-size: 16px;
+        font-size: 13px;
+    }
+
+    .work_steps_bl_item_img {
+        max-width: 220px;
     }
 
     .work_level_reach_s h2 {
-        font-size: 28px;
+        font-size: 24px;
     }
 
     .work_level_reach_s ul li h3 {
-        font-size: 20px;
+        font-size: 16px;
     }
 
     .work_level_reach_s ul li p {
-        font-size: 16px;
+        font-size: 14px;
     }
+
+.how_work_section {
+        padding: 35px 0px; }
 
 }
 
@@ -506,16 +520,16 @@ html {
 
     .rank_system_hero_s h1 {
         animation-duration: 0.6s;
-        font-size: 24px;
+        font-size: 20px;
         text-align: center;
     }
 
     .rank_system_hero_s_cnt_item_cnt h3 {
-        font-size: 18px;
+        font-size: 16px;
     }
 
     .rank_system_hero_s ul li p {
-        font-size: 14px;
+        font-size: 12px;
     }
 
     .rank_system_hero_s ul {
@@ -524,11 +538,11 @@ html {
     }
 
     .how_work_section h2 {
-        font-size: 22px;
+        font-size: 20px;
     }
 
     .how_work_section p.subtext {
-        font-size: 13px;
+        font-size: 12px;
         max-width: 100%;
     }
 
@@ -551,7 +565,7 @@ html {
     }
 
     .work_steps_bl_item h3 {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .work_steps_bl_item {
@@ -599,7 +613,7 @@ html {
     }
 
     .work_level_reach_s h2 {
-        font-size: 22px;
+        font-size: 18px;
     }
 
 
@@ -617,6 +631,10 @@ html {
     }
 
     .rank_system_hero_s{ margin-top: 0px; }
+
+    .work_level_reach_s ul li p {
+        font-size: 13px;
+    } 
 }
 
 @media (max-width: 480px) {

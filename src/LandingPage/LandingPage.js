@@ -94,10 +94,10 @@ function LandingPage() {
   const topSportsItems = [
     { id: 1, badge: 'Hot', icon: 'fifa_icon.svg', title: 'Match' },
     { id: 2, badge: 'Hot', icon: 'tennis_icon.svg', title: 'Tennis' },
-    { id: 3, badge: 'Hot', icon: 'basketball_icon.svg', title: 'Basketball' },
-    { id: 4, badge: 'Hot', icon: 'soccer_icon.svg', title: 'Soccer' },
-    { id: 5, badge: 'Hot', icon: 'horse_icon.svg', title: 'Horse Racing' },
-    { id: 6, badge: 'Hot', icon: 'nba_icon.svg', title: 'NBA 2K' },
+    { id: 3, icon: 'basketball_icon.svg', title: 'Basketball' },
+    { id: 4, icon: 'soccer_icon.svg', title: 'Soccer' },
+    { id: 5, icon: 'horse_icon.svg', title: 'Horse Racing' },
+    { id: 6, icon: 'nba_icon.svg', title: 'NBA 2K' },
   ];
 
   // TOP Matches items

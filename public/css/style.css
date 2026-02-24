@@ -130,7 +130,7 @@ header {
 
 .setting_hdr {
     padding: 6px 10px;
-    background-color: #202f45;
+    background-color: #343c45;
     border-radius: 8px;
     gap: 8px;
     cursor: pointer;
@@ -2183,7 +2183,7 @@ button.deposit_btn {
 
 .user_header_right {
     padding: 4px 6px;
-    background-color: #353535;
+    background-color: #343c45;
     border-radius: 50px 18px 18px 50px;
     gap: 8px;
     min-width: 75px;
@@ -2227,7 +2227,7 @@ img.user_header_img {
     position: absolute;
     top: calc(100% + 16px);
     right: 0;
-    background-color: #1A1A19;
+    background-color: #16202c;
     border: 1px solid #242424;
     border-top: none;
     border-radius: 0px 0px 12px 12px;
@@ -2265,7 +2265,7 @@ img.user_header_img {
 }
 
 .dropdown_menu_item:hover {
-    background-color: #2a2a2a;
+    background-color: #343c458c;
 }
 
 .dropdown_menu_item i {
@@ -2281,9 +2281,9 @@ img.user_header_img {
 .dropdown_logout_btn {
     width: 100%;
     padding: 9px 18px;
-    background-color: #323232;
+    background-color: #343c45;
     border: none;
-    border-top: 1px solid #303030;
+    border-top: 1px solid #343c45;
     color: #fff;
     font-size: 14px;
     font-weight: 600;
@@ -2764,6 +2764,10 @@ footer .container {
 
     .top_match_section.sportsmatch_s {
         order: 3;
+    }
+
+    p {
+        font-size: 12px;
     }
 
     .top_slot_outer:nth-of-type(2) {

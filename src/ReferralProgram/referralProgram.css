@@ -859,6 +859,8 @@ table {
         padding: 15px;
     }
     
+
+    
     .referral_profit_tl ul {
         gap: 15px;
         padding: 0px 15px;
@@ -895,6 +897,7 @@ table {
     
     .balance_list {
         padding: 18px;
+        background-color: #16202c80;
     }
     
     .referrals_profit_data_left {
@@ -1457,6 +1460,8 @@ html {
     
     .referral_card {
         padding: 12px;
+        background-color: #16202c82;
+        border: 1px solid rgb(255 255 255 / 7%);
     }
     
     .referral_label,
