@@ -1,31 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
+import AuthService from '../api/services/AuthService';
+import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
 import '../newDeposit/newDeposit.css';
 import './addAccount.css';
 
-const HAS_BANK_ACCOUNT_KEY = 'user_has_bank_account';
-export const SAVED_BANK_DETAILS_KEY = 'saved_bank_details';
-
-function getBanksList() {
-  try {
-    const s = localStorage.getItem(SAVED_BANK_DETAILS_KEY);
-    if (!s) return [];
-    const parsed = JSON.parse(s);
-    if (Array.isArray(parsed)) return parsed;
-    if (parsed && typeof parsed === 'object' && (parsed.bankName || parsed.accountNumber || parsed.ifscCode)) {
-      return [{ ...parsed, id: 1 }];
-    }
-    return [];
-  } catch {
-    return [];
-  }
-}
-
-function saveBanksList(banks) {
-  localStorage.setItem(SAVED_BANK_DETAILS_KEY, JSON.stringify(banks));
-  localStorage.setItem(HAS_BANK_ACCOUNT_KEY, banks.length ? 'true' : '');
-}
+const MAX_ACCOUNTS = 3;
 
 function maskAccountNumber(num) {
   if (!num || num.length < 4) return '****';
@@ -33,20 +14,117 @@ function maskAccountNumber(num) {
 }
 
 function AddAccount() {
-  const [banks, setBanks] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showBankForm, setShowBankForm] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [addLoading, setAddLoading] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const formRef = useRef(null);
 
-  useEffect(() => {
-    setBanks(getBanksList());
-  }, []);
+  const [form, setForm] = useState({
+    accountHolderName: '',
+    accountNumber: '',
+    bankName: '',
+    branchName: '',
+    ifscCode: '',
+    otp: '',
+  });
 
-  const removeBank = (id) => {
-    const next = banks.filter((b) => b.id !== id);
-    setBanks(next);
-    saveBanksList(next);
+  const fetchAccounts = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const res = await AuthService.bettingBankAccountsList();
+    setLoading(false);
+    if (res?.success && res?.data?.accounts) {
+      setAccounts(res.data.accounts);
+    }
   };
 
-  const copyDetail = (text) => {
-    if (text && text !== '—') navigator.clipboard.writeText(String(text)).catch(() => {});
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  const selectAccount = async (accountId) => {
+    const res = await AuthService.bettingBankAccountsSetDefault(accountId);
+    if (res?.success) await fetchAccounts();
+    else alertErrorMessage(res?.message || 'Failed to set default account');
+  };
+
+  const removeAccount = async (e, accountId) => {
+    e.stopPropagation();
+    if (!window.confirm('Remove this bank account?')) return;
+    const res = await AuthService.bettingBankAccountsDelete(accountId);
+    if (res?.success) {
+      alertSuccessMessage('Account removed');
+      await fetchAccounts();
+    } else {
+      alertErrorMessage(res?.message || 'Failed to delete');
+    }
+  };
+
+  const openBankForm = () => {
+    if (accounts.length >= MAX_ACCOUNTS) {
+      alertErrorMessage(`You can add at most ${MAX_ACCOUNTS} bank accounts`);
+      return;
+    }
+    setShowBankForm(true);
+    setOtpSent(false);
+    setForm({ accountHolderName: '', accountNumber: '', bankName: '', branchName: '', ifscCode: '', otp: '' });
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+  };
+
+  const handleSendOtp = async () => {
+    const { accountHolderName, accountNumber, bankName, ifscCode } = form;
+    if (!accountHolderName?.trim() || !accountNumber?.trim() || !bankName?.trim() || !ifscCode?.trim()) {
+      alertErrorMessage('Please fill Account Holder, Account Number, Bank Name and IFSC');
+      return;
+    }
+    if (ifscCode.trim().length !== 11) {
+      alertErrorMessage('IFSC must be 11 characters');
+      return;
+    }
+    setOtpLoading(true);
+    const res = await AuthService.bettingBankAccountsSendOtp();
+    setOtpLoading(false);
+    if (res?.success) {
+      alertSuccessMessage('OTP sent to your registered mobile');
+      setOtpSent(true);
+    } else {
+      alertErrorMessage(res?.message || 'Failed to send OTP');
+    }
+  };
+
+  const handleAddAccount = async (e) => {
+    e.preventDefault();
+    const { accountHolderName, accountNumber, bankName, branchName, ifscCode, otp } = form;
+    if (!otp || otp.length !== 6) {
+      alertErrorMessage('Enter 6-digit OTP');
+      return;
+    }
+    setAddLoading(true);
+    const res = await AuthService.bettingBankAccountsAdd({
+      accountHolderName: accountHolderName?.trim(),
+      accountNumber: accountNumber?.trim(),
+      bankName: bankName?.trim(),
+      branchName: branchName?.trim() || undefined,
+      ifscCode: ifscCode?.trim(),
+      otp,
+    });
+    setAddLoading(false);
+    if (res?.success) {
+      alertSuccessMessage('Bank account added successfully');
+      setShowBankForm(false);
+      setOtpSent(false);
+      setForm({ accountHolderName: '', accountNumber: '', bankName: '', branchName: '', ifscCode: '', otp: '' });
+      await fetchAccounts();
+    } else {
+      alertErrorMessage(res?.message || 'Failed to add account');
+    }
   };
 
   return (
@@ -54,86 +132,162 @@ function AddAccount() {
       <div className="new_add_account_page new_deposit_page">
         <div className="container">
           <div className="top_bar_hd">
-            <h2>Bank Details</h2>
-            <p>Manage your saved bank accounts for deposit and withdrawal.</p>
+            <h2>Add Account</h2>
+            <p>Add up to 3 bank accounts. OTP will be sent to your registered mobile. Select one for withdrawal.</p>
+          </div>
+          <div className="payment_topbr">
+            <button type="button" className="active">Bank</button>
           </div>
 
-          <div className="bank_list_section">
-            <div className="bank_list_header d-flex align-items-center justify-content-between">
-              <h5>Your saved banks</h5>
-              <Link to="/add-bank" className="add_bank_btn_header">
-                <i className="ri-add-line" aria-hidden />
-                Add Bank
-              </Link>
-            </div>
-
-            {banks.length === 0 ? (
-              <div className="bank_list_empty">
-                <p>No bank account added yet.</p>
-                <Link to="/add-bank" className="add_bank_btn">
-                  Add Bank
-                </Link>
-              </div>
+          <div className="choose_payment_option_bl">
+            <h5>Your bank accounts</h5>
+            {loading ? (
+              <p className="text-white-50">Loading...</p>
             ) : (
-              <ul className="bank_list">
-                {banks.map((bank) => (
-                  <li key={bank.id} className="bank_list_item">
-                    <div className="bank_list_item_content">
-                      <div className="bank_list_item_main">
-                        <div className="bank_list_detail_row">
-                          <span className="bank_list_detail_label">Bank</span>
-                          <div className="bank_list_detail_value_wrap">
-                            <span className="bank_list_detail_value">{bank.bankName || '—'}</span>
-                            <button type="button" className="bank_list_detail_copy" onClick={() => copyDetail(bank.bankName)} aria-label="Copy bank name" title="Copy"><i className="ri-file-copy-line" /></button>
-                          </div>
-                        </div>
-                        <div className="bank_list_detail_row">
-                          <span className="bank_list_detail_label">Account Holder</span>
-                          <div className="bank_list_detail_value_wrap">
-                            <span className="bank_list_detail_value">{bank.accountHolderName || '—'}</span>
-                            <button type="button" className="bank_list_detail_copy" onClick={() => copyDetail(bank.accountHolderName)} aria-label="Copy account holder" title="Copy"><i className="ri-file-copy-line" /></button>
-                          </div>
-                        </div>
-                        <div className="bank_list_detail_row">
-                          <span className="bank_list_detail_label">Account Number</span>
-                          <div className="bank_list_detail_value_wrap">
-                            <span className="bank_list_detail_value">{bank.accountNumber ? maskAccountNumber(bank.accountNumber) : '—'}</span>
-                            <button type="button" className="bank_list_detail_copy" onClick={() => copyDetail(bank.accountNumber)} aria-label="Copy account number" title="Copy"><i className="ri-file-copy-line" /></button>
-                          </div>
-                        </div>
-                        <div className="bank_list_detail_row">
-                          <span className="bank_list_detail_label">IFSC</span>
-                          <div className="bank_list_detail_value_wrap">
-                            <span className="bank_list_detail_value">{bank.ifscCode || '—'}</span>
-                            <button type="button" className="bank_list_detail_copy" onClick={() => copyDetail(bank.ifscCode)} aria-label="Copy IFSC" title="Copy"><i className="ri-file-copy-line" /></button>
-                          </div>
-                        </div>
-                        {bank.branchName && (
-                          <div className="bank_list_detail_row">
-                            <span className="bank_list_detail_label">Branch</span>
-                            <div className="bank_list_detail_value_wrap">
-                              <span className="bank_list_detail_value">{bank.branchName}</span>
-                              <button type="button" className="bank_list_detail_copy" onClick={() => copyDetail(bank.branchName)} aria-label="Copy branch" title="Copy"><i className="ri-file-copy-line" /></button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="bank_list_item_actions">
-                        <button
-                          type="button"
-                          className="bank_list_item_remove"
-                          onClick={() => removeBank(bank.id)}
-                          aria-label="Remove bank"
-                        >
-                          <i className="ri-delete-bin-line" />
-                        </button>
-                      </div>
+              <div className="account_cards_row">
+                {accounts.map((acc) => (
+                  <div
+                    key={acc._id}
+                    role="button"
+                    tabIndex={0}
+                    className={`account_card account_card_details ${acc.isDefaultForWithdrawal ? 'account_card_selected' : ''}`}
+                    onClick={() => selectAccount(acc._id)}
+                    onKeyDown={(e) => e.key === 'Enter' && selectAccount(acc._id)}
+                    aria-label={`Select account ${acc.bankName}`}
+                  >
+                    <button
+                      type="button"
+                      className="account_card_delete"
+                      onClick={(e) => removeAccount(e, acc._id)}
+                      aria-label="Remove account"
+                    >
+                      <i className="ri-delete-bin-line" />
+                    </button>
+                    <div className="account_card_content">
+                      <p className="account_card_bank">{acc.bankName}</p>
+                      <p className="account_card_holder">{acc.accountHolderName}</p>
+                      <p className="account_card_number">{maskAccountNumber(acc.accountNumber)}</p>
+                      <p className="account_card_ifsc">IFSC: {acc.ifscCode}</p>
+                      {acc.isDefaultForWithdrawal && (
+                        <span className="account_card_default_badge">Use for withdrawal</span>
+                      )}
                     </div>
-                  </li>
+                  </div>
                 ))}
-              </ul>
+                {accounts.length < MAX_ACCOUNTS && (
+                  <button type="button" className="account_card account_card_add" onClick={openBankForm}>
+                    <span className="account_card_add_icon"><i className="ri-add-line" /></span>
+                    <span className="account_card_add_text">Add Account</span>
+                  </button>
+                )}
+              </div>
             )}
           </div>
+
+          {showBankForm && (
+            <div className="withdrawal_from_dl add_account_from_dl add_bank_details_section" ref={formRef}>
+              <h5>Add bank details</h5>
+              <p className="text-white-50 small">OTP will be sent to your registered mobile number.</p>
+              <form onSubmit={handleAddAccount}>
+                <div className="enter_amount_deposit">
+                  <label>Account Holder Name</label>
+                  <div className="enter_filed d-flex">
+                    <input
+                      type="text"
+                      placeholder="Account Holder Name"
+                      value={form.accountHolderName}
+                      onChange={(e) => setForm((p) => ({ ...p, accountHolderName: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="enter_amount_deposit">
+                  <label>Account Number</label>
+                  <div className="enter_filed d-flex">
+                    <input
+                      type="text"
+                      placeholder="Account Number"
+                      value={form.accountNumber}
+                      onChange={(e) => setForm((p) => ({ ...p, accountNumber: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="enter_amount_deposit">
+                  <label>Bank Name</label>
+                  <div className="enter_filed d-flex">
+                    <input
+                      type="text"
+                      placeholder="Bank Name"
+                      value={form.bankName}
+                      onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="enter_amount_deposit">
+                  <label>Branch Name (optional)</label>
+                  <div className="enter_filed d-flex">
+                    <input
+                      type="text"
+                      placeholder="Branch Name"
+                      value={form.branchName}
+                      onChange={(e) => setForm((p) => ({ ...p, branchName: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="enter_amount_deposit">
+                  <label>IFSC Code (11 characters)</label>
+                  <div className="enter_filed d-flex">
+                    <input
+                      type="text"
+                      placeholder="IFSC Code"
+                      value={form.ifscCode}
+                      onChange={(e) => setForm((p) => ({ ...p, ifscCode: e.target.value.toUpperCase() }))}
+                      maxLength={11}
+                    />
+                  </div>
+                </div>
+                <div className="enter_amount_deposit">
+                  <label>OTP (sent to your registered mobile)</label>
+                  <div className="enter_filed d-flex">
+                    <input
+                      type="text"
+                      placeholder="Enter 6-digit OTP"
+                      value={form.otp}
+                      onChange={(e) => setForm((p) => ({ ...p, otp: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                      maxLength={6}
+                    />
+                    <button
+                      type="button"
+                      className="otp_btn"
+                      onClick={handleSendOtp}
+                      disabled={otpLoading}
+                    >
+                      {otpLoading ? 'Sending...' : 'Send OTP'}
+                    </button>
+                  </div>
+                </div>
+                <div className="payment_btn">
+                  <button type="submit" disabled={addLoading || !otpSent}>
+                    {addLoading ? 'Adding...' : 'Add Account'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary ms-2"
+                    onClick={() => {
+                      setShowBankForm(false);
+                      setOtpSent(false);
+                    }}
+                    style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', padding: '8px 16px', borderRadius: '8px' }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          <p className="note_text">
+            Select one account above to use for withdrawal requests. You can add up to 3 bank accounts and remove any time.
+          </p>
         </div>
       </div>
       <MobileMenu />

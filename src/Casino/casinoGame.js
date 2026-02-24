@@ -1,11 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import './casino.css'
 import MobileMenu from '../customComponents/MobileMenu'
+import AuthService from '../api/services/AuthService'
 
 function CasinoGame() {
+    const navigate = useNavigate();
     const [currentSlide, setCurrentSlide] = useState(0);
     const [activeTab, setActiveTab] = useState('lobby');
+    const [providers, setProviders] = useState([]);
+    const [featuredGames, setFeaturedGames] = useState([]);
+    const [allGames, setAllGames] = useState([]);
+    const [gamesLoading, setGamesLoading] = useState(false);
+    const [slotsGames, setSlotsGames] = useState([]);
+    const [liveGames, setLiveGames] = useState([]);
+    const [tableGames, setTableGames] = useState([]);
+    const [tabLoading, setTabLoading] = useState({ slots: false, live: false, table: false });
     const sliderRef = useRef(null);
     
     // Slider states for lobby tabs
@@ -26,6 +36,54 @@ function CasinoGame() {
     
     const [lobbySlider6Index, setLobbySlider6Index] = useState(0);
     const lobbySlider6Ref = useRef(null);
+
+    useEffect(() => {
+        let cancelled = false
+        setGamesLoading(true)
+        Promise.all([
+            AuthService.bettingGamesGetProviders().then((r) => r?.data?.providers || []),
+            AuthService.bettingGamesFeatured(24).then((r) => r?.data?.games || []),
+            AuthService.bettingGamesByCategory('all', 1, 200).then((r) => r?.data?.games || []),
+        ]).then(([provs, featured, all]) => {
+            if (!cancelled) {
+                setProviders(Array.isArray(provs) ? provs : [])
+                setFeaturedGames(Array.isArray(featured) ? featured : [])
+                setAllGames(Array.isArray(all) ? all : [])
+            }
+        }).catch(() => {
+            if (!cancelled) setFeaturedGames([]); if (!cancelled) setAllGames([])
+        }).finally(() => {
+            if (!cancelled) setGamesLoading(false)
+        })
+        return () => { cancelled = true }
+    }, [])
+
+    // Load category games when user switches to Slots / Live / Table tab
+    useEffect(() => {
+        if (activeTab === 'slots' && slotsGames.length === 0 && !tabLoading.slots) {
+            setTabLoading((p) => ({ ...p, slots: true }))
+            AuthService.bettingGamesByCategory('slots', 1, 100).then((r) => {
+                setSlotsGames(Array.isArray(r?.data?.games) ? r.data.games : [])
+            }).finally(() => setTabLoading((p) => ({ ...p, slots: false })))
+        }
+        if (activeTab === 'live' && liveGames.length === 0 && !tabLoading.live) {
+            setTabLoading((p) => ({ ...p, live: true }))
+            AuthService.bettingGamesByCategory('live_casino', 1, 100).then((r) => {
+                setLiveGames(Array.isArray(r?.data?.games) ? r.data.games : [])
+            }).finally(() => setTabLoading((p) => ({ ...p, live: false })))
+        }
+        if (activeTab === 'table' && tableGames.length === 0 && !tabLoading.table) {
+            setTabLoading((p) => ({ ...p, table: true }))
+            AuthService.bettingGamesByCategory('table_games', 1, 100).then((r) => {
+                setTableGames(Array.isArray(r?.data?.games) ? r.data.games : [])
+            }).finally(() => setTabLoading((p) => ({ ...p, table: false })))
+        }
+    }, [activeTab, slotsGames.length, liveGames.length, tableGames.length, tabLoading.slots, tabLoading.live, tabLoading.table])
+
+    const handlePlayGame = (game) => {
+        if (!game?.gameCode || !game?.providerCode) return
+        navigate('/game', { state: { gameCode: game.gameCode, providerCode: game.providerCode, gameName: game.name } })
+    }
     
     // Lobby category sections (replacing BetCasino Original)
     const lobbyCategories = [
@@ -347,6 +405,52 @@ function CasinoGame() {
 <>
 <div className={`inner_tabs_block ${activeTab === 'lobby' ? 'show' : ''}`}>
 
+{/* Featured games from API – click opens game in iframe */}
+{featuredGames.length > 0 && (
+<div className="top_slot_outer">
+  <div className="top_hd d-flex align-items-center justify-content-between">
+    <h2 className="heading_h2">Featured Games</h2>
+  </div>
+  <div className="game_items_grid">
+    {featuredGames.map((g) => (
+      <button
+        key={`feat-${g.providerCode}-${g.gameCode}`}
+        type="button"
+        className="game_items_inner casino_api_game_card"
+        onClick={() => handlePlayGame(g)}
+      >
+        <div className="playbtn"><img loading="lazy" alt="play" src={`${process.env.PUBLIC_URL || ''}/images/playbtn.png`} /></div>
+        <img loading="lazy" alt={g.name} src={g.thumbnail || `${process.env.PUBLIC_URL || ''}/images/betcasino_img.png`} />
+        <span className="game_card_name">{g.name || g.gameCode}</span>
+      </button>
+    ))}
+  </div>
+</div>
+)}
+
+{/* All games from DB – click → authenticate & launch in iframe */}
+{allGames.length > 0 && (
+<div className="top_slot_outer">
+  <div className="top_hd d-flex align-items-center justify-content-between">
+    <h2 className="heading_h2">All Games</h2>
+  </div>
+  <div className="game_items_grid">
+    {allGames.map((g) => (
+      <button
+        key={`all-${g.providerCode}-${g.gameCode}`}
+        type="button"
+        className="game_items_inner casino_api_game_card"
+        onClick={() => handlePlayGame(g)}
+      >
+        <div className="playbtn"><img loading="lazy" alt="play" src={`${process.env.PUBLIC_URL || ''}/images/playbtn.png`} /></div>
+        <img loading="lazy" alt={g.name} src={g.thumbnail || `${process.env.PUBLIC_URL || ''}/images/betcasino_img.png`} />
+        <span className="game_card_name">{g.name || g.gameCode}</span>
+      </button>
+    ))}
+  </div>
+</div>
+)}
+
 {lobbyCategories.map((cat) => (
 <div key={cat.id} className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
@@ -381,24 +485,21 @@ function CasinoGame() {
 
 {activeTab === 'originals' && (
 <div className='inner_tabs_block show'>
-
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
-         <h2 className="heading_h2">Originals </h2>
+         <h2 className="heading_h2">Originals</h2>
          <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
       <div className="game_items_grid">
-         {originalsItems.map((item, index) => (
-            <Link key={`grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-               <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
-               {item.badge && <div className="top_ads">{item.badge}</div>}
-               <img loading="lazy" alt="game" src={item.image} />
-            </Link>
+         {allGames.map((g) => (
+            <button key={`orig-${g.providerCode}-${g.gameCode}`} type="button" className="game_items_inner casino_api_game_card" onClick={() => handlePlayGame(g)}>
+               <div className="playbtn"><img loading="lazy" alt="play" src={`${process.env.PUBLIC_URL || ''}/images/playbtn.png`} /></div>
+               <img loading="lazy" alt={g.name} src={g.thumbnail || `${process.env.PUBLIC_URL || ''}/images/betcasino_img.png`} />
+               <span className="game_card_name">{g.name || g.gameCode}</span>
+            </button>
          ))}
       </div>
- 
 </div>
-
 </div>
 )}
 
@@ -406,18 +507,22 @@ function CasinoGame() {
 <div className='inner_tabs_block show'>
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
-         <h2 className="heading_h2">Slots </h2>
+         <h2 className="heading_h2">Slots</h2>
          <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
+      {tabLoading.slots ? (
+        <div className="text-center py-4">Loading games...</div>
+      ) : (
       <div className="game_items_grid">
-         {originalsItems.map((item, index) => (
-            <Link key={`slots-grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-               <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
-               {item.badge && <div className="top_ads">{item.badge}</div>}
-               <img loading="lazy" alt="game" src={item.image} />
-            </Link>
+         {slotsGames.map((g) => (
+            <button key={`slots-${g.providerCode}-${g.gameCode}`} type="button" className="game_items_inner casino_api_game_card" onClick={() => handlePlayGame(g)}>
+               <div className="playbtn"><img loading="lazy" alt="play" src={`${process.env.PUBLIC_URL || ''}/images/playbtn.png`} /></div>
+               <img loading="lazy" alt={g.name} src={g.thumbnail || `${process.env.PUBLIC_URL || ''}/images/betcasino_img.png`} />
+               <span className="game_card_name">{g.name || g.gameCode}</span>
+            </button>
          ))}
       </div>
+      )}
 </div>
 </div>
 )}
@@ -426,18 +531,22 @@ function CasinoGame() {
 <div className='inner_tabs_block show'>
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
-         <h2 className="heading_h2">Live Casino </h2>
+         <h2 className="heading_h2">Live Casino</h2>
          <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
+      {tabLoading.live ? (
+        <div className="text-center py-4">Loading games...</div>
+      ) : (
       <div className="game_items_grid">
-         {originalsItems.map((item, index) => (
-            <Link key={`live-grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-               <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
-               {item.badge && <div className="top_ads">{item.badge}</div>}
-               <img loading="lazy" alt="game" src={item.image} />
-            </Link>
+         {liveGames.map((g) => (
+            <button key={`live-${g.providerCode}-${g.gameCode}`} type="button" className="game_items_inner casino_api_game_card" onClick={() => handlePlayGame(g)}>
+               <div className="playbtn"><img loading="lazy" alt="play" src={`${process.env.PUBLIC_URL || ''}/images/playbtn.png`} /></div>
+               <img loading="lazy" alt={g.name} src={g.thumbnail || `${process.env.PUBLIC_URL || ''}/images/betcasino_img.png`} />
+               <span className="game_card_name">{g.name || g.gameCode}</span>
+            </button>
          ))}
       </div>
+      )}
 </div>
 </div>
 )}
@@ -446,18 +555,22 @@ function CasinoGame() {
 <div className='inner_tabs_block show'>
 <div className="top_slot_outer">
       <div className="top_hd d-flex align-items-center justify-content-between">
-         <h2 className="heading_h2">Table Games </h2>
+         <h2 className="heading_h2">Table Games</h2>
          <div className="top_hd_right"><Link to="/casino"><button type="button" className="slotbtn">Go to Casino</button></Link></div>
       </div>
+      {tabLoading.table ? (
+        <div className="text-center py-4">Loading games...</div>
+      ) : (
       <div className="game_items_grid">
-         {originalsItems.map((item, index) => (
-            <Link key={`table-grid-${index}`} to="/game" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-               <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
-               {item.badge && <div className="top_ads">{item.badge}</div>}
-               <img loading="lazy" alt="game" src={item.image} />
-            </Link>
+         {tableGames.map((g) => (
+            <button key={`table-${g.providerCode}-${g.gameCode}`} type="button" className="game_items_inner casino_api_game_card" onClick={() => handlePlayGame(g)}>
+               <div className="playbtn"><img loading="lazy" alt="play" src={`${process.env.PUBLIC_URL || ''}/images/playbtn.png`} /></div>
+               <img loading="lazy" alt={g.name} src={g.thumbnail || `${process.env.PUBLIC_URL || ''}/images/betcasino_img.png`} />
+               <span className="game_card_name">{g.name || g.gameCode}</span>
+            </button>
          ))}
       </div>
+      )}
 </div>
 </div>
 )}

@@ -36,3 +36,11 @@
     transform: rotate(360deg);
   }
 }
+
+/* Notistack snackbars above login/modal – modal uses 99999999, so snackbar must be higher */
+.notistack-SnackbarContainer,
+.notistack-Snackbar,
+.MuiSnackbar-root,
+[class*="notistack-Snackbar"] {
+  z-index: 2147483647 !important;
+}

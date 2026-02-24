@@ -184,6 +184,35 @@
   box-shadow: 0 0 0 3px rgba(249, 122, 49, 0.25);
 }
 
+.premium_form_input.has_error,
+.premium_form_input.has_error:hover,
+.premium_form_input.has_error:focus {
+  border-color: #e53935;
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.25);
+}
+
+.premium_form_error {
+  display: block;
+  color: #e53935;
+  font-size: 12px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.premium_email_otp_box.has_error {
+  border-color: #e53935;
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.25);
+}
+
+.premium_email_otp_box.has_error:focus-within {
+  border-color: #e53935;
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.25);
+}
+
+.premium_checkbox_wrap.has_error .premium_checkbox_text {
+  color: rgba(229, 57, 53, 0.95);
+}
+
 .premium_password_wrap {
   position: relative;
 }

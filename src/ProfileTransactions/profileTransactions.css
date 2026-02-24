@@ -23,6 +23,42 @@
     gap: 15px;
 }
 
+.transactions_filter_select {
+    cursor: pointer;
+    outline: none;
+    min-width: 120px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.transactions_filter_select.deposit_btn_style {
+    color: #fff;
+    border: none;
+    padding: 6px 36px 6px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"), linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    background-repeat: no-repeat, no-repeat;
+    background-position: right 12px center, 0 0;
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px rgba(255,255,255,0.3);
+}
+
+.transactions_filter_select.deposit_btn_style:hover,
+.transactions_filter_select.deposit_btn_style:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"), linear-gradient(1turn, #b85d26 .8%, #f88540);
+    background-repeat: no-repeat, no-repeat;
+    background-position: right 12px center, 0 0;
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px rgba(255,255,255,0.35);
+}
+
+.transactions_filter_select.deposit_btn_style option {
+    background: #1a1a1a;
+    color: #fff;
+}
+
 .date_range_picker {
     display: flex;
     align-items: center;
@@ -360,9 +396,63 @@
     .date_range_picker {
         min-width: 100%;
     }
+}
 
+/* Pagination */
+.transactions_pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+@media (max-width:767px) {
     .profile_transactions_section{ margin: 0px 0px 20px; }
     .btn.deposit_btn {
         font-size: 12px; }
+}
 
+.pagination_btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pagination_btn:hover:not(:disabled) {
+    background: rgba(249, 122, 49, 0.3);
+    border-color: #F97A31;
+}
+
+.pagination_btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination_info {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+.status_pending {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.status_rejected,
+.status_cancelled {
+    background-color: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+}
+
+.status_completed {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
 }

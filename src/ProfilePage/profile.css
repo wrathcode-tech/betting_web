@@ -398,3 +398,17 @@ button.profilebtn {
         max-width: 160px;
     }
 }
+
+/* Edit profile – image preview */
+.profile_image_preview_wrap {
+    display: inline-block;
+}
+
+.profile_image_preview {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid rgba(249, 122, 49, 0.5);
+    display: block;
+}

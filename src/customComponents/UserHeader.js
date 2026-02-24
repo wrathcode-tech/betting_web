@@ -1,10 +1,21 @@
-import React, { useState, useRef, useEffect, Suspense, lazy } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
+import LoginModal from './LoginModal'
+import SideBar from './SideBar/sideBar'
+import Chat from '../cricket/Chat'
+import Search from './Search'
+import AuthService from '../api/services/AuthService'
 
-const LoginModal = lazy(() => import('./LoginModal'))
-const Chat = lazy(() => import('../cricket/Chat'))
-const Search = lazy(() => import('./Search'))
+const CURRENCY_LIST = [
+  { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹', icon: 'images/digital_currency.svg' },
+  { code: 'USD', name: 'US Dollar', flag: '🇺🇸', symbol: '$', icon: 'images/dollar_icon.svg' },
+  { code: 'USDT', name: 'Tether', flag: null, symbol: '$', icon: 'images/digital_currency.svg' },
+  { code: 'EUR', name: 'Euro', flag: '🇪🇺', symbol: '€', icon: 'images/digital_currency.svg' },
+  { code: 'GBP', name: 'British Pound', flag: '🇬🇧', symbol: '£', icon: 'images/digital_currency.svg' },
+];
+
+const RATES_API = 'https://open.er-api.com/v6/latest/INR';
 
 export default function UserHeader() {
   const navigate = useNavigate();
@@ -14,7 +25,70 @@ export default function UserHeader() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
+  const [currencySearch, setCurrencySearch] = useState('');
+  const [balanceInr, setBalanceInr] = useState(null);
+  const [rates, setRates] = useState(null);
   const dropdownRef = useRef(null);
+  const currencyDropdownRef = useRef(null);
+
+  const balance = balanceInr != null ? Number(balanceInr) : 0;
+  const defaultCurrency = { ...CURRENCY_LIST[0], balance: '₹0.00' };
+
+  const currencies = useMemo(() => {
+    return CURRENCY_LIST.map((c) => {
+      let displayBalance;
+      if (c.code === 'INR') {
+        displayBalance = `${c.symbol}${balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      } else if (rates && typeof rates[c.code] === 'number') {
+        const converted = balance * rates[c.code];
+        displayBalance = `${c.symbol}${converted.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      } else {
+        displayBalance = `${c.symbol}—`;
+      }
+      return { ...c, balance: displayBalance };
+    });
+  }, [balance, rates]);
+
+  const [selectedCurrencyCode, setSelectedCurrencyCode] = useState('INR');
+  const selectedCurrency = currencies.find((c) => c.code === selectedCurrencyCode) || currencies[0] || defaultCurrency;
+  const filteredCurrencies = currencies.filter(
+    (c) => c.code.toLowerCase().includes(currencySearch.toLowerCase()) || c.name.toLowerCase().includes(currencySearch.toLowerCase())
+  );
+
+  const fetchBalance = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const res = await AuthService.bettingGetBalance();
+    if (res?.success && res?.data != null) setBalanceInr(res.data.balance);
+  };
+
+  useEffect(() => {
+    fetchBalance();
+  }, []);
+
+  useEffect(() => {
+    const onBalanceUpdate = () => fetchBalance();
+    window.addEventListener('walletBalanceUpdate', onBalanceUpdate);
+    window.addEventListener('loginStateChange', onBalanceUpdate);
+    return () => {
+      window.removeEventListener('walletBalanceUpdate', onBalanceUpdate);
+      window.removeEventListener('loginStateChange', onBalanceUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchRates = async () => {
+      try {
+        const res = await fetch(RATES_API);
+        const data = await res.json();
+        if (!cancelled && data?.rates) setRates(data.rates);
+      } catch (_) {}
+    };
+    fetchRates();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -60,8 +134,45 @@ export default function UserHeader() {
         <div className="currency_balance_wrapper currency_balance_inr_only">
           <div className='d-flex align-items-center gap-2 currency_balance'>
             <span className="currency_flag_emoji" aria-hidden>🇮🇳</span>
-            <span>₹0.00</span>
+            <span>{selectedCurrency?.balance ?? '₹0.00'}</span>
           </div>
+          {currencyDropdownOpen && (
+          <div className="currency_dropdown">
+            <div className="currency_dropdown_search">
+              <i className="ri-search-line" aria-hidden />
+              <input
+                type="text"
+                placeholder="Search"
+                value={currencySearch}
+                onChange={(e) => setCurrencySearch(e.target.value)}
+                onKeyDown={(e) => e.stopPropagation()}
+              />
+            </div>
+            <ul className="currency_dropdown_list" role="listbox">
+              {filteredCurrencies.map((curr) => (
+                <li
+                  key={curr.code}
+                  role="option"
+                  aria-selected={selectedCurrencyCode === curr.code}
+                  className={`currency_dropdown_item ${selectedCurrencyCode === curr.code ? 'selected' : ''}`}
+                  onClick={() => {
+                    setSelectedCurrencyCode(curr.code);
+                    setCurrencyDropdownOpen(false);
+                    setCurrencySearch('');
+                  }}
+                >
+                  {curr.flag ? (
+                    <span className="currency_flag_emoji" aria-hidden>{curr.flag}</span>
+                  ) : (
+                    <img src={curr.icon} alt="" />
+                  )}
+                  <span className="currency_code">{curr.code} ({curr.symbol})</span>
+                  <span className="currency_balance_value">{curr.balance}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          )}
         </div>
         <button className="deposit_btn" onClick={() => navigate('/deposit')}>Deposit</button>
       </div>
@@ -149,9 +260,10 @@ export default function UserHeader() {
         </div>
       </header>
 
-      {showModal && <Suspense fallback={null}><LoginModal show={showModal} onHide={() => { setShowModal(false); setModalTab('login'); }} initialTab={modalTab} /></Suspense>}
-      {isChatOpen && <Suspense fallback={null}><Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} /></Suspense>}
-      {isSearchOpen && <Suspense fallback={null}><Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} /></Suspense>}
+      {showModal && <LoginModal show={showModal} onHide={() => { setShowModal(false); setModalTab('login'); }} initialTab={modalTab} />}
+      {sidebarOpen && <SideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
+      {isChatOpen && <Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />}
+      {isSearchOpen && <Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}
 
     </>
   )

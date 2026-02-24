@@ -33,6 +33,17 @@ export const ApiCallPost = async (url, parameters, headers) => {
   }
 };
 
+/** POST with FormData (e.g. deposit with payment proof file). Do not set Content-Type. */
+export const ApiCallPostFormData = async (url, formData, authHeader) => {
+  try {
+    const headers = authHeader ? { Authorization: authHeader } : {};
+    const response = await axios.post(url, formData, { headers, timeout: TIMEOUT });
+    return response?.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
 export const ApiCallGet = async (url, headers) => {
   try {
     const response = await axios.get(url, { headers: headers, timeout: TIMEOUT });   
@@ -60,9 +71,29 @@ export const ApiCallPut = async (url, parameters, headers) => {
   }
 };
 
+/** PUT with FormData (for file upload). Do not set Content-Type so browser sets multipart boundary. */
+export const ApiCallPutFormData = async (url, formData, authHeader) => {
+  try {
+    const headers = authHeader ? { Authorization: authHeader } : {};
+    const response = await axios.put(url, formData, { headers, timeout: TIMEOUT });
+    return response?.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
 export const ApiCallPatch = async (url, parameters, headers) => {
   try {
     const response = await axios.patch(url, parameters, { headers: headers, timeout: TIMEOUT });
+    return response?.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const ApiCallDelete = async (url, headers) => {
+  try {
+    const response = await axios.delete(url, { headers: headers || {}, timeout: TIMEOUT });
     return response?.data;
   } catch (error) {
     return handleApiError(error);
