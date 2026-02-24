@@ -737,7 +737,7 @@ span.quicktext {
 @media (max-width: 480px) {
 
     .team_dlex {
-        bottom: 16px;
+        bottom: 19px;
     }
 
     .safe_cnt p {
@@ -779,7 +779,7 @@ span.quicktext {
 
 }
 
-@media (max-width: 360px) {
+@media (max-width: 375px) {
     .vs_vector_icon {
         width: 54px;
         top: 18px;
@@ -792,6 +792,10 @@ span.quicktext {
 
     .team_cricket_bl p {
         line-height: 9px;
+    }
+
+    .team_dlex {
+        bottom: 17px;
     }
 
     .team_logo_lft {

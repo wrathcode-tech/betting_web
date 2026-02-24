@@ -239,4 +239,8 @@ footer .container {
     font-size: 12px !important;
   }
 
+  footer .container {
+    padding: 5px 16px 0;
+} 
+
 }

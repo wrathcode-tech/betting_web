@@ -415,10 +415,14 @@
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 767px) {
     .gameplay_section {
-        margin: 12px 0px;
+        margin: 0px 0px 15px;
     }
+
+}
+
+@media (max-width: 480px) {
 
     .game-header {
         padding: 6px;

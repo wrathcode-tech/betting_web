@@ -10,6 +10,38 @@ html {
     overflow-x: hidden;
 }
 
+a:focus-visible {
+    outline: none;
+}
+
+button:focus-visible {
+    outline: none;
+}
+
+input:focus-visible {
+    outline: none;
+}
+
+textarea:focus-visible {
+    outline: none;
+}
+
+select:focus-visible {
+    outline: none;
+}
+
+option:focus-visible {
+    outline: none;
+}
+
+optgroup:focus-visible {
+    outline: none;
+}
+
+optgroup:focus-visible {
+    outline: none;
+}
+
 a {
     text-decoration: none !important;
     transition: 0.5s all;
@@ -240,10 +272,12 @@ header {
         transform: translate(0, 0) scale(1);
         opacity: 0.88;
     }
+
     25% {
         transform: translate(25vw, -22vh) scale(1.03);
         opacity: 0.92;
     }
+
     100% {
         transform: translate(65vw, -48vh) scale(0.98);
         opacity: 0.9;
@@ -287,8 +321,17 @@ header {
 }
 
 @keyframes hero_player_float {
-    0%, 100% { transform: translateY(0); opacity: 0.9; }
-    50%      { transform: translateY(-8px); opacity: 1; }
+
+    0%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.9;
+    }
+
+    50% {
+        transform: translateY(-8px);
+        opacity: 1;
+    }
 }
 
 .casino_hero_s .row {
@@ -2793,6 +2836,14 @@ footer .container {
 
     .support_help_container {
         order: 9;
+    }
+
+    .game_items_slider_wrapper {
+        margin-top: 7px;
+    }
+
+    .top_slot_outer {
+        padding: 30px 0px 0px;
     }
 
 }
