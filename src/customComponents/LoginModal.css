@@ -41,7 +41,7 @@
 
 .login_modal_content.premium_login_content {
   position: relative;
-  background: linear-gradient(165deg, #1a1f28 0%, #0f1319 100%);
+  background: linear-gradient(165deg, #161F2C 0%, #161F2C 100%);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
@@ -58,7 +58,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
+  background: #343c45;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   color: rgba(255, 255, 255, 0.7);

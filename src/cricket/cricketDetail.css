@@ -12,7 +12,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    background-color: rgb(22 31 43);
+    background-color: rgb(52 60 69);
     min-height: 50px;
     white-space: nowrap;
     padding: 5px 10px;
@@ -112,7 +112,7 @@
 }
 
 .selected_match_country button {
-    background-color: rgb(22 31 43);
+    background-color: rgb(52 60 69);
     border: none;
     color: #fff;
     min-height: 64px;
@@ -254,12 +254,12 @@ img.team_bg_img {
 }
 
 .top_tabs_cricket ul li.active button {
-    background-color: #1C1C1C;
+    background-color: rgb(52 60 69);
     color: #fff;
 }
 
 .top_tabs_cricket ul li.active button span {
-    background-color: #333333;
+    background-color: #525252;
 }
 
 .match_block {
@@ -367,7 +367,7 @@ button.toggleup_btn {
     right: 5px;
     width: 280px;
     max-height: 90vh;
-    background-color: #1A1A19;
+    background-color: #16202c;
     border-radius: 12px 12px 0 0;
     z-index: 99999999;
     display: flex;
@@ -531,8 +531,8 @@ button.toggleup_btn {
 .betslip_quick_stakes button {
     flex: 1 1;
     padding: 8px;
-    background-color: #D9D9D910;
-    border: 1px solid #2A2A2A;
+    background-color: #343c45;
+    border: 1px solid #16202c;
     border-radius: 50px;
     color: #fff;
     font-size: 12px;
@@ -606,8 +606,8 @@ button.toggleup_btn {
     margin-top: 15px;
     padding: 7px 20px;
     width: 100%;
-    background-color: #252525;
-    border: 1px solid #2A2A2A;
+    background-color: #343c45;
+    border: 1px solid #343c45;
     border-radius: 8px;
     color: #fff;
     font-size: 12px;
@@ -618,7 +618,7 @@ button.toggleup_btn {
 .betslip_settings_btn {
     width: 40px;
     height: 40px;
-    background-color: #D9D9D910;
+    background-color: #343c45;
     border: none;
     border-radius: 6px;
     color: #fff;
@@ -630,7 +630,7 @@ button.toggleup_btn {
 }
 
 .betslip_setting_btn {
-    background-color: #D9D9D910;
+    background-color: #343c45;
     border: none;
     border-radius: 6px;
     color: #ffffff60;
@@ -648,8 +648,8 @@ button.toggleup_btn {
 }
 
 .team_cricket_bl_name:hover {
-    background-color: #252525 !important;
-    border-color: #F97A31 !important;
+    background-color: #343c45 !important;
+    border-color: #f97a3157 !important;
 }
 
 .team_cricket_bl_name.selected {

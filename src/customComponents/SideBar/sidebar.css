@@ -19,7 +19,7 @@
     left: -100%;
     width: 200px;
     height: calc(100vh - 56px);
-    background-color: #161f2c;
+    background-color: #16202c;
     z-index: 1000;
     transition: left 0.3s ease-in-out;
     overflow-y: auto;

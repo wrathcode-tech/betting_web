@@ -13,7 +13,7 @@
 
 .top_bar_hd {
   width: 100%;
-  background-color: #1A1A19;
+  background-color: #16202c;
   border-radius: 8px;
   padding: 20px;
 }
@@ -43,8 +43,8 @@ p.bank {
 .payment_topbr button {
   font-size: 12px;
   font-weight: 600;
-  background-color: #151515;
-  border: 1px solid #2A2A2A;
+  background-color: #343c45;
+  border: 1px solid #343c45;
   border-radius: 50px;
   padding: 8px 32px;
   color: #fff;
@@ -59,7 +59,7 @@ p.bank {
 
 .payment_selected_dl {
   width: 100%;
-  background-color: #1A1A19;
+  background-color: #161F2C;
   border-radius: 7px;
   padding: 20px;
 }
@@ -80,13 +80,13 @@ p.bank {
   text-align: center;
   font-weight: 600;
   width: 100%;
-  background-color: #1A1A19;
-  border: 1px solid #6E6E6E40;
+  background-color: rgb(32, 42, 57);
+  border: 1px solid rgb(32, 42, 57);
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
   box-shadow: inset 0 7px 10px rgb(56 56 56 / 50%);
-  color: #ffffff80;
+  color: #ffffffd1;
   justify-content: center;
   display: flex;
   padding: 7px 10px;
@@ -110,7 +110,7 @@ p.note_text {
 
 .enter_amount_deposit {
   width: 100%;
-  background-color: #1A1A19;
+  background-color: #16202c;
   border-radius: 8px;
   padding: 20px;
   margin-top: 24px;
@@ -125,8 +125,8 @@ p.note_text {
   text-align: center;
   font-weight: 600;
   width: 100%;
-  background-color: #1A1A19;
-  border: 1px solid #6E6E6E40;
+  background-color: rgb(32, 42, 57);
+  border: 1px solid rgb(32, 42, 57);
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;

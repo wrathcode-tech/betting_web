@@ -49,7 +49,7 @@ h2 {
 header {
     width: 100%;
     padding: 15px 24px;
-    background-color: #1A1A19;
+    background-color: #161F2C;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -97,7 +97,7 @@ header {
 .searchbtn {
     width: 32px;
     height: 32px;
-    background-color: #353535;
+    background-color: #343c45;
     border-radius: 8px;
     cursor: pointer;
     display: flex;
@@ -113,7 +113,7 @@ header {
 
 .login_hdr button {
     padding: 9px 20px;
-    background-color: #353535;
+    background-color: #343c45;
     border-radius: 8px;
     border: none;
     color: #ffffffd4;
@@ -788,7 +788,7 @@ button.slotbtn {
 }
 
 .casino_sport_section_lft.casino_bg2 {
-    background: linear-gradient(90deg, rgba(21, 21, 21, 1) 70%, rgba(162, 49, 0, 1) 100%);
+    background: linear-gradient(90deg, #161F2C 70%, rgba(162, 49, 0, 1) 100%);
 }
 
 .casino_sport_section_lft.casino_bg2:hover {
@@ -874,7 +874,7 @@ button.slotbtn {
     flex-shrink: 0;
     position: relative;
     padding: 24px;
-    background-color: #161F2C;
+    background-color: #16202c;
     border-radius: 12px;
     overflow: hidden;
 }

@@ -136,7 +136,7 @@
     padding: 20px;
     color: #fff;
     border-radius: 12px;
-    background-color: #151515;
+    background-color: #16202c;
     border: 1px solid #19212C;
 }
 
@@ -265,7 +265,7 @@
 .best_popular_games .slider-arrows-group{ display: none !important; }
 
 .playgame_info_toggle_btn {
-    background: #4b4545;
+    background: #343c45;
     border: none;
     color: #e2e2e2;
     padding: 10px 16px;

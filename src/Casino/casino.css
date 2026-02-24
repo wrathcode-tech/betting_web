@@ -188,17 +188,12 @@ ul.lobbytabs_list li {
     font-size: 14px;
     color: #ffffffb5;
     font-weight: 500;
-    background-color: #151515;
-    border: 1px solid #161F2C;
+    background-color: #343c45;
+    border: 1px solid #343c45;
     padding: 10px;
     border-radius: 8px;
     transition: all 0.5s;
     cursor: pointer;
-}
-
-ul.lobbytabs_list li:hover {
-    background-color: #1a1a1a;
-    border-color: #2a3a4c;
 }
 
 ul.lobbytabs_list li.active {
@@ -230,7 +225,7 @@ ul.lobbytabs_list li.active span {
 }
 
 .searchright_lobby {
-    background-color: #303030;
+    background-color: #343c45;
     border-radius: 8px;
     padding: 6px 15px;
     cursor: pointer;
