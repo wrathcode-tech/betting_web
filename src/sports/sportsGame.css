@@ -105,9 +105,9 @@
 }
 
 .sports_bnr_slider_dots .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+    width: 16px;
+    height: 8px;
+    border-radius: 5px;
     border: none;
     background-color: rgba(255, 255, 255, 0.3);
     cursor: pointer;
@@ -116,13 +116,9 @@
 }
 
 .sports_bnr_slider_dots .dot.active {
-    background-color: #fff;
+    background-color: #2283f6;
     width: 32px;
-    border-radius: 6px;
-}
-
-.sports_bnr_slider_dots .dot:hover {
-    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 5px;
 }
 
 @media (max-width: 768px) {
@@ -406,6 +402,8 @@ ul.match_type_tabs li.active button {
         font-size: 12px;
         padding: 7px 26px;
     }
+
+    .sports_bnr_gallery_track{ gap: 0px; }
 
     .sports_top_tabs {
         padding: 10px;

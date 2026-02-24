@@ -147,9 +147,9 @@
 }
 
 .casinobnr_slider_dots .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+    width: 16px;
+    height: 8px;
+    border-radius: 5px;
     border: none;
     background-color: rgba(255, 255, 255, 0.3);
     cursor: pointer;
@@ -158,14 +158,11 @@
 }
 
 .casinobnr_slider_dots .dot.active {
-    background-color: #fff;
+    background-color: #2283f6;
     width: 32px;
-    border-radius: 6px;
+    border-radius: 5px;
 }
 
-.casinobnr_slider_dots .dot:hover {
-    background-color: rgba(255, 255, 255, 0.6);
-}
 
 ul.lobbytabs_list {
     display: flex;
@@ -225,8 +222,8 @@ ul.lobbytabs_list li {
 }
 
 ul.lobbytabs_list li.active {
-    background-color: #0F8EA5;
-    border-color: #0F8EA5;
+    background-color: #2283f6;
+    border-color: #2283f6;
     color: #fff;
 }
 
@@ -234,8 +231,8 @@ ul.lobbytabs_list li span {
     font-size: 12px;
     opacity: 0;
     width: 0px;
-    color: #0F8EA5;
-    background-color: #ffffffe0;
+    color: #2283f6;
+    background-color: #ffffffec;
     padding: 3px 8px;
     font-weight: 700;
     transition: all 0.3s ease;
