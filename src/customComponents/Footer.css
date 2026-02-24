@@ -2,10 +2,9 @@
 
 footer {
   background:#19212c;
-  padding: 0 0 24px;
-  padding-left: 0;
-  padding-right: 0;
+  padding: 24px;
   position: relative;
+  margin-left: -20px;
 }
 
 /* Original footer vector – decorative strip at top */
@@ -26,10 +25,6 @@ footer {
 
 footer .container,
 footer .container-fluid {
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
-  width: 100%;
   box-sizing: border-box;
 }
 
@@ -62,10 +57,6 @@ footer .container-fluid {
 }
 
 /* Main footer block */
-.footermain {
-  margin-top: 24px;
-  padding-top: 24px;
-}
 
 @media (min-width: 992px) {
   .footermain {
@@ -79,7 +70,7 @@ footer .container-fluid {
 
 /* Landing page section (p_space_footer) – Secure & Private + description + Show more (desktop & mobile) */
 .landing_footer_section {
-  padding: 24px 20px 32px;
+  padding: 24px 50px 32px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 24px;
 }
@@ -231,22 +222,15 @@ footer .container-fluid {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  margin-top: 4px;
-  background: rgba(249, 122, 49, 0.15);
-  border: 1px solid rgba(249, 122, 49, 0.35);
+  padding: 9px 18px;
+  margin-top: 15px;
+  background: rgb(22 32 44);
   border-radius: 10px;
   font-weight: 600;
-  color: #f97a31;
-  font-size: 14px;
+  color: #fff;
+  font-size: 12px;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
-}
-
-.footer_show_more_btn:hover {
-  background: rgba(249, 122, 49, 0.25);
-  border-color: rgba(249, 122, 49, 0.5);
-  color: #ff9f6b;
 }
 
 /* Quick links – desktop */

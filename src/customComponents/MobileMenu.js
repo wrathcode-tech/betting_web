@@ -1,17 +1,16 @@
-import React, { useState, Suspense, lazy } from 'react'
+import React from 'react'
 import { NavLink } from 'react-router-dom'
-
-const SideBar = lazy(() => import('./SideBar/sideBar'))
+import { useSidebar } from '../context/SidebarContext'
 
 function MobileMenu() {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { setSidebarOpen } = useSidebar()
 
     return (
         <>
             <div className='mobile-menu-wrapper'>
                 <ul className="mobile-menu">
                     <li className="mobile-menu__item">
-                        <button type="button" className="mobile-menu__link" onClick={() => setSidebarOpen((prev) => !prev)}>
+                        <button type="button" className="mobile-menu__link" onClick={() => setSidebarOpen(true)}>
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-menu-line"></i>
                             </span>
@@ -56,8 +55,6 @@ function MobileMenu() {
                     </li>
                 </ul>
             </div>
-
-            {sidebarOpen && <Suspense fallback={null}><SideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} /></Suspense>}
         </>
     )
 }

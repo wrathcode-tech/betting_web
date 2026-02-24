@@ -112,7 +112,7 @@
     .sidebar.sidebar_collapsed .sidebar_submenu {
         display: none !important;
         position: absolute;
-        left: 64px;
+        left: 68px;
         top: 0;
         margin-left: -4px;
         min-width: 220px;
@@ -120,7 +120,7 @@
         overflow-y: auto;
         background: #16202c;
         border: 1px solid #1a2332;
-        border-radius: 0 8px 8px 0;
+        border-radius: 8px;
         box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
         padding: 0;
         margin: 0;
@@ -309,12 +309,12 @@
     padding: 20px 0;
 }
 
-/* Deposit / Withdraw – mobile only, one row, 5px gap; desktop hidden */
+/* Deposit / Withdraw – one row, 5px gap; desktop and mobile */
 .deposit_withdrawal_btn {
-    display: none;
+    display: flex;
     flex-direction: row;
     gap: 5px;
-    padding: 0 15px 16px;
+    padding: 10px 15px 10px;
     align-items: center;
 }
 
@@ -366,12 +366,6 @@
 .deposit_withdrawal_menu_btn i {
     font-size: 14px;
     flex-shrink: 0;
-}
-
-@media (max-width: 991px) {
-    .deposit_withdrawal_btn {
-        display: flex;
-    }
 }
 
 .sidebar_nav {

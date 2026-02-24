@@ -37,22 +37,6 @@ export default function SideBar({ isOpen, onClose }) {
     <>
       <div className={`sidebar_overlay ${isOpen ? 'active' : ''}`} onClick={onClose}></div>
       <div ref={sidebarRef} className={`sidebar ${isOpen ? 'sidebar_open' : 'sidebar_collapsed'}`}>
-        <div className="sidebar_header">
-          {isCollapsed ? (
-            <button type="button" className="sidebar_expand_btn desktop_only" onClick={() => setSidebarOpen(true)} aria-label="Expand sidebar">
-              <i className="ri-menu-line"></i>
-            </button>
-          ) : (
-            <button type="button" className="sidebar_close_btn desktop_only" onClick={onClose} aria-label="Close sidebar">
-              <i className="ri-close-line"></i>
-            </button>
-          )}
-          <div className="sidebar_search">
-            <input type="text" placeholder="Search" className="sidebar_search_input" />
-            <i className="ri-search-line"></i>
-          </div>
-        </div>
-
         <div className="sidebar_content">
           <div className="deposit_withdrawal_btn">
             <Link to="/deposit" className="deposit_withdrawal_menu_btn deposit_btn" onClick={onClose}>
@@ -138,18 +122,6 @@ export default function SideBar({ isOpen, onClose }) {
                 <Link to="/transactions" onClick={onClose}>
                   <span><i className="ri-file-list-3-line" aria-hidden />Transactions</span>
                   <span className="sidebar_collapsed_label">Transactions</span>
-                </Link>
-              </li>
-              <li className="sidebar_menu_item sidebar_direct_link">
-                <Link to="/rank" onClick={onClose}>
-                  <span><i className="ri-vip-crown-line" aria-hidden />VIP Club</span>
-                  <span className="sidebar_collapsed_label">VIP Club</span>
-                </Link>
-              </li>
-              <li className="sidebar_menu_item sidebar_direct_link">
-                <Link to="/" onClick={onClose}>
-                  <span><i className="ri-newspaper-line" aria-hidden />News</span>
-                  <span className="sidebar_collapsed_label">News</span>
                 </Link>
               </li>
               <li className="sidebar_menu_item sidebar_direct_link">

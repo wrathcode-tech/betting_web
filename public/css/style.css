@@ -80,7 +80,7 @@ h2 {
 
 header {
     width: 100%;
-    padding: 15px 24px;
+    padding: 10px 24px;
     background-color: #161F2C;
     display: flex;
     align-items: center;
@@ -115,6 +115,12 @@ header {
     transform: scaleX(-1);
 }
 
+@media (max-width: 991px) {
+    .toggle_menu {
+        display: none !important;
+    }
+}
+
 .header_logo {
     width: 124px;
 }
@@ -126,9 +132,20 @@ header {
     justify-content: end;
 }
 
+.header_right .searchbtn,
+.header_right .login_hdr button,
+.header_right .user_header_right {
+    height: 36px;
+    min-height: 36px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .searchbtn {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     background-color: #343c45;
     border-radius: 8px;
     cursor: pointer;
@@ -144,7 +161,8 @@ header {
 }
 
 .login_hdr button {
-    padding: 9px 20px;
+    padding: 0 20px;
+    height: 36px;
     background-color: #343c45;
     border-radius: 8px;
     border: none;
@@ -157,7 +175,7 @@ header {
 .login_hdr button.signup_btn {
     background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
     box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
-    padding: 7px 20px;
+    padding: 0 20px;
 }
 
 .setting_hdr {
@@ -1529,8 +1547,6 @@ footer {
 .footermain {
     width: 100%;
     display: block;
-    margin-top: 24px;
-    padding-top: 24px;
 }
 
 .footer_description_container {
@@ -2289,7 +2305,9 @@ button.deposit_btn {
 }
 
 .user_header_right {
-    padding: 4px 6px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0 10px;
     background-color: #343c45;
     border-radius: 50px 18px 18px 50px;
     gap: 8px;
@@ -2298,6 +2316,7 @@ button.deposit_btn {
     display: flex;
     align-items: center;
     color: #fff;
+    box-sizing: border-box;
 }
 
 .user_header_right i {
@@ -2310,8 +2329,8 @@ button.deposit_btn {
 }
 
 img.user_header_img {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 100%;
     border: 1px solid #fff;
     object-fit: cover;
@@ -2593,12 +2612,6 @@ footer .container-fluid {
 
 }
 
-@media (min-width: 992px) {
-    .toggle_menu {
-        display: none !important;
-    }
-}
-
 @media (max-width: 767px) {
 
     button.deposit_btn.mobile {
@@ -2651,7 +2664,8 @@ footer .container-fluid {
     }
 
     .login_hdr button {
-        padding: 6px 16px;
+        padding: 0 16px;
+        height: 36px;
     }
 
     .topfooter {
@@ -2664,7 +2678,8 @@ footer .container-fluid {
     }
 
     .login_hdr button.signup_btn {
-        padding: 5px 20px;
+        padding: 0 20px;
+        height: 36px;
     }
 
     header {
@@ -2693,7 +2708,9 @@ footer .container-fluid {
 
     .user_header_right {
         min-width: 65px;
-        padding: 3px 4px;
+        height: 36px;
+        min-height: 36px;
+        padding: 0 8px;
     }
 
     .modal-dialog.loginpopup .login_modal_right {
@@ -2873,7 +2890,8 @@ footer .container-fluid {
     }
 
     .login_hdr button.signup_btn {
-        padding: 5px 12px;
+        padding: 0 12px;
+        height: 36px;
     }
 
     /* Reorder sections on mobile - playearn_section and casino_sport_section should appear last */

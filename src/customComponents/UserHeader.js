@@ -53,7 +53,10 @@ export default function UserHeader() {
           </Link>
         </div>
 
-      <div className='d-flex align-items-center gap-2 depositheader'>
+      
+    
+        <div className="header_right">
+        <div className='d-flex align-items-center gap-2 depositheader'>
         <div className="currency_balance_wrapper currency_balance_inr_only">
           <div className='d-flex align-items-center gap-2 currency_balance'>
             <span className="currency_flag_emoji" aria-hidden>🇮🇳</span>
@@ -62,8 +65,6 @@ export default function UserHeader() {
         </div>
         <button className="deposit_btn" onClick={() => navigate('/deposit')}>Deposit</button>
       </div>
-    
-        <div className="header_right">
      
           <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>
             <img src="/images/search-icon.svg" alt="search" />

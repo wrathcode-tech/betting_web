@@ -1,8 +1,8 @@
 import React, { useState, Suspense, lazy } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { useSidebar } from '../context/SidebarContext'
 import './Footer.css'
 
-const SideBar = lazy(() => import('./SideBar/sideBar'))
 const Chat = lazy(() => import('../cricket/Chat'))
 
 const FOOTER_MOBILE_MENU = [
@@ -67,7 +67,7 @@ const FOOTER_MOBILE_MENU = [
 ];
 
 function Footer() {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { setSidebarOpen } = useSidebar()
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [openSection, setOpenSection] = useState(null);
 
@@ -81,7 +81,7 @@ function Footer() {
             {/* <div className="footer_vector_top" aria-hidden="true">
                 <img src="/images/bottom_img.svg" alt="" />
             </div> */}
-        <div className='container-fluid'>
+        <div className='container'>
 
           <div className='footermain'>
 
@@ -172,7 +172,7 @@ function Footer() {
       <div className='mobile-menu-wrapper'>
         <ul className="mobile-menu">
           <li className="mobile-menu__item">
-            <button type="button" className="mobile-menu__link" onClick={() => setSidebarOpen((prev) => !prev)}>
+            <button type="button" className="mobile-menu__link" onClick={() => setSidebarOpen(true)}>
               <span className="icon mobile-menu__icon">
                 <i className="ri-menu-line"></i>
               </span>
@@ -226,7 +226,6 @@ function Footer() {
         </ul>
       </div>
 
-      {sidebarOpen && <Suspense fallback={null}><SideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} /></Suspense>}
       {isChatOpen && <Suspense fallback={null}><Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} /></Suspense>}
     </>
     )

@@ -903,7 +903,7 @@ function LandingPage() {
           </div>
         </div>
 
-        <div className="container-fluid p_space_footer landing_footer_section">
+        <div className="p_space_footer landing_footer_section">
           <div className="d-flex topfooter">
             <div className="secure_img">
               <img src="/images/secure.png" alt="game" />
@@ -923,135 +923,108 @@ function LandingPage() {
                 position: 'relative',
               }}
             >
-              <h2 className="crownbet_title">Crypto Sports Betting at CrownBet</h2>
-              <p>CrownBet is a BTC sport betting site where you can wager on thousands of sports events using Bitcoin and 50+ other cryptocurrencies. Live odds, pre-match markets, fast payouts, and no banking fees. That&apos;s what you get here.</p>
-              <p>Whether you follow soccer, basketball, or MMA, we cover it all. You can also bet on eSports tournaments happening around the clock. The platform works 24/7, so there&apos;s always something to bet on.</p>
+           <h2 className="crownbet_title">Sports Betting at CrownBet</h2>
+<p>CrownBet is a modern sports betting platform where you can wager on thousands of sports events across global markets. Live odds, pre-match options, fast payouts, and a seamless betting experience — that’s what you get here.</p>
+<p>Whether you follow cricket, football, basketball, or MMA, we cover it all. You can also explore esports tournaments happening around the clock. The platform operates 24/7, so there’s always something to bet on.</p>
 
-              <h3 className="crownbet_heading">Why Choose a Bitcoin Sportsbook?</h3>
-              <p>Crypto sports betting changes how people gamble online. No bank delays. No extra fees eating into your winnings. Your deposits hit your account in minutes, and withdrawals work just as fast.</p>
-              <p>Here&apos;s what makes betting with bitcoin different from traditional methods:</p>
-              <ul className="crownbet_list crownbet_list_bullet">
-                <li><strong>Speed:</strong> Crypto deposits confirm in minutes, not days</li>
-                <li><strong>Lower costs:</strong> No middleman fees from banks or payment processors</li>
-                <li><strong>Privacy:</strong> You control your funds without sharing banking details</li>
-                <li><strong>Global access:</strong> Bet from anywhere without currency conversion headaches</li>
-                <li><strong>True ownership:</strong> Your crypto stays yours until you decide to bet</li>
-              </ul>
-              <p>Bitcoin&apos;s price can swing up or down, which some bettors actually like. Win a bet when BTC is low, and your winnings might grow if the price rises later. It&apos;s a bit of a double game, honestly.</p>
+<h3 className="crownbet_heading">Why Choose CrownBet?</h3>
+<p>Online sports betting should be fast, secure, and easy to use. CrownBet is designed to deliver a smooth experience from deposit to withdrawal.</p>
+<ul className="crownbet_list crownbet_list_bullet">
+  <li><strong>Fast Processing:</strong> Quick deposits and efficient withdrawals</li>
+  <li><strong>Secure Platform:</strong> Advanced protection for user data and funds</li>
+  <li><strong>Competitive Odds:</strong> Strong pricing across major sports markets</li>
+  <li><strong>Wide Coverage:</strong> Thousands of events daily</li>
+  <li><strong>Mobile Friendly:</strong> Fully optimized for all devices</li>
+</ul>
+<p>The platform keeps everything straightforward so you can focus on the game.</p>
 
-              <h3 className="crownbet_heading">Sports You Can Bet On</h3>
-              <p>Our sportsbook covers pretty much every major sport. From the Premier League to La Liga and Serie A, soccer fans have tons of options.</p>
-              <p>American sports are well represented too, with full coverage of the NBA, NFL, MLB, and NHL.</p>
-              <p>Tennis betting includes the ATP Tour, WTA Tour, and Grand Slam tournaments.</p>
-              <p>Combat sports fans can bet on boxing matches and Ultimate Fighting Championship events through the MMA section. Volleyball and American football round out the traditional sports lineup.</p>
-              <p>Want something different? Horse racing markets let you bet on races from major tracks worldwide.</p>
+<h3 className="crownbet_heading">Sports You Can Bet On</h3>
+<p>CrownBet covers major international and regional competitions across multiple sports.</p>
+<p>Cricket fans can follow tournaments like the Indian Premier League and global events such as the ICC Cricket World Cup.</p>
+<p>Football bettors can explore top leagues including the Premier League, La Liga, and Serie A.</p>
+<p>American sports are also available, with coverage of the NBA, NFL, and more.</p>
+<p>Combat sports, tennis tournaments, and horse racing markets are also part of the lineup.</p>
 
-              <h3 className="crownbet_heading">Esports Betting</h3>
-              <p>Esports betting keeps growing. Millions watch competitive gaming, and our crypto sportsbook lets you bet with crypto on the biggest tournaments.</p>
-              <p>The esports section includes:</p>
-              <ul className="crownbet_list crownbet_list_dash">
-                <li><strong>Dota 2</strong> – The International and DPC events</li>
-                <li><strong>Counter-Strike 2</strong> – Major championships and ESL tournaments</li>
-                <li><strong>League of Legends</strong> – Worlds, LCS, LEC, and regional leagues</li>
-                <li><strong>StarCraft II</strong> – GSL and international competitions</li>
-                <li><strong>Honor of Kings</strong> – One of Asia&apos;s most popular mobile esports</li>
-              </ul>
-              <p>Esports matches run around the clock since tournaments happen across different time zones. You&apos;ll find odds on matches from North America, Europe, China, Korea, and Southeast Asia.</p>
+<h3 className="crownbet_heading">Esports Betting</h3>
+<p>Esports continues to grow worldwide, and CrownBet offers markets on major competitive gaming tournaments.</p>
+<ul className="crownbet_list crownbet_list_dash">
+  <li><strong>Dota 2</strong> – International tournaments and pro circuits</li>
+  <li><strong>Counter-Strike 2</strong> – Major championships and league events</li>
+  <li><strong>League of Legends</strong> – Global and regional competitions</li>
+  <li><strong>StarCraft II</strong> – International competitive events</li>
+</ul>
+<p>With tournaments happening across different regions, esports betting markets remain active throughout the day.</p>
 
-              <h3 className="crownbet_heading">Virtual Sports Betting</h3>
-              <p>Can&apos;t wait for real matches? Virtual sports fill the gaps. These are simulated games with quick results, usually finishing within minutes.</p>
-              <p>We offer eSoccer and eSoccer Volta for virtual football action. eBasketball simulates NBA-style games. eRocket League brings the popular car-soccer video game to betting markets.</p>
-              <p>Virtual sports run 24/7 with new events starting every few minutes. Results come from random number generators, so past performance doesn&apos;t predict future outcomes. Think of them as quick entertainment between real matches.</p>
+<h3 className="crownbet_heading">Virtual Sports Betting</h3>
+<p>Virtual sports provide fast-paced action when live matches aren’t available. These simulated events deliver quick results and run 24/7.</p>
+<p>Options include virtual football, basketball, and other popular formats designed for short-session entertainment.</p>
 
-              <h3 className="crownbet_heading">Understanding Betting Markets</h3>
-              <p>New to sports betting with Bitcoin? Here&apos;s how the main bet types work.</p>
-              <div className="crownbet_table_wrap">
-                <table className="crownbet_table">
-                  <thead>
-                    <tr>
-                      <th>Market Type</th>
-                      <th>What It Means</th>
-                      <th>Example</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Moneyline/Winner</td><td>Pick who wins the match</td><td>Team A to beat Team B</td></tr>
-                    <tr><td>Handicap/Spread</td><td>Team must win by certain margin</td><td>Team A -1.5 goals</td></tr>
-                    <tr><td>Over/Under (Totals)</td><td>Combined score above or below a number</td><td>Over 2.5 goals in match</td></tr>
-                    <tr><td>1X2</td><td>Home win, draw, or away win</td><td>Used mainly in soccer</td></tr>
-                    <tr><td>Prop Bets</td><td>Specific events within a game</td><td>First goalscorer, total corners</td></tr>
-                    <tr><td>Outright/Futures</td><td>Season-long predictions</td><td>League winner, MVP</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p>Handicap betting levels the playing field between mismatched teams. If you bet on a strong favorite at -1.5, they need to win by at least 2 goals for your bet to pay out. The underdog at +1.5 just needs to lose by 1 or draw or win.</p>
-              <p>Live betting lets you place wagers while games are happening. Odds shift based on the action, so you can react to what you&apos;re watching.</p>
+<h3 className="crownbet_heading">Understanding Betting Markets</h3>
+<p>If you're new to sports betting, here’s how the main bet types work:</p>
 
-              <h3 className="crownbet_heading">Cryptocurrencies Accepted for Betting</h3>
-              <p>Our bitcoin sportsbook isn&apos;t limited to BTC. CrownBet accepts over 50 different cryptocurrencies for deposits and withdrawals.</p>
-              <p>Popular options include Bitcoin, Ethereum, Litecoin, Tether (USDT), Ripple (XRP), and Dogecoin. Stablecoins like USDT let you avoid crypto price swings if that concerns you.</p>
-              <p>Deposits process quickly once network confirmations complete. Withdrawals go straight to your wallet without waiting for bank approval.</p>
-              <p>No minimum deposits exist for most cryptocurrencies, making it easy to start small.</p>
+<div className="crownbet_table_wrap">
+  <table className="crownbet_table">
+    <thead>
+      <tr>
+        <th>Market Type</th>
+        <th>What It Means</th>
+        <th>Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Match Winner</td><td>Pick who wins the match</td><td>Team A to beat Team B</td></tr>
+      <tr><td>Handicap</td><td>Adjusted margin betting</td><td>Team A -1.5</td></tr>
+      <tr><td>Over/Under</td><td>Total score above or below a line</td><td>Over 2.5 goals</td></tr>
+      <tr><td>1X2</td><td>Home win, draw, or away win</td><td>Common in football</td></tr>
+      <tr><td>Prop Bets</td><td>Specific in-game events</td><td>First goalscorer</td></tr>
+      <tr><td>Futures</td><td>Long-term outcomes</td><td>Tournament winner</td></tr>
+    </tbody>
+  </table>
+</div>
 
-              <h3 className="crownbet_heading">The BFG Token Advantage</h3>
-              <p>BFG is CrownBet&apos;s own cryptocurrency. You can buy it, earn it through casino games, and use it for betting.</p>
-              <p>BFG holders can stake their tokens and earn passive income from the platform&apos;s profits. The more BFG you hold and stake, the more you earn from daily payouts.</p>
-              <p>You earn BFG automatically when playing casino games. Sports betting doesn&apos;t generate BFG directly, but the tokens you earn elsewhere work perfectly for placing sports wagers.</p>
+<p>Live betting allows you to place wagers while matches are in progress, with odds updating in real time.</p>
 
-              <h3 className="crownbet_heading">How to Start Bitcoin Sports Betting</h3>
-              <p>Getting started takes just a few minutes:</p>
-              <ol className="crownbet_list crownbet_list_numbered">
-                <li>Create an account</li>
-                <li>Deposit crypto</li>
-                <li>Browse the sports section</li>
-                <li>Add selections to your bet slip</li>
-                <li>Enter your stake and confirm</li>
-              </ol>
-              <p>Single bets are straightforward. Parlays (accumulators) combine multiple selections into one bet with higher potential payouts. Every selection must win for a parlay to pay out.</p>
+<h3 className="crownbet_heading">How to Start Betting</h3>
+<ol className="crownbet_list crownbet_list_numbered">
+  <li>Create an account</li>
+  <li>Add funds to your balance</li>
+  <li>Browse sports and select an event</li>
+  <li>Add selections to your bet slip</li>
+  <li>Enter your stake and confirm</li>
+</ol>
+<p>Single bets are simple and straightforward, while accumulator bets combine multiple selections for higher potential returns.</p>
 
-              <h3 className="crownbet_heading">Bonuses and Promotions</h3>
-              <p>CrownBet offers various bonuses for sports bettors, including:</p>
-              <ul className="crownbet_list crownbet_list_tick">
-                <li>Welcome bonuses</li>
-                <li>Reload offers</li>
-                <li>Cashback deals</li>
-                <li>Special event promotions</li>
-              </ul>
-              <p>The promotions page shows all current offers and gets updated regularly.</p>
+<h3 className="crownbet_heading">Bonuses and Promotions</h3>
+<p>CrownBet offers regular promotions to enhance your experience:</p>
+<ul className="crownbet_list crownbet_list_tick">
+  <li>Welcome bonuses</li>
+  <li>Reload offers</li>
+  <li>Cashback promotions</li>
+  <li>Special event boosts</li>
+</ul>
+<p>Check the promotions page regularly for the latest offers.</p>
 
-              <h3 className="crownbet_heading">Tips for Crypto Sports Betting Success</h3>
-              <ul className="crownbet_list crownbet_list_tick">
-                <li>Know your sport before placing bets</li>
-                <li>Start with simple markets like moneyline or totals</li>
-                <li>Set bankroll limits</li>
-                <li>Avoid chasing losses</li>
-                <li>Practice live betting with small stakes first</li>
-              </ul>
+<h3 className="crownbet_heading">Smart Betting Tips</h3>
+<ul className="crownbet_list crownbet_list_tick">
+  <li>Focus on sports you understand well</li>
+  <li>Manage your bankroll carefully</li>
+  <li>Start with smaller stakes</li>
+  <li>Avoid emotional betting decisions</li>
+  <li>Analyze live odds before placing in-play bets</li>
+</ul>
 
-              <h3 className="crownbet_heading">What Makes a Good Bitcoin Bookmaker?</h3>
-              <p>When looking for the best Bitcoin sportsbook, focus on:</p>
-              <ul className="crownbet_list crownbet_list_tick">
-                <li>Wide variety of sports and markets</li>
-                <li>Fast withdrawals</li>
-                <li>Strong security</li>
-                <li>Competitive odds</li>
-                <li>Reliable customer support</li>
-              </ul>
-              <p>Even small differences in odds can impact long-term results.</p>
+<h3 className="crownbet_heading">Why CrownBet Stands Out</h3>
+<ul className="crownbet_list crownbet_list_tick">
+  <li>Wide variety of sports and markets</li>
+  <li>Fast and reliable payouts</li>
+  <li>Secure and user-friendly interface</li>
+  <li>24/7 customer support</li>
+  <li>Optimized for desktop and mobile</li>
+</ul>
 
-              <h3 className="crownbet_heading">Why Choose CrownBet?</h3>
-              <p>CrownBet combines crypto sports betting with a complete casino section. You can switch between sports wagers and casino games seamlessly.</p>
-              <ul className="crownbet_list crownbet_list_tick">
-                <li>24/7 customer support</li>
-                <li>Fast crypto withdrawals</li>
-                <li>Mobile-friendly interface</li>
-                <li>Thousands of betting markets</li>
-                <li>Competitive odds</li>
-              </ul>
-
-              <h3 className="crownbet_heading">Final Thoughts on Betting with BTC</h3>
-              <p>Crypto betting offers speed and convenience that traditional sportsbooks can&apos;t match. CrownBet delivers thousands of betting markets across dozens of sports, all accessible with Bitcoin and other major cryptocurrencies.</p>
-              <p>The combination of traditional sports, esports, and virtual sports means there&apos;s always action available. Whether you&apos;re following the Premier League, watching NBA games, or betting on Counter-Strike majors, CrownBet provides a complete crypto sportsbook experience focused on variety, speed, and fair odds.</p>
+<h3 className="crownbet_heading">Final Thoughts</h3>
+<p>CrownBet delivers a complete online sports betting experience with strong market coverage, competitive odds, and a smooth interface.</p>
+<p>From cricket and football to esports and virtual sports, the platform ensures continuous betting opportunities throughout the day. Always bet responsibly and make informed decisions.</p>
             </div>
             <button
               type="button"

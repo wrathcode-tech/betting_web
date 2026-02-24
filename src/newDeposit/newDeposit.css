@@ -232,11 +232,6 @@ input:focus-visible {
   gap: 10px;
 }
 
-.upi_details_capcha_img {
-  max-width: 230px;
-  margin: 0 auto;
-}
-
 .account_detail_payment .add_bank_btn {
   margin-top: 12px;
   padding: 8px 24px;
@@ -277,6 +272,10 @@ input:focus-visible {
   min-width: 300px;
 }
 
+.upi_details_capcha_img {
+  max-width: 230px;
+  margin: 0 auto;
+}
 
 .capcha_text {
   display: flex;
@@ -342,7 +341,7 @@ button.capcha_refresh_btn {
 
   .add_account_cta .add_account_text {
     font-size: 12px;
-}
+  }
 
   p.note_text {
     font-size: 12px;
@@ -367,23 +366,27 @@ button.capcha_refresh_btn {
     max-width: 140px;
   }
 
-  .account_detail_payment .enter_amount_deposit h5{ font-size: 13px; }
+  .account_detail_payment .enter_amount_deposit h5 {
+    font-size: 13px;
+  }
+
   .capcha_text p {
     font-size: 11px;
     width: 90%;
     overflow: scroll;
-}
+  }
 
-.upi_details_capcha {
-  padding: 30px 0px 0px; }
+  .upi_details_capcha {
+    padding: 30px 0px 0px;
+  }
 
   .payment_btn button {
     font-size: 12px;
-    padding: 7px 32px; }
+    padding: 7px 32px;
+  }
 
-
-    .account_detail_payment .add_bank_btn {
-      padding: 8px 24px;
-      font-size: 12px; }
-
+  .account_detail_payment .add_bank_btn {
+    padding: 8px 24px;
+    font-size: 12px;
+  }
 }
