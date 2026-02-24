@@ -2474,7 +2474,7 @@ footer .container-fluid {
     }
 
     .casino_hero_s {
-        min-height: 100%;
+        min-height: 480px;
     }
 
 }
@@ -2502,6 +2502,33 @@ footer .container-fluid {
 
     .casino_hero_s h1 {
         font-size: 32px;
+    }
+
+    .casino_hero_s {
+        min-height: 380px;
+        padding-top: 20px;
+        padding-bottom: 24px;
+        display: flex;
+        align-items: center;
+    }
+    .casino_hero_s .container-fluid {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        width: 100%;
+    }
+    .casino_hero_s .casino_hero_s_lft {
+        margin-left: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+    .casino_hero_s .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .casino_hero_s .row [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+        max-width: 100%;
     }
 
     .playearn_big_lft {
@@ -2624,6 +2651,11 @@ footer .container-fluid {
 
     .desktopview {
         display: none;
+    }
+
+    .casinobox_item a {
+        flex-direction: column;
+        padding: 10px 21px;
     }
 
     .user_profile_dropdown {
@@ -2751,8 +2783,13 @@ footer .container-fluid {
     }
 
     .casino_hero_s {
-        min-height: 100%;
-        padding-top: 24px;
+        min-height: 360px;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+    .casino_hero_s .container-fluid {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
     }
 
     .casino_hero_s .d-flex {
@@ -3030,8 +3067,32 @@ footer .container-fluid {
         height: 44px;
     }
 
+    .casino_hero_s {
+        min-height: 340px;
+        padding-top: 16px;
+        padding-bottom: 16px;
+    }
+    .casino_hero_s .container-fluid {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
     .casino_hero_s h1 {
         font-size: 18px;
+        line-height: 1.25;
+    }
+    .casino_hero_s p {
+        margin-top: 4px;
+        font-size: 14px;
+    }
+    .casino_hero_s .d-flex {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px !important;
+    }
+    .casino_hero_s .casino_bnr_img {
+        max-width: 160px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .casinobox_item h3 {

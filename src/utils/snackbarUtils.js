@@ -1,24 +1,16 @@
-import { useSnackbar } from 'notistack';
-
-let enqueueSnackbarRef = null;
+import { toast } from 'react-toastify';
 
 /**
- * Renders inside SnackbarProvider. Captures enqueueSnackbar so we can use it outside React components.
- * Add <SnackbarUtilsConfigurator /> inside SnackbarProvider in App.js.
+ * Snackbar-style notifications using react-toastify.
+ * Use from anywhere: snackbar.success('Done'), snackbar.error('Failed'), etc.
  */
-export function SnackbarUtilsConfigurator() {
-  const { enqueueSnackbar } = useSnackbar();
-  enqueueSnackbarRef = enqueueSnackbar;
-  return null;
-}
-
-function show(message, variant = 'default', options = {}) {
-  if (enqueueSnackbarRef) {
-    enqueueSnackbarRef(message, { variant, ...options });
-  } else {
-    // Fallback if provider not mounted yet (e.g. in tests)
-    if (typeof window !== 'undefined') window.alert(message);
-  }
+function show(message, type = 'default', options = {}) {
+  const opts = { position: 'top-right', ...options };
+  if (type === 'success') toast.success(message, opts);
+  else if (type === 'error') toast.error(message, opts);
+  else if (type === 'warning') toast.warning(message, opts);
+  else if (type === 'info') toast.info(message, opts);
+  else toast(message, opts);
 }
 
 export const snackbar = {
