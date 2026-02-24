@@ -5,7 +5,7 @@ const appUrl2 = appUrl;
 // const appUrl2 = appUrl;
 
 // Betting backend base URL (set REACT_APP_BETTING_API_URL in production)
-const bettingUrl = process.env.REACT_APP_BETTING_API_URL || "http://localhost:5008";
+const bettingUrl = process.env.REACT_APP_BETTING_API_URL || "http://159.195.23.93:5008";
 
 
 
