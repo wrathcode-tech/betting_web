@@ -115,11 +115,12 @@ function CasinoGame() {
     
     const duplicatedItems = [...gameItems, ...gameItems, ...gameItems];
     const gallerySlides = [
-        "images/casino_bnr_img4.jpg",
-        "images/casino_bnr_img2.jpg",
-        "images/casino_bnr_img.jpg",
-        "images/casino_bnr_img3.jpg",
-        "images/casino_bnr_img5.jpg",
+        "images/casino_bnr_img.svg",
+        "images/casino_bnr_img2.svg",
+        "images/casino_bnr_img3.svg",
+        "images/casino_bnr_img4.svg",
+        "images/casino_bnr_img5.svg",
+        "images/casino_bnr_img6.svg",
     ];
 
     // No auto-slide: banner changes only on dot click; lobby sliders on mouse drag
@@ -239,15 +240,15 @@ function CasinoGame() {
     }, []);
 
     const getSlidesPerView = () => {
-        if (typeof window === 'undefined') return 1;
-        return window.matchMedia('(min-width: 769px)').matches ? 2 : 1;
+        if (typeof window === 'undefined') return 1.5;
+        return window.matchMedia('(min-width: 769px)').matches ? 4 : 1.5;
     };
     const [slidesPerView, setSlidesPerView] = useState(getSlidesPerView);
     const [layoutKey, setLayoutKey] = useState(0);
 
     useEffect(() => {
         const mq = window.matchMedia('(min-width: 769px)');
-        const update = () => setSlidesPerView(mq.matches ? 2 : 1);
+        const update = () => setSlidesPerView(mq.matches ? 4 : 1.5);
         update();
         mq.addEventListener('change', update);
         return () => mq.removeEventListener('change', update);
@@ -258,36 +259,36 @@ function CasinoGame() {
         return () => window.removeEventListener('resize', onResize);
     }, []);
 
-    const maxIndex = Math.max(0, gallerySlides.length - slidesPerView);
+    const maxIndex = Math.max(0, Math.floor(gallerySlides.length - slidesPerView));
+    const canGoPrev = currentSlide > 0;
+    const canGoNext = currentSlide < maxIndex;
+
     const handleBannerPrev = () => {
-        if (slidesPerView === 1) {
-            setCurrentSlide((prev) => (prev <= 0 ? gallerySlides.length - 1 : prev - 1));
-        } else {
-            setCurrentSlide((prev) => (prev <= 0 ? maxIndex : prev - 1));
-        }
+        if (!canGoPrev) return;
+        setCurrentSlide((prev) => prev - 1);
     };
     const handleBannerNext = () => {
-        if (slidesPerView === 1) {
-            setCurrentSlide((prev) => (prev >= gallerySlides.length - 1 ? 0 : prev + 1));
-        } else {
-            setCurrentSlide((prev) => (prev >= maxIndex ? 0 : prev + 1));
-        }
+        if (!canGoNext) return;
+        setCurrentSlide((prev) => prev + 1);
     };
 
     const GALLERY_GAP = 18;
     useEffect(() => {
         if (!sliderRef.current) return;
-        if (slidesPerView === 1) {
-            sliderRef.current.style.transform = `translateX(-${currentSlide * 100}%)`;
-        } else {
-            const firstSlide = sliderRef.current.querySelector('.casinobnr_gallery_slide');
-            const slideWidth = firstSlide ? firstSlide.offsetWidth : 0;
-            const step = slideWidth + GALLERY_GAP;
-            sliderRef.current.style.transform = `translateX(-${currentSlide * step}px)`;
-        }
+        const track = sliderRef.current;
+        const wrapper = track.parentElement;
+        const firstSlide = track.querySelector('.casinobnr_gallery_slide');
+        const slideWidth = firstSlide ? firstSlide.offsetWidth : 0;
+        const step = slideWidth + GALLERY_GAP;
+        const trackWidth = track.offsetWidth;
+        const wrapperWidth = wrapper ? wrapper.offsetWidth : 0;
+        const maxTranslate = Math.max(0, trackWidth - wrapperWidth);
+        const rawTranslate = currentSlide * step;
+        const cappedTranslate = Math.min(rawTranslate, maxTranslate);
+        track.style.transform = `translateX(-${cappedTranslate}px)`;
     }, [currentSlide, slidesPerView, layoutKey]);
 
-    const dotCount = slidesPerView === 1 ? gallerySlides.length : maxIndex + 1;
+    const dotCount = maxIndex + 1;
     const handleDotClick = (index) => setCurrentSlide(index);
     const isDotActive = (index) => index === currentSlide;
 
@@ -312,7 +313,7 @@ function CasinoGame() {
         <>
             <div className='dashboard_page'>
             <div className='casino_outer'>
-                <div className='container'>
+                <div className='container-fluid'>
                     <div className='casino_hero_section'>
                         <div
                             className={`casinobnr_gallery_wrapper ${arrowsVisible ? 'casinobnr_arrows_visible' : ''}`}
@@ -321,10 +322,10 @@ function CasinoGame() {
                             onTouchStart={handleSliderTouchStart}
                             onTouchEnd={handleSliderTouchEnd}
                         >
-                            <button type="button" className='casinobnr_arrow casinobnr_arrow_prev' onClick={handleBannerPrev} aria-label="Previous slide">
+                            <button type="button" className={`casinobnr_arrow casinobnr_arrow_prev ${!canGoPrev ? 'casinobnr_arrow_disabled' : ''}`} onClick={handleBannerPrev} disabled={!canGoPrev} aria-label="Previous slide">
                                 <i className="ri-arrow-left-s-line"></i>
                             </button>
-                            <button type="button" className='casinobnr_arrow casinobnr_arrow_next' onClick={handleBannerNext} aria-label="Next slide">
+                            <button type="button" className={`casinobnr_arrow casinobnr_arrow_next ${!canGoNext ? 'casinobnr_arrow_disabled' : ''}`} onClick={handleBannerNext} disabled={!canGoNext} aria-label="Next slide">
                                 <i className="ri-arrow-right-s-line"></i>
                             </button>
                             <div className='casinobnr_gallery_track' ref={sliderRef}>

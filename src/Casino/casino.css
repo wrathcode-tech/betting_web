@@ -54,34 +54,46 @@
 .casino_hero_section {
     width: 100%;
     display: block;
-    margin: 50px 0px;
+    margin: 15px 0px 24px;
 }
 
-/* Gallery slider: one image at a time, arrows + dots */
+/* Gallery slider: arrows + dots, no loop at end */
 .casinobnr_gallery_wrapper {
     width: 100%;
     position: relative;
     overflow: hidden;
     border-radius: 15px;
+    container-type: inline-size;
+    container-name: casinobnr;
 }
 
 .casinobnr_gallery_track {
     display: flex;
-    width: 100%;
+    width: max-content;
     gap: 18px;
     transition: transform 0.5s ease-in-out;
 }
 
-/* Mobile: 1 slide (100% width), full image visible */
+/* Mobile: 1.5 slides visible (one full + half next) */
+@container casinobnr (max-width: 768px) {
+    .casinobnr_gallery_slide {
+        flex: 0 0 calc((100cqw - 18px) / 1.5);
+        width: calc((100cqw - 18px) / 1.5);
+        min-width: calc((100cqw - 18px) / 1.5);
+    }
+}
+
 .casinobnr_gallery_slide {
-    flex: 0 0 100%;
-    width: 100%;
+    flex: 0 0 calc((100vw - 18px) / 1.5);
+    width: calc((100vw - 18px) / 1.5);
+    min-width: calc((100vw - 18px) / 1.5);
     border-radius: 10px;
     overflow: hidden;
-    background: rgba(0, 0, 0, 0.2);
+    background:none;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 .casinobnr_gallery_slide img {
@@ -91,11 +103,12 @@
     object-fit: contain;
 }
 
-/* Tablet & desktop: 2 slides visible */
-@media (min-width: 769px) {
+/* Desktop: 4 slides visible */
+@container casinobnr (min-width: 769px) {
     .casinobnr_gallery_slide {
-        flex: 0 0 calc((100% - 18px) / 2);
-        width: calc((100% - 18px) / 2);
+        flex: 0 0 calc((100cqw - 3 * 18px) / 4);
+        width: calc((100cqw - 3 * 18px) / 4);
+        min-width: calc((100cqw - 3 * 18px) / 4);
     }
 }
 
@@ -128,6 +141,13 @@
 
 .casinobnr_arrow:hover {
     background-color: rgba(0, 0, 0, 0.75);
+}
+
+.casinobnr_arrow_disabled,
+.casinobnr_arrow:disabled {
+    opacity: 0.25 !important;
+    pointer-events: none !important;
+    cursor: not-allowed;
 }
 
 .casinobnr_arrow_prev {
@@ -398,7 +418,7 @@ ul.lobbytabs_list li.active span {
     }
 
     .casino_hero_section {
-        margin: 0px 0px 20px;
+        margin: -10px 0px 20px;
     }
 
     .searchright_lobby input {
@@ -416,7 +436,7 @@ ul.lobbytabs_list li.active span {
     }
 
     .casinobnr_gallery_track {
-        gap: 0px;
+        gap: 18px;
     }
 
     .casino_category_page_header {

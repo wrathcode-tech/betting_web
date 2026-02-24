@@ -69,6 +69,19 @@ function LandingPage() {
     { id: 8, badge: null, image: 'images/betcasino_img3.png' },
   ];
 
+  // Trending section: 9 different videos (replace paths with your video files)
+  const trendingVideos = [
+    'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68688.mp4',
+    'images/freepik_create-a-fun-and-energetic-animated-promo-video-us_kling_1080p_16-9_24fps_68693.mp4',
+    'images/freepik_create-a-vibrant-animated-promo-video-using-this-c_kling_1080p_16-9_24fps_68692.mp4',
+    'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68687.mp4',
+    'images/freepik_create-a-stylish-and-engaging-animated-promo-video_kling_1080p_16-9_24fps_68691.mp4',
+    'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68695.mp4',
+    'images/freepik_create-a-highintensity-animated-promo-video-using-_minimax_768p_16-9_24fps_68694.mp4',
+    'images/freepik_create-a-glamorous-and-highend-animated-promo-vide_minimax_768p_16-9_24fps_68690.mp4',
+    'images/freepik_create-a-bold-and-highenergy-animated-promo-video-_minimax_768p_16-9_24fps_68689.mp4',
+  ];
+
   // Live Casino items
   const liveCasinoItems = [
     { id: 1, icon: 'worldicon', image: 'images/casino_gallery_img.png' },
@@ -436,26 +449,43 @@ function LandingPage() {
 
 
       <div className="container-fluid mobileview">
-<div className="casino_sport_mobile_section">
+        <div className="casino_sport_mobile_section">
 
-      <div className="casinobox_item">
-        <Link to="/casino" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <h3>Casino <i class="ri-arrow-right-s-line"></i></h3>
-          <div className="gameimg">
-            <img src="images/casino_vector.svg" alt="game" />
+          <div className="casinobox_item">
+            <Link to="/casino" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <h3>Casino <i class="ri-arrow-right-s-line"></i></h3>
+              <div className="gameimg">
+                <img src="images/casino_vector.svg" alt="game" />
+              </div>
+            </Link>
           </div>
-        </Link>
-      </div>
-      <div className="casinobox_item  sport_bg">
-        <Link to="/sports" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <h3>Sport <i class="ri-arrow-right-s-line"></i></h3>  
-          <div className="gameimg">
-            <img src="images/sport_vector.svg" alt="game" />
+          <div className="casinobox_item  sport_bg">
+            <Link to="/sports" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <h3>Sport <i class="ri-arrow-right-s-line"></i></h3>
+              <div className="gameimg">
+                <img src="images/sport_vector.svg" alt="game" />
+              </div>
+            </Link>
           </div>
-        </Link>
+        </div>
       </div>
-  </div>
+
+
+<div className='trending_games_section'>
+  <h2 className='heading_h2'>Trending Games</h2>
+
+<div className='game_items_video'>
+  {trendingVideos.map((src, i) => (
+    <div key={i} className='game_video_bl'>
+      <video width="100%" autoPlay muted loop playsInline>
+        <source src={src} type="video/mp4" />
+      </video>
+    </div>
+  ))}
 </div>
+
+</div>
+
 
       <div className="landing_page_content">
         <div className="top_slot_outer">
@@ -513,36 +543,36 @@ function LandingPage() {
               </div>
             </div>
 
-          <div
-            className="game_items_slider_wrapper"
-            onMouseDown={(e) => handleSliderMouseDown(e, {
-              sliderRef: topSportsSliderRef,
-              getItemWidth: 178 + 8,
-              itemsPerSet: topSportsItemsPerSet,
-              currentIndex: topSportsIndex,
-              setIndex: setTopSportsIndex,
-            })}
-            onClickCapture={handleSliderClickCapture}
-            style={{ cursor: 'grab' }}
-          >
-            <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
-              {topSportsDisplayItems.map((item, index) => (
-                item.viewAll ? (
-                  <Link key="view-all-sports" to={item.to} className="match_slider_sports_item slider_view_all_card sports_view_all" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                    <span className="slider_view_all_text">View All</span>
-                  </Link>
-                ) : (
-                  <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
-                    <div className='spot_value'>{item.badge}</div>
-                    <img loading="lazy" src={`images/${item.icon}`} alt="match" />
-                    <h3>{item.title}</h3>
-                  </div>
-                )
-              ))}
+            <div
+              className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: topSportsSliderRef,
+                getItemWidth: 178 + 8,
+                itemsPerSet: topSportsItemsPerSet,
+                currentIndex: topSportsIndex,
+                setIndex: setTopSportsIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
+            >
+              <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
+                {topSportsDisplayItems.map((item, index) => (
+                  item.viewAll ? (
+                    <Link key="view-all-sports" to={item.to} className="match_slider_sports_item slider_view_all_card sports_view_all" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <span className="slider_view_all_text">View All</span>
+                    </Link>
+                  ) : (
+                    <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
+                      <div className='spot_value'>{item.badge}</div>
+                      <img loading="lazy" src={`images/${item.icon}`} alt="match" />
+                      <h3>{item.title}</h3>
+                    </div>
+                  )
+                ))}
+              </div>
             </div>
-      </div>
+          </div>
         </div>
-      </div>
 
         <div className="casino_sport_section">
           <div className="container-fluid">
@@ -584,9 +614,9 @@ function LandingPage() {
           </div>
         </div>
 
-   
 
-      <div className='playearn_section'>
+
+        <div className='playearn_section'>
           <div className='container-fluid'>
             <div className='row'>
               <div className='col-md-8'>
@@ -695,59 +725,59 @@ function LandingPage() {
               </div>
             </div>
 
-          <div
-            className='match_slider_wrapper'
-            onMouseDown={(e) => handleSliderMouseDown(e, {
-              sliderRef: topMatchesSliderRef,
-              getItemWidth: getTopMatchesItemWidth,
-              itemsPerSet: topMatchesItemsPerSet,
-              currentIndex: topMatchesIndex,
-              setIndex: setTopMatchesIndex,
-            })}
-            onClickCapture={handleSliderClickCapture}
-            style={{ cursor: 'grab' }}
-          >
-            <div className='match_slider_container' ref={topMatchesSliderRef}>
+            <div
+              className='match_slider_wrapper'
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: topMatchesSliderRef,
+                getItemWidth: getTopMatchesItemWidth,
+                itemsPerSet: topMatchesItemsPerSet,
+                currentIndex: topMatchesIndex,
+                setIndex: setTopMatchesIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
+            >
+              <div className='match_slider_container' ref={topMatchesSliderRef}>
                 {topMatchesDisplayItems.map((match, index) => (
                   match.viewAll ? (
                     <Link key="view-all-matches" to={match.to} className='match_slider slider_view_all_card matches_view_all' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                  <Link key={`topmatch-${match.id}-${index}`} to="/sports" className='match_slider' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                    <div className='match_slider_inner'>
-                      <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
-                        <div className='hd_match d-flex align-items-center gap-2'>
-                          <img loading="lazy" src="images/cricket_world.png" alt="match" />
-                          <h3>Match</h3>
+                    <Link key={`topmatch-${match.id}-${index}`} to="/sports" className='match_slider' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <div className='match_slider_inner'>
+                        <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
+                          <div className='hd_match d-flex align-items-center gap-2'>
+                            <img loading="lazy" src="images/cricket_world.png" alt="match" />
+                            <h3>Match</h3>
+                          </div>
+                          <ul>
+                            <li>MO</li>
+                            <li>BM</li>
+                            <li>F</li>
+                          </ul>
                         </div>
-                        <ul>
-                          <li>MO</li>
-                          <li>BM</li>
-                          <li>F</li>
-                        </ul>
+                        <p>{match.tournament}</p>
+                        <div className='match_info'>
+                          <p className='match_team'>{match.teams}</p>
+                          <span>{match.time}</span>
+                        </div>
+                        <div className='d-flex justify-content-between align-items-center gap-2'>
+                          <div className='view_matchlike'>
+                            <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
+                            <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
+                          </div>
+                          <div className='view_matchlike'>
+                            <button type="button" className='view_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
+                            <button type="button" className='like_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
+                          </div>
+                          <div className='view_matchlike'>
+                            <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
+                            <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
+                          </div>
+                        </div>
                       </div>
-                      <p>{match.tournament}</p>
-                      <div className='match_info'>
-                        <p className='match_team'>{match.teams}</p>
-                        <span>{match.time}</span>
-                      </div>
-                      <div className='d-flex justify-content-between align-items-center gap-2'>
-                        <div className='view_matchlike'>
-                          <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
-                          <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
-                        </div>
-                        <div className='view_matchlike'>
-                          <button type="button" className='view_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
-                          <button type="button" className='like_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
-                        </div>
-                        <div className='view_matchlike'>
-                          <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
-                          <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
+                    </Link>
                   )
                 ))}
               </div>
@@ -766,36 +796,36 @@ function LandingPage() {
               </div>
             </div>
 
-          <div
-            className="game_items_slider_wrapper"
-            onMouseDown={(e) => handleSliderMouseDown(e, {
-              sliderRef: betCasinoSliderRef,
-              getItemWidth: 178 + 18,
-              itemsPerSet: betCasinoItemsPerSet,
-              currentIndex: betCasinoIndex,
-              setIndex: setBetCasinoIndex,
-            })}
-            onClickCapture={handleSliderClickCapture}
-            style={{ cursor: 'grab' }}
-          >
-            <div className="game_items_slider mt-2" ref={betCasinoSliderRef}>
-              {betCasinoDisplayItems.map((item, index) => (
+            <div
+              className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: betCasinoSliderRef,
+                getItemWidth: 178 + 18,
+                itemsPerSet: betCasinoItemsPerSet,
+                currentIndex: betCasinoIndex,
+                setIndex: setBetCasinoIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
+            >
+              <div className="game_items_slider mt-2" ref={betCasinoSliderRef}>
+                {betCasinoDisplayItems.map((item, index) => (
                   item.viewAll ? (
                     <Link key="view-all-betcasino" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                  <Link key={`betcasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                    <div className='playbtn'>
-                      <img loading="lazy" src="images/playbtn.png" alt="game" />
-                    </div>
-                    {item.badge && (
-                      <div className="top_ads">
-                        {item.badge}
+                    <Link key={`betcasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <div className='playbtn'>
+                        <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
-                    )}
-                    <img loading="lazy" src={item.image} alt="game" />
-                  </Link>
+                      {item.badge && (
+                        <div className="top_ads">
+                          {item.badge}
+                        </div>
+                      )}
+                      <img loading="lazy" src={item.image} alt="game" />
+                    </Link>
                   )
                 ))}
               </div>
@@ -812,36 +842,36 @@ function LandingPage() {
               </div>
             </div>
 
-          <div
-            className="game_items_slider_wrapper"
-            onMouseDown={(e) => handleSliderMouseDown(e, {
-              sliderRef: liveCasinoSliderRef,
-              getItemWidth: 178 + 18,
-              itemsPerSet: liveCasinoItemsPerSet,
-              currentIndex: liveCasinoIndex,
-              setIndex: setLiveCasinoIndex,
-            })}
-            onClickCapture={handleSliderClickCapture}
-            style={{ cursor: 'grab' }}
-          >
-            <div className="game_items_slider mt-2" ref={liveCasinoSliderRef}>
-              {liveCasinoDisplayItems.map((item, index) => (
+            <div
+              className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: liveCasinoSliderRef,
+                getItemWidth: 178 + 18,
+                itemsPerSet: liveCasinoItemsPerSet,
+                currentIndex: liveCasinoIndex,
+                setIndex: setLiveCasinoIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
+            >
+              <div className="game_items_slider mt-2" ref={liveCasinoSliderRef}>
+                {liveCasinoDisplayItems.map((item, index) => (
                   item.viewAll ? (
                     <Link key="view-all-livecasino" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                  <Link key={`livecasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                    <div className='playbtn'>
-                      <img loading="lazy" src="images/playbtn.png" alt="game" />
-                    </div>
-                    {item.icon && (
-                      <div className="top_icon">
-                        <img loading="lazy" src={`images/${item.icon}.svg`} alt="game" />
+                    <Link key={`livecasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <div className='playbtn'>
+                        <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
-                    )}
-                    <img loading="lazy" src={item.image} alt="game" />
-                  </Link>
+                      {item.icon && (
+                        <div className="top_icon">
+                          <img loading="lazy" src={`images/${item.icon}.svg`} alt="game" />
+                        </div>
+                      )}
+                      <img loading="lazy" src={item.image} alt="game" />
+                    </Link>
                   )
                 ))}
               </div>
@@ -859,39 +889,39 @@ function LandingPage() {
               </div>
             </div>
 
-          <div
-            className="game_items_slider_wrapper"
-            onMouseDown={(e) => handleSliderMouseDown(e, {
-              sliderRef: highrollerSliderRef,
-              getItemWidth: 178 + 18,
-              itemsPerSet: highrollerItemsPerSet,
-              currentIndex: highrollerIndex,
-              setIndex: setHighrollerIndex,
-            })}
-            onClickCapture={handleSliderClickCapture}
-            style={{ cursor: 'grab' }}
-          >
-            <div className="game_items_slider mt-2" ref={highrollerSliderRef}>
-              {highrollerDisplayItems.map((item, index) => (
+            <div
+              className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: highrollerSliderRef,
+                getItemWidth: 178 + 18,
+                itemsPerSet: highrollerItemsPerSet,
+                currentIndex: highrollerIndex,
+                setIndex: setHighrollerIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
+            >
+              <div className="game_items_slider mt-2" ref={highrollerSliderRef}>
+                {highrollerDisplayItems.map((item, index) => (
                   item.viewAll ? (
                     <Link key="view-all-highroller" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                  <Link key={`highroller-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                    <div className='playbtn'>
-                      <img loading="lazy" src="images/playbtn.png" alt="game" />
-                    </div>
-                    {item.icon && (
-                      <div className="top_icon">
-                        <img loading="lazy" src={`images/${item.icon}.svg`} alt="game" />
+                    <Link key={`highroller-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <div className='playbtn'>
+                        <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
-                    )}
-                    <img loading="lazy" src={item.image} alt="game" />
-                  </Link>
+                      {item.icon && (
+                        <div className="top_icon">
+                          <img loading="lazy" src={`images/${item.icon}.svg`} alt="game" />
+                        </div>
+                      )}
+                      <img loading="lazy" src={item.image} alt="game" />
+                    </Link>
                   )
                 ))}
-            </div>
+              </div>
             </div>
           </div>
         </div>
@@ -923,108 +953,108 @@ function LandingPage() {
                 position: 'relative',
               }}
             >
-           <h2 className="crownbet_title">Sports Betting at CrownBet</h2>
-<p>CrownBet is a modern sports betting platform where you can wager on thousands of sports events across global markets. Live odds, pre-match options, fast payouts, and a seamless betting experience — that’s what you get here.</p>
-<p>Whether you follow cricket, football, basketball, or MMA, we cover it all. You can also explore esports tournaments happening around the clock. The platform operates 24/7, so there’s always something to bet on.</p>
+              <h2 className="crownbet_title">Sports Betting at CrownBet</h2>
+              <p>CrownBet is a modern sports betting platform where you can wager on thousands of sports events across global markets. Live odds, pre-match options, fast payouts, and a seamless betting experience — that’s what you get here.</p>
+              <p>Whether you follow cricket, football, basketball, or MMA, we cover it all. You can also explore esports tournaments happening around the clock. The platform operates 24/7, so there’s always something to bet on.</p>
 
-<h3 className="crownbet_heading">Why Choose CrownBet?</h3>
-<p>Online sports betting should be fast, secure, and easy to use. CrownBet is designed to deliver a smooth experience from deposit to withdrawal.</p>
-<ul className="crownbet_list crownbet_list_bullet">
-  <li><strong>Fast Processing:</strong> Quick deposits and efficient withdrawals</li>
-  <li><strong>Secure Platform:</strong> Advanced protection for user data and funds</li>
-  <li><strong>Competitive Odds:</strong> Strong pricing across major sports markets</li>
-  <li><strong>Wide Coverage:</strong> Thousands of events daily</li>
-  <li><strong>Mobile Friendly:</strong> Fully optimized for all devices</li>
-</ul>
-<p>The platform keeps everything straightforward so you can focus on the game.</p>
+              <h3 className="crownbet_heading">Why Choose CrownBet?</h3>
+              <p>Online sports betting should be fast, secure, and easy to use. CrownBet is designed to deliver a smooth experience from deposit to withdrawal.</p>
+              <ul className="crownbet_list crownbet_list_bullet">
+                <li><strong>Fast Processing:</strong> Quick deposits and efficient withdrawals</li>
+                <li><strong>Secure Platform:</strong> Advanced protection for user data and funds</li>
+                <li><strong>Competitive Odds:</strong> Strong pricing across major sports markets</li>
+                <li><strong>Wide Coverage:</strong> Thousands of events daily</li>
+                <li><strong>Mobile Friendly:</strong> Fully optimized for all devices</li>
+              </ul>
+              <p>The platform keeps everything straightforward so you can focus on the game.</p>
 
-<h3 className="crownbet_heading">Sports You Can Bet On</h3>
-<p>CrownBet covers major international and regional competitions across multiple sports.</p>
-<p>Cricket fans can follow tournaments like the Indian Premier League and global events such as the ICC Cricket World Cup.</p>
-<p>Football bettors can explore top leagues including the Premier League, La Liga, and Serie A.</p>
-<p>American sports are also available, with coverage of the NBA, NFL, and more.</p>
-<p>Combat sports, tennis tournaments, and horse racing markets are also part of the lineup.</p>
+              <h3 className="crownbet_heading">Sports You Can Bet On</h3>
+              <p>CrownBet covers major international and regional competitions across multiple sports.</p>
+              <p>Cricket fans can follow tournaments like the Indian Premier League and global events such as the ICC Cricket World Cup.</p>
+              <p>Football bettors can explore top leagues including the Premier League, La Liga, and Serie A.</p>
+              <p>American sports are also available, with coverage of the NBA, NFL, and more.</p>
+              <p>Combat sports, tennis tournaments, and horse racing markets are also part of the lineup.</p>
 
-<h3 className="crownbet_heading">Esports Betting</h3>
-<p>Esports continues to grow worldwide, and CrownBet offers markets on major competitive gaming tournaments.</p>
-<ul className="crownbet_list crownbet_list_dash">
-  <li><strong>Dota 2</strong> – International tournaments and pro circuits</li>
-  <li><strong>Counter-Strike 2</strong> – Major championships and league events</li>
-  <li><strong>League of Legends</strong> – Global and regional competitions</li>
-  <li><strong>StarCraft II</strong> – International competitive events</li>
-</ul>
-<p>With tournaments happening across different regions, esports betting markets remain active throughout the day.</p>
+              <h3 className="crownbet_heading">Esports Betting</h3>
+              <p>Esports continues to grow worldwide, and CrownBet offers markets on major competitive gaming tournaments.</p>
+              <ul className="crownbet_list crownbet_list_dash">
+                <li><strong>Dota 2</strong> – International tournaments and pro circuits</li>
+                <li><strong>Counter-Strike 2</strong> – Major championships and league events</li>
+                <li><strong>League of Legends</strong> – Global and regional competitions</li>
+                <li><strong>StarCraft II</strong> – International competitive events</li>
+              </ul>
+              <p>With tournaments happening across different regions, esports betting markets remain active throughout the day.</p>
 
-<h3 className="crownbet_heading">Virtual Sports Betting</h3>
-<p>Virtual sports provide fast-paced action when live matches aren’t available. These simulated events deliver quick results and run 24/7.</p>
-<p>Options include virtual football, basketball, and other popular formats designed for short-session entertainment.</p>
+              <h3 className="crownbet_heading">Virtual Sports Betting</h3>
+              <p>Virtual sports provide fast-paced action when live matches aren’t available. These simulated events deliver quick results and run 24/7.</p>
+              <p>Options include virtual football, basketball, and other popular formats designed for short-session entertainment.</p>
 
-<h3 className="crownbet_heading">Understanding Betting Markets</h3>
-<p>If you're new to sports betting, here’s how the main bet types work:</p>
+              <h3 className="crownbet_heading">Understanding Betting Markets</h3>
+              <p>If you're new to sports betting, here’s how the main bet types work:</p>
 
-<div className="crownbet_table_wrap">
-  <table className="crownbet_table">
-    <thead>
-      <tr>
-        <th>Market Type</th>
-        <th>What It Means</th>
-        <th>Example</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>Match Winner</td><td>Pick who wins the match</td><td>Team A to beat Team B</td></tr>
-      <tr><td>Handicap</td><td>Adjusted margin betting</td><td>Team A -1.5</td></tr>
-      <tr><td>Over/Under</td><td>Total score above or below a line</td><td>Over 2.5 goals</td></tr>
-      <tr><td>1X2</td><td>Home win, draw, or away win</td><td>Common in football</td></tr>
-      <tr><td>Prop Bets</td><td>Specific in-game events</td><td>First goalscorer</td></tr>
-      <tr><td>Futures</td><td>Long-term outcomes</td><td>Tournament winner</td></tr>
-    </tbody>
-  </table>
-</div>
+              <div className="crownbet_table_wrap">
+                <table className="crownbet_table">
+                  <thead>
+                    <tr>
+                      <th>Market Type</th>
+                      <th>What It Means</th>
+                      <th>Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Match Winner</td><td>Pick who wins the match</td><td>Team A to beat Team B</td></tr>
+                    <tr><td>Handicap</td><td>Adjusted margin betting</td><td>Team A -1.5</td></tr>
+                    <tr><td>Over/Under</td><td>Total score above or below a line</td><td>Over 2.5 goals</td></tr>
+                    <tr><td>1X2</td><td>Home win, draw, or away win</td><td>Common in football</td></tr>
+                    <tr><td>Prop Bets</td><td>Specific in-game events</td><td>First goalscorer</td></tr>
+                    <tr><td>Futures</td><td>Long-term outcomes</td><td>Tournament winner</td></tr>
+                  </tbody>
+                </table>
+              </div>
 
-<p>Live betting allows you to place wagers while matches are in progress, with odds updating in real time.</p>
+              <p>Live betting allows you to place wagers while matches are in progress, with odds updating in real time.</p>
 
-<h3 className="crownbet_heading">How to Start Betting</h3>
-<ol className="crownbet_list crownbet_list_numbered">
-  <li>Create an account</li>
-  <li>Add funds to your balance</li>
-  <li>Browse sports and select an event</li>
-  <li>Add selections to your bet slip</li>
-  <li>Enter your stake and confirm</li>
-</ol>
-<p>Single bets are simple and straightforward, while accumulator bets combine multiple selections for higher potential returns.</p>
+              <h3 className="crownbet_heading">How to Start Betting</h3>
+              <ol className="crownbet_list crownbet_list_numbered">
+                <li>Create an account</li>
+                <li>Add funds to your balance</li>
+                <li>Browse sports and select an event</li>
+                <li>Add selections to your bet slip</li>
+                <li>Enter your stake and confirm</li>
+              </ol>
+              <p>Single bets are simple and straightforward, while accumulator bets combine multiple selections for higher potential returns.</p>
 
-<h3 className="crownbet_heading">Bonuses and Promotions</h3>
-<p>CrownBet offers regular promotions to enhance your experience:</p>
-<ul className="crownbet_list crownbet_list_tick">
-  <li>Welcome bonuses</li>
-  <li>Reload offers</li>
-  <li>Cashback promotions</li>
-  <li>Special event boosts</li>
-</ul>
-<p>Check the promotions page regularly for the latest offers.</p>
+              <h3 className="crownbet_heading">Bonuses and Promotions</h3>
+              <p>CrownBet offers regular promotions to enhance your experience:</p>
+              <ul className="crownbet_list crownbet_list_tick">
+                <li>Welcome bonuses</li>
+                <li>Reload offers</li>
+                <li>Cashback promotions</li>
+                <li>Special event boosts</li>
+              </ul>
+              <p>Check the promotions page regularly for the latest offers.</p>
 
-<h3 className="crownbet_heading">Smart Betting Tips</h3>
-<ul className="crownbet_list crownbet_list_tick">
-  <li>Focus on sports you understand well</li>
-  <li>Manage your bankroll carefully</li>
-  <li>Start with smaller stakes</li>
-  <li>Avoid emotional betting decisions</li>
-  <li>Analyze live odds before placing in-play bets</li>
-</ul>
+              <h3 className="crownbet_heading">Smart Betting Tips</h3>
+              <ul className="crownbet_list crownbet_list_tick">
+                <li>Focus on sports you understand well</li>
+                <li>Manage your bankroll carefully</li>
+                <li>Start with smaller stakes</li>
+                <li>Avoid emotional betting decisions</li>
+                <li>Analyze live odds before placing in-play bets</li>
+              </ul>
 
-<h3 className="crownbet_heading">Why CrownBet Stands Out</h3>
-<ul className="crownbet_list crownbet_list_tick">
-  <li>Wide variety of sports and markets</li>
-  <li>Fast and reliable payouts</li>
-  <li>Secure and user-friendly interface</li>
-  <li>24/7 customer support</li>
-  <li>Optimized for desktop and mobile</li>
-</ul>
+              <h3 className="crownbet_heading">Why CrownBet Stands Out</h3>
+              <ul className="crownbet_list crownbet_list_tick">
+                <li>Wide variety of sports and markets</li>
+                <li>Fast and reliable payouts</li>
+                <li>Secure and user-friendly interface</li>
+                <li>24/7 customer support</li>
+                <li>Optimized for desktop and mobile</li>
+              </ul>
 
-<h3 className="crownbet_heading">Final Thoughts</h3>
-<p>CrownBet delivers a complete online sports betting experience with strong market coverage, competitive odds, and a smooth interface.</p>
-<p>From cricket and football to esports and virtual sports, the platform ensures continuous betting opportunities throughout the day. Always bet responsibly and make informed decisions.</p>
+              <h3 className="crownbet_heading">Final Thoughts</h3>
+              <p>CrownBet delivers a complete online sports betting experience with strong market coverage, competitive odds, and a smooth interface.</p>
+              <p>From cricket and football to esports and virtual sports, the platform ensures continuous betting opportunities throughout the day. Always bet responsibly and make informed decisions.</p>
             </div>
             <button
               type="button"
