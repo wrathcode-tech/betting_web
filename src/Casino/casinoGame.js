@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import './casino.css'
-import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function CasinoGame() {
@@ -253,7 +252,6 @@ function CasinoGame() {
 
     return (
         <>
-            <Header />
             <div className='dashboard_page'>
             <div className='casino_outer'>
                 <div className='container'>

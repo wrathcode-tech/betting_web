@@ -17,7 +17,7 @@
     position: fixed;
     top: 56px;
     left: -100%;
-    width: 200px;
+    width: 280px;
     height: calc(100vh - 56px);
     background-color: #16202c;
     z-index: 1000;
@@ -69,12 +69,188 @@
     left: 0;
 }
 
+/* Desktop: sidebar always visible – either expanded or collapsed (icons only) */
+@media (min-width: 992px) {
+    .sidebar {
+        left: 0;
+        width: 231px;
+    }
+    .sidebar.sidebar_collapsed {
+        width: 64px;
+        min-width: 64px;
+        cursor: pointer;
+        overflow: visible;
+    }
+    .sidebar.sidebar_collapsed .sidebar_content {
+        overflow: visible;
+    }
+    .sidebar.sidebar_collapsed .sidebar_nav {
+        overflow: visible;
+    }
+    .sidebar.sidebar_collapsed .sidebar_header {
+        padding: 12px 0 0;
+    }
+    .sidebar.sidebar_collapsed .sidebar_close_btn.desktop_only {
+        display: none !important;
+    }
+    .sidebar.sidebar_collapsed .sidebar_search,
+    .sidebar.sidebar_collapsed .sidebar_search_input {
+        display: none !important;
+    }
+    .sidebar.sidebar_collapsed .sidebar_menu_item a i.ri-arrow-down-s-line,
+    .sidebar.sidebar_collapsed .sidebar_menu_item a i.ri-arrow-up-s-line {
+        display: none !important;
+    }
+    .sidebar.sidebar_collapsed .deposit_withdrawal_btn,
+    .sidebar.sidebar_collapsed .setting_hdr {
+        display: none !important;
+    }
+    /* Collapsed: submenu as flyout on hover – no gap so user can move mouse to click */
+    .sidebar.sidebar_collapsed .sidebar_menu_item {
+        position: relative;
+    }
+    .sidebar.sidebar_collapsed .sidebar_submenu {
+        display: none !important;
+        position: absolute;
+        left: 64px;
+        top: 0;
+        margin-left: -4px;
+        min-width: 220px;
+        max-height: 80vh;
+        overflow-y: auto;
+        background: #16202c;
+        border: 1px solid #1a2332;
+        border-radius: 0 8px 8px 0;
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        z-index: 1001;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+    }
+    .sidebar.sidebar_collapsed .sidebar_menu_item:hover .sidebar_submenu {
+        display: block !important;
+        pointer-events: auto;
+    }
+    .sidebar.sidebar_collapsed .sidebar_submenu .sidebar_flyout_header {
+        display: block;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        white-space: nowrap;
+        text-align: left;
+    }
+    .sidebar.sidebar_collapsed .sidebar_submenu li a {
+        pointer-events: auto;
+        cursor: pointer;
+        padding: 12px 16px;
+        justify-content: flex-start;
+    }
+    .sidebar.sidebar_collapsed .sidebar_menu_item a {
+        justify-content: flex-start;
+        padding: 12px 10px 12px 14px;
+    }
+    /* Collapsed: show only icon inside span, hide text */
+    .sidebar.sidebar_collapsed .sidebar_menu_item a span:not(.sidebar_collapsed_label) {
+        display: flex !important;
+        justify-content: flex-start;
+        width: 28px;
+        overflow: hidden;
+    }
+    .sidebar.sidebar_collapsed .sidebar_menu_item a span i:not(.ri-arrow-down-s-line):not(.ri-arrow-up-s-line) {
+        display: inline-block !important;
+        font-size: 22px;
+        width: 24px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    /* Collapsed: items with only text (e.g. Other) show remix icon */
+    .sidebar.sidebar_collapsed .sidebar_menu_item a span i {
+        display: block !important;
+        margin: 0 auto;
+    }
+    .sidebar.sidebar_collapsed .sidebar_menu_item a span {
+        font-size: 0;
+    }
+    .sidebar.sidebar_collapsed .sidebar_menu_item a span i {
+        font-size: 20px !important;
+    }
+    /* Direct links: collapsed label flyout (dusri screen) */
+    .sidebar_collapsed_label {
+        display: none;
+    }
+    .sidebar.sidebar_collapsed .sidebar_direct_link {
+        position: relative;
+    }
+    .sidebar.sidebar_collapsed .sidebar_direct_link .sidebar_collapsed_label {
+        display: none;
+        position: absolute;
+        left: 64px;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-left: -4px;
+        padding: 8px 14px;
+        background: #1a2332;
+        border: 1px solid #1a2332;
+        border-radius: 0 8px 8px 0;
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+        white-space: nowrap;
+        z-index: 1001;
+        pointer-events: none;
+    }
+    .sidebar.sidebar_collapsed .sidebar_direct_link:hover .sidebar_collapsed_label {
+        display: block;
+    }
+    .sidebar_overlay {
+        display: none !important;
+    }
+}
+
 .sidebar_header {
     padding: 40px 15px 0px;
     display: flex;
     align-items: center;
     gap: 10px;
     flex-direction: column;
+    position: relative;
+}
+
+.sidebar_close_btn.desktop_only,
+.sidebar_expand_btn.desktop_only {
+    display: none;
+}
+@media (min-width: 992px) {
+    .sidebar_close_btn.desktop_only {
+        display: flex;
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 22px;
+    }
+    .sidebar_expand_btn.desktop_only {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 12px;
+        left: 14px;
+        right: auto;
+        font-size: 22px;
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        padding: 4px;
+    }
+    .sidebar_expand_btn.desktop_only:hover {
+        color: #E36F2B;
+    }
 }
 
 .sidebar_search {
@@ -217,7 +393,7 @@
     flex-direction: row-reverse;
     align-items: center;
     gap: 10px;
-    padding: 12px 20px;
+    padding: 12px 20px 12px 16px;
     color: #ffffffd6;
     text-decoration: none;
     font-size: 12px;
@@ -225,8 +401,8 @@
     transition: all 0.3s;
 }
 
-.sidebar_menu_item.active span img {
-    filter: brightness(0) saturate(100%) invert(28%) sepia(98%) saturate(2000%) hue-rotate(350deg) brightness(0.95) contrast(1.2);
+.sidebar_menu_item.active a span i:not(.ri-arrow-down-s-line):not(.ri-arrow-up-s-line) {
+    color: #f97a31;
 }
 
 .sidebar_menu_item a:hover {
@@ -252,6 +428,28 @@
     gap: 6px;
 }
 
+/* Direct links (no submenu) – dusri screen / alternative look */
+.sidebar_menu_item.sidebar_direct_link a {
+    padding-left: 18px;
+    border-left: 3px solid transparent;
+}
+.sidebar_menu_item.sidebar_direct_link a:hover,
+.sidebar_menu_item.sidebar_direct_link.active a {
+    border-left-color: rgba(227, 111, 43, 0.5);
+    background: rgba(227, 111, 43, 0.06);
+}
+.sidebar_menu_item.sidebar_direct_link a span:first-of-type i {
+    color: #ffffff99;
+}
+.sidebar_menu_item.sidebar_direct_link a:hover span:first-of-type i,
+.sidebar_menu_item.sidebar_direct_link.active a span:first-of-type i {
+    color: #f97a31;
+}
+/* Hide collapsed label when sidebar is expanded */
+.sidebar:not(.sidebar_collapsed) .sidebar_collapsed_label {
+    display: none !important;
+}
+
 .sidebar_submenu {
     list-style: none;
     padding: 0;
@@ -269,13 +467,23 @@
     width: 100%;
 }
 
+.sidebar_flyout_header {
+    display: none;
+}
+
 .sidebar_submenu li a {
     flex-direction: row;
     display: flex;
+    align-items: center;
+    gap: 10px;
     padding: 12px 20px;
     color: #ffffff75;
     text-decoration: none;
     transition: all 0.3s;
+}
+.sidebar_submenu li a i {
+    font-size: 18px;
+    flex-shrink: 0;
 }
 
 .sidebar_submenu li a:hover {

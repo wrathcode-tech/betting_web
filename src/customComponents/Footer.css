@@ -1,8 +1,10 @@
 /* Footer improvements – cleaner layout, spacing, typography */
 
 footer {
-  background: linear-gradient(180deg, #0d131c 0%, #0a0e14 100%);
+  background:#19212c;
   padding: 0 0 24px;
+  padding-left: 0;
+  padding-right: 0;
   position: relative;
 }
 
@@ -22,10 +24,13 @@ footer {
   object-position: center top;
 }
 
-footer .container {
-  max-width: 1140px;
-  margin: 0 auto;
-  padding: 24px 16px 0;
+footer .container,
+footer .container-fluid {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Top strip – Secure & Private */
@@ -58,13 +63,33 @@ footer .container {
 
 /* Main footer block */
 .footermain {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 24px;
   padding-top: 24px;
 }
 
+@media (min-width: 992px) {
+  .footermain {
+    display: block;
+  }
+}
+
 .footer_description_container {
   margin-bottom: 16px;
+}
+
+/* Landing page section (p_space_footer) – Secure & Private + description + Show more (desktop & mobile) */
+.landing_footer_section {
+  padding: 24px 20px 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 24px;
+}
+.landing_footer_section .footer_description_container {
+  margin-top: 20px;
+}
+@media (min-width: 992px) {
+  .landing_footer_section .footer_description_content {
+    max-width: 100%;
+  }
 }
 
 .footer_description_content h3 {
@@ -77,7 +102,8 @@ footer .container {
 
 .footer_description_content p {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #a7b5ca;
+  font-weight: 500;
   line-height: 1.6;
   margin-bottom: 12px;
 }
@@ -85,13 +111,120 @@ footer .container {
 .footer_description_content ul {
   padding-left: 18px;
   margin: 0 0 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #a7b5ca;
+  font-weight: 500;
   font-size: 14px;
   line-height: 1.7;
 }
 
 .footer_description_content ul li {
   margin-bottom: 4px;
+}
+
+/* CrownBet crypto sports content – creative UI */
+.crownbet_content {
+  max-width: 100%;
+}
+.crownbet_title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 16px;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(249, 122, 49, 0.4);
+}
+.crownbet_heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f97a31;
+  margin: 24px 0 14px;
+  line-height: 1.35;
+}
+.crownbet_content p {
+  margin-bottom: 14px;
+}
+.crownbet_content p:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Lists – dotted circle only, extra space */
+.crownbet_list {
+  padding-left: 22px;
+  margin: 14px 0 18px;
+  list-style-type: circle;
+  color: #a7b5ca;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.crownbet_list li {
+  margin-bottom: 10px;
+}
+.crownbet_list li::before {
+  display: none;
+}
+.crownbet_list_bullet,
+.crownbet_list_dash,
+.crownbet_list_numbered,
+.crownbet_list_tick {
+  list-style-type: circle;
+  padding-left: 22px;
+}
+.crownbet_list_numbered {
+  list-style-type: decimal;
+}
+.crownbet_list strong {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Table – simple plain */
+.crownbet_table_wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 18px 0;
+}
+.crownbet_table {
+  width: 100%;
+  min-width: 320px;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: transparent;
+}
+.crownbet_table th,
+.crownbet_table td {
+  padding: 10px 14px;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+.crownbet_table th {
+  font-weight: 600;
+  color: #fff;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.crownbet_table td:first-child {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+@media (max-width: 767px) {
+  .crownbet_title {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  .crownbet_heading {
+    font-size: 15px;
+    margin-top: 18px;
+  }
+  .crownbet_table th,
+  .crownbet_table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
 }
 
 .footer_show_more_btn {
@@ -143,9 +276,19 @@ footer .container {
 /* Mobile footer block */
 .mobilebgfooter {
   background: rgba(22, 33, 44, 0.6);
-  border-radius: 12px;
-  padding: 20px 18px;
+  border-radius: 0;
+  padding: 20px 0;
   margin-top: 20px;
+}
+
+@media (min-width: 992px) {
+  .mobilebgfooter {
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    margin-top: 0;
+    border: none;
+  }
 }
 
 .footer_disclaimer {
@@ -157,8 +300,21 @@ footer .container {
 
 .footer_copyright {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: #55657e;
+  font-weight: 500;
   margin: 12px 0 0;
+}
+
+@media (min-width: 992px) {
+  .footer_disclaimer {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #55657e;
+    font-weight: 500;
+  }
+  .footer_copyright {
+    margin-top: 12px;
+  }
 }
 
 /* Trust icons row */
@@ -181,13 +337,14 @@ footer .container {
 /* Mobile accordion */
 .footer_mobile_menu_heading {
   padding: 12px 0 !important;
-  font-size: 13px !important;
-  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 12px !important;
+  color: #a7b5ca !important;
 }
 
 .footer_mobile_menu_link {
-  padding: 8px 0 !important;
-  font-size: 14px !important;
+  padding: 5px 0 !important;
+  font-size: 12px !important;
+  font-weight: 600;
 }
 
 .footer_mobile_menu_content.is-open {
@@ -215,9 +372,9 @@ footer .container {
 }
 
 @media (max-width: 768px) {
-  footer .container {
-    padding-left: 24px;
-    padding-right: 24px;
+  footer .container,
+  footer .container-fluid {
+    padding: 0;
   }
 
   .p_space_footer {
@@ -238,9 +395,4 @@ footer .container {
     padding: 6px 0 !important;
     font-size: 12px !important;
   }
-
-  footer .container {
-    padding: 5px 16px 0;
-} 
-
 }

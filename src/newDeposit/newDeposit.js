@@ -1,6 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import '../customComponents/Deposit.css';
 import './newDeposit.css';
@@ -67,7 +66,6 @@ function NewDeposit() {
 
   return (
     <>
-      <Header />
       <div className="new_deposit_page">
         <div className="container">
           <div className='top_bar_hd'>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './referralProgram.css'
-import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function ReferralProgram() {
@@ -10,7 +9,6 @@ function ReferralProgram() {
 
     return (
         <>
-            <Header />
             <div className='dashboard_page removebgsports'>
                 <div className='container'>
                     <div className='referral_program_section'>

@@ -1,6 +1,5 @@
 import React from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
-import Header from '../customComponents/Header'
 import Footer from '../customComponents/footer'
 import MobileMenu from '../customComponents/MobileMenu'
 import { CASINO_CATEGORIES } from './casinoCategoryConfig'
@@ -16,7 +15,6 @@ export default function CasinoCategoryPage() {
 
   return (
     <div className="casino_category_page_wrapper">
-      <Header />
       <div className="dashboard_page">
         <div className="casino_outer">
           <div className="container">

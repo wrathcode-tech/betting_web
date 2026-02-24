@@ -1,12 +1,10 @@
 import React from 'react'
 import './profile.css'
-import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function ProfilePage() {
   return (
     <>
-    <Header />
       <div className='dashboard_page'>
         <div className='container'>
           <div className='profile_section'>

@@ -1,8 +1,10 @@
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop from "./ScrollToTop";
+import { SidebarProvider } from "./context/SidebarContext";
+import Layout from "./Layout";
 
-// Lazy load pages – only the current route’s chunk loads (faster initial load)
+// Lazy load pages – only the current route's chunk loads (faster initial load)
 const LandingPage = lazy(() => import("./LandingPage/LandingPage"));
 const ProfilePage = lazy(() => import("./ProfilePage"));
 const CasinoGame = lazy(() => import("./Casino/casinoGame"));
@@ -29,26 +31,30 @@ function PageFallback() {
 const Routing = () => {
   return (
     <Router>
-      <ScrollToTop />
-      <Suspense fallback={<PageFallback />}>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/casino" element={<CasinoGame />} />
-          <Route path="/casino/category/:categoryId" element={<CasinoCategoryPage />} />
-          <Route path="/game" element={<GamePlay />} />
-          <Route path="/sports" element={<SportsGame />} />
-          <Route path="/transactions" element={<ProfileTransactions />} />
-          <Route path="/cricket" element={<CricketDetail />} />
-          <Route path="/referral" element={<ReferralProgram />} />
-          <Route path="/rank" element={<RankSystem />} />
-          <Route path="/deposit" element={<NewDeposit />} />
-          <Route path="/withdrawal" element={<NewWithdrawal />} />
-          <Route path="/add-account" element={<AddAccount />} />
-          <Route path="/add-bank" element={<AddBank />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+      <SidebarProvider>
+        <ScrollToTop />
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/casino" element={<CasinoGame />} />
+              <Route path="/casino/category/:categoryId" element={<CasinoCategoryPage />} />
+              <Route path="/game" element={<GamePlay />} />
+              <Route path="/sports" element={<SportsGame />} />
+              <Route path="/transactions" element={<ProfileTransactions />} />
+              <Route path="/cricket" element={<CricketDetail />} />
+              <Route path="/referral" element={<ReferralProgram />} />
+              <Route path="/rank" element={<RankSystem />} />
+              <Route path="/deposit" element={<NewDeposit />} />
+              <Route path="/withdrawal" element={<NewWithdrawal />} />
+              <Route path="/add-account" element={<AddAccount />} />
+              <Route path="/add-bank" element={<AddBank />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </Suspense>
+      </SidebarProvider>
     </Router>
   );
 };

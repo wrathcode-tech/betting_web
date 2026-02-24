@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import '../newDeposit/newDeposit.css';
 import './addAccount.css';
@@ -52,7 +51,6 @@ function AddAccount() {
 
   return (
     <>
-      <Header />
       <div className="new_add_account_page new_deposit_page">
         <div className="container">
           <div className="top_bar_hd">

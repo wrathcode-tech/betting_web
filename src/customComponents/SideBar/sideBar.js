@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useSidebar } from '../../context/SidebarContext'
 import './sidebar.css'
 
 export default function SideBar({ isOpen, onClose }) {
+  const { setSidebarOpen } = useSidebar()
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const sidebarRef = useRef(null);
+  const isCollapsed = !isOpen
 
   const toggleSubmenu = (menuName) => {
     setOpenSubmenu(openSubmenu === menuName ? null : menuName);
@@ -33,8 +36,17 @@ export default function SideBar({ isOpen, onClose }) {
   return (
     <>
       <div className={`sidebar_overlay ${isOpen ? 'active' : ''}`} onClick={onClose}></div>
-      <div ref={sidebarRef} className={`sidebar ${isOpen ? 'sidebar_open' : ''}`}>
+      <div ref={sidebarRef} className={`sidebar ${isOpen ? 'sidebar_open' : 'sidebar_collapsed'}`}>
         <div className="sidebar_header">
+          {isCollapsed ? (
+            <button type="button" className="sidebar_expand_btn desktop_only" onClick={() => setSidebarOpen(true)} aria-label="Expand sidebar">
+              <i className="ri-menu-line"></i>
+            </button>
+          ) : (
+            <button type="button" className="sidebar_close_btn desktop_only" onClick={onClose} aria-label="Close sidebar">
+              <i className="ri-close-line"></i>
+            </button>
+          )}
           <div className="sidebar_search">
             <input type="text" placeholder="Search" className="sidebar_search_input" />
             <i className="ri-search-line"></i>
@@ -62,83 +74,85 @@ export default function SideBar({ isOpen, onClose }) {
               <li className={`sidebar_menu_item ${openSubmenu === 'casino' ? 'active' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('casino'); }}>
                   <i className={openSubmenu === 'casino' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
-                  <span><img src="/images/casino_icon.svg" alt="casino" />Casino</span>
+                  <span><i className="ri-poker-spades-fill" aria-hidden />Casino</span>
                 </a>
-                {openSubmenu === 'casino' && (
-                  <ul className="sidebar_submenu">
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/original_icon.svg" alt="originals" />Originals</Link></li>
-                    <li><Link to="/game" onClick={onClose}><img src="/images/slots_icon.svg" alt="slots" />Slots</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/livecasion_icon.svg" alt="live casino" />Live Casino</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/referral_icon.svg" alt="table game" />Table Game</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/setting_icon.svg" alt="slots" />Providers</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/original_icon.svg" alt="slots" />Hot Picks</Link></li>
-                    <li><Link to="/game" onClick={onClose}><img src="/images/slots_icon.svg" alt="slots" />Exclusives</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/livecasion_icon.svg" alt="slots" />Buy Feature</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/referral_icon.svg" alt="slots" />New Releases</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/setting_icon.svg" alt="slots" />Highroller Hall</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/original_icon.svg" alt="slots" />Game Shows</Link></li>
-                    <li><Link to="/game" onClick={onClose}><img src="/images/slots_icon.svg" alt="slots" />Roulette</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/livecasion_icon.svg" alt="slots" />Blackjack</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="/images/referral_icon.svg" alt="slots" />Baccarat</Link></li>
-                    <li><Link to="/game" onClick={onClose}><img src="/images/slots_icon.svg" alt="slots" />Drops & Wins</Link></li>
+                <ul className="sidebar_submenu">
+                    <li className="sidebar_flyout_header">Casino</li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-gamepad-line" aria-hidden />Originals</Link></li>
+                    <li><Link to="/game" onClick={onClose}><i className="ri-dice-5-fill" aria-hidden />Slots</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-live-line" aria-hidden />Live Casino</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-table-line" aria-hidden />Table Game</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-apps-line" aria-hidden />Providers</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-fire-fill" aria-hidden />Hot Picks</Link></li>
+                    <li><Link to="/game" onClick={onClose}><i className="ri-star-fill" aria-hidden />Exclusives</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-shopping-bag-line" aria-hidden />Buy Feature</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-new-folder-line" aria-hidden />New Releases</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-vip-crown-line" aria-hidden />Highroller Hall</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-tv-line" aria-hidden />Game Shows</Link></li>
+                    <li><Link to="/game" onClick={onClose}><i className="ri-dice-5-fill" aria-hidden />Roulette</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-spades-fill" aria-hidden />Blackjack</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><i className="ri-diamond-fill" aria-hidden />Baccarat</Link></li>
+                    <li><Link to="/game" onClick={onClose}><i className="ri-gift-line" aria-hidden />Drops & Wins</Link></li>
                   </ul>
-                )}
               </li>
               <li className={`sidebar_menu_item ${openSubmenu === 'sports' ? 'active' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('sports'); }}>
                   <i className={openSubmenu === 'sports' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
-                  <span><img src="/images/sports_icon.svg" alt="sports" />Sports</span>
+                  <span><i className="ri-basketball-fill" aria-hidden />Sports</span>
                 </a>
-                {openSubmenu === 'sports' && (
-                  <ul className="sidebar_submenu">
+                <ul className="sidebar_submenu">
+                    <li className="sidebar_flyout_header">Sports</li>
                     <li><Link to="/sports" onClick={onClose}>Football</Link></li>
                     <li><Link to="/sports" onClick={onClose}>Basketball</Link></li>
                     <li><Link to="/sports" onClick={onClose}>Tennis</Link></li>
                     <li><Link to="/cricket" onClick={onClose}>Cricket</Link></li>
                     <li><Link to="/sports" onClick={onClose}>Horse Racing</Link></li>
                   </ul>
-                )}
               </li>
               <li className={`sidebar_menu_item ${openSubmenu === 'other' ? 'active' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('other'); }}>
                   <i className={openSubmenu === 'other' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
-                  <span>Other</span>
+                  <span><i className="ri-more-2-line" aria-hidden style={{ fontSize: '20px' }} />Other</span>
                 </a>
-                {openSubmenu === 'other' && (
-                  <ul className="sidebar_submenu">
+                <ul className="sidebar_submenu">
+                    <li className="sidebar_flyout_header">Other</li>
                     <li><Link to="/sports" onClick={onClose}>Virtual Sports</Link></li>
                     <li><Link to="/game" onClick={onClose}>Lottery</Link></li>
                     <li><Link to="/game" onClick={onClose}>Poker</Link></li>
                     <li><Link to="/game" onClick={onClose}>Bingo</Link></li>
                   </ul>
-                )}
               </li>
-              <li className="sidebar_menu_item">
+              <li className="sidebar_menu_item sidebar_direct_link">
                 <Link to="/" onClick={onClose}>
-                  <span><img src="/images/promotions_icon.svg" alt="promotions" />Promotions</span>
+                  <span><i className="ri-megaphone-line" aria-hidden />Promotions</span>
+                  <span className="sidebar_collapsed_label">Promotions</span>
                 </Link>
               </li>
-              <li className="sidebar_menu_item">
+              <li className="sidebar_menu_item sidebar_direct_link">
                 <Link to="/referral" onClick={onClose}>
-                  <span><img src="/images/referral_icon.svg" alt="referral" />Referral</span>
+                  <span><i className="ri-user-shared-line" aria-hidden />Referral</span>
+                  <span className="sidebar_collapsed_label">Refer & Earn</span>
                 </Link>
               </li>
-              <li className="sidebar_menu_item">
+              <li className="sidebar_menu_item sidebar_direct_link">
                 <Link to="/transactions" onClick={onClose}>
-                  <span><img src="/images/referral_icon.svg" alt="transactions" />Transactions</span>
+                  <span><i className="ri-file-list-3-line" aria-hidden />Transactions</span>
+                  <span className="sidebar_collapsed_label">Transactions</span>
                 </Link>
               </li>
-              <li className="sidebar_menu_item">
+              <li className="sidebar_menu_item sidebar_direct_link">
                 <Link to="/rank" onClick={onClose}>
-                  <span><img src="/images/referral_icon.svg" alt="referral" />VIP Club</span>
+                  <span><i className="ri-vip-crown-line" aria-hidden />VIP Club</span>
+                  <span className="sidebar_collapsed_label">VIP Club</span>
                 </Link>
               </li>
-              <li className="sidebar_menu_item">
+              <li className="sidebar_menu_item sidebar_direct_link">
                 <Link to="/" onClick={onClose}>
-                  <span><img src="/images/referral_icon.svg" alt="referral" />News</span>
+                  <span><i className="ri-newspaper-line" aria-hidden />News</span>
+                  <span className="sidebar_collapsed_label">News</span>
                 </Link>
               </li>
-              <li className="sidebar_menu_item">
+              <li className="sidebar_menu_item sidebar_direct_link">
                 <a 
                   href="#!" 
                   onClick={(e) => {
@@ -147,16 +161,17 @@ export default function SideBar({ isOpen, onClose }) {
                     window.dispatchEvent(new CustomEvent('openChat'))
                   }}
                 >
-                  <span><img src="/images/referral_icon.svg" alt="referral" />Live Support</span>
+                  <span><i className="ri-customer-service-2-line" aria-hidden />Live Support</span>
+                  <span className="sidebar_collapsed_label">Live Support</span>
                 </a>
               </li>
               
             </ul>
           </nav>
           <div className="setting_hdr">
-            <img src="/images/en.png" alt="language" />
+            <i className="ri-global-line" aria-hidden />
             <div className="setting_icon">
-              <img src="/images/settingicon.svg" alt="setting" />
+              <i className="ri-settings-3-line" aria-hidden />
             </div>
           </div>
           

@@ -69,7 +69,6 @@ const FOOTER_MOBILE_MENU = [
 function Footer() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
-    const [showMore, setShowMore] = useState(false);
     const [openSection, setOpenSection] = useState(null);
 
     const toggleSection = (id) => {
@@ -82,62 +81,9 @@ function Footer() {
             {/* <div className="footer_vector_top" aria-hidden="true">
                 <img src="/images/bottom_img.svg" alt="" />
             </div> */}
-        <div className='container'>
-
-        <div className='p_space_footer'>
-
-          <div className='d-flex topfooter'>
-            <div className='secure_img'>
-              <img src="/images/secure.png" alt="game" />
-            </div>
-            <div className='safe_cnt'>
-              <h5>Secure &amp; Private</h5>
-              <p>Your data is protected with encryption. Bet and play with a secure, private connection.</p>
-            </div>
-          </div>
-
-          </div>
-          
+        <div className='container-fluid'>
 
           <div className='footermain'>
-
-<div className='p_space_footer'>
-
-<div className="footer_description_container">
-              <div
-                className="footer_description_content"
-                style={{
-                  maxHeight: showMore ? 'none' : '200px',
-                  overflow: 'hidden',
-                  transition: 'max-height 0.35s ease-out',
-                  position: 'relative',
-                }}
-              >
-                <h3>Online Casino &amp; Sports Betting Platform</h3>
-
-                <p>Our platform offers a secure and smooth betting experience with multiple payment options. Place bets on casino games, slots, live casino, and sports—with quick deposits and withdrawals so you can focus on the game.</p>
-
-                <ul>
-                  <li>Slots, live casino, sports betting and more;</li>
-                  <li>Fast deposits and payouts;</li>
-                  <li>Secure transactions and encrypted data;</li>
-                  <li>Rank system, referrals and promotions;</li>
-                  <li>Support when you need it.</li>
-                </ul>
-              </div>
-
-              <button
-                type="button"
-                className="footer_show_more_btn"
-                onClick={() => setShowMore((prev) => !prev)}
-                aria-expanded={showMore}
-              >
-                {showMore ? 'Show Less' : 'Show More'}
-                <i className={showMore ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'} />
-              </button>
-            </div>
-            </div>
-
 
             <div className='mobilebgfooter'>
 
@@ -177,7 +123,7 @@ function Footer() {
                 })}
             </nav>
 
-            <div className="footer_quick_links d-flex flex-wrap align-items-center gap-2 gap-md-3 mt-3" style={{ fontSize: '14px' }}>
+            {/* <div className="footer_quick_links d-flex flex-wrap align-items-center gap-2 gap-md-3 mt-3" style={{ fontSize: '14px' }}>
               <Link to="/" style={{ color: 'inherit', opacity: 0.9 }}>Home</Link>
               <span style={{ opacity: 0.5 }}>|</span>
               <Link to="/casino" style={{ color: 'inherit', opacity: 0.9 }}>Casino</Link>
@@ -195,7 +141,7 @@ function Footer() {
               <Link to="/referral" style={{ color: 'inherit', opacity: 0.9 }}>Referral</Link>
               <span style={{ opacity: 0.5 }}>|</span>
               <Link to="/rank" style={{ color: 'inherit', opacity: 0.9 }}>Rank</Link>
-            </div>
+            </div> */}
 
 
 

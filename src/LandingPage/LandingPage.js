@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import Header from '../customComponents/Header';
 import Footer from '../customComponents/footer';
+import '../customComponents/Footer.css';
 
 function LandingPage() {
   const videoRef = useRef(null);
@@ -29,6 +29,9 @@ function LandingPage() {
   // TOP Matches slider state
   const [topMatchesIndex, setTopMatchesIndex] = useState(0);
   const topMatchesSliderRef = useRef(null);
+
+  // Landing about section – Show more
+  const [showMore, setShowMore] = useState(false);
 
   // Mouse drag-to-scroll state (shared for all sliders) – no auto-slide
   const dragStateRef = useRef({
@@ -371,7 +374,6 @@ function LandingPage() {
 
   return (
     <>
-      <Header />
       <div className="casino_hero_s">
         {/* Desktop: video background */}
         <div className="hero_bg_video_wrapper">
@@ -404,7 +406,7 @@ function LandingPage() {
           <div className="hero_mob_casino_card"><i className="ri-poker-spades-fill" aria-hidden="true" /></div>
           <div className="hero_mob_casino_chip" />
         </div>
-        <div className="container">
+        <div className="container-fluid">
           <div className="row">
             <div className="col-md-6">
               <div className="casino_hero_s_lft">
@@ -433,7 +435,7 @@ function LandingPage() {
       </div>
 
 
-      <div className="container mobileview">
+      <div className="container-fluid mobileview">
 <div className="casino_sport_mobile_section">
 
       <div className="casinobox_item">
@@ -457,7 +459,7 @@ function LandingPage() {
 
       <div className="landing_page_content">
         <div className="top_slot_outer">
-          <div className="container">
+          <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2">TOP SLOTS</h2>
               <div className="top_hd_right d-flex align-items-center gap-2">
@@ -503,7 +505,7 @@ function LandingPage() {
         </div>
 
         <div className="top_match_section">
-          <div className="container">
+          <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2">TOP Sports</h2>
               <div className="top_hd_right d-flex align-items-center gap-2">
@@ -543,7 +545,7 @@ function LandingPage() {
       </div>
 
         <div className="casino_sport_section">
-          <div className="container">
+          <div className="container-fluid">
             <div className="row">
               <div className="col-md-6">
                 <Link to="/casino" className="casino_sport_section_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -585,7 +587,7 @@ function LandingPage() {
    
 
       <div className='playearn_section'>
-          <div className='container'>
+          <div className='container-fluid'>
             <div className='row'>
               <div className='col-md-8'>
                 <div className='playearn_big_lft'>
@@ -685,7 +687,7 @@ function LandingPage() {
 
 
         <div className="top_match_section sportsmatch_s">
-          <div className="container">
+          <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <Link to="/sports" style={{ textDecoration: 'none', color: 'inherit' }}><h2 className="heading_h2" style={{ cursor: 'pointer' }}>TOP Matches</h2></Link>
               <div className="top_hd_right d-flex align-items-center gap-2">
@@ -755,8 +757,8 @@ function LandingPage() {
           </div>
         </div>
 
-        <div className="top_slot_outer">
-          <div className="container">
+        <div className="top_slot_outer top_slot_outer_casino">
+          <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2">BetCasino Original</h2>
               <div className="top_hd_right d-flex align-items-center gap-2">
@@ -801,8 +803,8 @@ function LandingPage() {
           </div>
         </div>
 
-        <div className="top_slot_outer">
-          <div className="container">
+        <div className="top_slot_outer top_slot_outer_casino">
+          <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2"><img loading="lazy" src="images/live_icon.svg" alt="game" /> Live Casino</h2>
               <div className="top_hd_right d-flex align-items-center gap-2">
@@ -848,8 +850,8 @@ function LandingPage() {
         </div>
 
 
-        <div className="top_slot_outer">
-          <div className="container">
+        <div className="top_slot_outer top_slot_outer_casino">
+          <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2"><img loading="lazy" src="images/crownicon.svg" alt="game" /> Highroller Hall</h2>
               <div className="top_hd_right d-flex align-items-center gap-2">
@@ -894,10 +896,172 @@ function LandingPage() {
           </div>
         </div>
 
-        <div className='container support_help_container'>
+        <div className='container-fluid support_help_container'>
           <div className='support_help_card'>
             <i className='ri-customer-service-2-fill support_help_card_icon' aria-hidden="true" />
             <p className='support_help_card_text'>Need help? Our 24/7 support is here for you.</p>
+          </div>
+        </div>
+
+        <div className="container-fluid p_space_footer landing_footer_section">
+          <div className="d-flex topfooter">
+            <div className="secure_img">
+              <img src="/images/secure.png" alt="game" />
+            </div>
+            <div className="safe_cnt">
+              <h5>Secure &amp; Private</h5>
+              <p>Your data is protected with encryption. Bet and play with a secure, private connection.</p>
+            </div>
+          </div>
+          <div className="footer_description_container">
+            <div
+              className="footer_description_content crownbet_content"
+              style={{
+                maxHeight: showMore ? 'none' : '320px',
+                overflow: 'hidden',
+                transition: 'max-height 0.4s ease-out',
+                position: 'relative',
+              }}
+            >
+              <h2 className="crownbet_title">Crypto Sports Betting at CrownBet</h2>
+              <p>CrownBet is a BTC sport betting site where you can wager on thousands of sports events using Bitcoin and 50+ other cryptocurrencies. Live odds, pre-match markets, fast payouts, and no banking fees. That&apos;s what you get here.</p>
+              <p>Whether you follow soccer, basketball, or MMA, we cover it all. You can also bet on eSports tournaments happening around the clock. The platform works 24/7, so there&apos;s always something to bet on.</p>
+
+              <h3 className="crownbet_heading">Why Choose a Bitcoin Sportsbook?</h3>
+              <p>Crypto sports betting changes how people gamble online. No bank delays. No extra fees eating into your winnings. Your deposits hit your account in minutes, and withdrawals work just as fast.</p>
+              <p>Here&apos;s what makes betting with bitcoin different from traditional methods:</p>
+              <ul className="crownbet_list crownbet_list_bullet">
+                <li><strong>Speed:</strong> Crypto deposits confirm in minutes, not days</li>
+                <li><strong>Lower costs:</strong> No middleman fees from banks or payment processors</li>
+                <li><strong>Privacy:</strong> You control your funds without sharing banking details</li>
+                <li><strong>Global access:</strong> Bet from anywhere without currency conversion headaches</li>
+                <li><strong>True ownership:</strong> Your crypto stays yours until you decide to bet</li>
+              </ul>
+              <p>Bitcoin&apos;s price can swing up or down, which some bettors actually like. Win a bet when BTC is low, and your winnings might grow if the price rises later. It&apos;s a bit of a double game, honestly.</p>
+
+              <h3 className="crownbet_heading">Sports You Can Bet On</h3>
+              <p>Our sportsbook covers pretty much every major sport. From the Premier League to La Liga and Serie A, soccer fans have tons of options.</p>
+              <p>American sports are well represented too, with full coverage of the NBA, NFL, MLB, and NHL.</p>
+              <p>Tennis betting includes the ATP Tour, WTA Tour, and Grand Slam tournaments.</p>
+              <p>Combat sports fans can bet on boxing matches and Ultimate Fighting Championship events through the MMA section. Volleyball and American football round out the traditional sports lineup.</p>
+              <p>Want something different? Horse racing markets let you bet on races from major tracks worldwide.</p>
+
+              <h3 className="crownbet_heading">Esports Betting</h3>
+              <p>Esports betting keeps growing. Millions watch competitive gaming, and our crypto sportsbook lets you bet with crypto on the biggest tournaments.</p>
+              <p>The esports section includes:</p>
+              <ul className="crownbet_list crownbet_list_dash">
+                <li><strong>Dota 2</strong> – The International and DPC events</li>
+                <li><strong>Counter-Strike 2</strong> – Major championships and ESL tournaments</li>
+                <li><strong>League of Legends</strong> – Worlds, LCS, LEC, and regional leagues</li>
+                <li><strong>StarCraft II</strong> – GSL and international competitions</li>
+                <li><strong>Honor of Kings</strong> – One of Asia&apos;s most popular mobile esports</li>
+              </ul>
+              <p>Esports matches run around the clock since tournaments happen across different time zones. You&apos;ll find odds on matches from North America, Europe, China, Korea, and Southeast Asia.</p>
+
+              <h3 className="crownbet_heading">Virtual Sports Betting</h3>
+              <p>Can&apos;t wait for real matches? Virtual sports fill the gaps. These are simulated games with quick results, usually finishing within minutes.</p>
+              <p>We offer eSoccer and eSoccer Volta for virtual football action. eBasketball simulates NBA-style games. eRocket League brings the popular car-soccer video game to betting markets.</p>
+              <p>Virtual sports run 24/7 with new events starting every few minutes. Results come from random number generators, so past performance doesn&apos;t predict future outcomes. Think of them as quick entertainment between real matches.</p>
+
+              <h3 className="crownbet_heading">Understanding Betting Markets</h3>
+              <p>New to sports betting with Bitcoin? Here&apos;s how the main bet types work.</p>
+              <div className="crownbet_table_wrap">
+                <table className="crownbet_table">
+                  <thead>
+                    <tr>
+                      <th>Market Type</th>
+                      <th>What It Means</th>
+                      <th>Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Moneyline/Winner</td><td>Pick who wins the match</td><td>Team A to beat Team B</td></tr>
+                    <tr><td>Handicap/Spread</td><td>Team must win by certain margin</td><td>Team A -1.5 goals</td></tr>
+                    <tr><td>Over/Under (Totals)</td><td>Combined score above or below a number</td><td>Over 2.5 goals in match</td></tr>
+                    <tr><td>1X2</td><td>Home win, draw, or away win</td><td>Used mainly in soccer</td></tr>
+                    <tr><td>Prop Bets</td><td>Specific events within a game</td><td>First goalscorer, total corners</td></tr>
+                    <tr><td>Outright/Futures</td><td>Season-long predictions</td><td>League winner, MVP</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>Handicap betting levels the playing field between mismatched teams. If you bet on a strong favorite at -1.5, they need to win by at least 2 goals for your bet to pay out. The underdog at +1.5 just needs to lose by 1 or draw or win.</p>
+              <p>Live betting lets you place wagers while games are happening. Odds shift based on the action, so you can react to what you&apos;re watching.</p>
+
+              <h3 className="crownbet_heading">Cryptocurrencies Accepted for Betting</h3>
+              <p>Our bitcoin sportsbook isn&apos;t limited to BTC. CrownBet accepts over 50 different cryptocurrencies for deposits and withdrawals.</p>
+              <p>Popular options include Bitcoin, Ethereum, Litecoin, Tether (USDT), Ripple (XRP), and Dogecoin. Stablecoins like USDT let you avoid crypto price swings if that concerns you.</p>
+              <p>Deposits process quickly once network confirmations complete. Withdrawals go straight to your wallet without waiting for bank approval.</p>
+              <p>No minimum deposits exist for most cryptocurrencies, making it easy to start small.</p>
+
+              <h3 className="crownbet_heading">The BFG Token Advantage</h3>
+              <p>BFG is CrownBet&apos;s own cryptocurrency. You can buy it, earn it through casino games, and use it for betting.</p>
+              <p>BFG holders can stake their tokens and earn passive income from the platform&apos;s profits. The more BFG you hold and stake, the more you earn from daily payouts.</p>
+              <p>You earn BFG automatically when playing casino games. Sports betting doesn&apos;t generate BFG directly, but the tokens you earn elsewhere work perfectly for placing sports wagers.</p>
+
+              <h3 className="crownbet_heading">How to Start Bitcoin Sports Betting</h3>
+              <p>Getting started takes just a few minutes:</p>
+              <ol className="crownbet_list crownbet_list_numbered">
+                <li>Create an account</li>
+                <li>Deposit crypto</li>
+                <li>Browse the sports section</li>
+                <li>Add selections to your bet slip</li>
+                <li>Enter your stake and confirm</li>
+              </ol>
+              <p>Single bets are straightforward. Parlays (accumulators) combine multiple selections into one bet with higher potential payouts. Every selection must win for a parlay to pay out.</p>
+
+              <h3 className="crownbet_heading">Bonuses and Promotions</h3>
+              <p>CrownBet offers various bonuses for sports bettors, including:</p>
+              <ul className="crownbet_list crownbet_list_tick">
+                <li>Welcome bonuses</li>
+                <li>Reload offers</li>
+                <li>Cashback deals</li>
+                <li>Special event promotions</li>
+              </ul>
+              <p>The promotions page shows all current offers and gets updated regularly.</p>
+
+              <h3 className="crownbet_heading">Tips for Crypto Sports Betting Success</h3>
+              <ul className="crownbet_list crownbet_list_tick">
+                <li>Know your sport before placing bets</li>
+                <li>Start with simple markets like moneyline or totals</li>
+                <li>Set bankroll limits</li>
+                <li>Avoid chasing losses</li>
+                <li>Practice live betting with small stakes first</li>
+              </ul>
+
+              <h3 className="crownbet_heading">What Makes a Good Bitcoin Bookmaker?</h3>
+              <p>When looking for the best Bitcoin sportsbook, focus on:</p>
+              <ul className="crownbet_list crownbet_list_tick">
+                <li>Wide variety of sports and markets</li>
+                <li>Fast withdrawals</li>
+                <li>Strong security</li>
+                <li>Competitive odds</li>
+                <li>Reliable customer support</li>
+              </ul>
+              <p>Even small differences in odds can impact long-term results.</p>
+
+              <h3 className="crownbet_heading">Why Choose CrownBet?</h3>
+              <p>CrownBet combines crypto sports betting with a complete casino section. You can switch between sports wagers and casino games seamlessly.</p>
+              <ul className="crownbet_list crownbet_list_tick">
+                <li>24/7 customer support</li>
+                <li>Fast crypto withdrawals</li>
+                <li>Mobile-friendly interface</li>
+                <li>Thousands of betting markets</li>
+                <li>Competitive odds</li>
+              </ul>
+
+              <h3 className="crownbet_heading">Final Thoughts on Betting with BTC</h3>
+              <p>Crypto betting offers speed and convenience that traditional sportsbooks can&apos;t match. CrownBet delivers thousands of betting markets across dozens of sports, all accessible with Bitcoin and other major cryptocurrencies.</p>
+              <p>The combination of traditional sports, esports, and virtual sports means there&apos;s always action available. Whether you&apos;re following the Premier League, watching NBA games, or betting on Counter-Strike majors, CrownBet provides a complete crypto sportsbook experience focused on variety, speed, and fair odds.</p>
+            </div>
+            <button
+              type="button"
+              className="footer_show_more_btn"
+              onClick={() => setShowMore((prev) => !prev)}
+              aria-expanded={showMore}
+            >
+              {showMore ? 'Show Less' : 'Show More'}
+              <i className={showMore ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'} />
+            </button>
           </div>
         </div>
       </div>

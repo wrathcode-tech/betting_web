@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import '../newDeposit/newDeposit.css';
 import './newWithdrawal.css';
@@ -18,7 +17,6 @@ function NewWithdrawal() {
 
   return (
     <>
-      <Header />
       <div className="new_withdrawal_page new_deposit_page">
         <div className="container">
           <div className="top_bar_hd">

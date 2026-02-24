@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useSidebar } from '../context/SidebarContext'
 
 const LoginModal = lazy(() => import('./LoginModal'))
-const SideBar = lazy(() => import('./SideBar/sideBar'))
 const Chat = lazy(() => import('../cricket/Chat'))
 const Search = lazy(() => import('./Search'))
 
@@ -10,7 +10,7 @@ export default function UserHeader() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [modalTab, setModalTab] = useState('login');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { sidebarOpen, setSidebarOpen } = useSidebar();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -149,7 +149,6 @@ export default function UserHeader() {
       </header>
 
       {showModal && <Suspense fallback={null}><LoginModal show={showModal} onHide={() => { setShowModal(false); setModalTab('login'); }} initialTab={modalTab} /></Suspense>}
-      {sidebarOpen && <Suspense fallback={null}><SideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} /></Suspense>}
       {isChatOpen && <Suspense fallback={null}><Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} /></Suspense>}
       {isSearchOpen && <Suspense fallback={null}><Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} /></Suspense>}
 

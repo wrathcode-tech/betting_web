@@ -2,6 +2,36 @@
   to { transform: rotate(360deg); }
 }
 
+/* Main content wrapper: header outside; left = sidebar, right = content */
+.main_content_wrapper {
+  display: flex;
+  flex-direction: row;
+  min-height: calc(100vh - 56px);
+  transition: none;
+}
+.left_sidebar_side {
+  flex-shrink: 0;
+  width: 0;
+  min-width: 0;
+}
+.right_content_side {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+@media (min-width: 992px) {
+  .main_content_wrapper.sidebar_open .left_sidebar_side {
+    width: 231px;
+    min-width: 231px;
+  }
+  .main_content_wrapper.sidebar_closed .left_sidebar_side {
+    width: 64px;
+    min-width: 64px;
+  }
+}
+
 * {
   font-family: "Montserrat", sans-serif;
 }
@@ -37,9 +67,6 @@ a.dropdown_menu_item {
 /* Simple scroll sliders - no arrows, no auto-scroll, no drag; scrollbar hidden */
 .game_items_slider_wrapper,
 .match_slider_wrapper {
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  -webkit-overflow-scrolling: touch;
   scrollbar-width: none; /* Firefox – hide scrollbar */
   -ms-overflow-style: none; /* IE/Edge – hide scrollbar */
   cursor: default;
