@@ -15,7 +15,7 @@ export default function CasinoCategoryPage() {
   }
 
   return (
-    <>
+    <div className="casino_category_page_wrapper">
       <Header />
       <div className="dashboard_page">
         <div className="casino_outer">
@@ -51,6 +51,6 @@ export default function CasinoCategoryPage() {
 
       <Footer />
       <MobileMenu />
-    </>
+    </div>
   )
 }

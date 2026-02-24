@@ -56,38 +56,38 @@ export default function SideBar({ isOpen, onClose }) {
             <ul className="sidebar_menu">
               {/* <li className="sidebar_menu_item">
                 <Link to="/" onClick={onClose}>
-                  <span><img src="images/casino_icon.svg" alt="home" />Home</span>
+                  <span><img src="/images/casino_icon.svg" alt="home" />Home</span>
                 </Link>
               </li> */}
               <li className={`sidebar_menu_item ${openSubmenu === 'casino' ? 'active' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('casino'); }}>
                   <i className={openSubmenu === 'casino' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
-                  <span><img src="images/casino_icon.svg" alt="casino" />Casino</span>
+                  <span><img src="/images/casino_icon.svg" alt="casino" />Casino</span>
                 </a>
                 {openSubmenu === 'casino' && (
                   <ul className="sidebar_submenu">
-                    <li><Link to="/casino" onClick={onClose}><img src="images/original_icon.svg" alt="originals" />Originals</Link></li>
-                    <li><Link to="/game" onClick={onClose}><img src="images/slots_icon.svg" alt="slots" />Slots</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="images/livecasion_icon.svg" alt="live casino" />Live Casino</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="images/referral_icon.svg" alt="table game" />Table Game</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="images/setting_icon.svg" alt="slots" />Providers</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="images/original_icon.svg" alt="slots" />Hot Picks</Link></li>
-                    <li><Link to="/game" onClick={onClose}><img src="images/slots_icon.svg" alt="slots" />Exclusives</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="images/livecasion_icon.svg" alt="slots" />Buy Feature</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="images/referral_icon.svg" alt="slots" />New Releases</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="images/setting_icon.svg" alt="slots" />Highroller Hall</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="images/original_icon.svg" alt="slots" />Game Shows</Link></li>
-                    <li><Link to="/game" onClick={onClose}><img src="images/slots_icon.svg" alt="slots" />Roulette</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="images/livecasion_icon.svg" alt="slots" />Blackjack</Link></li>
-                    <li><Link to="/casino" onClick={onClose}><img src="images/referral_icon.svg" alt="slots" />Baccarat</Link></li>
-                    <li><Link to="/game" onClick={onClose}><img src="images/slots_icon.svg" alt="slots" />Drops & Wins</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/original_icon.svg" alt="originals" />Originals</Link></li>
+                    <li><Link to="/game" onClick={onClose}><img src="/images/slots_icon.svg" alt="slots" />Slots</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/livecasion_icon.svg" alt="live casino" />Live Casino</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/referral_icon.svg" alt="table game" />Table Game</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/setting_icon.svg" alt="slots" />Providers</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/original_icon.svg" alt="slots" />Hot Picks</Link></li>
+                    <li><Link to="/game" onClick={onClose}><img src="/images/slots_icon.svg" alt="slots" />Exclusives</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/livecasion_icon.svg" alt="slots" />Buy Feature</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/referral_icon.svg" alt="slots" />New Releases</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/setting_icon.svg" alt="slots" />Highroller Hall</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/original_icon.svg" alt="slots" />Game Shows</Link></li>
+                    <li><Link to="/game" onClick={onClose}><img src="/images/slots_icon.svg" alt="slots" />Roulette</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/livecasion_icon.svg" alt="slots" />Blackjack</Link></li>
+                    <li><Link to="/casino" onClick={onClose}><img src="/images/referral_icon.svg" alt="slots" />Baccarat</Link></li>
+                    <li><Link to="/game" onClick={onClose}><img src="/images/slots_icon.svg" alt="slots" />Drops & Wins</Link></li>
                   </ul>
                 )}
               </li>
               <li className={`sidebar_menu_item ${openSubmenu === 'sports' ? 'active' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('sports'); }}>
                   <i className={openSubmenu === 'sports' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
-                  <span><img src="images/sports_icon.svg" alt="sports" />Sports</span>
+                  <span><img src="/images/sports_icon.svg" alt="sports" />Sports</span>
                 </a>
                 {openSubmenu === 'sports' && (
                   <ul className="sidebar_submenu">
@@ -115,27 +115,27 @@ export default function SideBar({ isOpen, onClose }) {
               </li>
               <li className="sidebar_menu_item">
                 <Link to="/" onClick={onClose}>
-                  <span><img src="images/promotions_icon.svg" alt="promotions" />Promotions</span>
+                  <span><img src="/images/promotions_icon.svg" alt="promotions" />Promotions</span>
                 </Link>
               </li>
               <li className="sidebar_menu_item">
                 <Link to="/referral" onClick={onClose}>
-                  <span><img src="images/referral_icon.svg" alt="referral" />Referral</span>
+                  <span><img src="/images/referral_icon.svg" alt="referral" />Referral</span>
                 </Link>
               </li>
               <li className="sidebar_menu_item">
                 <Link to="/transactions" onClick={onClose}>
-                  <span><img src="images/referral_icon.svg" alt="transactions" />Transactions</span>
+                  <span><img src="/images/referral_icon.svg" alt="transactions" />Transactions</span>
                 </Link>
               </li>
               <li className="sidebar_menu_item">
                 <Link to="/rank" onClick={onClose}>
-                  <span><img src="images/referral_icon.svg" alt="referral" />VIP Club</span>
+                  <span><img src="/images/referral_icon.svg" alt="referral" />VIP Club</span>
                 </Link>
               </li>
               <li className="sidebar_menu_item">
                 <Link to="/" onClick={onClose}>
-                  <span><img src="images/referral_icon.svg" alt="referral" />News</span>
+                  <span><img src="/images/referral_icon.svg" alt="referral" />News</span>
                 </Link>
               </li>
               <li className="sidebar_menu_item">
@@ -147,16 +147,16 @@ export default function SideBar({ isOpen, onClose }) {
                     window.dispatchEvent(new CustomEvent('openChat'))
                   }}
                 >
-                  <span><img src="images/referral_icon.svg" alt="referral" />Live Support</span>
+                  <span><img src="/images/referral_icon.svg" alt="referral" />Live Support</span>
                 </a>
               </li>
               
             </ul>
           </nav>
           <div className="setting_hdr">
-            <img src="images/en.png" alt="language" />
+            <img src="/images/en.png" alt="language" />
             <div className="setting_icon">
-              <img src="images/settingicon.svg" alt="setting" />
+              <img src="/images/settingicon.svg" alt="setting" />
             </div>
           </div>
           

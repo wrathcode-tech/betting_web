@@ -52,21 +52,20 @@ export default function AuthHeader() {
 
   return (
     <>
-      <header>
+      <header className="auth_header">
         <div className="header_lft">
           <div className={`toggle_menu ${sidebarOpen ? 'toggle_menu_open' : ''}`} onClick={() => setSidebarOpen((prev) => !prev)}>
-            <img src="images/toggle_menu.svg" alt="menu" />
+            <img src="/images/toggle_menu.svg" alt="menu" />
           </div>
           <Link to="/" className="header_logo">
-            <img className="desktopview" src="images/logo.png" alt="logo" />
-            <img className="mobileview" src="images/logo_mobile.svg" alt="logo" />
+            <img src="/images/logo.png" alt="logo" />
           </Link>
         </div>
 
         <div className="header_right">
      
           <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>
-            <img src="images/search-icon.svg" alt="search" />
+            <img src="/images/search-icon.svg" alt="search" />
           </div>
           <div className="login_hdr">
             <button type="button" onClick={handleLoginClick}>Login</button>
@@ -74,14 +73,14 @@ export default function AuthHeader() {
           </div>
     
           {/* <div className="setting_hdr">
-            <img src="images/en.png" alt="language" />
+            <img src="/images/en.png" alt="language" />
             <div className="setting_icon">
-              <img src="images/settingicon.svg" alt="setting" />
+              <img src="/images/settingicon.svg" alt="setting" />
             </div>
           </div>
     
           <div className="comment_hdr" onClick={() => setIsChatOpen(!isChatOpen)}>
-            <img src="images/comment-icon.svg" alt="comment" />
+            <img src="/images/comment-icon.svg" alt="comment" />
           </div>   */}
         </div>
       </header>

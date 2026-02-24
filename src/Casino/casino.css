@@ -1,3 +1,28 @@
+/* Ensure main header logo and login show on category page */
+.casino_category_page_wrapper header .header_lft,
+.casino_category_page_wrapper header .header_logo,
+.casino_category_page_wrapper header .header_right {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+.casino_category_page_wrapper header .header_logo img,
+.casino_category_page_wrapper header .login_hdr,
+.casino_category_page_wrapper header .login_hdr button,
+.casino_category_page_wrapper header .user_header_right,
+.casino_category_page_wrapper header .depositheader {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+.casino_category_page_wrapper header .header_logo img {
+    display: block !important;
+}
+
+.casino_category_page_wrapper header .header_logo img.mobileview {
+    display: none !important;
+}
+
 /* Category detail page header */
 .casino_category_page_header {
     margin: 24px 0 0px;
@@ -333,6 +358,14 @@ ul.lobbytabs_list li.active span {
     ul.lobbytabs_list li {
         font-size: 12px;
         padding: 6px 10px;
+    }
+
+    .casino_category_page_wrapper header .header_logo img {
+        display: none !important;
+    }
+    
+    .casino_category_page_wrapper header .header_logo img.mobileview {
+        display: block !important;
     }
 
     .d-flex.casinotop_tabbar {

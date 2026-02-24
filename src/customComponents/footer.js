@@ -80,7 +80,7 @@ function Footer() {
         <>
         <footer>
             {/* <div className="footer_vector_top" aria-hidden="true">
-                <img src="images/bottom_img.svg" alt="" />
+                <img src="/images/bottom_img.svg" alt="" />
             </div> */}
         <div className='container'>
 
@@ -88,7 +88,7 @@ function Footer() {
 
           <div className='d-flex topfooter'>
             <div className='secure_img'>
-              <img src="images/secure.png" alt="game" />
+              <img src="/images/secure.png" alt="game" />
             </div>
             <div className='safe_cnt'>
               <h5>Secure &amp; Private</h5>
@@ -203,13 +203,13 @@ function Footer() {
 <div className='footer-info__icons mobileview'>
   <ul>
       <li>
-        <img src="images/age_cricle.svg" alt="icon" />
+        <img src="/images/age_cricle.svg" alt="icon" />
       </li>
       <li>
-        <img src="images/GCB_Seal.svg" width={60} height={60} alt="icon" />
+        <img src="/images/GCB_Seal.svg" width={60} height={60} alt="icon" />
       </li>
       <li>
-        <img src="images/SIQ.webp" width={60} height={60} alt="icon" />
+        <img src="/images/SIQ.webp" width={60} height={60} alt="icon" />
       </li>
   </ul>
 </div>

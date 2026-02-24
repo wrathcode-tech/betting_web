@@ -2361,6 +2361,9 @@ footer .container {
         font-size: 38px;
     }
 
+    header {
+        padding: 7px 20px; }
+
     .playearn_big_lft h2 {
         font-size: 40px;
     }
@@ -2408,6 +2411,10 @@ footer .container {
 
     .gameright_s_item {
         padding: 10px 0px 0px 10px;
+    }
+
+    .casino_hero_s h1 {
+        font-size: 32px;
     }
 
     .playearn_big_lft {
@@ -2672,11 +2679,18 @@ footer .container {
         font-size: 15px;
     }
 
-
+    .dropdown_logout_btn {
+        padding: 8px 18px;
+        font-size: 12px; }
 
     button.slotbtn {
         font-size: 12px;
     }
+
+    header.auth_header .header_logo {
+        width: 100%;
+        min-width: 100%;
+        height: 36px; }
 
     ul.mobile-menu {
         padding: 10px 10px;
