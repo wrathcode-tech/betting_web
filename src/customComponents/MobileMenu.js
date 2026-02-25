@@ -1,15 +1,16 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 
 function MobileMenu() {
-    const { setSidebarOpen } = useSidebar()
+    const location = useLocation()
+    const { sidebarOpen, setSidebarOpen } = useSidebar()
 
     return (
         <>
             <div className='mobile-menu-wrapper'>
                 <ul className="mobile-menu">
-                    <li className="mobile-menu__item">
+                    <li className={`mobile-menu__item ${sidebarOpen ? 'active' : ''}`}>
                         <button type="button" className="mobile-menu__link" onClick={() => setSidebarOpen((prev) => !prev)}>
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-menu-line"></i>
@@ -18,8 +19,8 @@ function MobileMenu() {
                         </button>
                     </li>
 
-                    <li className="mobile-menu__item">
-                        <NavLink to="/casino" className={({ isActive }) => `mobile-menu__link ${isActive ? 'active' : ''}`}>
+                    <li className={`mobile-menu__item ${!sidebarOpen && (location.pathname === '/casino' || location.pathname.startsWith('/casino/')) ? 'active' : ''}`}>
+                        <NavLink to="/casino" className="mobile-menu__link">
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-poker-spades-fill"></i>
                             </span>
@@ -27,8 +28,8 @@ function MobileMenu() {
                         </NavLink>
                     </li>
 
-                    <li className="mobile-menu__item">
-                        <NavLink to="/" end className={({ isActive }) => `mobile-menu__link ${isActive ? 'active' : ''}`}>
+                    <li className={`mobile-menu__item ${!sidebarOpen && location.pathname === '/' ? 'active' : ''}`}>
+                        <NavLink to="/" end className="mobile-menu__link">
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-home-4-line"></i>
                             </span>
@@ -36,8 +37,8 @@ function MobileMenu() {
                         </NavLink>
                     </li>
 
-                    <li className="mobile-menu__item">
-                        <NavLink to="/sports" className={({ isActive }) => `mobile-menu__link ${isActive ? 'active' : ''}`}>
+                    <li className={`mobile-menu__item ${!sidebarOpen && (location.pathname === '/sports' || location.pathname.startsWith('/sports/')) ? 'active' : ''}`}>
+                        <NavLink to="/sports" className="mobile-menu__link">
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-basketball-fill"></i>
                             </span>
@@ -45,8 +46,8 @@ function MobileMenu() {
                         </NavLink>
                     </li>
 
-                    <li className="mobile-menu__item">
-                        <NavLink to="/profile" className={({ isActive }) => `mobile-menu__link ${isActive ? 'active' : ''}`}>
+                    <li className={`mobile-menu__item ${!sidebarOpen && (location.pathname === '/profile' || location.pathname.startsWith('/profile/')) ? 'active' : ''}`}>
+                        <NavLink to="/profile" className="mobile-menu__link">
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-user-line"></i>
                             </span>

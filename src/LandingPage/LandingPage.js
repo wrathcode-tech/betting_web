@@ -36,16 +36,13 @@ function LandingPage() {
   // Hero 3D slider – 10 items (or 5), 5 visible at a time (2 left, 1 center, 2 right), infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);
   const hero3dSlides = [
-    { id: 1, src: 'images/home_bnr.png', alt: 'game' },
-    { id: 2, src: 'images/home_bnr2.png', alt: 'game' },
-    { id: 3, src: 'images/home_bnr3.png', alt: 'game' },
-    { id: 4, src: 'images/home_bnr4.png', alt: 'game' },
-    { id: 5, src: 'images/home_bnr5.png', alt: 'game' },
-    { id: 6, src: 'images/home_bnr6.png', alt: 'game' },
-    { id: 7, src: 'images/home_bnr.png', alt: 'game' },
-    { id: 8, src: 'images/home_bnr2.png', alt: 'game' },
-    { id: 9, src: 'images/home_bnr3.png', alt: 'game' },
-    { id: 10, src: 'images/home_bnr4.png', alt: 'game' },
+    { id: 1, src: 'images/home_bnr.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Play, bet and win with the best odds.' },
+    { id: 2, src: 'images/home_bnr2.png', alt: 'game', heading: 'Live Casino & Slots', subContent: 'Spin the reels and join live tables.' },
+    { id: 3, src: 'images/home_bnr3.png', alt: 'game', heading: 'Sports Betting', subContent: 'Cricket, Football, NBA and more.' },
+    { id: 4, src: 'images/home_bnr4.png', alt: 'game', heading: 'Slots & Jackpots', subContent: 'Mega jackpots and daily bonuses.' },
+    { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Fast Payouts', subContent: 'Secure deposits and 24/7 support.' },
+    { id: 6, src: 'images/home_bnr6.png', alt: 'game', heading: 'Rank & Rewards', subContent: 'Level up and unlock exclusive perks.' },
+    { id: 7, src: 'images/home_bnr7.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Play, bet and win with the best odds.' },
   ];
   const hero3dTotal = hero3dSlides.length;
   const hero3dOffsets = [-2, -1, 0, 1, 2];
@@ -89,15 +86,15 @@ function LandingPage() {
 
   // Trending section: 9 different videos (replace paths with your video files)
   const trendingVideos = [
-    'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68688.mp4',
-    'images/freepik_create-a-fun-and-energetic-animated-promo-video-us_kling_1080p_16-9_24fps_68693.mp4',
-    'images/freepik_create-a-vibrant-animated-promo-video-using-this-c_kling_1080p_16-9_24fps_68692.mp4',
-    'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68687.mp4',
-    'images/freepik_create-a-stylish-and-engaging-animated-promo-video_kling_1080p_16-9_24fps_68691.mp4',
-    'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68695.mp4',
-    'images/freepik_create-a-highintensity-animated-promo-video-using-_minimax_768p_16-9_24fps_68694.mp4',
-    'images/freepik_create-a-glamorous-and-highend-animated-promo-vide_minimax_768p_16-9_24fps_68690.mp4',
     'images/freepik_create-a-bold-and-highenergy-animated-promo-video-_minimax_768p_16-9_24fps_68689.mp4',
+    'images/freepik_create-a-highintensity-animated-promo-video-using-_minimax_768p_16-9_24fps_68694.mp4',
+    'images/freepik_create-a-fun-and-energetic-animated-promo-video-us_kling_1080p_16-9_24fps_68693.mp4',
+    'images/freepik_create-a-glamorous-and-highend-animated-promo-vide_minimax_768p_16-9_24fps_68690.mp4',
+    'images/freepik_create-a-vibrant-animated-promo-video-using-this-c_kling_1080p_16-9_24fps_68692.mp4',
+    'images/freepik_create-a-stylish-and-engaging-animated-promo-video_kling_1080p_16-9_24fps_68691.mp4',
+    // 'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68687.mp4',
+    // 'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68688.mp4',
+    // 'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68695.mp4',
   ];
 
   // Live Casino items
@@ -466,82 +463,103 @@ function LandingPage() {
       </div> */}
 
 
-<div className='casino_hero_s'>
-<div className='container'>
-
-                      <div className="heroslider_3d">
-                        <div className="slider3d_wrapper">
-                          {hero3dOffsets.map((offset) => {
-                            const slideIndex = getHero3dIndex(offset);
-                            const slide = hero3dSlides[slideIndex];
-                            const isCenter = offset === 0;
-                            const positionClass =
-                              offset === -2 ? 'slider3d_pos_left2' :
-                              offset === -1 ? 'slider3d_pos_left1' :
-                              offset === 0 ? 'slider3d_pos_center' :
-                              offset === 1 ? 'slider3d_pos_right1' :
-                              'slider3d_pos_right2';
-                            return (
-                              <div
-                                key={`${slideIndex}-${offset}`}
-                                className={`slider3d ${positionClass} ${isCenter ? 'slider3d_active' : ''}`}
-                              >
-                                <img src={slide.src} alt={slide.alt} />
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div className="slider3d_controls">
-                          <button
-                            type="button"
-                            className="slider3d_arrow slider3d_arrow_prev"
-                            onClick={() => setHero3dIndex((prev) => (prev === 0 ? hero3dTotal - 1 : prev - 1))}
-                            aria-label="Previous slide"
-                          >
-                            <i className="ri-arrow-left-s-line" aria-hidden="true" />
-                          </button>
-                          <div className="slider3d_dots">
-                            {hero3dSlides.map((_, i) => (
-                              <button
-                                key={i}
-                                type="button"
-                                className={`slider3d_dot ${i === hero3dIndex ? 'slider3d_dot_active' : ''}`}
-                                onClick={() => setHero3dIndex(i)}
-                                aria-label={`Go to slide ${i + 1}`}
-                                aria-current={i === hero3dIndex ? 'true' : undefined}
-                              />
-                            ))}
-                          </div>
-                          <button
-                            type="button"
-                            className="slider3d_arrow slider3d_arrow_next"
-                            onClick={() => setHero3dIndex((prev) => (prev === hero3dTotal - 1 ? 0 : prev + 1))}
-                            aria-label="Next slide"
-                          >
-                            <i className="ri-arrow-right-s-line" aria-hidden="true" />
-                          </button>
-                        </div>
-
-                        <div className="casino_hero_s_lft">
-                <h1><span>Your Ultimate</span> Casino &amp; Sports Gaming Hub</h1>
-                <p>Play Casino. Bet on Sports. Win Big.</p>
-
-                <div className="d-flex align-items-center gap-3 mt-4">
-                  <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
-                  <ul className="social_icons d-flex align-items-center gap-2 hero_activity_icons">
-                    <li><Link to="/casino" className="social_icon_btn" title="Casino" aria-label="Casino"><i className="ri-poker-spades-fill" /></Link></li>
-                    <li><Link to="/sports" className="social_icon_btn" title="Sports" aria-label="Sports"><i className="ri-basketball-fill" /></Link></li>
-                    <li><Link to="/game" className="social_icon_btn" title="Slots" aria-label="Slots"><i className="ri-dice-5-fill" /></Link></li>
-                    <li><Link to="/casino" className="social_icon_btn" title="Games" aria-label="Games"><i className="ri-focus-3-fill" /></Link></li>
-                  </ul>
-                </div>
-              </div>
+      <div className='casino_hero_s'>
 
 
+      <div className='cricket_ball_effect'>     
+        <img src="images/cricket_vector.png" alt="game" />
+      </div>
+
+      <div className='football_ball_effect'>     
+        <img src="images/football_vector.png" alt="game" />
+      </div>
+        <div className='container'>
+
+          <div className="heroslider_3d">
+            <div className="slider3d_wrapper">
+              {hero3dOffsets.map((offset) => {
+                const slideIndex = getHero3dIndex(offset);
+                const slide = hero3dSlides[slideIndex];
+                const isCenter = offset === 0;
+                const positionClass =
+                  offset === -2 ? 'slider3d_pos_left2' :
+                    offset === -1 ? 'slider3d_pos_left1' :
+                      offset === 0 ? 'slider3d_pos_center' :
+                        offset === 1 ? 'slider3d_pos_right1' :
+                          'slider3d_pos_right2';
+                return (
+                  <div
+                    key={`${slideIndex}-${offset}`}
+                    className={`slider3d ${positionClass} ${isCenter ? 'slider3d_active' : ''} ${isCenter ? 'slider3d_has_overlay' : ''}`}
+                  >
+                    <img src={slide.src} alt={slide.alt} />
+                    {isCenter && slide.heading != null && (
+                      <div className="slider3d_card_overlay slider3d_card_overlay_animate">
+                        <span className="slider3d_card_overlay_title">{slide.heading}</span>
+                        <span className="slider3d_card_overlay_subtitle">{slide.subContent}</span>
                       </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="slider3d_controls">
+              <button
+                type="button"
+                className="slider3d_arrow slider3d_arrow_prev"
+                onClick={() => setHero3dIndex((prev) => (prev === 0 ? hero3dTotal - 1 : prev - 1))}
+                aria-label="Previous slide"
+              >
+                <i className="ri-arrow-left-s-line" aria-hidden="true" />
+              </button>
+              <div className="slider3d_dots">
+                {hero3dSlides.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`slider3d_dot ${i === hero3dIndex ? 'slider3d_dot_active' : ''}`}
+                    onClick={() => setHero3dIndex(i)}
+                    aria-label={`Go to slide ${i + 1}`}
+                    aria-current={i === hero3dIndex ? 'true' : undefined}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                className="slider3d_arrow slider3d_arrow_next"
+                onClick={() => setHero3dIndex((prev) => (prev === hero3dTotal - 1 ? 0 : prev + 1))}
+                aria-label="Next slide"
+              >
+                <i className="ri-arrow-right-s-line" aria-hidden="true" />
+              </button>
+            </div>
 
-</div>
-</div>      
+            <div className="casino_hero_s_lft">
+              <h1><span>Your Ultimate</span> Casino &amp; Sports Gaming Hub</h1>
+              <p>Play Casino. Bet on Sports. Win Big.</p>
+
+              <div className="d-flex align-items-center gap-3 mt-4">
+                <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
+                <ul className="social_icons d-flex align-items-center gap-2 hero_activity_icons">
+                  <li><Link to="/casino" className="social_icon_btn" title="Casino" aria-label="Casino"><i className="ri-poker-spades-fill" /></Link></li>
+                  <li><Link to="/sports" className="social_icon_btn" title="Sports" aria-label="Sports"><i className="ri-basketball-fill" /></Link></li>
+                  <li><Link to="/game" className="social_icon_btn" title="Slots" aria-label="Slots"><i className="ri-dice-5-fill" /></Link></li>
+                  <li><Link to="/casino" className="social_icon_btn" title="Games" aria-label="Games"><i className="ri-focus-3-fill" /></Link></li>
+                </ul>
+              </div>
+            </div>
+
+
+            <div className='hero_vector_effect_bottom'>
+              <img className='hero_left_vector' src="images/hero_left_vector.png" alt="game" />
+              <img className='hero_cntr_vector' src="images/hero_cntr_vector.png" alt="game" />
+              <img className='hero_right_vector' src="images/hero_right_vector.png" alt="game" />
+            </div>
+
+          </div>
+
+        </div>
+      </div>
 
 
       <div className="container-fluid mobileview">
@@ -567,20 +585,20 @@ function LandingPage() {
       </div>
 
 
-<div className='trending_games_section'>
-  <h2 className='heading_h2'>Trending Games</h2>
+      <div className='trending_games_section'>
+        <h2 className='heading_h2'>Trending Games</h2>
 
-<div className='game_items_video'>
-  {trendingVideos.map((src, i) => (
-    <div key={i} className='game_video_bl'>
-      <video width="100%" autoPlay muted loop playsInline>
-        <source src={src} type="video/mp4" />
-      </video>
-    </div>
-  ))}
-</div>
+        <div className='game_items_video'>
+          {trendingVideos.map((src, i) => (
+            <div key={i} className='game_video_bl'>
+              <video width="100%" autoPlay muted loop playsInline>
+                <source src={src} type="video/mp4" />
+              </video>
+            </div>
+          ))}
+        </div>
 
-</div>
+      </div>
 
 
       <div className="landing_page_content">

@@ -8,58 +8,26 @@ function SportsGame() {
     const [activeTab, setActiveTab] = useState('cricket')
 
     const gallerySlides = [
-        'images/sports_slider_img.jpg',
-        'images/sports_slider_img2.jpg',
-        'images/sports_slider_img3.jpg',
-        'images/sports_slider_img4.jpg',
-        'images/sports_slider_img5.jpg',
+        'images/sports_slider_img.png',
+        'images/sports_slider_img2.png',
+        'images/sports_slider_img3.png',
     ]
     const [currentSlide, setCurrentSlide] = useState(0)
     const sliderRef = useRef(null)
 
-    const getSlidesPerView = () => {
-        if (typeof window === 'undefined') return 1
-        return window.matchMedia('(min-width: 769px)').matches ? 2 : 1
-    }
-    const [slidesPerView, setSlidesPerView] = useState(getSlidesPerView)
-    const [layoutKey, setLayoutKey] = useState(0)
-    useEffect(() => {
-        const mq = window.matchMedia('(min-width: 769px)')
-        const update = () => setSlidesPerView(mq.matches ? 2 : 1)
-        update()
-        mq.addEventListener('change', update)
-        return () => mq.removeEventListener('change', update)
-    }, [])
-    useEffect(() => {
-        const onResize = () => setLayoutKey((k) => k + 1)
-        window.addEventListener('resize', onResize)
-        return () => window.removeEventListener('resize', onResize)
-    }, [])
-
-    const maxIndex = Math.max(0, gallerySlides.length - slidesPerView)
     const handleBannerPrev = () => {
-        if (slidesPerView === 1) setCurrentSlide((prev) => (prev <= 0 ? gallerySlides.length - 1 : prev - 1))
-        else setCurrentSlide((prev) => (prev <= 0 ? maxIndex : prev - 1))
+        setCurrentSlide((prev) => (prev <= 0 ? gallerySlides.length - 1 : prev - 1))
     }
     const handleBannerNext = () => {
-        if (slidesPerView === 1) setCurrentSlide((prev) => (prev >= gallerySlides.length - 1 ? 0 : prev + 1))
-        else setCurrentSlide((prev) => (prev >= maxIndex ? 0 : prev + 1))
+        setCurrentSlide((prev) => (prev >= gallerySlides.length - 1 ? 0 : prev + 1))
     }
 
-    const GALLERY_GAP = 18
     useEffect(() => {
         if (!sliderRef.current) return
-        if (slidesPerView === 1) {
-            sliderRef.current.style.transform = `translateX(-${currentSlide * 100}%)`
-        } else {
-            const firstSlide = sliderRef.current.querySelector('.sports_bnr_gallery_slide')
-            const slideWidth = firstSlide ? firstSlide.offsetWidth : 0
-            const step = slideWidth + GALLERY_GAP
-            sliderRef.current.style.transform = `translateX(-${currentSlide * step}px)`
-        }
-    }, [currentSlide, slidesPerView, layoutKey])
+        sliderRef.current.style.transform = `translateX(-${currentSlide * 100}%)`
+    }, [currentSlide])
 
-    const dotCount = slidesPerView === 1 ? gallerySlides.length : maxIndex + 1
+    const dotCount = gallerySlides.length
     const handleDotClick = (index) => setCurrentSlide(index)
     const isDotActive = (index) => index === currentSlide
 
@@ -204,7 +172,7 @@ function SportsGame() {
     return (
         <>
             <div className='dashboard_page'>
-                <div className='container'>
+                <div className='container-fluid'>
                     <div className='sports_hero_section'>
                         <div
                             className={`sports_bnr_gallery_wrapper ${arrowsVisible ? 'sports_bnr_arrows_visible' : ''}`}

@@ -7,7 +7,7 @@
 .sports_hero_section {
     width: 100%;
     display: block;
-    margin: 30px 0px;
+    margin: 10px 0px 0px;
 }
 
 .sports_bnr_gallery_wrapper {
@@ -20,7 +20,7 @@
 .sports_bnr_gallery_track {
     display: flex;
     width: 100%;
-    gap: 18px;
+    gap: 0;
     transition: transform 0.5s ease-in-out;
 }
 
@@ -42,20 +42,7 @@
     object-fit: contain;
 }
 
-@media (min-width: 769px) {
-    .sports_bnr_gallery_slide {
-        flex: 0 0 calc((100% - 18px) / 2);
-        width: calc((100% - 18px) / 2);
-    }
-}
-
-/* Desktop: 2 slides (same as tablet) */
-@media (min-width: 1025px) {
-    .sports_bnr_gallery_slide {
-        flex: 0 0 calc((100% - 18px) / 2);
-        width: calc((100% - 18px) / 2);
-    }
-}
+/* Hero: always 1 slide per view (no 2-slide breakpoint) */
 
 .sports_bnr_arrow {
     position: absolute;

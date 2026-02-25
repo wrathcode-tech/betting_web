@@ -99,9 +99,8 @@ a.dropdown_menu_item {
 /* Mobile bottom nav – dark bar, icon above text, active glow */
 .mobile-menu-wrapper .mobile-menu {
   background: #16202c;
-  border-color: #1e2a38;
-  padding: 10px 12px;
-  height: 64px;
+  border-color: #2a3546;
+  padding: 10px 32px;
   gap: 0;
 }
 @media (max-width: 991px) {
@@ -110,17 +109,17 @@ a.dropdown_menu_item {
   }
 }
 .mobile-menu-wrapper .mobile-menu li {
-  flex: 1;
   display: flex;
   justify-content: center;
+  position: relative;
   align-items: center;
 }
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link,
 .mobile-menu-wrapper .mobile-menu li button.mobile-menu__link {
   flex-direction: column;
-  gap: 4px;
-  padding: 6px 8px;
-  border-radius: 10px;
+  gap: 2px;
+  padding: 0px 0px;
+  border-radius: 0px;
   color: #a7b5ca;
   min-width: 0;
   cursor: pointer;
@@ -134,20 +133,25 @@ a.dropdown_menu_item {
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link .mobile-menu__name {
   font-size: 11px;
   font-weight: 600;
+  line-height: normal;
   white-space: nowrap;
 }
+/* Active class ab li par – jis menu pe click ho wahi active */
+.mobile-menu-wrapper .mobile-menu li.mobile-menu__item.active .mobile-menu__link {
+  color: #fff;
+}
+.mobile-menu-wrapper .mobile-menu li.mobile-menu__item.active .mobile-menu__name {
+  font-size: 11px;
+}
+.mobile-menu-wrapper .mobile-menu li.mobile-menu__item.active .mobile-menu__link::before {
+  display: none;
+}
+/* backward: agar link par active ho to bhi chal jaye */
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active {
   color: #fff;
 }
-
-
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active .mobile-menu__name {
   font-size: 11px;
-}
-.mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active .mobile-menu__icon,
-.mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active i {
-  color: #fff;
-  font-size: 26px;
 }
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link.active::before {
   display: none;
