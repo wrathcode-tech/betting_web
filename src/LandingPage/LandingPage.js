@@ -48,29 +48,6 @@ function LandingPage() {
   const hero3dOffsets = [-2, -1, 0, 1, 2];
   const getHero3dIndex = (offset) => (hero3dIndex + offset + hero3dTotal * 10) % hero3dTotal;
 
-  // Mouse drag-to-scroll state (shared for all sliders) – no auto-slide
-  const dragStateRef = useRef({
-    isDragging: false,
-    startX: 0,
-    startTranslate: 0,
-    lastTranslate: 0,
-    sliderEl: null,
-    getItemWidth: null,
-    itemsPerSet: null,
-    setIndex: null,
-  });
-  const justDraggedRef = useRef(false);
-
-  // Mobile (≤767px): native touch scroll like search_modal – no transform/drag
-  const [useNativeSliderScroll, setUseNativeSliderScroll] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
-    const update = () => setUseNativeSliderScroll(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
-
   const gameItems = [
     { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
     { id: 2, badge: null, image: 'images/game_itemslider2.png' },
@@ -221,151 +198,6 @@ function LandingPage() {
   const highrollerItemsPerSet = highrollerDisplayItems.length;
   const topSportsItemsPerSet = topSportsDisplayItems.length;
   const topMatchesItemsPerSet = topMatchesDisplayItems.length;
-
-  // TOP SLOTS slider – sync transform (desktop only; mobile = native scroll)
-  useEffect(() => {
-    if (useNativeSliderScroll || !sliderRef.current) return;
-    const itemWidth = 178 + 18;
-    const translateX = -currentIndex * itemWidth;
-    sliderRef.current.style.transform = `translateX(${translateX}px)`;
-  }, [currentIndex, useNativeSliderScroll]);
-
-  // BetCasino Original slider – sync transform to index
-  useEffect(() => {
-    if (useNativeSliderScroll || !betCasinoSliderRef.current) return;
-    const itemWidth = 178 + 18;
-    const translateX = -betCasinoIndex * itemWidth;
-    betCasinoSliderRef.current.style.transform = `translateX(${translateX}px)`;
-  }, [betCasinoIndex, useNativeSliderScroll]);
-
-  // Live Casino slider – sync transform to index
-  useEffect(() => {
-    if (useNativeSliderScroll || !liveCasinoSliderRef.current) return;
-    const itemWidth = 178 + 18;
-    const translateX = -liveCasinoIndex * itemWidth;
-    liveCasinoSliderRef.current.style.transform = `translateX(${translateX}px)`;
-  }, [liveCasinoIndex, useNativeSliderScroll]);
-
-  // Highroller Hall slider – sync transform to index
-  useEffect(() => {
-    if (useNativeSliderScroll || !highrollerSliderRef.current) return;
-    const itemWidth = 178 + 18;
-    const translateX = -highrollerIndex * itemWidth;
-    highrollerSliderRef.current.style.transform = `translateX(${translateX}px)`;
-  }, [highrollerIndex, useNativeSliderScroll]);
-
-  // TOP Sports slider – sync transform to index
-  useEffect(() => {
-    if (useNativeSliderScroll || !topSportsSliderRef.current) return;
-    const itemWidth = 178 + 8;
-    const translateX = -topSportsIndex * itemWidth;
-    topSportsSliderRef.current.style.transform = `translateX(${translateX}px)`;
-  }, [topSportsIndex, useNativeSliderScroll]);
-
-  // TOP Matches slider handlers
-  const getTopMatchesItemWidth = () => {
-    if (!topMatchesSliderRef.current) return 0;
-    const containerWidth = topMatchesSliderRef.current.offsetWidth;
-    const windowWidth = window.innerWidth;
-
-    if (windowWidth <= 767) {
-      // Mobile: 1 item per view
-      return containerWidth;
-    } else if (windowWidth <= 991) {
-      // Tablet: 2 items per view
-      return containerWidth / 2;
-    } else {
-      // Desktop: 3 items per view
-      return containerWidth / 3;
-    }
-  };
-
-  // TOP Matches – sync transform to index
-  useEffect(() => {
-    if (useNativeSliderScroll || !topMatchesSliderRef.current) return;
-    const itemWidth = getTopMatchesItemWidth();
-    const translateX = -topMatchesIndex * itemWidth;
-    topMatchesSliderRef.current.style.transform = `translateX(${translateX}px)`;
-  }, [topMatchesIndex, useNativeSliderScroll]);
-
-  // Handle window resize for TOP Matches slider (desktop only)
-  useEffect(() => {
-    if (useNativeSliderScroll) return;
-    const handleResize = () => {
-      if (topMatchesSliderRef.current) {
-        const itemWidth = getTopMatchesItemWidth();
-        const translateX = -topMatchesIndex * itemWidth;
-        topMatchesSliderRef.current.style.transform = `translateX(${translateX}px)`;
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [topMatchesIndex, useNativeSliderScroll]);
-
-  // Sliders scroll only on mouse drag – no auto-slide
-
-  // Prevent link click when user just finished dragging
-  const handleSliderClickCapture = (e) => {
-    if (justDraggedRef.current) {
-      e.preventDefault();
-      e.stopPropagation();
-      justDraggedRef.current = false;
-    }
-  };
-
-  // Mouse drag-to-scroll: start drag (call from each wrapper's onMouseDown)
-  const handleSliderMouseDown = (e, config) => {
-    if (e.button !== 0 || !config.sliderRef?.current) return;
-    e.preventDefault();
-    const itemWidth = typeof config.getItemWidth === 'function' ? config.getItemWidth() : config.getItemWidth;
-    const startTranslate = -config.currentIndex * itemWidth;
-    dragStateRef.current = {
-      isDragging: true,
-      startX: e.clientX,
-      startTranslate,
-      lastTranslate: startTranslate,
-      sliderEl: config.sliderRef.current,
-      getItemWidth: config.getItemWidth,
-      itemsPerSet: config.itemsPerSet,
-      setIndex: config.setIndex,
-    };
-    document.body.style.cursor = 'grabbing';
-    document.body.style.userSelect = 'none';
-  };
-
-  // Window listeners for drag (mousemove + mouseup)
-  useEffect(() => {
-    const onMouseMove = (e) => {
-      const d = dragStateRef.current;
-      if (!d.isDragging || !d.sliderEl) return;
-      const deltaX = e.clientX - d.startX;
-      const newTranslate = d.startTranslate - deltaX;
-      d.sliderEl.style.transition = 'none';
-      d.sliderEl.style.transform = `translateX(${newTranslate}px)`;
-      d.lastTranslate = newTranslate;
-    };
-    const onMouseUp = () => {
-      const d = dragStateRef.current;
-      if (!d.isDragging || !d.sliderEl) return;
-      const moved = Math.abs(d.lastTranslate - d.startTranslate) > 5;
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-      d.isDragging = false;
-      if (moved) justDraggedRef.current = true;
-      const itemWidth = typeof d.getItemWidth === 'function' ? d.getItemWidth() : d.getItemWidth;
-      let nearestIndex = Math.round(-d.lastTranslate / itemWidth);
-      if (nearestIndex < 0) nearestIndex = 0;
-      if (nearestIndex >= d.itemsPerSet) nearestIndex = d.itemsPerSet - 1;
-      d.setIndex(nearestIndex);
-      d.sliderEl.style.transition = '';
-    };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-  }, []);
 
   // Smooth video loop
   useEffect(() => {
@@ -617,15 +449,6 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
-              onMouseDown={!useNativeSliderScroll ? (e) => handleSliderMouseDown(e, {
-                sliderRef,
-                getItemWidth: 178 + 18,
-                itemsPerSet: itemsPerSet,
-                currentIndex,
-                setIndex: setCurrentIndex,
-              }) : undefined}
-              onClickCapture={handleSliderClickCapture}
-              style={{ cursor: 'grab' }}
             >
               <div className="game_items_slider" ref={sliderRef}>
                 {topSlotsDisplayItems.map((item, index) => (
@@ -663,15 +486,6 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
-              onMouseDown={!useNativeSliderScroll ? (e) => handleSliderMouseDown(e, {
-                sliderRef: topSportsSliderRef,
-                getItemWidth: 178 + 8,
-                itemsPerSet: topSportsItemsPerSet,
-                currentIndex: topSportsIndex,
-                setIndex: setTopSportsIndex,
-              }) : undefined}
-              onClickCapture={handleSliderClickCapture}
-              style={{ cursor: 'grab' }}
             >
               <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
                 {topSportsDisplayItems.map((item, index) => (
@@ -845,14 +659,6 @@ function LandingPage() {
 
             <div
               className='match_slider_wrapper'
-              onMouseDown={!useNativeSliderScroll ? (e) => handleSliderMouseDown(e, {
-                sliderRef: topMatchesSliderRef,
-                getItemWidth: getTopMatchesItemWidth,
-                itemsPerSet: topMatchesItemsPerSet,
-                currentIndex: topMatchesIndex,
-                setIndex: setTopMatchesIndex,
-              }) : undefined}
-              onClickCapture={handleSliderClickCapture}
               style={{ cursor: 'grab' }}
             >
               <div className='match_slider_container' ref={topMatchesSliderRef}>
@@ -916,15 +722,6 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
-              onMouseDown={!useNativeSliderScroll ? (e) => handleSliderMouseDown(e, {
-                sliderRef: betCasinoSliderRef,
-                getItemWidth: 178 + 18,
-                itemsPerSet: betCasinoItemsPerSet,
-                currentIndex: betCasinoIndex,
-                setIndex: setBetCasinoIndex,
-              }) : undefined}
-              onClickCapture={handleSliderClickCapture}
-              style={{ cursor: 'grab' }}
             >
               <div className="game_items_slider mt-2" ref={betCasinoSliderRef}>
                 {betCasinoDisplayItems.map((item, index) => (
@@ -962,15 +759,6 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
-              onMouseDown={!useNativeSliderScroll ? (e) => handleSliderMouseDown(e, {
-                sliderRef: liveCasinoSliderRef,
-                getItemWidth: 178 + 18,
-                itemsPerSet: liveCasinoItemsPerSet,
-                currentIndex: liveCasinoIndex,
-                setIndex: setLiveCasinoIndex,
-              }) : undefined}
-              onClickCapture={handleSliderClickCapture}
-              style={{ cursor: 'grab' }}
             >
               <div className="game_items_slider mt-2" ref={liveCasinoSliderRef}>
                 {liveCasinoDisplayItems.map((item, index) => (
@@ -1009,15 +797,6 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
-              onMouseDown={!useNativeSliderScroll ? (e) => handleSliderMouseDown(e, {
-                sliderRef: highrollerSliderRef,
-                getItemWidth: 178 + 18,
-                itemsPerSet: highrollerItemsPerSet,
-                currentIndex: highrollerIndex,
-                setIndex: setHighrollerIndex,
-              }) : undefined}
-              onClickCapture={handleSliderClickCapture}
-              style={{ cursor: 'grab' }}
             >
               <div className="game_items_slider mt-2" ref={highrollerSliderRef}>
                 {highrollerDisplayItems.map((item, index) => (

@@ -752,60 +752,31 @@ button.slotbtn {
     padding-bottom: 32px;
 }
 
+/* Slider: native horizontal scroll desktop + mobile (search_modal jaisa) */
 .game_items_slider_wrapper {
     margin-top: 18px;
     width: 100%;
     position: relative;
-    cursor: grab;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    touch-action: pan-x;
 }
-
-.game_items_slider {
+.game_items_slider_wrapper::-webkit-scrollbar {
+    display: none;
+}
+.game_items_slider_wrapper .game_items_slider,
+.game_items_slider_wrapper .match_slider_sports {
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 17px;
-    transition: transform 0.6s ease-in-out;
-    will-change: transform;
+    transform: none !important;
     width: max-content;
+    min-width: 100%;
     flex-shrink: 0;
-}
-
-/* Mobile: native horizontal scroll like search_modal (touch scroll) */
-@media (max-width: 767px) {
-    .game_items_slider_wrapper {
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        touch-action: pan-x;
-    }
-    .game_items_slider_wrapper::-webkit-scrollbar {
-        display: none;
-    }
-    .game_items_slider_wrapper .game_items_slider,
-    .game_items_slider_wrapper .match_slider_sports {
-        transform: none !important;
-        width: max-content;
-        flex-shrink: 0;
-    }
-
-    .match_slider_wrapper {
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        touch-action: pan-x;
-    }
-    .match_slider_wrapper::-webkit-scrollbar {
-        display: none;
-    }
-    .match_slider_wrapper .match_slider_container {
-        transform: none !important;
-        width: max-content;
-        flex-shrink: 0;
-    }
 }
 
 .depositheader {
@@ -1215,17 +1186,25 @@ button.slotbtn {
 
 .match_slider_wrapper {
     width: 100%;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    touch-action: pan-x;
     margin-top: 10px;
     position: relative;
 }
-
+.match_slider_wrapper::-webkit-scrollbar {
+    display: none;
+}
 .match_slider_wrapper .match_slider_container {
     display: flex;
     gap: 20px;
     align-items: stretch;
-    transition: transform 0.6s ease-in-out;
-    will-change: transform;
+    transform: none !important;
+    width: max-content;
+    flex-shrink: 0;
 }
 
 .match_slider {
@@ -3551,7 +3530,7 @@ ul.mobile-menu li.active:before {
     }
 
     .top_match_section.sportsmatch_s {
-        margin: 0px 0px 10px;
+        margin: 20px 0px 10px;
     }
 
     .match_slider_sports_item h3 {
