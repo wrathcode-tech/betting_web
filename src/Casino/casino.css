@@ -74,12 +74,12 @@
     transition: transform 0.5s ease-in-out;
 }
 
-/* Mobile: 1.5 slides visible (one full + half next) */
+/* Mobile: 1 slide visible */
 @container casinobnr (max-width: 768px) {
     .casinobnr_gallery_slide {
-        flex: 0 0 calc((100cqw - 18px) / 1.5);
-        width: calc((100cqw - 18px) / 1.5);
-        min-width: calc((100cqw - 18px) / 1.5);
+        flex: 0 0 100%;
+        width: 100%;
+        min-width: 100%;
     }
 }
 
@@ -94,6 +94,23 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+}
+
+/* Mobile: 1 slide, left/right 20px space */
+@media (max-width: 768px) {
+    .casino_hero_section {
+        padding-left: 20px;
+        padding-right: 20px;
+        box-sizing: border-box;
+    }
+    .casinobnr_gallery_wrapper {
+        width: 100%;
+    }
+    .casinobnr_gallery_wrapper .casinobnr_gallery_slide {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        min-width: 100% !important;
+    }
 }
 
 .casinobnr_gallery_slide img {

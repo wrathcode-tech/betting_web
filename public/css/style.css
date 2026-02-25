@@ -762,7 +762,7 @@ button.slotbtn {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    touch-action: pan-x;
+    touch-action: manipulation;
 }
 .game_items_slider_wrapper::-webkit-scrollbar {
     display: none;
@@ -1191,7 +1191,7 @@ button.slotbtn {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    touch-action: pan-x;
+    touch-action: manipulation;
     margin-top: 10px;
     position: relative;
 }
@@ -1208,8 +1208,6 @@ button.slotbtn {
 }
 
 .match_slider {
-    min-width: calc((100% - 60px) / 3);
-    max-width: calc((100% - 60px) / 3);
     flex-shrink: 0;
     position: relative;
     padding: 24px;
@@ -1218,19 +1216,6 @@ button.slotbtn {
     overflow: hidden;
 }
 
-@media (max-width: 991px) {
-    .match_slider {
-        min-width: calc((100% - 20px) / 2);
-        max-width: calc((100% - 20px) / 2);
-    }
-}
-
-@media (max-width: 767px) {
-    .match_slider {
-        min-width: 100%;
-        max-width: 100%;
-    }
-}
 
 .match_slider h3 {
     color: #fff;
@@ -3489,6 +3474,9 @@ ul.mobile-menu li.active:before {
     ul.mobile-menu {
         padding: 10px 10px;
     }
+
+    .match_slider {
+        padding: 15px; }
 
     .slider_arrow_btn {
         width: 28px;

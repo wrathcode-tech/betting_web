@@ -240,15 +240,15 @@ function CasinoGame() {
     }, []);
 
     const getSlidesPerView = () => {
-        if (typeof window === 'undefined') return 1.5;
-        return window.matchMedia('(min-width: 769px)').matches ? 4 : 1.5;
+        if (typeof window === 'undefined') return 1;
+        return window.matchMedia('(min-width: 769px)').matches ? 4 : 1;
     };
     const [slidesPerView, setSlidesPerView] = useState(getSlidesPerView);
     const [layoutKey, setLayoutKey] = useState(0);
 
     useEffect(() => {
         const mq = window.matchMedia('(min-width: 769px)');
-        const update = () => setSlidesPerView(mq.matches ? 4 : 1.5);
+        const update = () => setSlidesPerView(mq.matches ? 4 : 1);
         update();
         mq.addEventListener('change', update);
         return () => mq.removeEventListener('change', update);

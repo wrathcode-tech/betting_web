@@ -36,11 +36,11 @@ function LandingPage() {
   // Hero 3D slider – 10 items (or 5), 5 visible at a time (2 left, 1 center, 2 right), infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);
   const hero3dSlides = [
-    { id: 1, src: 'images/home_bnr.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Play, bet and win with the best odds.' },
+    { id: 1, src: 'images/home_bnr.png', alt: 'game', heading: 'Favorite Mini Games.', subContent: 'Aviator, Dragon Tiger, Color Prediction, Roulette & More — Fast,' },
     { id: 2, src: 'images/home_bnr2.png', alt: 'game', heading: 'Live Casino & Slots', subContent: 'Spin the reels and join live tables.' },
     { id: 3, src: 'images/home_bnr3.png', alt: 'game', heading: 'Sports Betting', subContent: 'Cricket, Football, NBA and more.' },
     { id: 4, src: 'images/home_bnr4.png', alt: 'game', heading: 'Slots & Jackpots', subContent: 'Mega jackpots and daily bonuses.' },
-    { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Fast Payouts', subContent: 'Secure deposits and 24/7 support.' },
+    { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Aviator Pro Mode', subContent: 'Timing is everything — stay focused and grab massive multipliers.' },
     { id: 6, src: 'images/home_bnr6.png', alt: 'game', heading: 'Rank & Rewards', subContent: 'Level up and unlock exclusive perks.' },
     { id: 7, src: 'images/home_bnr7.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Play, bet and win with the best odds.' },
   ];
