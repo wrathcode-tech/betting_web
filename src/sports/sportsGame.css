@@ -42,6 +42,24 @@
     object-fit: contain;
 }
 
+/* Desktop: show desktop image, hide mobile (default) */
+.sports_bnr_gallery_slide .sports_bnr_mobile {
+    display: none;
+}
+.sports_bnr_gallery_slide .sports_bnr_desktop {
+    display: block;
+}
+
+/* Mobile: 667px tak mobile image, uske baad desktop */
+@media (max-width: 667px) {
+    .sports_bnr_gallery_slide .sports_bnr_desktop {
+        display: none;
+    }
+    .sports_bnr_gallery_slide .sports_bnr_mobile {
+        display: block;
+    }
+}
+
 /* Hero: always 1 slide per view (no 2-slide breakpoint) */
 
 .sports_bnr_arrow {

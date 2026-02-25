@@ -12,6 +12,11 @@ function SportsGame() {
         'images/sports_slider_img2.png',
         'images/sports_slider_img3.png',
     ]
+    const gallerySlidesMobile = [
+        'images/sports_bnr_mobile.jpg',
+        'images/sports_bnr_mobile2.jpg',
+        'images/sports_bnr_mobile3.jpg',
+    ]
     const [currentSlide, setCurrentSlide] = useState(0)
     const sliderRef = useRef(null)
 
@@ -190,7 +195,8 @@ function SportsGame() {
                             <div className="sports_bnr_gallery_track" ref={sliderRef}>
                                 {gallerySlides.map((image, index) => (
                                     <div key={index} className="sports_bnr_gallery_slide">
-                                        <img src={image} alt={`Sports gallery ${index + 1}`} />
+                                        <img src={image} alt={`Sports gallery ${index + 1}`} className="sports_bnr_desktop" />
+                                        <img src={gallerySlidesMobile[index]} alt={`Sports gallery ${index + 1}`} className="sports_bnr_mobile" />
                                     </div>
                                 ))}
                             </div>
