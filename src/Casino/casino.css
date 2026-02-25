@@ -74,12 +74,12 @@
     transition: transform 0.5s ease-in-out;
 }
 
-/* Mobile: 1 slide visible */
+/* Mobile: 1 slide = wrapper width (100cqw) */
 @container casinobnr (max-width: 768px) {
     .casinobnr_gallery_slide {
-        flex: 0 0 100%;
-        width: 100%;
-        min-width: 100%;
+        flex: 0 0 100cqw;
+        width: 100cqw;
+        min-width: 100cqw;
     }
 }
 
@@ -96,20 +96,18 @@
     box-sizing: border-box;
 }
 
-/* Mobile: 1 slide, left/right 20px space */
+/* Mobile: left/right 20px space, slide = wrapper width (container query se 100cqw) */
 @media (max-width: 768px) {
     .casino_hero_section {
-        padding-left: 20px;
-        padding-right: 20px;
+        padding-left: 0px;
+        padding-right: 0px;
         box-sizing: border-box;
     }
-    .casinobnr_gallery_wrapper {
-        width: 100%;
-    }
     .casinobnr_gallery_wrapper .casinobnr_gallery_slide {
-        flex: 0 0 100% !important;
-        width: 100% !important;
-        min-width: 100% !important;
+        flex: 0 0 100cqw !important;
+        width: 100cqw !important;
+        min-width: 100cqw !important;
+        box-sizing: border-box;
     }
 }
 
@@ -214,11 +212,16 @@ ul.lobbytabs_list {
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
-        scrollbar-color: rgba(249, 122, 49, 0.3) transparent;
+        scrollbar-color: transparent transparent;
         padding-bottom: 5px;
     }
 
-    /* Thin scrollbar, visible on hover/scroll */
+    ul.lobbytabs_list:hover,
+    ul.lobbytabs_list:active {
+        scrollbar-color: rgba(120, 120, 120, 0.6) transparent;
+    }
+
+    /* Scrollbar: default hidden, light color jab user hover/scroll */
     ul.lobbytabs_list::-webkit-scrollbar {
         height: 3px;
     }
@@ -228,14 +231,14 @@ ul.lobbytabs_list {
     }
 
     ul.lobbytabs_list::-webkit-scrollbar-thumb {
-        background-color: rgba(249, 122, 49, 0.3);
+        background-color: transparent;
         border-radius: 10px;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.25s ease;
     }
 
     ul.lobbytabs_list:hover::-webkit-scrollbar-thumb,
     ul.lobbytabs_list:active::-webkit-scrollbar-thumb {
-        background-color: rgba(249, 122, 49, 0.6);
+        background-color: rgba(120, 120, 120, 0.6);
     }
 
     ul.lobbytabs_list li {
@@ -251,7 +254,8 @@ ul.lobbytabs_list li {
     color: #ffffffb5;
     font-weight: 500;
     background-color: #343c45;
-    border: 1px solid #343c45;
+    border:none;
+    box-shadow: 0 4px 0px #343c45, inset 0 4px 3px #343c45;
     padding: 10px;
     border-radius: 8px;
     transition: all 0.5s;
@@ -259,16 +263,17 @@ ul.lobbytabs_list li {
 }
 
 ul.lobbytabs_list li.active {
-    background-color: #2283f6;
-    border-color: #2283f6;
+    border-color: none;
     color: #fff;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+     box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
 }
 
 ul.lobbytabs_list li span {
     font-size: 12px;
     opacity: 0;
     width: 0px;
-    color: #2283f6;
+    color: #2f2f2f;
     background-color: #ffffffec;
     padding: 3px 8px;
     font-weight: 700;

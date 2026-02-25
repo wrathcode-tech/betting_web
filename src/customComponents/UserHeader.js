@@ -174,7 +174,10 @@ export default function UserHeader() {
           </div>
           )}
         </div>
-        <button className="deposit_btn" onClick={() => navigate('/deposit')}>Deposit</button>
+        <button className="deposit_btn" onClick={() => navigate('/deposit')} aria-label="Deposit">
+          <i className="ri-add-line deposit_btn_icon" aria-hidden />
+          <span className="deposit_btn_text">Deposit</span>
+        </button>
       </div>
      
           <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>

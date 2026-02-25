@@ -348,10 +348,14 @@ ul.match_type_tabs li.active button {
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
-        scrollbar-color: rgb(72 72 72 / 30%) transparent;
+        scrollbar-color: transparent transparent;
     }
 
-    /* Thin scrollbar, visible on hover/scroll */
+    ul.match_type_tabs:hover,
+    ul.match_type_tabs:active {
+        scrollbar-color: rgba(120, 120, 120, 0.6) transparent;
+    }
+
     ul.match_type_tabs::-webkit-scrollbar {
         height: 3px;
     }
@@ -361,14 +365,14 @@ ul.match_type_tabs li.active button {
     }
 
     ul.match_type_tabs::-webkit-scrollbar-thumb {
-        background-color: rgba(249, 122, 49, 0.3);
+        background-color: transparent;
         border-radius: 10px;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.25s ease;
     }
 
     ul.match_type_tabs:hover::-webkit-scrollbar-thumb,
     ul.match_type_tabs:active::-webkit-scrollbar-thumb {
-        background-color: rgba(249, 122, 49, 0.6);
+        background-color: rgba(120, 120, 120, 0.6);
     }
 
     ul.match_type_tabs li {

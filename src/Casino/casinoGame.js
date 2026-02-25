@@ -115,12 +115,12 @@ function CasinoGame() {
     
     const duplicatedItems = [...gameItems, ...gameItems, ...gameItems];
     const gallerySlides = [
-        "images/casino_bnr_img.svg",
-        "images/casino_bnr_img2.svg",
-        "images/casino_bnr_img3.svg",
-        "images/casino_bnr_img4.svg",
-        "images/casino_bnr_img5.svg",
-        "images/casino_bnr_img6.svg",
+        "images/casino_bnr_img.png",
+        "images/casino_bnr_img2.png",
+        "images/casino_bnr_img3.png",
+        "images/casino_bnr_img4.png",
+        "images/casino_bnr_img5.png",
+        "images/casino_bnr_img6.png",
     ];
 
     // No auto-slide: banner changes only on dot click; lobby sliders on mouse drag
@@ -292,6 +292,29 @@ function CasinoGame() {
     const handleDotClick = (index) => setCurrentSlide(index);
     const isDotActive = (index) => index === currentSlide;
 
+    const bannerSwipeRef = useRef({ startX: 0 });
+    const handleBannerPointerDown = (e) => {
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
+        const el = e.currentTarget;
+        if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+        bannerSwipeRef.current.startX = e.clientX;
+    };
+    const handleBannerPointerUp = (e) => {
+        const startX = bannerSwipeRef.current.startX;
+        const deltaX = e.clientX - startX;
+        const THRESHOLD = 50;
+        const maxIdx = Math.max(0, Math.floor(gallerySlides.length - slidesPerView));
+        if (deltaX < -THRESHOLD) setCurrentSlide((prev) => (prev >= maxIdx ? 0 : prev + 1));
+        else if (deltaX > THRESHOLD) setCurrentSlide((prev) => (prev === 0 ? maxIdx : prev - 1));
+    };
+
+    useEffect(() => {
+        const t = setInterval(() => {
+            setCurrentSlide((prev) => (prev >= maxIndex ? 0 : prev + 1));
+        }, 5000);
+        return () => clearInterval(t);
+    }, [maxIndex]);
+
     const [arrowsVisible, setArrowsVisible] = useState(false);
     const touchHideTimerRef = useRef(null);
     const handleSliderEnter = () => setArrowsVisible(true);
@@ -321,6 +344,10 @@ function CasinoGame() {
                             onMouseLeave={handleSliderLeave}
                             onTouchStart={handleSliderTouchStart}
                             onTouchEnd={handleSliderTouchEnd}
+                            onPointerDown={handleBannerPointerDown}
+                            onPointerUp={handleBannerPointerUp}
+                            onPointerCancel={handleBannerPointerUp}
+                            style={{ touchAction: 'pan-y' }}
                         >
                             <button type="button" className={`casinobnr_arrow casinobnr_arrow_prev ${!canGoPrev ? 'casinobnr_arrow_disabled' : ''}`} onClick={handleBannerPrev} disabled={!canGoPrev} aria-label="Previous slide">
                                 <i className="ri-arrow-left-s-line"></i>

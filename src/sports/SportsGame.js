@@ -8,13 +8,13 @@ function SportsGame() {
     const [activeTab, setActiveTab] = useState('cricket')
 
     const gallerySlides = [
-        'images/sports_slider_img.png',
         'images/sports_slider_img2.png',
+        'images/sports_slider_img.png',
         'images/sports_slider_img3.png',
     ]
     const gallerySlidesMobile = [
-        'images/sports_bnr_mobile.jpg',
         'images/sports_bnr_mobile2.jpg',
+        'images/sports_bnr_mobile0.jpg',
         'images/sports_bnr_mobile3.jpg',
     ]
     const [currentSlide, setCurrentSlide] = useState(0)
@@ -32,7 +32,28 @@ function SportsGame() {
         sliderRef.current.style.transform = `translateX(-${currentSlide * 100}%)`
     }, [currentSlide])
 
-    const dotCount = gallerySlides.length
+    const totalSlides = gallerySlides.length
+    const dotCount = totalSlides
+
+    const bannerSwipeRef = useRef({ startX: 0 })
+    const handleBannerPointerDown = (e) => {
+        if (e.button !== 0 && e.pointerType === 'mouse') return
+        const el = e.currentTarget
+        if (el.setPointerCapture) el.setPointerCapture(e.pointerId)
+        bannerSwipeRef.current.startX = e.clientX
+    }
+    const handleBannerPointerUp = (e) => {
+        const startX = bannerSwipeRef.current.startX
+        const deltaX = e.clientX - startX
+        const THRESHOLD = 50
+        if (deltaX < -THRESHOLD) setCurrentSlide((prev) => (prev + 1) % totalSlides)
+        else if (deltaX > THRESHOLD) setCurrentSlide((prev) => (prev <= 0 ? totalSlides - 1 : prev - 1))
+    }
+
+    useEffect(() => {
+        const t = setInterval(() => setCurrentSlide((prev) => (prev + 1) % totalSlides), 5000)
+        return () => clearInterval(t)
+    }, [totalSlides])
     const handleDotClick = (index) => setCurrentSlide(index)
     const isDotActive = (index) => index === currentSlide
 
@@ -185,6 +206,10 @@ function SportsGame() {
                             onMouseLeave={handleSliderLeave}
                             onTouchStart={handleSliderTouchStart}
                             onTouchEnd={handleSliderTouchEnd}
+                            onPointerDown={handleBannerPointerDown}
+                            onPointerUp={handleBannerPointerUp}
+                            onPointerCancel={handleBannerPointerUp}
+                            style={{ touchAction: 'pan-y' }}
                         >
                             <button type="button" className="sports_bnr_arrow sports_bnr_arrow_prev" onClick={handleBannerPrev} aria-label="Previous slide">
                                 <i className="ri-arrow-left-s-line"></i>

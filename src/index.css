@@ -473,6 +473,13 @@ a.dropdown_menu_item {
 
 }
 
+@media (max-width: 767px) {
+
+.mobile-menu-wrapper .mobile-menu {
+  padding: 10px 15px; }
+
+}
+
 /* Sticky header: content ko header ke niche se shuru karo, kuch hide na ho */
 .dashboard_page,
 .new_deposit_page,

@@ -1336,8 +1336,6 @@ button.slotbtn {
     width: 100%;
     margin-top: 15px;
     justify-content: flex-start;
-    transition: transform 1.2s ease-in-out;
-    will-change: transform;
 }
 
 .match_slider_sports_item {
@@ -1453,7 +1451,7 @@ button.slotbtn {
 .playearn_big_lft {
     width: 100%;
     display: flex;
-    background: linear-gradient(136deg, rgba(19, 25, 26, 1) 20%, rgba(0, 216, 255, 1) 100%);
+    background: linear-gradient(40deg, #1D222B 25%, #A3885C 100%);
     position: relative;
     padding: 32px;
     border-radius: 8px;
@@ -1579,10 +1577,11 @@ button.slotbtn {
 .gameright_s_item {
     width: 100%;
     display: flex;
-    background: linear-gradient(144deg, rgba(73, 25, 4, 1) 0%, rgba(162, 49, 0, 1) 100%);
+    background: #1D222B;
     position: relative;
     padding: 20px 0px 0px 20px;
     border-radius: 8px;
+    position: relative;
     overflow: hidden;
     min-height: 176px;
     align-items: center;
@@ -1592,6 +1591,23 @@ button.slotbtn {
     animation: slideInFromRight 0.7s ease-out forwards;
 }
 
+.gameright_s_item::before {
+    width: 90%;
+    height: 160px;
+    background: rgba(237, 228, 214, 0.35);
+    content: '';
+    position: absolute;
+    top: 0%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    margin: 0;
+    right: auto;
+    filter: blur(28px);
+    -webkit-filter: blur(28px);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
 .gameright_s_item:nth-child(1) {
     animation-delay: 0.2s;
 }
@@ -1659,6 +1675,7 @@ button.slotbtn {
     position: absolute;
     right: -12px;
     bottom: 0px;
+    z-index: 1;
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1676,10 +1693,19 @@ button.slotbtn {
 
 .gameright_s_item_cnt {
     width: 60%;
+    position: relative;
+    z-index: 1;
 }
 
 .gameright_s_item.rewardsbg {
-    background: linear-gradient(144deg, rgba(19, 49, 19, 1) 0%, rgba(23, 210, 19, 1) 100%);
+    background: #1D222B;
+}
+
+.gameright_s_item.rewardsbg:before {
+    background: #FF8B17;
+    transform: translate(-50%, -60%);
+    filter: blur(60px);
+    -webkit-filter: blur(60px);
 }
 
 .gameright_s_item.rewardsbg:hover {
@@ -1736,32 +1762,57 @@ button.slotbtn {
 }
 
 .casinozone_s {
-    background: linear-gradient(101deg, #B445C1 0%, rgba(77, 15, 84, 1) 82%);
+    background:#1D222B;
 }
+
+.gameright_s_item.casinozone_s::before {
+    height: 100px;
+    background: #C43F3F;
+    transform: translate(-50%, -70%);
+    opacity: 0.8; }
 
 .casinozone_s:hover {
     box-shadow: 0 10px 30px rgba(180, 69, 193, 0.3);
 }
 
 .gameright_s_item.sportsbg2 {
-    background: linear-gradient(101deg, rgba(187, 105, 105, 1) 0%, rgba(95, 53, 53, 1) 100%);
+    background: #1D222B;
 }
+
+
+.gameright_s_item.sportsbg2::before {
+    height: 100px;
+    background: #DF50A2;
+    transform: translate(-50%, -70%);
+    opacity: 0.8; }
 
 .gameright_s_item.sportsbg2:hover {
     box-shadow: 0 10px 30px rgba(187, 105, 105, 0.3);
 }
 
 .gameright_s_item.rewardsbg2 {
-    background: linear-gradient(101deg, rgba(74, 54, 176, 1) 0%, rgba(46, 41, 70, 1) 100%);
+    background: #1D222B;
 }
+
+.gameright_s_item.rewardsbg2::before {
+    height: 100px;
+    background: #676CFB;
+    transform: translate(-50%, -70%);
+    opacity: 0.8; }
 
 .gameright_s_item.rewardsbg2:hover {
     box-shadow: 0 10px 30px rgba(74, 54, 176, 0.3);
 }
 
 .gameright_s_item.battlebg {
-    background: linear-gradient(101deg, rgba(165, 119, 8, 1) 0%, rgba(47, 39, 19, 1) 100%);
+    background: #1D222B;
 }
+
+.gameright_s_item.battlebg::before {
+    height: 100px;
+    background: #62A29A;
+    transform: translate(-50%, -70%);
+    opacity: 0.8; }
 
 .gameright_s_item.battlebg:hover {
     box-shadow: 0 10px 30px rgba(165, 119, 8, 0.3);
@@ -2089,6 +2140,22 @@ footer p {
 
 .modal-backdrop.show {
     z-index: 99999998 !important;
+}
+
+.casino_sport_mobile_section .casino_lft_cnt {
+    width: 100%;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    color: #fff;
+}
+
+.casino_sport_mobile_section p {
+    color: #ffffffa3;
+    margin: 0px;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 /* Mobile view - bottom slide animation for login modal */
@@ -2598,6 +2665,9 @@ button.deposit_btn {
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
+}
+button.deposit_btn .deposit_btn_icon {
+    display: none;
 }
 
 .user_header_right {
@@ -3186,6 +3256,7 @@ ul.mobile-menu li.active:before {
         font-size: 12px;
     }
 
+
     .login_tab {
         padding: 6px 12px;
         font-size: 12px;
@@ -3218,7 +3289,7 @@ ul.mobile-menu li.active:before {
     }
 
     .sidebar .setting_hdr {
-        display: flex;
+        display: none;
         color: #cbcbcb;
 
     }
@@ -3333,12 +3404,18 @@ ul.mobile-menu li.active:before {
         overflow: hidden;
     }
 
+    .casino_sport_mobile_section p{ display: none; }
+
     .header_logo img {
         width: auto;
         height: 100%;
         max-width: none;
         object-fit: cover;
         object-position: left center;
+    }
+
+    .casino_sport_mobile_section {
+        margin: 10px 0px 10px;
     }
 
     .login_hdr button {
@@ -3351,6 +3428,10 @@ ul.mobile-menu li.active:before {
 
     .topfooter {
         gap: 12px;
+    }
+
+    button.deposit_btn .deposit_btn_icon {
+        display: block;
     }
 
     .height0 .gameright_s_item_img {
@@ -3376,6 +3457,14 @@ ul.mobile-menu li.active:before {
         /* box-shadow: none; */
         padding: 5px 10px;
         font-size: 10px;
+    }
+    .depositheader .deposit_btn_text {
+        display: none;
+    }
+    .depositheader .deposit_btn_icon {
+        display: inline-block;
+        font-size: 18px;
+        line-height: 1;
     }
 
     .user_header_right .d-flex {
@@ -3572,12 +3661,19 @@ ul.mobile-menu li.active:before {
 
     .footermain {
         margin-top: 0px;
-        padding-top: 10px;
-        border-top: 1px solid #232d38;
+        padding-top:0px;
+        border-top: none;
     }
 
     ul.mobile-menu li a {
         font-size: 11px;
+    }
+
+
+    .casino_hero_s {
+        background-size: contain;
+        background-position: inherit;
+        background-repeat: no-repeat;
     }
 
     .game_items_slider {
@@ -3638,6 +3734,15 @@ ul.mobile-menu li.active:before {
 
     .game_items_slider_wrapper {
         margin-top: 7px;
+    }
+
+    /* Mobile: native horizontal scroll for sliders (TOP Sports, TOP Slots, etc.) */
+    .game_items_slider_wrapper,
+    .match_slider_wrapper {
+        overflow-x: scroll !important;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+        overflow-y: hidden;
     }
 
     .hero_vector_effect_bottom {

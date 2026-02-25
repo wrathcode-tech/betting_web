@@ -1,7 +1,6 @@
 /* Footer improvements – cleaner layout, spacing, typography */
 
 footer {
-  background:#19212c;
   padding: 24px;
   position: relative;
   margin-left: -20px;
@@ -73,10 +72,8 @@ footer .container-fluid {
 .landing_footer_section {
   display: block !important;
   visibility: visible !important;
-  background: #19212c;
   margin-left: -20px;
   padding: 24px 50px 32px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 0;
 }
 .landing_footer_section .footer_description_container {
@@ -407,4 +404,11 @@ footer .container-fluid {
     padding: 6px 0 !important;
     font-size: 12px !important;
   }
+}
+
+@media (max-width: 767px) {
+
+footer {
+  background: #19212c; }
+
 }

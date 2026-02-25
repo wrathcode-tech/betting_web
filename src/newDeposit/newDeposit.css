@@ -4,10 +4,10 @@
   min-height: 100vh;
   padding: 40px 0px;
   color: #fff;
-  background-image: url('../../public/images/profilebg.jpg');
+  /* background-image: url('../../public/images/profilebg.jpg');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
+  background-repeat: no-repeat; */
   margin-top: 30px;
 }
 
@@ -69,7 +69,7 @@ p.bank {
   gap: 12px;
   align-items: center;
   justify-content: space-between;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .payment_selected_dl ul li {
@@ -282,7 +282,7 @@ input:focus-visible {
   align-items: center;
   gap: 36px;
   justify-content: space-between;
-  background-color: #1A1A19;
+  background-color: #202a39;
   padding: 8px 18px;
   border-radius: 5px;
   max-width: 100%;

@@ -36,17 +36,40 @@ function LandingPage() {
   // Hero 3D slider – 10 items (or 5), 5 visible at a time (2 left, 1 center, 2 right), infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);
   const hero3dSlides = [
-    { id: 1, src: 'images/home_bnr.png', alt: 'game', heading: 'Favorite Mini Games.', subContent: 'Aviator, Dragon Tiger, Color Prediction, Roulette & More — Fast,' },
-    { id: 2, src: 'images/home_bnr2.png', alt: 'game', heading: 'Live Casino & Slots', subContent: 'Spin the reels and join live tables.' },
-    { id: 3, src: 'images/home_bnr3.png', alt: 'game', heading: 'Sports Betting', subContent: 'Cricket, Football, NBA and more.' },
-    { id: 4, src: 'images/home_bnr4.png', alt: 'game', heading: 'Slots & Jackpots', subContent: 'Mega jackpots and daily bonuses.' },
-    { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Aviator Pro Mode', subContent: 'Timing is everything — stay focused and grab massive multipliers.' },
-    { id: 6, src: 'images/home_bnr6.png', alt: 'game', heading: 'Rank & Rewards', subContent: 'Level up and unlock exclusive perks.' },
-    { id: 7, src: 'images/home_bnr7.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Play, bet and win with the best odds.' },
+    { id: 1, src: 'images/home_bnr.png', alt: 'game', heading: 'All Mini Games', subContent: 'Play More. Win Faster. Endless Fun Awaits.' },
+    { id: 2, src: 'images/home_bnr2.png', alt: 'game', heading: 'Sports & Betting', subContent: 'Play Smart. Bet Big. Win with the Best Odds.' },
+    { id: 3, src: 'images/home_bnr3.png', alt: 'game', heading: 'Casino', subContent: 'Play Live. Bet Bold. Win Real Rewards.' },
+    { id: 4, src: 'images/home_bnr4.png', alt: 'game', heading: 'Dragon Tiger', subContent: 'Choose Your Side. Bet Fast. Win Instantly.' },
+    { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Aviator', subContent: 'Take Off Early. Cash Out Big. Win Smart.' },
+    { id: 6, src: 'images/home_bnr6.png', alt: 'game', heading: 'Cricket', subContent: 'Level up and unlock exclusive perks.' },
+    { id: 7, src: 'images/home_bnr7.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Bet Every Ball. Play Every Moment. Win Bigger.' },
   ];
   const hero3dTotal = hero3dSlides.length;
   const hero3dOffsets = [-2, -1, 0, 1, 2];
   const getHero3dIndex = (offset) => (hero3dIndex + offset + hero3dTotal * 10) % hero3dTotal;
+
+  const hero3dSwipeRef = useRef({ startX: 0 });
+  const handleHero3dPointerDown = (e) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    const el = e.currentTarget;
+    if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+    hero3dSwipeRef.current.startX = e.clientX;
+  };
+  const handleHero3dPointerUp = (e) => {
+    const startX = hero3dSwipeRef.current.startX;
+    const deltaX = e.clientX - startX;
+    const THRESHOLD = 50;
+    if (deltaX < -THRESHOLD) setHero3dIndex((prev) => (prev + 1) % hero3dTotal);
+    else if (deltaX > THRESHOLD) setHero3dIndex((prev) => (prev === 0 ? hero3dTotal - 1 : prev - 1));
+  };
+
+  // Hero 3D slider autoplay – all views (desktop + mobile)
+  useEffect(() => {
+    const t = setInterval(() => {
+      setHero3dIndex((prev) => (prev + 1) % hero3dTotal);
+    }, 5000);
+    return () => clearInterval(t);
+  }, [hero3dTotal]);
 
   const gameItems = [
     { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
@@ -108,7 +131,7 @@ function LandingPage() {
     { id: 8, icon: null, image: 'images/highroller_gallery_img2.png' },
   ];
 
-  // TOP Sports items
+  // TOP Sports items (15 slides)
   const topSportsItems = [
     { id: 1, badge: 'Hot', icon: 'fifa_icon.svg', title: 'Match' },
     { id: 2, badge: 'Hot', icon: 'tennis_icon.svg', title: 'Tennis' },
@@ -116,6 +139,15 @@ function LandingPage() {
     { id: 4, icon: 'soccer_icon.svg', title: 'Soccer' },
     { id: 5, icon: 'horse_icon.svg', title: 'Horse Racing' },
     { id: 6, icon: 'nba_icon.svg', title: 'NBA 2K' },
+    { id: 7, icon: 'soccer_icon.svg', title: 'Football' },
+    { id: 8, icon: 'tennis_icon.svg', title: 'Table Tennis' },
+    { id: 9, icon: 'fifa_icon.svg', title: 'eSports' },
+    { id: 10, icon: 'horse_icon.svg', title: 'Greyhounds' },
+    { id: 11, icon: 'basketball_icon.svg', title: 'Ice Hockey' },
+    { id: 12, icon: 'soccer_icon.svg', title: 'Cricket' },
+    { id: 13, icon: 'tennis_icon.svg', title: 'Volleyball' },
+    { id: 14, icon: 'nba_icon.svg', title: 'Baseball' },
+    { id: 15, icon: 'fifa_icon.svg', title: 'Boxing' },
   ];
 
   // TOP Matches items
@@ -312,7 +344,13 @@ function LandingPage() {
         <div className='container'>
 
           <div className="heroslider_3d">
-            <div className="slider3d_wrapper">
+            <div
+              className="slider3d_wrapper"
+              onPointerDown={handleHero3dPointerDown}
+              onPointerUp={handleHero3dPointerUp}
+              onPointerCancel={handleHero3dPointerUp}
+              style={{ touchAction: 'pan-y' }}
+            >
               {hero3dOffsets.map((offset) => {
                 const slideIndex = getHero3dIndex(offset);
                 const slide = hero3dSlides[slideIndex];
@@ -403,7 +441,10 @@ function LandingPage() {
 
           <div className="casinobox_item">
             <Link to="/casino" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div className="casino_lft_cnt">
               <h3>Casino <i class="ri-arrow-right-s-line"></i></h3>
+              <p>Play Elite Casino Games with Bigger Rewards and Non-Stop Excitement.</p>
+              </div>
               <div className="gameimg">
                 <img src="images/casino_vector.svg" alt="game" />
               </div>
@@ -411,7 +452,10 @@ function LandingPage() {
           </div>
           <div className="casinobox_item  sport_bg">
             <Link to="/sports" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <div className="casino_lft_cnt">
               <h3>Sport <i class="ri-arrow-right-s-line"></i></h3>
+              <p>Back Your Favorite Teams with the Best Odds and Ultimate Winning Experience.</p>
+              </div>
               <div className="gameimg">
                 <img src="images/sport_vector.svg" alt="game" />
               </div>
@@ -506,7 +550,7 @@ function LandingPage() {
           </div>
         </div>
 
-        <div className="casino_sport_section">
+        {/* <div className="casino_sport_section">
           <div className="container-fluid">
             <div className="row">
               <div className="col-md-6">
@@ -544,7 +588,7 @@ function LandingPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
 
 
