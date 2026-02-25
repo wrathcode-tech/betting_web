@@ -68,11 +68,16 @@ footer .container-fluid {
   margin-bottom: 16px;
 }
 
-/* Landing page section (p_space_footer) – Secure & Private + description + Show more (desktop & mobile) */
+/* Landing page last section – sits right above footer, same look as footer */
+.p_space_footer.landing_footer_section,
 .landing_footer_section {
+  display: block !important;
+  visibility: visible !important;
+  background: #19212c;
+  margin-left: -20px;
   padding: 24px 50px 32px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  margin-top: 24px;
+  margin-top: 0;
 }
 .landing_footer_section .footer_description_container {
   margin-top: 20px;
@@ -81,6 +86,23 @@ footer .container-fluid {
   .landing_footer_section .footer_description_content {
     max-width: 100%;
   }
+}
+/* Mobile: ensure section visible, same alignment as footer */
+@media (max-width: 991px) {
+  .p_space_footer.landing_footer_section,
+  .landing_footer_section {
+    display: block !important;
+    visibility: visible !important;
+    padding: 20px 16px 28px;
+    margin-left: 0px;
+    margin-top: 24px;
+    border: none;
+  }
+}
+@media (max-width: 767px) {
+  .p_space_footer.landing_footer_section, .landing_footer_section {
+    padding: 10px 20px 0px;
+    order: 10;}
 }
 
 .footer_description_content h3 {
@@ -337,8 +359,14 @@ footer .container-fluid {
 
 @media (max-width: 991px) {
   footer {
-    padding: 32px 0 60px;
+    padding: 10px 0 60px;
+    margin-left: 0px;
   }
+
+  .mobilebgfooter {
+    padding: 0px 20px 20px;
+    margin-top: 0px;
+}
 
   .footer_description_content p {
     font-size: 12px;

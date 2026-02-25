@@ -33,6 +33,24 @@ function LandingPage() {
   // Landing about section – Show more
   const [showMore, setShowMore] = useState(false);
 
+  // Hero 3D slider – 10 items (or 5), 5 visible at a time (2 left, 1 center, 2 right), infinite repeat
+  const [hero3dIndex, setHero3dIndex] = useState(0);
+  const hero3dSlides = [
+    { id: 1, src: 'images/home_bnr.png', alt: 'game' },
+    { id: 2, src: 'images/home_bnr2.png', alt: 'game' },
+    { id: 3, src: 'images/home_bnr3.png', alt: 'game' },
+    { id: 4, src: 'images/home_bnr4.png', alt: 'game' },
+    { id: 5, src: 'images/home_bnr5.png', alt: 'game' },
+    { id: 6, src: 'images/home_bnr6.png', alt: 'game' },
+    { id: 7, src: 'images/home_bnr.png', alt: 'game' },
+    { id: 8, src: 'images/home_bnr2.png', alt: 'game' },
+    { id: 9, src: 'images/home_bnr3.png', alt: 'game' },
+    { id: 10, src: 'images/home_bnr4.png', alt: 'game' },
+  ];
+  const hero3dTotal = hero3dSlides.length;
+  const hero3dOffsets = [-2, -1, 0, 1, 2];
+  const getHero3dIndex = (offset) => (hero3dIndex + offset + hero3dTotal * 10) % hero3dTotal;
+
   // Mouse drag-to-scroll state (shared for all sliders) – no auto-slide
   const dragStateRef = useRef({
     isDragging: false,
@@ -387,8 +405,8 @@ function LandingPage() {
 
   return (
     <>
-      <div className="casino_hero_s">
-        {/* Desktop: video background */}
+      {/* <div className="casino_hero_s">
+     
         <div className="hero_bg_video_wrapper">
           <video
             ref={videoRef}
@@ -401,20 +419,20 @@ function LandingPage() {
             <source src="images/herobg.mp4" type="video/mp4" />
           </video>
         </div>
-        {/* Aviator SVG: float left-bottom → top-right, then restart (mobile) */}
+     
         <div className="hero_avitor_svg" aria-hidden="true">
           <img src="images/avitor.svg" alt="" />
         </div>
-        {/* Mobile only: Aviator (lift+right), Cricket, Casino – full animations */}
+    
         <div className="hero_mobile_animation" aria-hidden="true">
           <div className="hero_mobile_anim_bg">
             <div className="hero_mobile_bg_planet" />
             <div className="hero_mobile_bg_glow" />
           </div>
-          {/* Cricket: ball in arc + stumps (stumps on right) */}
+
           <div className="hero_mob_cricket_ball" />
           <div className="hero_mob_cricket_stumps" />
-          {/* Casino: dice roll + cards float */}
+        
           <div className="hero_mob_casino_dice"><i className="ri-dice-5-fill" aria-hidden="true" /></div>
           <div className="hero_mob_casino_card"><i className="ri-poker-spades-fill" aria-hidden="true" /></div>
           <div className="hero_mob_casino_chip" />
@@ -445,7 +463,85 @@ function LandingPage() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
+
+
+<div className='casino_hero_s'>
+<div className='container'>
+
+                      <div className="heroslider_3d">
+                        <div className="slider3d_wrapper">
+                          {hero3dOffsets.map((offset) => {
+                            const slideIndex = getHero3dIndex(offset);
+                            const slide = hero3dSlides[slideIndex];
+                            const isCenter = offset === 0;
+                            const positionClass =
+                              offset === -2 ? 'slider3d_pos_left2' :
+                              offset === -1 ? 'slider3d_pos_left1' :
+                              offset === 0 ? 'slider3d_pos_center' :
+                              offset === 1 ? 'slider3d_pos_right1' :
+                              'slider3d_pos_right2';
+                            return (
+                              <div
+                                key={`${slideIndex}-${offset}`}
+                                className={`slider3d ${positionClass} ${isCenter ? 'slider3d_active' : ''}`}
+                              >
+                                <img src={slide.src} alt={slide.alt} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="slider3d_controls">
+                          <button
+                            type="button"
+                            className="slider3d_arrow slider3d_arrow_prev"
+                            onClick={() => setHero3dIndex((prev) => (prev === 0 ? hero3dTotal - 1 : prev - 1))}
+                            aria-label="Previous slide"
+                          >
+                            <i className="ri-arrow-left-s-line" aria-hidden="true" />
+                          </button>
+                          <div className="slider3d_dots">
+                            {hero3dSlides.map((_, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                className={`slider3d_dot ${i === hero3dIndex ? 'slider3d_dot_active' : ''}`}
+                                onClick={() => setHero3dIndex(i)}
+                                aria-label={`Go to slide ${i + 1}`}
+                                aria-current={i === hero3dIndex ? 'true' : undefined}
+                              />
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            className="slider3d_arrow slider3d_arrow_next"
+                            onClick={() => setHero3dIndex((prev) => (prev === hero3dTotal - 1 ? 0 : prev + 1))}
+                            aria-label="Next slide"
+                          >
+                            <i className="ri-arrow-right-s-line" aria-hidden="true" />
+                          </button>
+                        </div>
+
+                        <div className="casino_hero_s_lft">
+                <h1><span>Your Ultimate</span> Casino &amp; Sports Gaming Hub</h1>
+                <p>Play Casino. Bet on Sports. Win Big.</p>
+
+                <div className="d-flex align-items-center gap-3 mt-4">
+                  <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
+                  <ul className="social_icons d-flex align-items-center gap-2 hero_activity_icons">
+                    <li><Link to="/casino" className="social_icon_btn" title="Casino" aria-label="Casino"><i className="ri-poker-spades-fill" /></Link></li>
+                    <li><Link to="/sports" className="social_icon_btn" title="Sports" aria-label="Sports"><i className="ri-basketball-fill" /></Link></li>
+                    <li><Link to="/game" className="social_icon_btn" title="Slots" aria-label="Slots"><i className="ri-dice-5-fill" /></Link></li>
+                    <li><Link to="/casino" className="social_icon_btn" title="Games" aria-label="Games"><i className="ri-focus-3-fill" /></Link></li>
+                  </ul>
+                </div>
+              </div>
+
+
+                      </div>
+
+</div>
+</div>      
 
 
       <div className="container-fluid mobileview">
