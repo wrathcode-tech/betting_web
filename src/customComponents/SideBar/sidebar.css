@@ -15,12 +15,23 @@
 }
 
 .sh-sub-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     padding: 12px 20px 12px 16px;
     color: #ffffffd6;
     text-decoration: none;
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
+}
+.sh-sub-title i {
+    font-size: 20px;
+    flex-shrink: 0;
+    color: #ffffff99;
+}
+.sh-sub-title_text {
+    white-space: nowrap;
 }
 
 .sidebar {
@@ -199,6 +210,20 @@
         font-size: 0;
     }
     .sidebar.sidebar_collapsed .sidebar_menu_item a span i {
+        font-size: 20px !important;
+    }
+    /* Collapsed: sh-sub-title (Other Menu) – only icon, no text */
+    .sidebar.sidebar_collapsed .sh-sub-title {
+        padding: 12px 10px 12px 14px;
+    }
+    .sidebar.sidebar_collapsed .sh-sub-title .sh-sub-title_text {
+        font-size: 0;
+        overflow: hidden;
+        width: 0;
+        opacity: 0;
+        visibility: hidden;
+    }
+    .sidebar.sidebar_collapsed .sh-sub-title i {
         font-size: 20px !important;
     }
     /* Direct links: collapsed label flyout (dusri screen) */

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import './chat.css'
 
 function Chat({ isOpen, onClose }) {
@@ -53,10 +54,24 @@ function Chat({ isOpen, onClose }) {
 
     if (!isOpen) return null
 
-    return (
+    const handleOverlayClose = (e) => {
+        if (e.button !== 0 && e.pointerType === 'mouse') return
+        e.preventDefault()
+        e.stopPropagation()
+        onClose()
+    }
+
+    const chatEl = (
         <>
-            <div className='chat_overlay' onClick={onClose}></div>
-            <div className='chat_panel'>
+            <div
+                className='chat_overlay'
+                onClick={onClose}
+                onPointerDown={handleOverlayClose}
+                aria-hidden="true"
+                role="button"
+                tabIndex={-1}
+            />
+            <div className='chat_panel' onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
                 <div className='chat_header'>
                     <div className='chat_header_left'>
                         <span className='chat_tick'>TICK:0TCAY7S</span>
@@ -115,6 +130,8 @@ function Chat({ isOpen, onClose }) {
             </div>
         </>
     )
+
+    return createPortal(chatEl, document.body)
 }
 
 export default Chat

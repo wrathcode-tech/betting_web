@@ -1,12 +1,13 @@
 /* Chat Panel Styles */
 .chat_overlay {
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 99999998;
+    z-index: 2147483647;
+    cursor: pointer;
+    pointer-events: auto;
 }
 
 .chat_panel {
@@ -17,7 +18,7 @@
     height: 100vh;
     background-color: #1A1A19;
     border-left: 1px solid #535050;
-    z-index: 99999999;
+    z-index: 2147483647;
     display: flex;
     flex-direction: column;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);

@@ -114,7 +114,10 @@ export default function SideBar({ isOpen, onClose }) {
                     <li><Link to="/game" onClick={closeIfMobile}>Bingo</Link></li>
                   </ul>
               </li> */}
-              <div class="sh-sub-title">Other Menu</div>
+              <div className="sh-sub-title">
+                <i className="ri-more-2-line" aria-hidden />
+                <span className="sh-sub-title_text">Other Menu</span>
+              </div>
               <li className="sidebar_menu_item sidebar_direct_link">
                 <Link to="/promotions" onClick={closeIfMobile}>
                   <span><i className="ri-megaphone-line" aria-hidden />Promotions</span>
