@@ -19,6 +19,7 @@ const NewDeposit = lazy(() => import("./newDeposit/newDeposit"));
 const NewWithdrawal = lazy(() => import("./newWithdrawal/newWithdrawal"));
 const AddAccount = lazy(() => import("./BankDetails/addAccount"));
 const AddBank = lazy(() => import("./BankDetails/addBank"));
+const Promotions = lazy(() => import("./promotions/Promotions"));
 
 function PageFallback() {
   return (
@@ -51,6 +52,7 @@ const Routing = () => {
               <Route path="/add-account" element={<AddAccount />} />
               <Route path="/add-bank" element={<AddBank />} />
               <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="/promotions" element={<Promotions />} />
             </Route>
           </Routes>
         </Suspense>

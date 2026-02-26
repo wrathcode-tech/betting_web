@@ -29,7 +29,7 @@ function MobileMenu() {
                     </li>
 
                     <li className={`mobile-menu__item ${!sidebarOpen && location.pathname === '/' ? 'active' : ''}`}>
-                        <NavLink to="/" end className="mobile-menu__link">
+                        <NavLink to="/" end className="mobile-menu__link" onClick={() => setSidebarOpen(true)}>
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-home-4-line"></i>
                             </span>
