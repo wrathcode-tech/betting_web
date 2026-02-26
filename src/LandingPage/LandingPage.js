@@ -1,8 +1,77 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import React, { useState, useEffect, useRef, lazy, Suspense, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import '../customComponents/Footer.css'
 
 const Footer = lazy(() => import('../customComponents/footer'));
+
+const MAX_SLIDER_ITEMS = 15
+const MAX_CONTENT_BEFORE_VIEW_ALL = MAX_SLIDER_ITEMS - 1
+
+const gameItems = [
+  { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
+  { id: 2, badge: null, image: 'images/game_itemslider2.png' },
+  { id: 3, badge: 'Top', image: 'images/game_itemslider3.png' },
+  { id: 4, badge: null, image: 'images/game_itemslider4.png' },
+  { id: 5, badge: 'Hot', image: 'images/game_itemslider5.png' },
+  { id: 6, badge: null, image: 'images/game_itemslider6.png' },
+  { id: 7, badge: null, image: 'images/game_itemslider7.png' },
+  { id: 8, badge: null, image: 'images/game_itemslider4.png' },
+]
+const betCasinoItems = [
+  { id: 1, badge: 'Top', image: 'images/betcasino_img.png' },
+  { id: 2, badge: null, image: 'images/betcasino_img2.png' },
+  { id: 3, badge: 'Top', image: 'images/betcasino_img3.png' },
+  { id: 4, badge: null, image: 'images/betcasino_img4.png' },
+  { id: 5, badge: 'Hot', image: 'images/betcasino_img5.png' },
+  { id: 6, badge: null, image: 'images/betcasino_img6.png' },
+  { id: 7, badge: null, image: 'images/betcasino_img7.png' },
+  { id: 8, badge: null, image: 'images/betcasino_img3.png' },
+]
+const liveCasinoItems = [
+  { id: 1, icon: 'worldicon', image: 'images/casino_gallery_img.png' },
+  { id: 2, icon: null, image: 'images/casino_gallery_img2.png' },
+  { id: 3, icon: 'worldicon', image: 'images/casino_gallery_img3.png' },
+  { id: 4, icon: null, image: 'images/casino_gallery_img4.png' },
+  { id: 5, icon: 'worldicon', image: 'images/casino_gallery_img5.png' },
+  { id: 6, icon: null, image: 'images/casino_gallery_img6.png' },
+  { id: 7, icon: null, image: 'images/casino_gallery_img7.png' },
+  { id: 8, icon: null, image: 'images/casino_gallery_img3.png' },
+]
+const highrollerItems = [
+  { id: 1, icon: 'worldicon', image: 'images/highroller_gallery_img.png' },
+  { id: 2, icon: null, image: 'images/highroller_gallery_img2.png' },
+  { id: 3, icon: 'worldicon', image: 'images/highroller_gallery_img3.png' },
+  { id: 4, icon: null, image: 'images/highroller_gallery_img4.png' },
+  { id: 5, icon: 'worldicon', image: 'images/highroller_gallery_img5.png' },
+  { id: 6, icon: null, image: 'images/highroller_gallery_img6.png' },
+  { id: 7, icon: null, image: 'images/highroller_gallery_img7.png' },
+  { id: 8, icon: null, image: 'images/highroller_gallery_img2.png' },
+]
+const topSportsItems = [
+  { id: 1, badge: 'Hot', icon: 'fifa_icon.svg', title: 'Match' },
+  { id: 2, badge: 'Hot', icon: 'tennis_icon.svg', title: 'Tennis' },
+  { id: 3, icon: 'basketball_icon.svg', title: 'Basketball' },
+  { id: 4, icon: 'soccer_icon.svg', title: 'Soccer' },
+  { id: 5, icon: 'horse_icon.svg', title: 'Horse Racing' },
+  { id: 6, icon: 'nba_icon.svg', title: 'NBA 2K' },
+  { id: 7, icon: 'soccer_icon.svg', title: 'Football' },
+  { id: 8, icon: 'tennis_icon.svg', title: 'Table Tennis' },
+  { id: 9, icon: 'fifa_icon.svg', title: 'eSports' },
+  { id: 10, icon: 'horse_icon.svg', title: 'Greyhounds' },
+  { id: 11, icon: 'basketball_icon.svg', title: 'Ice Hockey' },
+  { id: 12, icon: 'soccer_icon.svg', title: 'Cricket' },
+  { id: 13, icon: 'tennis_icon.svg', title: 'Volleyball' },
+  { id: 14, icon: 'nba_icon.svg', title: 'Baseball' },
+  { id: 15, icon: 'fifa_icon.svg', title: 'Boxing' },
+]
+const topMatchesItems = [
+  { id: 1, tournament: 'ICC U19 World Cup', teams: 'India vs Australia', time: 'Today 01:00 PM', viewCount: '3.12', viewK: '357K', likeCount: '3.12', likeK: '357K' },
+  { id: 2, tournament: 'Premier League', teams: 'Manchester United vs Liverpool', time: 'Today 03:30 PM', viewCount: '5.24', viewK: '421K', likeCount: '4.18', likeK: '389K' },
+  { id: 3, tournament: 'NBA Championship', teams: 'Lakers vs Warriors', time: 'Today 06:00 PM', viewCount: '7.89', viewK: '512K', likeCount: '6.45', likeK: '478K' },
+  { id: 4, tournament: 'Tennis Grand Slam', teams: 'Djokovic vs Nadal', time: 'Today 08:00 PM', viewCount: '4.56', viewK: '298K', likeCount: '3.89', likeK: '267K' },
+  { id: 5, tournament: 'Cricket T20', teams: 'Pakistan vs England', time: 'Tomorrow 02:00 PM', viewCount: '6.23', viewK: '445K', likeCount: '5.67', likeK: '412K' },
+  { id: 6, tournament: 'FIFA World Cup', teams: 'Brazil vs Argentina', time: 'Tomorrow 04:30 PM', viewCount: '9.12', viewK: '678K', likeCount: '8.45', likeK: '623K' },
+]
 
 function LandingPage() {
   const sliderRef = useRef(null);
@@ -68,29 +137,6 @@ function LandingPage() {
     return () => clearInterval(t);
   }, [hero3dTotal]);
 
-  const gameItems = [
-    { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
-    { id: 2, badge: null, image: 'images/game_itemslider2.png' },
-    { id: 3, badge: 'Top', image: 'images/game_itemslider3.png' },
-    { id: 4, badge: null, image: 'images/game_itemslider4.png' },
-    { id: 5, badge: 'Hot', image: 'images/game_itemslider5.png' },
-    { id: 6, badge: null, image: 'images/game_itemslider6.png' },
-    { id: 7, badge: null, image: 'images/game_itemslider7.png' },
-    { id: 8, badge: null, image: 'images/game_itemslider4.png' },
-  ];
-
-  // BetCasino Original items
-  const betCasinoItems = [
-    { id: 1, badge: 'Top', image: 'images/betcasino_img.png' },
-    { id: 2, badge: null, image: 'images/betcasino_img2.png' },
-    { id: 3, badge: 'Top', image: 'images/betcasino_img3.png' },
-    { id: 4, badge: null, image: 'images/betcasino_img4.png' },
-    { id: 5, badge: 'Hot', image: 'images/betcasino_img5.png' },
-    { id: 6, badge: null, image: 'images/betcasino_img6.png' },
-    { id: 7, badge: null, image: 'images/betcasino_img7.png' },
-    { id: 8, badge: null, image: 'images/betcasino_img3.png' },
-  ];
-
   // Trending section: 9 different videos (replace paths with your video files)
   const trendingVideos = [
     'images/freepik_create-a-bold-and-highenergy-animated-promo-video-_minimax_768p_16-9_24fps_68689.mp4',
@@ -104,122 +150,12 @@ function LandingPage() {
     // 'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68695.mp4',
   ];
 
-  // Live Casino items
-  const liveCasinoItems = [
-    { id: 1, icon: 'worldicon', image: 'images/casino_gallery_img.png' },
-    { id: 2, icon: null, image: 'images/casino_gallery_img2.png' },
-    { id: 3, icon: 'worldicon', image: 'images/casino_gallery_img3.png' },
-    { id: 4, icon: null, image: 'images/casino_gallery_img4.png' },
-    { id: 5, icon: 'worldicon', image: 'images/casino_gallery_img5.png' },
-    { id: 6, icon: null, image: 'images/casino_gallery_img6.png' },
-    { id: 7, icon: null, image: 'images/casino_gallery_img7.png' },
-    { id: 8, icon: null, image: 'images/casino_gallery_img3.png' },
-  ];
-
-  // Highroller Hall items
-  const highrollerItems = [
-    { id: 1, icon: 'worldicon', image: 'images/highroller_gallery_img.png' },
-    { id: 2, icon: null, image: 'images/highroller_gallery_img2.png' },
-    { id: 3, icon: 'worldicon', image: 'images/highroller_gallery_img3.png' },
-    { id: 4, icon: null, image: 'images/highroller_gallery_img4.png' },
-    { id: 5, icon: 'worldicon', image: 'images/highroller_gallery_img5.png' },
-    { id: 6, icon: null, image: 'images/highroller_gallery_img6.png' },
-    { id: 7, icon: null, image: 'images/highroller_gallery_img7.png' },
-    { id: 8, icon: null, image: 'images/highroller_gallery_img2.png' },
-  ];
-
-  // TOP Sports items (15 slides)
-  const topSportsItems = [
-    { id: 1, badge: 'Hot', icon: 'fifa_icon.svg', title: 'Match' },
-    { id: 2, badge: 'Hot', icon: 'tennis_icon.svg', title: 'Tennis' },
-    { id: 3, icon: 'basketball_icon.svg', title: 'Basketball' },
-    { id: 4, icon: 'soccer_icon.svg', title: 'Soccer' },
-    { id: 5, icon: 'horse_icon.svg', title: 'Horse Racing' },
-    { id: 6, icon: 'nba_icon.svg', title: 'NBA 2K' },
-    { id: 7, icon: 'soccer_icon.svg', title: 'Football' },
-    { id: 8, icon: 'tennis_icon.svg', title: 'Table Tennis' },
-    { id: 9, icon: 'fifa_icon.svg', title: 'eSports' },
-    { id: 10, icon: 'horse_icon.svg', title: 'Greyhounds' },
-    { id: 11, icon: 'basketball_icon.svg', title: 'Ice Hockey' },
-    { id: 12, icon: 'soccer_icon.svg', title: 'Cricket' },
-    { id: 13, icon: 'tennis_icon.svg', title: 'Volleyball' },
-    { id: 14, icon: 'nba_icon.svg', title: 'Baseball' },
-    { id: 15, icon: 'fifa_icon.svg', title: 'Boxing' },
-  ];
-
-  // TOP Matches items
-  const topMatchesItems = [
-    {
-      id: 1,
-      tournament: 'ICC U19 World Cup',
-      teams: 'India vs Australia',
-      time: 'Today 01:00 PM',
-      viewCount: '3.12',
-      viewK: '357K',
-      likeCount: '3.12',
-      likeK: '357K'
-    },
-    {
-      id: 2,
-      tournament: 'Premier League',
-      teams: 'Manchester United vs Liverpool',
-      time: 'Today 03:30 PM',
-      viewCount: '5.24',
-      viewK: '421K',
-      likeCount: '4.18',
-      likeK: '389K'
-    },
-    {
-      id: 3,
-      tournament: 'NBA Championship',
-      teams: 'Lakers vs Warriors',
-      time: 'Today 06:00 PM',
-      viewCount: '7.89',
-      viewK: '512K',
-      likeCount: '6.45',
-      likeK: '478K'
-    },
-    {
-      id: 4,
-      tournament: 'Tennis Grand Slam',
-      teams: 'Djokovic vs Nadal',
-      time: 'Today 08:00 PM',
-      viewCount: '4.56',
-      viewK: '298K',
-      likeCount: '3.89',
-      likeK: '267K'
-    },
-    {
-      id: 5,
-      tournament: 'Cricket T20',
-      teams: 'Pakistan vs England',
-      time: 'Tomorrow 02:00 PM',
-      viewCount: '6.23',
-      viewK: '445K',
-      likeCount: '5.67',
-      likeK: '412K'
-    },
-    {
-      id: 6,
-      tournament: 'FIFA World Cup',
-      teams: 'Brazil vs Argentina',
-      time: 'Tomorrow 04:30 PM',
-      viewCount: '9.12',
-      viewK: '678K',
-      likeCount: '8.45',
-      likeK: '623K'
-    },
-  ];
-
-  const MAX_SLIDER_ITEMS = 15;
-  const MAX_CONTENT_BEFORE_VIEW_ALL = MAX_SLIDER_ITEMS - 1;
-
-  const topSlotsDisplayItems = [...gameItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }];
-  const betCasinoDisplayItems = [...betCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }];
-  const liveCasinoDisplayItems = [...liveCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }];
-  const highrollerDisplayItems = [...highrollerItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }];
-  const topSportsDisplayItems = [...topSportsItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }];
-  const topMatchesDisplayItems = [...topMatchesItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }];
+  const topSlotsDisplayItems = useMemo(() => [...gameItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
+  const betCasinoDisplayItems = useMemo(() => [...betCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
+  const liveCasinoDisplayItems = useMemo(() => [...liveCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
+  const highrollerDisplayItems = useMemo(() => [...highrollerItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
+  const topSportsDisplayItems = useMemo(() => [...topSportsItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }], [])
+  const topMatchesDisplayItems = useMemo(() => [...topMatchesItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }], [])
 
   return (
     <>
@@ -342,7 +278,7 @@ function LandingPage() {
               <p>Play Elite Casino Games with Bigger Rewards and Non-Stop Excitement.</p>
               </div>
               <div className="gameimg">
-                <img src="images/casino_vector.svg" alt="game" />
+                <img src="images/casino_vector.svg" alt="game" width="120" height="120" decoding="async" />
               </div>
             </Link>
           </div>
@@ -776,7 +712,7 @@ function LandingPage() {
         <div className="p_space_footer landing_footer_section">
           <div className="d-flex topfooter">
             <div className="secure_img">
-              <img src="/images/secure.png" alt="game" />
+              <img src="/images/secure.png" alt="game" width="80" height="40" decoding="async" loading="lazy" />
             </div>
             <div className="safe_cnt">
               <h5>Secure &amp; Private</h5>

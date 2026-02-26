@@ -22,7 +22,7 @@ function Promotions() {
                 <p>Classic cards with thrilling rewards!</p>
             </div>
             <div className='promotions_img_item'>
-                <img src="images/smiling_cartoon.png" alt="Promotions" />
+                <img src="images/smiling_cartoon.png" alt="Promotions" width="200" height="200" decoding="async" loading="lazy" />
             </div>
         </div>
 
@@ -33,7 +33,7 @@ function Promotions() {
                 <p>Stay in the game and multiply your rewards.</p>
             </div>
             <div className='promotions_img_item'>
-                <img src="images/fun_chicken.png" alt="Promotions" />
+                <img src="images/fun_chicken.png" alt="Promotions" width="200" height="200" decoding="async" loading="lazy" />
             </div>
         </div>
 
@@ -44,7 +44,7 @@ function Promotions() {
                 <p>Experience the thrill of live casino games anytime.</p>
             </div>
             <div className='promotions_img_item'>
-                <img src="images/dealers_vector.png" alt="Promotions" />
+                <img src="images/dealers_vector.png" alt="Promotions" width="200" height="200" decoding="async" loading="lazy" />
             </div>
         </div>
 
@@ -68,7 +68,7 @@ function Promotions() {
                 <p>Real-Time Odds. Real-Time Thrill.</p>
             </div>
             <div className='promotions_img_item'>
-                <img src="images/basketball_vector.png" alt="Promotions" />
+                <img src="images/basketball_vector.png" alt="Promotions" width="200" height="200" decoding="async" loading="lazy" />
             </div>
         </div>
 
@@ -81,7 +81,7 @@ function Promotions() {
                 <p>Bet on every over and cash out strong!</p>
             </div>
             <div className='promotions_img_item'>
-                <img src="images/cricket_player.png" alt="Promotions" />
+                <img src="images/cricket_player.png" alt="Promotions" width="200" height="200" decoding="async" loading="lazy" />
             </div>
         </div>
 

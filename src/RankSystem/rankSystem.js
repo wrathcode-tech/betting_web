@@ -15,14 +15,14 @@ function RankSystem() {
 
                                 <ul>
                                     <li>
-                                        <img src="images/getting_rewards.svg" width={100} alt="Rank System" />
+                                        <img src="images/getting_rewards.svg" width={100} height={100} alt="Rank System" decoding="async" />
                                         <div className='rank_system_hero_s_cnt_item_cnt'>
                                             <h3>Levels &amp; Rewards</h3>
                                             <p>The more you play - the more you gain</p>
                                         </div>
                                     </li>
                                     <li>
-                                        <img src="images/coupon_gift_box.svg" width={100} alt="Rank System" />
+                                        <img src="images/coupon_gift_box.svg" width={100} height={100} alt="Rank System" decoding="async" />
                                         <div className='rank_system_hero_s_cnt_item_cnt'>
                                             <h3>Exclusive Promotions</h3>
                                             <p>Reach higher rank to unlock unique benefits</p>
@@ -42,7 +42,7 @@ function RankSystem() {
 
                         <div className='col-md-5'>
                             <div className='rank_system_hero_s_img'>
-                                <img src="images/rank_system_hero_s_img.png" alt="Rank System" />
+                                <img src="images/rank_system_hero_s_img.png" alt="Rank System" width="400" height="300" decoding="async" />
                             </div>
                         </div>
 
@@ -67,7 +67,7 @@ function RankSystem() {
                                     • Quick withdrawal • 24/7 Support</p>
                             </div>
                             <div className='work_steps_bl_item_img'>
-                                <img src="images/crownbet.png" alt="Rank System" />
+                                <img src="images/crownbet.png" alt="Rank System" width="120" height="80" decoding="async" loading="lazy" />
                             </div>
                         </div>
 
@@ -78,7 +78,7 @@ function RankSystem() {
                                     Instant payouts • Safe platform</p>
                             </div>
                             <div className='work_steps_bl_item_img'>
-                                <img src="images/betsports.png" alt="Rank System" />
+                                <img src="images/betsports.png" alt="Rank System" width="120" height="80" decoding="async" loading="lazy" />
                             </div>
                         </div>
 
@@ -89,7 +89,7 @@ function RankSystem() {
                                     Climb the leaderboard and become a champion.</p>
                             </div>
                             <div className='work_steps_bl_item_img'>
-                                <img src="images/increaserank.png" alt="Rank System" />
+                                <img src="images/increaserank.png" alt="Rank System" width="120" height="80" decoding="async" loading="lazy" />
                             </div>
                         </div>
                     </div>
@@ -105,25 +105,25 @@ function RankSystem() {
 
                 <ul>
                     <li>
-                        <img src="images/smartlevel.svg" alt="Rank System" />
+                        <img src="images/smartlevel.svg" alt="Rank System" width="80" height="80" decoding="async" loading="lazy" />
                         <h3>Smart contract #1</h3>
                         <p>Play daily and earn XP faster</p>
                     </li>
                     <li>
-                        <img src="images/smartleve2.svg" alt="Rank System" />
+                        <img src="images/smartleve2.svg" alt="Rank System" width="80" height="80" decoding="async" loading="lazy" />
                         <h3>Smart contract #2</h3>
                         <p>Unlock special bonuses at every level</p>
                     </li>
                     
                     <li>
-                        <img src="images/smartleve3.svg" alt="Rank System" />
+                        <img src="images/smartleve3.svg" alt="Rank System" width="80" height="80" decoding="async" loading="lazy" />
                         <h3>Smart contract #3</h3>
                         <p>Get VIP rewards as you level up</p>
                     </li>
                 </ul>        
 
                     <div className='bottom_img'>
-                        <img src="images/bottom_img.svg" alt="Rank System" />
+                        <img src="images/bottom_img.svg" alt="Rank System" width="200" height="100" decoding="async" loading="lazy" />
                     </div>
 
                 </div>

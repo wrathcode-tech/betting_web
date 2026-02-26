@@ -1,8 +1,8 @@
 import React, { Suspense, lazy } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useSidebar } from './context/SidebarContext'
-import Header from './customComponents/Header'
 
+const Header = lazy(() => import('./customComponents/Header'))
 const SideBar = lazy(() => import('./customComponents/SideBar/sideBar'))
 
 export default function Layout() {
@@ -10,7 +10,9 @@ export default function Layout() {
 
   return (
     <>
-      <Header />
+      <Suspense fallback={null}>
+        <Header />
+      </Suspense>
       <div className={`main_content_wrapper ${sidebarOpen ? 'sidebar_open' : 'sidebar_closed'}`}>
         <aside className="left_sidebar_side" aria-label="Sidebar">
           <Suspense fallback={null}>

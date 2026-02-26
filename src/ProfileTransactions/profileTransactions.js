@@ -131,7 +131,7 @@ function ProfileTransactions() {
     <>
       <Header />
       <div className='dashboard_page'>
-        <div className='container'>
+        <div className='container-fluid'>
           <div className='profile_transactions_section'>
             <div className='transactions_header'>
               <h1>My Transactions</h1>

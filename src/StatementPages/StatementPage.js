@@ -1,14 +1,14 @@
-import React from 'react'
+import React, { memo } from 'react'
 import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 import '../ProfileTransactions/profileTransactions.css'
 
-export default function StatementPage({ title, columns, data, emptyMessage = 'No data to display.' }) {
+function StatementPage({ title, columns, data, emptyMessage = 'No data to display.' }) {
   return (
     <>
       <Header />
       <div className="dashboard_page">
-        <div className="container">
+        <div className="container-fluid">
           <div className="profile_transactions_section">
             <div className="transactions_header">
               <h1>{title}</h1>
@@ -110,3 +110,5 @@ export default function StatementPage({ title, columns, data, emptyMessage = 'No
     </>
   )
 }
+
+export default memo(StatementPage)
