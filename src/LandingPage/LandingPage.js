@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
-import Footer from '../customComponents/footer';
-import '../customComponents/Footer.css';
+import '../customComponents/Footer.css'
+
+const Footer = lazy(() => import('../customComponents/footer'));
 
 function LandingPage() {
   const videoRef = useRef(null);
@@ -32,6 +33,22 @@ function LandingPage() {
 
   // Landing about section – Show more
   const [showMore, setShowMore] = useState(false);
+
+  // Defer trending videos until section is in view (saves ~several MB on initial load, improves LCP)
+  const [showTrendingVideos, setShowTrendingVideos] = useState(false);
+  const trendingSectionRef = useRef(null);
+  useEffect(() => {
+    const el = trendingSectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) setShowTrendingVideos(true);
+      },
+      { rootMargin: '200px', threshold: 0 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   // Hero 3D slider – 10 items (or 5), 5 visible at a time (2 left, 1 center, 2 right), infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);
@@ -470,17 +487,21 @@ function LandingPage() {
       </div>
 
 
-      <div className='trending_games_section'>
+      <div className='trending_games_section' ref={trendingSectionRef}>
         <h2 className='heading_h2'>Trending Games</h2>
 
         <div className='game_items_video'>
-          {trendingVideos.map((src, i) => (
-            <div key={i} className='game_video_bl'>
-              <video width="100%" autoPlay muted loop playsInline>
-                <source src={src} type="video/mp4" />
-              </video>
-            </div>
-          ))}
+          {showTrendingVideos
+            ? trendingVideos.map((src, i) => (
+                <div key={i} className='game_video_bl'>
+                  <video width="100%" height="auto" autoPlay muted loop playsInline loading="lazy">
+                    <source src={src} type="video/mp4" />
+                  </video>
+                </div>
+              ))
+            : trendingVideos.map((_, i) => (
+                <div key={i} className='game_video_bl' aria-hidden="true" />
+              ))}
         </div>
 
       </div>
@@ -1015,7 +1036,9 @@ function LandingPage() {
         </div>
       </div>
 
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </>
   )
 }

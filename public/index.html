@@ -2,8 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- LCP preload first so browser starts fetching hero image immediately -->
+    <link rel="preload" href="%PUBLIC_URL%/images/home_bnr.png" as="image" />
+    <link rel="preload" href="%PUBLIC_URL%/images/heroimg_chibi_fire.svg" as="image" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="Casino Game Development – Play and win." />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
@@ -18,9 +21,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <!-- LCP preloads: hero + first 3D slide -->
-    <link rel="preload" href="%PUBLIC_URL%/images/heroimg_chibi_fire.svg" as="image" />
-    <link rel="preload" href="%PUBLIC_URL%/images/home_bnr.png" as="image" />
     <!-- Preload main CSS so they start early; then load non-blocking -->
     <link rel="preload" href="%PUBLIC_URL%/css/style.css" as="style" />
     <link rel="preload" href="%PUBLIC_URL%/css/bootstrap.min.css" as="style" />
