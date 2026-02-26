@@ -3806,7 +3806,8 @@ ul.mobile-menu li.active:before {
     }
 
     .game_items_slider_wrapper {
-        margin-top: 7px;
+        margin-top: 0px;
+        padding: 10px 0px;
     }
 
     /* Mobile: horizontal slider scroll + allow vertical page scroll when touching slider */
