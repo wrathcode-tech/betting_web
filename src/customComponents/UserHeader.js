@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
+import { useCasinoProviders } from '../context/CasinoProvidersContext'
 import LoginModal from './LoginModal'
 import SideBar from './SideBar/sideBar'
 import Chat from '../cricket/Chat'
 import Search from './Search'
-import AuthService from '../api/services/AuthService'
+import { connectBalanceSocket, disconnectBalanceSocket } from '../socket/balanceSocket'
 
 const CURRENCY_LIST = [
   { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹', icon: 'images/digital_currency.svg' },
@@ -15,39 +16,36 @@ const CURRENCY_LIST = [
   { code: 'GBP', name: 'British Pound', flag: '🇬🇧', symbol: '£', icon: 'images/digital_currency.svg' },
 ];
 
-const RATES_API = 'https://open.er-api.com/v6/latest/INR';
+const INR_SYMBOL = '₹';
 
 export default function UserHeader() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [modalTab, setModalTab] = useState('login');
   const { sidebarOpen, setSidebarOpen } = useSidebar();
+  const { providers } = useCasinoProviders();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [casinoDropdownOpen, setCasinoDropdownOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [currencySearch, setCurrencySearch] = useState('');
   const [balanceInr, setBalanceInr] = useState(null);
-  const [rates, setRates] = useState(null);
   const dropdownRef = useRef(null);
+  const currencyDropdownRef = useRef(null);
+  const casinoDropdownRef = useRef(null);
 
   const balance = balanceInr != null ? Number(balanceInr) : 0;
-  const defaultCurrency = { ...CURRENCY_LIST[0], balance: '₹0.00' };
+  const defaultCurrency = { ...CURRENCY_LIST[0], balance: `${INR_SYMBOL}0.00` };
 
+  // Balance from socket only (INR) – no external rates API
+  const balanceDisplay = `${INR_SYMBOL}${balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const currencies = useMemo(() => {
-    return CURRENCY_LIST.map((c) => {
-      let displayBalance;
-      if (c.code === 'INR') {
-        displayBalance = `${c.symbol}${balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      } else if (rates && typeof rates[c.code] === 'number') {
-        const converted = balance * rates[c.code];
-        displayBalance = `${c.symbol}${converted.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      } else {
-        displayBalance = `${c.symbol}—`;
-      }
-      return { ...c, balance: displayBalance };
-    });
-  }, [balance, rates]);
+    return CURRENCY_LIST.map((c) => ({
+      ...c,
+      balance: c.code === 'INR' ? balanceDisplay : `${c.symbol}—`,
+    }));
+  }, [balanceDisplay]);
 
   const [selectedCurrencyCode, setSelectedCurrencyCode] = useState('INR');
   const selectedCurrency = currencies.find((c) => c.code === selectedCurrencyCode) || currencies[0] || defaultCurrency;
@@ -55,44 +53,41 @@ export default function UserHeader() {
     (c) => c.code.toLowerCase().includes(currencySearch.toLowerCase()) || c.name.toLowerCase().includes(currencySearch.toLowerCase())
   );
 
-  const fetchBalance = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const res = await AuthService.bettingGetBalance();
-    if (res?.success && res?.data != null) setBalanceInr(res.data.balance);
-  };
-
+  // Balance from socket only (connect after login, disconnect on logout)
   useEffect(() => {
-    fetchBalance();
+    const syncBalance = () => {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (token) {
+        connectBalanceSocket(token, (balance) => {
+          setBalanceInr(balance);
+          window.dispatchEvent(new CustomEvent('walletBalanceUpdate', { detail: { balance } }));
+        });
+      } else {
+        disconnectBalanceSocket();
+        setBalanceInr(null);
+      }
+    };
+    syncBalance();
+    window.addEventListener('loginStateChange', syncBalance);
+    return () => window.removeEventListener('loginStateChange', syncBalance);
   }, []);
 
+  // Optional: allow external updates (e.g. deposit page) to push balance into header
   useEffect(() => {
-    const onBalanceUpdate = () => fetchBalance();
-    window.addEventListener('walletBalanceUpdate', onBalanceUpdate);
-    window.addEventListener('loginStateChange', onBalanceUpdate);
-    return () => {
-      window.removeEventListener('walletBalanceUpdate', onBalanceUpdate);
-      window.removeEventListener('loginStateChange', onBalanceUpdate);
+    const onWalletUpdate = (e) => {
+      if (e.detail?.balance != null) setBalanceInr(e.detail.balance);
     };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    const fetchRates = async () => {
-      try {
-        const res = await fetch(RATES_API);
-        const data = await res.json();
-        if (!cancelled && data?.rates) setRates(data.rates);
-      } catch (_) {}
-    };
-    fetchRates();
-    return () => { cancelled = true; };
+    window.addEventListener('walletBalanceUpdate', onWalletUpdate);
+    return () => window.removeEventListener('walletBalanceUpdate', onWalletUpdate);
   }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProfileDropdownOpen(false);
+      }
+      if (casinoDropdownRef.current && !casinoDropdownRef.current.contains(event.target)) {
+        setCasinoDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -133,7 +128,7 @@ export default function UserHeader() {
         <div className="currency_balance_wrapper currency_balance_inr_only">
           <div className='d-flex align-items-center gap-2 currency_balance'>
             <span className="currency_flag_emoji" aria-hidden>🇮🇳</span>
-            <span>{selectedCurrency?.balance ?? '₹0.00'}</span>
+            <span>{balanceDisplay}</span>
           </div>
           {currencyDropdownOpen && (
           <div className="currency_dropdown">
@@ -182,6 +177,40 @@ export default function UserHeader() {
           <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>
             <img src="/images/search-icon.svg" alt="search" />
           </div>
+
+          {/* <div className="header_casino_dropdown_wrapper" ref={casinoDropdownRef} style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className="header_casino_trigger"
+              onClick={() => setCasinoDropdownOpen((o) => !o)}
+              aria-expanded={casinoDropdownOpen}
+              aria-haspopup="true"
+            >
+              <i className="ri-poker-spades-fill" aria-hidden />
+              <span>Casino</span>
+              <i className={`ri-arrow-${casinoDropdownOpen ? 'up' : 'down'}-s-line`} aria-hidden />
+            </button>
+            {casinoDropdownOpen && (
+              <div className="header_casino_dropdown" role="menu">
+                <Link to="/casino" className="header_casino_dropdown_item" onClick={() => setCasinoDropdownOpen(false)} role="menuitem">
+                  <i className="ri-gamepad-line" aria-hidden />
+                  All Games
+                </Link>
+                {providers.map((p) => (
+                  <Link
+                    key={p.code}
+                    to={`/casino?provider=${encodeURIComponent(p.code)}`}
+                    className="header_casino_dropdown_item"
+                    onClick={() => setCasinoDropdownOpen(false)}
+                    role="menuitem"
+                  >
+                    <i className="ri-poker-spades-fill" aria-hidden />
+                    {p.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div> */}
 
         <div className='user_header_right' ref={dropdownRef} style={{ position: 'relative' }}>
           <div className='d-flex' onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}>
@@ -237,7 +266,9 @@ export default function UserHeader() {
                 type="button"
                 className="dropdown_logout_btn"
                 onClick={() => {
+                  disconnectBalanceSocket();
                   sessionStorage.removeItem('token');
+                  localStorage.removeItem('token');
                   window.dispatchEvent(new CustomEvent('loginStateChange'));
                   setIsProfileDropdownOpen(false);
                   navigate('/', { replace: true });

@@ -13,8 +13,10 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
   const [showForgotConfirmPassword, setShowForgotConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const [mobile, setMobile] = useState('')
-  const [password, setPassword] = useState('')
+  const PREFILL_MOBILE = '9234567890'
+  const PREFILL_PASSWORD = 'Test@123'
+  const [mobile, setMobile] = useState(PREFILL_MOBILE)
+  const [password, setPassword] = useState(PREFILL_PASSWORD)
   const [confirmPassword, setConfirmPassword] = useState('')
   const [referralCode, setReferralCode] = useState('')
   const [otp, setOtp] = useState('')
@@ -48,8 +50,8 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
   }, [otpTimer])
 
   const resetForm = () => {
-    setMobile('')
-    setPassword('')
+    setMobile(PREFILL_MOBILE)
+    setPassword(PREFILL_PASSWORD)
     setConfirmPassword('')
     setReferralCode('')
     setOtp('')
@@ -108,6 +110,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
   }
 
   const handleSignup = async (e) => {
+    console.log("🚀 ~ handleSignup ~ e:", e)
     e.preventDefault()
     const newErrors = {}
     if (!mobile || mobile.length !== 10) {
@@ -147,6 +150,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
   }
 
   const handleLogin = async (e) => {
+    console.log("🚀 ~ handleLogin ~ e:", e)
     e.preventDefault()
     const newErrors = {}
     if (!mobile || mobile.length !== 10) {
@@ -385,13 +389,14 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
                 <div className="premium_form_group">
                   <label className="premium_form_label">Mobile number</label>
                   <input
-                    type="tel"
+                    type="number"
                     className={`premium_form_input ${errors.mobile ? 'has_error' : ''}`}
                     placeholder="e.g. 9876543210"
                     autoComplete="tel"
                     value={mobile}
                     onChange={(e) => { setMobile(e.target.value.replace(/\D/g, '').slice(0, 10)); clearFieldError('mobile') }}
                     maxLength={10}
+                    disabled={true}
                   />
                   {errors.mobile && <span className="premium_form_error">{errors.mobile}</span>}
                 </div>
@@ -432,6 +437,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
                       autoComplete={activeTab === 'login' ? 'current-password' : 'new-password'}
                       value={password}
                       onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); if (activeTab === 'signup') clearFieldError('confirmPassword') }}
+                      disabled={true}
                     />
                     <button
                       type="button"

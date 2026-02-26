@@ -1,13 +1,18 @@
-import React, { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import React, { Suspense, lazy } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import ScrollToTop from "./ScrollToTop";
 import { SidebarProvider } from "./context/SidebarContext";
+import { CasinoProvidersProvider } from "./context/CasinoProvidersContext";
 import Layout from "./Layout";
 
-// Landing is critical for first load – keep eager
-import LandingPage from "./LandingPage/LandingPage";
+function ProtectedRoute() {
+  const isLoggedIn = !!(sessionStorage.getItem("token") || localStorage.getItem("token"));
+  if (!isLoggedIn) return <Navigate to="/login" replace />;
+  return <Outlet />;
+}
 
-// Lazy-load all other routes for faster initial load and route transitions
+// Lazy load pages – only the current route's chunk loads (faster initial load)
+const LandingPage = lazy(() => import("./LandingPage/LandingPage"));
 const ProfilePage = lazy(() => import("./ProfilePage"));
 const CasinoGame = lazy(() => import("./Casino/casinoGame"));
 const CasinoCategoryPage = lazy(() => import("./Casino/CasinoCategoryPage"));
@@ -30,46 +35,58 @@ const NewDeposit = lazy(() => import("./newDeposit/newDeposit"));
 const NewWithdrawal = lazy(() => import("./newWithdrawal/newWithdrawal"));
 const AddAccount = lazy(() => import("./BankDetails/addAccount"));
 const AddBank = lazy(() => import("./BankDetails/addBank"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
 
-const LAZY_FALLBACK = null;
-
-function WrapSuspense({ children }) {
-  return <Suspense fallback={LAZY_FALLBACK}>{children}</Suspense>;
+function PageFallback() {
+  return (
+    <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0d131c" }}>
+      <div style={{ width: 40, height: 40, border: "3px solid #1e2a38", borderTopColor: "#f97a31", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+    </div>
+  );
 }
 
 const Routing = () => {
   return (
     <Router>
       <SidebarProvider>
+        <CasinoProvidersProvider>
         <ScrollToTop />
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/profile" element={<WrapSuspense><ProfilePage /></WrapSuspense>} />
-            <Route path="/casino" element={<WrapSuspense><CasinoGame /></WrapSuspense>} />
-            <Route path="/casino/category/:categoryId" element={<WrapSuspense><CasinoCategoryPage /></WrapSuspense>} />
-            <Route path="/game" element={<WrapSuspense><GamePlay /></WrapSuspense>} />
-            <Route path="/sports" element={<WrapSuspense><SportsGame /></WrapSuspense>} />
-            <Route path="/transactions" element={<WrapSuspense><ProfileTransactions /></WrapSuspense>} />
-            <Route path="/my-bets" element={<WrapSuspense><MyBets /></WrapSuspense>} />
-            <Route path="/my-wallet" element={<WrapSuspense><MyWallet /></WrapSuspense>} />
-            <Route path="/betting-profit-loss" element={<WrapSuspense><BettingProfitLoss /></WrapSuspense>} />
-            <Route path="/turnover-history" element={<WrapSuspense><TurnoverHistory /></WrapSuspense>} />
-            <Route path="/account-statement" element={<WrapSuspense><AccountStatement /></WrapSuspense>} />
-            <Route path="/bonus-statement" element={<WrapSuspense><BonusStatement /></WrapSuspense>} />
-            <Route path="/deposit-turnover" element={<WrapSuspense><DepositTurnover /></WrapSuspense>} />
-            <Route path="/cricket" element={<WrapSuspense><CricketDetail /></WrapSuspense>} />
-            <Route path="/referral" element={<WrapSuspense><ReferralProgram /></WrapSuspense>} />
-            <Route path="/rank" element={<WrapSuspense><RankSystem /></WrapSuspense>} />
-            <Route path="/deposit" element={<WrapSuspense><NewDeposit /></WrapSuspense>} />
-            <Route path="/withdrawal" element={<WrapSuspense><NewWithdrawal /></WrapSuspense>} />
-            <Route path="/add-account" element={<WrapSuspense><AddAccount /></WrapSuspense>} />
-            <Route path="/add-bank" element={<WrapSuspense><AddBank /></WrapSuspense>} />
-            <Route path="/promotions" element={<WrapSuspense><Promotions /></WrapSuspense>} />
-            <Route path="/game-rules" element={<WrapSuspense><GameRules /></WrapSuspense>} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            <Route element={<Layout />}>
+              {/* Public routes – no login required */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/casino" element={<CasinoGame />} />
+              <Route path="/casino/category/:categoryId" element={<CasinoCategoryPage />} />
+              <Route path="/sports" element={<SportsGame />} />
+              <Route path="/promotions" element={<Promotions />} />
+              <Route path="/game-rules" element={<GameRules />} />
+              {/* Protected routes – redirect to /login if not logged in */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/game" element={<GamePlay />} />
+                <Route path="/transactions" element={<ProfileTransactions />} />
+                <Route path="/my-bets" element={<MyBets />} />
+                <Route path="/my-wallet" element={<MyWallet />} />
+                <Route path="/betting-profit-loss" element={<BettingProfitLoss />} />
+                <Route path="/turnover-history" element={<TurnoverHistory />} />
+                <Route path="/account-statement" element={<AccountStatement />} />
+                <Route path="/bonus-statement" element={<BonusStatement />} />
+                <Route path="/deposit-turnover" element={<DepositTurnover />} />
+                <Route path="/cricket" element={<CricketDetail />} />
+                <Route path="/referral" element={<ReferralProgram />} />
+                <Route path="/rank" element={<RankSystem />} />
+                <Route path="/deposit" element={<NewDeposit />} />
+                <Route path="/withdrawal" element={<NewWithdrawal />} />
+                <Route path="/add-account" element={<AddAccount />} />
+                <Route path="/add-bank" element={<AddBank />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </Suspense>
+        </CasinoProvidersProvider>
       </SidebarProvider>
     </Router>
   );

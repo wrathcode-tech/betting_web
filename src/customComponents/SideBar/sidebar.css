@@ -407,6 +407,10 @@
     box-shadow: 0 3px 0 #5A2304, inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
+.deposit_withdrawal_menu_btn.active {
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
 .deposit_withdrawal_menu_btn:active {
     transform: translateY(0);
 }
@@ -530,6 +534,11 @@
 
 .sidebar_submenu li a:hover {
     color: #fff;
+}
+
+.sidebar_submenu li a.active {
+    color: #fff;
+    font-weight: 600;
 }
 
 /* Responsive */

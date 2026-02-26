@@ -74,12 +74,20 @@ const topMatchesItems = [
 ]
 
 function LandingPage() {
+  // TOP SLOTS slider state
+  const [currentIndex, setCurrentIndex] = useState(0);
   const sliderRef = useRef(null);
   const betCasinoSliderRef = useRef(null);
   const liveCasinoSliderRef = useRef(null);
   const highrollerSliderRef = useRef(null);
   const topSportsSliderRef = useRef(null);
   const topMatchesSliderRef = useRef(null);
+
+  const [betCasinoIndex, setBetCasinoIndex] = useState(0);
+  const [liveCasinoIndex, setLiveCasinoIndex] = useState(0);
+  const [highrollerIndex, setHighrollerIndex] = useState(0);
+  const [topSportsIndex, setTopSportsIndex] = useState(0);
+  const [topMatchesIndex, setTopMatchesIndex] = useState(0);
 
   const [showMore, setShowMore] = useState(false);
 
@@ -99,7 +107,7 @@ function LandingPage() {
     return () => io.disconnect();
   }, []);
 
-  // Hero 3D slider – 10 items (or 5), 5 visible at a time (2 left, 1 center, 2 right), infinite repeat
+  // Hero 3D slider – 7 items, 5 visible at a time, infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);
   const hero3dSlides = [
     { id: 1, src: 'images/home_bnr.png', alt: 'game', heading: 'All Mini Games', subContent: 'Play More. Win Faster. Endless Fun Awaits.' },
@@ -129,13 +137,48 @@ function LandingPage() {
     else if (deltaX > THRESHOLD) setHero3dIndex((prev) => (prev === 0 ? hero3dTotal - 1 : prev - 1));
   };
 
-  // Hero 3D slider autoplay – all views (desktop + mobile)
   useEffect(() => {
     const t = setInterval(() => {
       setHero3dIndex((prev) => (prev + 1) % hero3dTotal);
     }, 5000);
     return () => clearInterval(t);
   }, [hero3dTotal]);
+
+  // Mouse drag-to-scroll state (shared for all sliders)
+  const dragStateRef = useRef({
+    isDragging: false,
+    startX: 0,
+    startTranslate: 0,
+    lastTranslate: 0,
+    sliderEl: null,
+    getItemWidth: null,
+    itemsPerSet: null,
+    setIndex: null,
+  });
+  const justDraggedRef = useRef(false);
+
+  const gameItems = [
+    { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
+    { id: 2, badge: null, image: 'images/game_itemslider2.png' },
+    { id: 3, badge: 'Top', image: 'images/game_itemslider3.png' },
+    { id: 4, badge: null, image: 'images/game_itemslider4.png' },
+    { id: 5, badge: 'Hot', image: 'images/game_itemslider5.png' },
+    { id: 6, badge: null, image: 'images/game_itemslider6.png' },
+    { id: 7, badge: null, image: 'images/game_itemslider7.png' },
+    { id: 8, badge: null, image: 'images/game_itemslider4.png' },
+  ];
+
+  // BetCasino Original items
+  const betCasinoItems = [
+    { id: 1, badge: 'Top', image: 'images/betcasino_img.png' },
+    { id: 2, badge: null, image: 'images/betcasino_img2.png' },
+    { id: 3, badge: 'Top', image: 'images/betcasino_img3.png' },
+    { id: 4, badge: null, image: 'images/betcasino_img4.png' },
+    { id: 5, badge: 'Hot', image: 'images/betcasino_img5.png' },
+    { id: 6, badge: null, image: 'images/betcasino_img6.png' },
+    { id: 7, badge: null, image: 'images/betcasino_img7.png' },
+    { id: 8, badge: null, image: 'images/betcasino_img3.png' },
+  ];
 
   // Trending section: 9 different videos (replace paths with your video files)
   const trendingVideos = [
@@ -145,9 +188,6 @@ function LandingPage() {
     'images/freepik_create-a-glamorous-and-highend-animated-promo-vide_minimax_768p_16-9_24fps_68690.mp4',
     'images/freepik_create-a-vibrant-animated-promo-video-using-this-c_kling_1080p_16-9_24fps_68692.mp4',
     'images/freepik_create-a-stylish-and-engaging-animated-promo-video_kling_1080p_16-9_24fps_68691.mp4',
-    // 'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68687.mp4',
-    // 'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68688.mp4',
-    // 'images/freepik_create-a-highenergy-animated-promo-video-using-thi_kling_1080p_16-9_24fps_68695.mp4',
   ];
 
   const topSlotsDisplayItems = useMemo(() => [...gameItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
@@ -157,20 +197,174 @@ function LandingPage() {
   const topSportsDisplayItems = useMemo(() => [...topSportsItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }], [])
   const topMatchesDisplayItems = useMemo(() => [...topMatchesItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }], [])
 
+  const itemsPerSet = topSlotsDisplayItems.length;
+  const betCasinoItemsPerSet = betCasinoDisplayItems.length;
+  const liveCasinoItemsPerSet = liveCasinoDisplayItems.length;
+  const highrollerItemsPerSet = highrollerDisplayItems.length;
+  const topSportsItemsPerSet = topSportsDisplayItems.length;
+  const topMatchesItemsPerSet = topMatchesDisplayItems.length;
+
+  // TOP SLOTS slider – sync transform to index (mouse drag only)
+  useEffect(() => {
+    if (sliderRef.current) {
+      const itemWidth = 178 + 18;
+      const translateX = -currentIndex * itemWidth;
+      sliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [currentIndex]);
+
+  // BetCasino Original slider – sync transform to index
+  useEffect(() => {
+    if (betCasinoSliderRef.current) {
+      const itemWidth = 178 + 18;
+      const translateX = -betCasinoIndex * itemWidth;
+      betCasinoSliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [betCasinoIndex]);
+
+  // Live Casino slider – sync transform to index
+  useEffect(() => {
+    if (liveCasinoSliderRef.current) {
+      const itemWidth = 178 + 18;
+      const translateX = -liveCasinoIndex * itemWidth;
+      liveCasinoSliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [liveCasinoIndex]);
+
+  // Highroller Hall slider – sync transform to index
+  useEffect(() => {
+    if (highrollerSliderRef.current) {
+      const itemWidth = 178 + 18;
+      const translateX = -highrollerIndex * itemWidth;
+      highrollerSliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [highrollerIndex]);
+
+  // TOP Sports slider – sync transform to index
+  useEffect(() => {
+    if (topSportsSliderRef.current) {
+      const itemWidth = 178 + 8;
+      const translateX = -topSportsIndex * itemWidth;
+      topSportsSliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [topSportsIndex]);
+
+  // TOP Matches slider handlers
+  const getTopMatchesItemWidth = () => {
+    if (!topMatchesSliderRef.current) return 0;
+    const containerWidth = topMatchesSliderRef.current.offsetWidth;
+    const windowWidth = window.innerWidth;
+
+    if (windowWidth <= 767) {
+      // Mobile: 1 item per view
+      return containerWidth;
+    } else if (windowWidth <= 991) {
+      // Tablet: 2 items per view
+      return containerWidth / 2;
+    } else {
+      // Desktop: 3 items per view
+      return containerWidth / 3;
+    }
+  };
+
+  // TOP Matches – sync transform to index
+  useEffect(() => {
+    if (topMatchesSliderRef.current) {
+      const itemWidth = getTopMatchesItemWidth();
+      const translateX = -topMatchesIndex * itemWidth;
+      topMatchesSliderRef.current.style.transform = `translateX(${translateX}px)`;
+    }
+  }, [topMatchesIndex]);
+
+  // Handle window resize for TOP Matches slider
+  useEffect(() => {
+    const handleResize = () => {
+      if (topMatchesSliderRef.current) {
+        const itemWidth = getTopMatchesItemWidth();
+        const translateX = -topMatchesIndex * itemWidth;
+        topMatchesSliderRef.current.style.transform = `translateX(${translateX}px)`;
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [topMatchesIndex]);
+
+  // Sliders scroll only on mouse drag – no auto-slide
+
+  // Prevent link click when user just finished dragging
+  const handleSliderClickCapture = (e) => {
+    if (justDraggedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      justDraggedRef.current = false;
+    }
+  };
+
+  // Mouse drag-to-scroll: start drag (call from each wrapper's onMouseDown)
+  const handleSliderMouseDown = (e, config) => {
+    if (e.button !== 0 || !config.sliderRef?.current) return;
+    e.preventDefault();
+    const itemWidth = typeof config.getItemWidth === 'function' ? config.getItemWidth() : config.getItemWidth;
+    const startTranslate = -config.currentIndex * itemWidth;
+    dragStateRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startTranslate,
+      lastTranslate: startTranslate,
+      sliderEl: config.sliderRef.current,
+      getItemWidth: config.getItemWidth,
+      itemsPerSet: config.itemsPerSet,
+      setIndex: config.setIndex,
+    };
+    document.body.style.cursor = 'grabbing';
+    document.body.style.userSelect = 'none';
+  };
+
+  // Window listeners for drag (mousemove + mouseup)
+  useEffect(() => {
+    const onMouseMove = (e) => {
+      const d = dragStateRef.current;
+      if (!d.isDragging || !d.sliderEl) return;
+      const deltaX = e.clientX - d.startX;
+      const newTranslate = d.startTranslate - deltaX;
+      d.sliderEl.style.transition = 'none';
+      d.sliderEl.style.transform = `translateX(${newTranslate}px)`;
+      d.lastTranslate = newTranslate;
+    };
+    const onMouseUp = () => {
+      const d = dragStateRef.current;
+      if (!d.isDragging || !d.sliderEl) return;
+      const moved = Math.abs(d.lastTranslate - d.startTranslate) > 5;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      d.isDragging = false;
+      if (moved) justDraggedRef.current = true;
+      const itemWidth = typeof d.getItemWidth === 'function' ? d.getItemWidth() : d.getItemWidth;
+      let nearestIndex = Math.round(-d.lastTranslate / itemWidth);
+      if (nearestIndex < 0) nearestIndex = 0;
+      if (nearestIndex >= d.itemsPerSet) nearestIndex = d.itemsPerSet - 1;
+      d.setIndex(nearestIndex);
+      d.sliderEl.style.transition = '';
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
+
   return (
     <>
       <div className='casino_hero_s'>
-
-
-      <div className='cricket_ball_effect'>     
-        <img src="images/cricket_vector.png" alt="game" decoding="async" width="120" height="120" />
-      </div>
-
-      <div className='football_ball_effect'>     
-        <img src="images/football_vector.png" alt="game" decoding="async" width="120" height="120" />
-      </div>
+        <div className='cricket_ball_effect'>
+          <img src="images/cricket_vector.png" alt="game" decoding="async" width="120" height="120" />
+        </div>
+        <div className='football_ball_effect'>
+          <img src="images/football_vector.png" alt="game" decoding="async" width="120" height="120" />
+        </div>
         <div className='container'>
-
           <div className="heroslider_3d">
             <div
               className="slider3d_wrapper"
@@ -255,27 +449,22 @@ function LandingPage() {
               </div>
             </div>
 
-
             <div className='hero_vector_effect_bottom'>
               <img className='hero_left_vector' src="images/hero_left_vector.png" alt="game" decoding="async" width="120" height="80" />
               <img className='hero_cntr_vector' src="images/hero_cntr_vector.png" alt="game" decoding="async" width="90" height="60" />
               <img className='hero_right_vector' src="images/hero_right_vector.png" alt="game" decoding="async" width="100" height="80" />
             </div>
-
           </div>
-
         </div>
       </div>
 
-
       <div className="container-fluid mobileview">
         <div className="casino_sport_mobile_section">
-
           <div className="casinobox_item">
             <Link to="/casino" className="casino_lft link_plain">
               <div className="casino_lft_cnt">
-              <h3>Casino <i class="ri-arrow-right-s-line"></i></h3>
-              <p>Play Elite Casino Games with Bigger Rewards and Non-Stop Excitement.</p>
+                <h3>Casino <i className="ri-arrow-right-s-line"></i></h3>
+                <p>Play Elite Casino Games with Bigger Rewards and Non-Stop Excitement.</p>
               </div>
               <div className="gameimg">
                 <img src="images/casino_vector.svg" alt="game" width="120" height="120" decoding="async" />
@@ -283,10 +472,10 @@ function LandingPage() {
             </Link>
           </div>
           <div className="casinobox_item  sport_bg">
-            <Link to="/sports" className="casino_lft link_plain">
-            <div className="casino_lft_cnt">
-              <h3>Sport <i class="ri-arrow-right-s-line"></i></h3>
-              <p>Back Your Favorite Teams with the Best Odds and Ultimate Winning Experience.</p>
+            <Link to="/sports" className="casino_lft link_plain" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div className="casino_lft_cnt">
+                <h3>Sport <i className="ri-arrow-right-s-line"></i></h3>
+                <p>Back Your Favorite Teams with the Best Odds and Ultimate Winning Experience.</p>
               </div>
               <div className="gameimg">
                 <img src="images/sport_vector.svg" alt="game" />
@@ -299,7 +488,6 @@ function LandingPage() {
 
       <div className='trending_games_section' ref={trendingSectionRef}>
         <h2 className='heading_h2'>Trending Games</h2>
-
         <div className='game_items_video'>
           {showTrendingVideos
             ? trendingVideos.map((src, i) => (
@@ -313,7 +501,6 @@ function LandingPage() {
                 <div key={i} className='game_video_bl' aria-hidden="true" />
               ))}
         </div>
-
       </div>
 
 
@@ -329,6 +516,15 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef,
+                getItemWidth: 178 + 18,
+                itemsPerSet: itemsPerSet,
+                currentIndex,
+                setIndex: setCurrentIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
             >
               <div className="game_items_slider" ref={sliderRef}>
                 {topSlotsDisplayItems.map((item, index) => (
@@ -366,6 +562,15 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: topSportsSliderRef,
+                getItemWidth: 178 + 8,
+                itemsPerSet: topSportsItemsPerSet,
+                currentIndex: topSportsIndex,
+                setIndex: setTopSportsIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
             >
               <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
                 {topSportsDisplayItems.map((item, index) => (
@@ -386,7 +591,7 @@ function LandingPage() {
           </div>
         </div>
 
-        {/* <div className="casino_sport_section">
+        <div className="casino_sport_section">
           <div className="container-fluid">
             <div className="row">
               <div className="col-md-6">
@@ -424,7 +629,7 @@ function LandingPage() {
               </div>
             </div>
           </div>
-        </div> */}
+        </div>
 
 
 
@@ -538,7 +743,16 @@ function LandingPage() {
             </div>
 
             <div
-              className="match_slider_wrapper cursor_grab"
+              className='match_slider_wrapper cursor_grab'
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: topMatchesSliderRef,
+                getItemWidth: getTopMatchesItemWidth,
+                itemsPerSet: topMatchesItemsPerSet,
+                currentIndex: topMatchesIndex,
+                setIndex: setTopMatchesIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
             >
               <div className='match_slider_container' ref={topMatchesSliderRef}>
                 {topMatchesDisplayItems.map((match, index) => (
@@ -601,6 +815,15 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: betCasinoSliderRef,
+                getItemWidth: 178 + 18,
+                itemsPerSet: betCasinoItemsPerSet,
+                currentIndex: betCasinoIndex,
+                setIndex: setBetCasinoIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
             >
               <div className="game_items_slider mt-2" ref={betCasinoSliderRef}>
                 {betCasinoDisplayItems.map((item, index) => (
@@ -638,6 +861,15 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: liveCasinoSliderRef,
+                getItemWidth: 178 + 18,
+                itemsPerSet: liveCasinoItemsPerSet,
+                currentIndex: liveCasinoIndex,
+                setIndex: setLiveCasinoIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
             >
               <div className="game_items_slider mt-2" ref={liveCasinoSliderRef}>
                 {liveCasinoDisplayItems.map((item, index) => (
@@ -676,6 +908,15 @@ function LandingPage() {
 
             <div
               className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, {
+                sliderRef: highrollerSliderRef,
+                getItemWidth: 178 + 18,
+                itemsPerSet: highrollerItemsPerSet,
+                currentIndex: highrollerIndex,
+                setIndex: setHighrollerIndex,
+              })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
             >
               <div className="game_items_slider mt-2" ref={highrollerSliderRef}>
                 {highrollerDisplayItems.map((item, index) => (

@@ -4,6 +4,7 @@ import './gamePlay.css';
 import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
+import { getLastBalance } from '../socket/balanceSocket';
 
 const GAME_SESSION_KEY = 'wcoGameSession';
 
@@ -46,30 +47,41 @@ function GamePlay() {
   const stateGame = location.state || {};
   const { gameCode: stateGameCode, providerCode: stateProviderCode, gameName: stateGameName } = stateGame;
 
+  // sessionStorage me session sirf page refresh pe use hoga (casino se navigate = already cleared)
   const restored = useMemo(() => getStoredSession(), []);
 
   const [launchURL, setLaunchURL] = useState(restored?.launchURL ?? null);
-  const [balance, setBalance] = useState(restored?.balance ?? null);
+  const [balance, setBalance] = useState(restored?.balance ?? getLastBalance() ?? null);
   const [gameName, setGameName] = useState(restored?.gameName ?? stateGameName ?? '');
   const [gameCode, setGameCode] = useState(restored?.gameCode ?? stateGameCode ?? null);
   const [providerCode, setProviderCode] = useState(restored?.providerCode ?? stateProviderCode ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const hasSession = launchURL && gameCode && providerCode;
   const hasStateOrRestored = (stateGameCode && stateProviderCode) || restored;
 
+  const launchCalledRef = React.useRef(false);
+
   useEffect(() => {
-    if (restored?.launchURL && !stateGameCode && !stateProviderCode) {
+    // Page refresh: sessionStorage se restore karo; balance from socket (getLastBalance) or restored
+    if (restored?.launchURL) {
       setLaunchURL(restored.launchURL);
-      setBalance(restored.balance ?? null);
-      setGameName(restored.gameName || '');
+      setGameName(restored.gameName || stateGameName || '');
       setGameCode(restored.gameCode);
       setProviderCode(restored.providerCode);
+      const initialBalance = getLastBalance() ?? restored.balance ?? null;
+      setBalance(initialBalance);
+      if (typeof initialBalance === 'number') {
+        saveSession({ ...restored, balance: initialBalance });
+      }
       return;
     }
-    if (!stateGameCode || !stateProviderCode) return;
 
-    let cancelled = false;
+    // Casino se navigate: fresh API call (sirf ek baar — ref StrictMode me persist hota hai)
+    if (!stateGameCode || !stateProviderCode) return;
+    if (launchCalledRef.current) return;
+    launchCalledRef.current = true;
+
     setLoading(true);
     setError(null);
     setGameCode(stateGameCode);
@@ -78,7 +90,6 @@ function GamePlay() {
 
     AuthService.bettingGamesLaunch(stateGameCode, stateProviderCode, 'desktop')
       .then((res) => {
-        if (cancelled) return;
         if (res?.success && res?.data?.launchURL) {
           const d = res.data;
           setLaunchURL(d.launchURL);
@@ -96,15 +107,26 @@ function GamePlay() {
         }
       })
       .catch((err) => {
-        if (!cancelled) setError(err?.message || 'Failed to launch game');
+        setError(err?.message || 'Failed to launch game');
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       });
-
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- restored intentionally stable
   }, [stateGameCode, stateProviderCode, stateGameName, restored?.launchURL]);
+
+  // Real-time balance from socket (walletBalanceUpdate fired by UserHeader on balance event)
+  useEffect(() => {
+    const onBalance = (e) => {
+      const bal = e.detail?.balance;
+      if (typeof bal === 'number') {
+        setBalance(bal);
+        const stored = getStoredSession();
+        if (stored) saveSession({ ...stored, balance: bal });
+      }
+    };
+    window.addEventListener('walletBalanceUpdate', onBalance);
+    return () => window.removeEventListener('walletBalanceUpdate', onBalance);
+  }, []);
 
   const handleBack = () => {
     clearStoredSession();

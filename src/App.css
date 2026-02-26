@@ -41,3 +41,60 @@
 .Toastify__toast-container {
   z-index: 2147483647 !important;
 }
+
+/* Header Casino dropdown (All Games + providers from context) */
+.header_casino_dropdown_wrapper {
+  position: relative;
+}
+.header_casino_trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(52, 60, 69, 0.9);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.header_casino_trigger:hover {
+  background: rgba(249, 122, 49, 0.9);
+}
+.header_casino_trigger i:first-of-type {
+  font-size: 18px;
+}
+.header_casino_dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  min-width: 180px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #1e2a38;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  padding: 6px 0;
+}
+.header_casino_dropdown_item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  color: #fff;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.header_casino_dropdown_item:hover {
+  background: rgba(249, 122, 49, 0.25);
+  color: #fff;
+}
+.header_casino_dropdown_item i {
+  font-size: 16px;
+  opacity: 0.9;
+}

@@ -199,51 +199,69 @@
 }
 
 
+.casino_provider_category_tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+ul.lobbytabs_list_providers,
+ul.lobbytabs_list_categories {
+    flex-wrap: nowrap;
+}
+
+.lobbytab_category_thumb {
+    width: 24px;
+    height: 24px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.lobbytab_category_icon {
+    font-size: 20px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
 ul.lobbytabs_list {
     display: flex;
     gap: 8px;
     align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(120, 120, 120, 0.6) transparent;
+    padding-bottom: 5px;
 }
 
-/* Mobile scroll for lobbytabs_list */
-@media (max-width: 991px) {
-    ul.lobbytabs_list {
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-        scrollbar-color: transparent transparent;
-        padding-bottom: 5px;
-    }
+ul.lobbytabs_list:hover,
+ul.lobbytabs_list:active {
+    scrollbar-color: rgba(120, 120, 120, 0.6) transparent;
+}
 
-    ul.lobbytabs_list:hover,
-    ul.lobbytabs_list:active {
-        scrollbar-color: rgba(120, 120, 120, 0.6) transparent;
-    }
+ul.lobbytabs_list::-webkit-scrollbar {
+    height: 4px;
+}
 
-    /* Scrollbar: default hidden, light color jab user hover/scroll */
-    ul.lobbytabs_list::-webkit-scrollbar {
-        height: 3px;
-    }
+ul.lobbytabs_list::-webkit-scrollbar-track {
+    background: transparent;
+}
 
-    ul.lobbytabs_list::-webkit-scrollbar-track {
-        background: transparent;
-    }
+ul.lobbytabs_list::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.6);
+    border-radius: 10px;
+}
 
-    ul.lobbytabs_list::-webkit-scrollbar-thumb {
-        background-color: transparent;
-        border-radius: 10px;
-        transition: background-color 0.25s ease;
-    }
-
-    ul.lobbytabs_list:hover::-webkit-scrollbar-thumb,
-    ul.lobbytabs_list:active::-webkit-scrollbar-thumb {
-        background-color: rgba(120, 120, 120, 0.6);
-    }
-
-    ul.lobbytabs_list li {
-        flex-shrink: 0;
-    }
+ul.lobbytabs_list li {
+    flex-shrink: 0;
 }
 
 ul.lobbytabs_list li {
@@ -477,4 +495,12 @@ ul.lobbytabs_list li.active span {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
+}
+.loader-color{
+    color: #AC5422;
+}
+
+.provider-tab-color{
+    background: #2283f6 !important;
+    box-shadow: 0 4px 0px #1466c8, inset 0 4px 3px #ffffff4d !important;
 }

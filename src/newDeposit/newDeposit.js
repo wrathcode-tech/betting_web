@@ -194,7 +194,7 @@ function NewDeposit() {
                     className="premium_form_input"
                     value={bankTransferMethod}
                     onChange={(e) => setBankTransferMethod(e.target.value)}
-                    style={{ width: '100%', maxWidth: '320px', padding: '10px 12px', }}
+                    style={{ width: '100%', maxWidth: '320px', padding: '10px 12px' }}
                   >
                     {BANK_TRANSFER_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
