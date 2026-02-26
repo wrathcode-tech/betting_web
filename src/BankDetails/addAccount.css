@@ -389,11 +389,22 @@
 .enter_filed.d-flex button.otp_btn {
   border: none;
   color: #fff;
+  white-space: nowrap;
   font-weight: 500;
   background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
   box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
   border-radius: 50px;
   padding: 4px 15px;
+}
+
+button.cancel_btn {
+  background: #343c45;
+  border: 1px solid rgb(255 255 255 / 7%);
+  color: rgb(255, 255, 255);
+  padding: 8px 16px;
+  border-radius: 50px;
+  box-shadow: none;
+  margin-top: 0px;
 }
 
 .add_account_from_dl.withdrawal_from_dl .enter_amount_deposit label,
@@ -405,6 +416,8 @@
 
 @media (max-width: 767px) {
 
+
+  .right_content_side .container{ padding: 0px; }
 
   .bank_list_item {
     padding: 14px 16px;
@@ -449,5 +462,14 @@
     width: 30px;
     height: 30px;
     font-size: 18px; }
+
+body  .payment_btn button {
+  font-size: 12px;
+  padding: 7px 22px;
+}  
+
+.add_account_from_dl.withdrawal_from_dl .enter_amount_deposit label, .withdrawal_from_dl .enter_amount_deposit label {
+  font-size: 11px;
+}
 
 }

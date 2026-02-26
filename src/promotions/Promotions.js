@@ -26,7 +26,7 @@ function Promotions() {
             </div>
         </div>
 
-        <div className='promotions_block'>
+        <div className='promotions_block runfast_block'>
             <div className='promotions_content_item'>
                 <h2>Run Fast. 
                 Win Big.</h2>
@@ -37,7 +37,7 @@ function Promotions() {
             </div>
         </div>
 
-        <div className='promotions_block'>
+        <div className='promotions_block realdealers_block'>
             <div className='promotions_content_item'>
                 <h2>Real Dealers. 
                 Real Action.</h2>
@@ -49,7 +49,7 @@ function Promotions() {
         </div>
 
 
-        <div className='promotions_block'>
+        <div className='promotions_block startbig_block'>
             <div className='promotions_content_item'>
                 <h2>Start Big. 
                 Win Bigger.</h2>

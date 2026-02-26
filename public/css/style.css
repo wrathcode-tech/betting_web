@@ -766,9 +766,11 @@ button.slotbtn {
     -ms-overflow-style: none;
     touch-action: manipulation;
 }
+
 .game_items_slider_wrapper::-webkit-scrollbar {
     display: none;
 }
+
 .game_items_slider_wrapper .game_items_slider,
 .game_items_slider_wrapper .match_slider_sports {
     display: flex;
@@ -1197,9 +1199,11 @@ button.slotbtn {
     margin-top: 10px;
     position: relative;
 }
+
 .match_slider_wrapper::-webkit-scrollbar {
     display: none;
 }
+
 .match_slider_wrapper .match_slider_container {
     display: flex;
     gap: 20px;
@@ -1610,6 +1614,7 @@ button.slotbtn {
     pointer-events: none;
     z-index: 0;
 }
+
 .gameright_s_item:nth-child(1) {
     animation-delay: 0.2s;
 }
@@ -1764,14 +1769,15 @@ button.slotbtn {
 }
 
 .casinozone_s {
-    background:#1D222B;
+    background: #1D222B;
 }
 
 .gameright_s_item.casinozone_s::before {
     height: 100px;
     background: #C43F3F;
     transform: translate(-50%, -70%);
-    opacity: 0.8; }
+    opacity: 0.8;
+}
 
 .casinozone_s:hover {
     box-shadow: 0 10px 30px rgba(180, 69, 193, 0.3);
@@ -1786,7 +1792,8 @@ button.slotbtn {
     height: 100px;
     background: #DF50A2;
     transform: translate(-50%, -70%);
-    opacity: 0.8; }
+    opacity: 0.8;
+}
 
 .gameright_s_item.sportsbg2:hover {
     box-shadow: 0 10px 30px rgba(187, 105, 105, 0.3);
@@ -1800,7 +1807,8 @@ button.slotbtn {
     height: 100px;
     background: #676CFB;
     transform: translate(-50%, -70%);
-    opacity: 0.8; }
+    opacity: 0.8;
+}
 
 .gameright_s_item.rewardsbg2:hover {
     box-shadow: 0 10px 30px rgba(74, 54, 176, 0.3);
@@ -1814,7 +1822,8 @@ button.slotbtn {
     height: 100px;
     background: #62A29A;
     transform: translate(-50%, -70%);
-    opacity: 0.8; }
+    opacity: 0.8;
+}
 
 .gameright_s_item.battlebg:hover {
     box-shadow: 0 10px 30px rgba(165, 119, 8, 0.3);
@@ -2668,6 +2677,7 @@ button.deposit_btn {
     font-weight: 500;
     cursor: pointer;
 }
+
 button.deposit_btn .deposit_btn_icon {
     display: none;
 }
@@ -2885,9 +2895,17 @@ ul.mobile-menu li.active:before {
     width: 200px;
 }
 
-.cricket_ball_effect img{ width: 100%; height: 100%; object-fit: cover; }
+.cricket_ball_effect img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
-.football_ball_effect img{ width: 100%; height: 100%; object-fit: cover; }
+.football_ball_effect img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
 @media (max-width: 1440px) {
 
@@ -3108,7 +3126,7 @@ ul.mobile-menu li.active:before {
 
     .football_ball_effect {
         width: 120px;
-    } 
+    }
 
     img.hero_left_vector {
         width: 250px;
@@ -3410,7 +3428,9 @@ ul.mobile-menu li.active:before {
         overflow: hidden;
     }
 
-    .casino_sport_mobile_section p{ display: none; }
+    .casino_sport_mobile_section p {
+        display: none;
+    }
 
     .header_logo img {
         width: auto;
@@ -3429,8 +3449,13 @@ ul.mobile-menu li.active:before {
         height: 36px;
     }
 
-    .cricket_ball_effect{ display: none; }
-    .football_ball_effect{ display: none; }
+    .cricket_ball_effect {
+        display: none;
+    }
+
+    .football_ball_effect {
+        display: none;
+    }
 
     .topfooter {
         gap: 12px;
@@ -3464,9 +3489,11 @@ ul.mobile-menu li.active:before {
         padding: 5px 10px;
         font-size: 10px;
     }
+
     .depositheader .deposit_btn_text {
         display: none;
     }
+
     .depositheader .deposit_btn_icon {
         display: inline-block;
         font-size: 18px;
@@ -3498,7 +3525,9 @@ ul.mobile-menu li.active:before {
         height: 24px;
     }
 
-    .hero_vector_effect_bottom{ display: block; }
+    .hero_vector_effect_bottom {
+        display: block;
+    }
 
     .casino_hero_s h1 {
         font-size: 20px;
@@ -3571,7 +3600,8 @@ ul.mobile-menu li.active:before {
     }
 
     .match_slider {
-        padding: 15px; }
+        padding: 15px;
+    }
 
     .slider_arrow_btn {
         width: 28px;
@@ -3667,7 +3697,7 @@ ul.mobile-menu li.active:before {
 
     .footermain {
         margin-top: 0px;
-        padding-top:0px;
+        padding-top: 0px;
         border-top: none;
     }
 
@@ -3796,8 +3826,8 @@ ul.mobile-menu li.active:before {
     }
 
     .top_slot_outer.top_slot_outer_casino {
-    padding-bottom: 0px;
-}
+        padding-bottom: 0px;
+    }
 
 }
 
@@ -3806,6 +3836,15 @@ ul.mobile-menu li.active:before {
 
     ul.mobile-menu {
         padding: 10px 16px;
+    }
+
+    .login_hdr button.signup_btn {
+        padding: 0 10px;
+        font-size: 11px;
+    }
+
+    header.auth_header .header_logo {
+        height: 30px;
     }
 
 }

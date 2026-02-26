@@ -265,18 +265,17 @@ function AddAccount() {
                     </button>
                   </div>
                 </div>
-                <div className="payment_btn">
+                <div className="payment_btn d-flex justify-content-between gap-3">
                   <button type="submit" disabled={addLoading || !otpSent}>
                     {addLoading ? 'Adding...' : 'Add Account'}
                   </button>
                   <button
                     type="button"
-                    className="btn btn-outline-secondary ms-2"
+                    className="btn btn-outline-secondary ms-2 cancel_btn"
                     onClick={() => {
                       setShowBankForm(false);
                       setOtpSent(false);
                     }}
-                    style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', padding: '8px 16px', borderRadius: '8px' }}
                   >
                     Cancel
                   </button>
