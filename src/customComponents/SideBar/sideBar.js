@@ -101,7 +101,7 @@ export default function SideBar({ isOpen, onClose }) {
                     <li><Link to="/sports" onClick={closeIfMobile}>Horse Racing</Link></li>
                   </ul>
               </li>
-              <li className={`sidebar_menu_item ${openSubmenu === 'other' ? 'active' : ''}`}>
+              {/* <li className={`sidebar_menu_item ${openSubmenu === 'other' ? 'active' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('other'); }}>
                   <i className={openSubmenu === 'other' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
                   <span><i className="ri-more-2-line" aria-hidden style={{ fontSize: '20px' }} />Other</span>
@@ -113,9 +113,10 @@ export default function SideBar({ isOpen, onClose }) {
                     <li><Link to="/game" onClick={closeIfMobile}>Poker</Link></li>
                     <li><Link to="/game" onClick={closeIfMobile}>Bingo</Link></li>
                   </ul>
-              </li>
+              </li> */}
+              <div class="sh-sub-title">Other Menu</div>
               <li className="sidebar_menu_item sidebar_direct_link">
-                <Link to="/" onClick={closeIfMobile}>
+                <Link to="/promotions" onClick={closeIfMobile}>
                   <span><i className="ri-megaphone-line" aria-hidden />Promotions</span>
                   <span className="sidebar_collapsed_label">Promotions</span>
                 </Link>

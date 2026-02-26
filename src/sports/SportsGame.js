@@ -4,7 +4,7 @@ import './sportsGame.css'
 import MobileMenu from '../customComponents/MobileMenu'
 
 const GALLERY_SLIDES = ['images/sports_slider_img2.png', 'images/sports_slider_img.png', 'images/sports_slider_img3.png']
-const GALLERY_SLIDES_MOBILE = ['images/sports_bnr_mobile2.jpg', 'images/sports_bnr_mobile0.jpg', 'images/sports_bnr_mobile3.jpg']
+const GALLERY_SLIDES_MOBILE = ['images/sports_bnr_mobile2.jpg', 'images/sports_bnr_mobile.jpg', 'images/sports_bnr_mobile3.jpg']
 const TABS = [
     { id: 'cricket', label: 'Cricket', icon: 'images/menu-icon19.svg' },
     { id: 'tennis', label: 'Tennis', icon: 'images/menu-icon20.svg' },

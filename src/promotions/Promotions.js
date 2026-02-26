@@ -61,7 +61,7 @@ function Promotions() {
         </div>
 
 
-        <div className='promotions_block'>
+        <div className='promotions_block basketball_block'>
             <div className='promotions_content_item'>
                 <h2>Basketball 
                 Bets</h2>
@@ -74,7 +74,7 @@ function Promotions() {
 
 
 
-        <div className='promotions_block'>
+        <div className='promotions_block cricket_block'>
             <div className='promotions_content_item'>
                 <h2>Play Smart. 
                 Score More.</h2>
