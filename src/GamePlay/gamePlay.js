@@ -56,7 +56,6 @@ function GamePlay() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const hasSession = launchURL && gameCode && providerCode;
   const hasStateOrRestored = (stateGameCode && stateProviderCode) || restored;
 
   useEffect(() => {
@@ -104,6 +103,7 @@ function GamePlay() {
       });
 
     return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- restored intentionally stable
   }, [stateGameCode, stateProviderCode, stateGameName, restored?.launchURL]);
 
   const handleBack = () => {

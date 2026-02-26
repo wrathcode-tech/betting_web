@@ -30,7 +30,6 @@ export default function UserHeader() {
   const [balanceInr, setBalanceInr] = useState(null);
   const [rates, setRates] = useState(null);
   const dropdownRef = useRef(null);
-  const currencyDropdownRef = useRef(null);
 
   const balance = balanceInr != null ? Number(balanceInr) : 0;
   const defaultCurrency = { ...CURRENCY_LIST[0], balance: '₹0.00' };

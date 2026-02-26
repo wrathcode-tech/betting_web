@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './referralProgram.css'
 import MobileMenu from '../customComponents/MobileMenu'
@@ -6,6 +6,18 @@ import MobileMenu from '../customComponents/MobileMenu'
 function ReferralProgram() {
     const navigate = useNavigate()
     const [activeTab, setActiveTab] = useState('dashboard')
+    const belowFoldRef = useRef(null)
+    const [showBelowFold, setShowBelowFold] = useState(false)
+    useEffect(() => {
+        const el = belowFoldRef.current
+        if (!el) return
+        const io = new IntersectionObserver(
+            (entries) => { if (entries[0].isIntersecting) setShowBelowFold(true) },
+            { rootMargin: '200px', threshold: 0 }
+        )
+        io.observe(el)
+        return () => io.disconnect()
+    }, [])
 
     return (
         <>
@@ -38,7 +50,7 @@ function ReferralProgram() {
                                     <ul>
                                         <li>
                                             <div className='referral_profit_tl_item'>
-                                                <img src="images/total_profit.svg" alt="profit" />
+                                                <img src="images/total_profit.svg" alt="profit" width="48" height="48" decoding="async" fetchPriority="high" />
                                             </div>
                                             <div className='referral_profit_tl_item_cnt'>
                                                 <h5>My total profit: <span><i className="ri-error-warning-line"></i></span></h5>
@@ -49,7 +61,7 @@ function ReferralProgram() {
 
                                         <li>
                                             <div className='referral_profit_tl_item'>
-                                                <img src="images/total_referrals.svg" alt="profit" />
+                                                <img src="images/total_referrals.svg" alt="profit" width="48" height="48" decoding="async" fetchPriority="high" />
                                             </div>
                                             <div className='referral_profit_tl_item_cnt'>
                                                 <h5>Total referrals  <span><i className="ri-error-warning-line"></i></span></h5>
@@ -67,13 +79,15 @@ function ReferralProgram() {
                                     </ul>
 
                                     <div className='notification_icon'>
-                                        <img src="images/notification_icon.svg" alt="notification" />
+                                        <img src="images/notification_icon.png" alt="notification" width="24" height="24" decoding="async" />
                                     </div>
 
                                 </div>
                             </div>
 
-
+                            <div ref={belowFoldRef} className="referral_sentinel" aria-hidden="true" />
+                            {showBelowFold ? (
+                            <>
                             <div className='referral_campaign_section'>
                                 <h4>My referral campaign <span>DEFAULT</span></h4>
 
@@ -114,9 +128,6 @@ function ReferralProgram() {
 
 
                             </div>
-
-
-                        </div>
 
                         <div className='balance_section'>
                             <h5>My balance</h5>
@@ -766,10 +777,10 @@ function ReferralProgram() {
                                 <h5>Live rewards</h5>
 
                                 <div className='totalrewards_bl'>
-                                    <img className='rewards_iconleft' src="images/rewards_icon.svg" alt="rewards" />
+                                    <img className='rewards_iconleft' src="images/rewards_icon.png" alt="rewards" />
                                     <span>Total Rewards Sent To-Date</span>
                                     <h6>$5,710,545.5</h6>
-                                    <img className='rewards_iconright' src="images/rewards_icon.svg" alt="rewards" />
+                                    <img className='rewards_iconright' src="images/rewards_icon.png" alt="rewards" />
                                 </div>
 
                                 <div className='table-responsive'>
@@ -910,6 +921,11 @@ function ReferralProgram() {
                                 </div>
                             </div>
                         </div>
+                            </>
+                            ) : (
+                                <div className="referral_below_fold_placeholder" aria-hidden="true" />
+                            )}
+                            </div>
                             </div>
                         )}
 
@@ -947,7 +963,7 @@ function ReferralProgram() {
                                 
                                 <div className='referrals_no_data'>
                                     <div className='no_data_icon'>
-                                        <img src="images/no_found.svg" alt="no data" />
+                                        {/* <img src="images/no_found.svg" alt="no data" /> */}
                                     </div>
                                     <p className='no_data_message'>OOps! You don't have data to display</p>
                                 </div>

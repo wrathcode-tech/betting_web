@@ -47,6 +47,21 @@ a {
     transition: 0.5s all;
 }
 
+.link_plain {
+    color: inherit;
+    cursor: pointer;
+}
+
+.link_plain_block {
+    display: block;
+    color: inherit;
+    cursor: pointer;
+}
+
+.cursor_grab {
+    cursor: grab;
+}
+
 img {
     max-width: 100%;
     height: auto;
@@ -231,6 +246,7 @@ header {
     min-height: 400px;
     position: relative;
     overflow: hidden;
+    touch-action: pan-y;
     width: 100%;
 }
 
@@ -756,7 +772,7 @@ button.slotbtn {
 
 /* Slider: native horizontal scroll desktop + mobile (search_modal jaisa) */
 .game_items_slider_wrapper {
-    margin-top: 18px;
+    padding: 18px 0px;
     width: 100%;
     position: relative;
     overflow-x: auto;
@@ -1341,7 +1357,6 @@ button.slotbtn {
 
 .match_slider_sports {
     width: 100%;
-    margin-top: 15px;
     justify-content: flex-start;
 }
 
@@ -1485,7 +1500,17 @@ button.slotbtn {
 
 .playearn_big_lft:hover {
     transform: translateY(-5px) scale(1.01);
-    box-shadow: 0 15px 40px rgba(0, 216, 255, 0.3);
+    box-shadow: 0 8px 32px rgb(79 72 62);
+}
+
+.gameright_s_item.height0.casinozone_s:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 8px 24px rgba(87, 43, 50, 0.811);
+}
+
+.gameright_s_item.luckstarts:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 8px 24px rgb(76 77 80 / 91%);
 }
 
 .playearn_big_rgt {
@@ -1717,7 +1742,7 @@ button.slotbtn {
 }
 
 .gameright_s_item.rewardsbg:hover {
-    box-shadow: 0 12px 35px rgba(23, 210, 19, 0.3);
+    box-shadow: 0 8px 24px rgb(170 99 32 / 37%);
 }
 
 .gameright_s_item.rewardsbg .gameright_s_item_img {
@@ -1827,7 +1852,7 @@ button.slotbtn {
 }
 
 .gameright_s_item.battlebg:hover {
-    box-shadow: 0 10px 30px rgba(165, 119, 8, 0.3);
+    box-shadow: 0 8px 24px rgb(62 96 96 / 64%);
 }
 
 .playearn_section .row {
@@ -1869,6 +1894,17 @@ footer {
 
 .footer_description_container {
     margin-bottom: 12px;
+}
+
+.footer_description_content {
+    max-height: 320px;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
+    position: relative;
+}
+
+.footer_description_content.footer_description_content_expanded {
+    max-height: none;
 }
 
 .footer_description_content h3 {

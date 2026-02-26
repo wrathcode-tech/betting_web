@@ -5,33 +5,13 @@ import '../customComponents/Footer.css'
 const Footer = lazy(() => import('../customComponents/footer'));
 
 function LandingPage() {
-  const videoRef = useRef(null);
-
-  // TOP SLOTS slider state
-  const [currentIndex, setCurrentIndex] = useState(0);
   const sliderRef = useRef(null);
-
-  // BetCasino Original slider state
-  const [betCasinoIndex, setBetCasinoIndex] = useState(0);
   const betCasinoSliderRef = useRef(null);
-
-  // Live Casino slider state
-  const [liveCasinoIndex, setLiveCasinoIndex] = useState(0);
   const liveCasinoSliderRef = useRef(null);
-
-  // Highroller Hall slider state
-  const [highrollerIndex, setHighrollerIndex] = useState(0);
   const highrollerSliderRef = useRef(null);
-
-  // TOP Sports slider state
-  const [topSportsIndex, setTopSportsIndex] = useState(0);
   const topSportsSliderRef = useRef(null);
-
-  // TOP Matches slider state
-  const [topMatchesIndex, setTopMatchesIndex] = useState(0);
   const topMatchesSliderRef = useRef(null);
 
-  // Landing about section – Show more
   const [showMore, setShowMore] = useState(false);
 
   // Defer trending videos until section is in view (saves ~several MB on initial load, improves LCP)
@@ -241,113 +221,8 @@ function LandingPage() {
   const topSportsDisplayItems = [...topSportsItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }];
   const topMatchesDisplayItems = [...topMatchesItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }];
 
-  const itemsPerSet = topSlotsDisplayItems.length;
-  const betCasinoItemsPerSet = betCasinoDisplayItems.length;
-  const liveCasinoItemsPerSet = liveCasinoDisplayItems.length;
-  const highrollerItemsPerSet = highrollerDisplayItems.length;
-  const topSportsItemsPerSet = topSportsDisplayItems.length;
-  const topMatchesItemsPerSet = topMatchesDisplayItems.length;
-
-  // Smooth video loop
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleTimeUpdate = () => {
-      // When video is near the end (last 0.5 seconds), fade out
-      if (video.duration - video.currentTime < 0.5) {
-        video.style.opacity = '0';
-      }
-    };
-
-    const handleEnded = () => {
-      // Fade in when video restarts
-      video.currentTime = 0;
-      video.style.opacity = '1';
-      video.play();
-    };
-
-    const handleSeeking = () => {
-      // Fade in when video seeks (for smooth restart)
-      if (video.currentTime < 0.1) {
-        video.style.opacity = '1';
-      }
-    };
-
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('ended', handleEnded);
-    video.addEventListener('seeking', handleSeeking);
-
-    return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('ended', handleEnded);
-      video.removeEventListener('seeking', handleSeeking);
-    };
-  }, []);
-
   return (
     <>
-      {/* <div className="casino_hero_s">
-     
-        <div className="hero_bg_video_wrapper">
-          <video
-            ref={videoRef}
-            className="hero_bg_video"
-            autoPlay
-            loop
-            muted
-            playsInline
-          >
-            <source src="images/herobg.mp4" type="video/mp4" />
-          </video>
-        </div>
-     
-        <div className="hero_avitor_svg" aria-hidden="true">
-          <img src="images/avitor.svg" alt="" />
-        </div>
-    
-        <div className="hero_mobile_animation" aria-hidden="true">
-          <div className="hero_mobile_anim_bg">
-            <div className="hero_mobile_bg_planet" />
-            <div className="hero_mobile_bg_glow" />
-          </div>
-
-          <div className="hero_mob_cricket_ball" />
-          <div className="hero_mob_cricket_stumps" />
-        
-          <div className="hero_mob_casino_dice"><i className="ri-dice-5-fill" aria-hidden="true" /></div>
-          <div className="hero_mob_casino_card"><i className="ri-poker-spades-fill" aria-hidden="true" /></div>
-          <div className="hero_mob_casino_chip" />
-        </div>
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col-md-6">
-              <div className="casino_hero_s_lft">
-                <h1><span>Your Ultimate</span> Casino &amp; Sports Gaming Hub</h1>
-                <p>Play Casino. Bet on Sports. Win Big.</p>
-
-                <div className="d-flex align-items-center gap-3 mt-4">
-                  <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
-                  <ul className="social_icons d-flex align-items-center gap-2 hero_activity_icons">
-                    <li><Link to="/casino" className="social_icon_btn" title="Casino" aria-label="Casino"><i className="ri-poker-spades-fill" /></Link></li>
-                    <li><Link to="/sports" className="social_icon_btn" title="Sports" aria-label="Sports"><i className="ri-basketball-fill" /></Link></li>
-                    <li><Link to="/game" className="social_icon_btn" title="Slots" aria-label="Slots"><i className="ri-dice-5-fill" /></Link></li>
-                    <li><Link to="/casino" className="social_icon_btn" title="Games" aria-label="Games"><i className="ri-focus-3-fill" /></Link></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-6">
-              <div className="casino_bnr_img">
-                <img fetchPriority="high" src="images/heroimg_chibi_fire.svg" alt="casino" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> */}
-
-
       <div className='casino_hero_s'>
 
 
@@ -366,7 +241,6 @@ function LandingPage() {
               onPointerDown={handleHero3dPointerDown}
               onPointerUp={handleHero3dPointerUp}
               onPointerCancel={handleHero3dPointerUp}
-              style={{ touchAction: 'pan-y' }}
             >
               {hero3dOffsets.map((offset) => {
                 const slideIndex = getHero3dIndex(offset);
@@ -462,7 +336,7 @@ function LandingPage() {
         <div className="casino_sport_mobile_section">
 
           <div className="casinobox_item">
-            <Link to="/casino" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to="/casino" className="casino_lft link_plain">
               <div className="casino_lft_cnt">
               <h3>Casino <i class="ri-arrow-right-s-line"></i></h3>
               <p>Play Elite Casino Games with Bigger Rewards and Non-Stop Excitement.</p>
@@ -473,7 +347,7 @@ function LandingPage() {
             </Link>
           </div>
           <div className="casinobox_item  sport_bg">
-            <Link to="/sports" className="casino_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to="/sports" className="casino_lft link_plain">
             <div className="casino_lft_cnt">
               <h3>Sport <i class="ri-arrow-right-s-line"></i></h3>
               <p>Back Your Favorite Teams with the Best Odds and Ultimate Winning Experience.</p>
@@ -523,11 +397,11 @@ function LandingPage() {
               <div className="game_items_slider" ref={sliderRef}>
                 {topSlotsDisplayItems.map((item, index) => (
                   item.viewAll ? (
-                    <Link key="view-all-slots" to={item.to} className="game_items_inner slider_view_all_card" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key="view-all-slots" to={item.to} className="game_items_inner slider_view_all_card link_plain">
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key={`${item.id}-${index}`} to="/casino" className="game_items_inner link_plain">
                       <div className='playbtn'>
                         <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
@@ -560,7 +434,7 @@ function LandingPage() {
               <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
                 {topSportsDisplayItems.map((item, index) => (
                   item.viewAll ? (
-                    <Link key="view-all-sports" to={item.to} className="match_slider_sports_item slider_view_all_card sports_view_all" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key="view-all-sports" to={item.to} className="match_slider_sports_item slider_view_all_card sports_view_all link_plain">
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
@@ -580,7 +454,7 @@ function LandingPage() {
           <div className="container-fluid">
             <div className="row">
               <div className="col-md-6">
-                <Link to="/casino" className="casino_sport_section_lft" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link to="/casino" className="casino_sport_section_lft link_plain">
                   <div className="cntlft">
                     <h3>Casino</h3>
                     <p>Enjoy BetFury Originals and other casino games from top providers.</p>
@@ -591,7 +465,7 @@ function LandingPage() {
                 </Link>
               </div>
               <div className="col-md-6">
-                <Link to="/sports" className="casino_sport_section_lft sport_bg" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link to="/sports" className="casino_sport_section_lft sport_bg link_plain">
                   <div className="cntlft">
                     <h3>Sport</h3>
                     <p>Bet on popular sports events with high odds and other great features.</p>
@@ -636,7 +510,7 @@ function LandingPage() {
               <div className='col-md-4 desktopview'>
                 <div className='gameright_s d-flex'>
 
-                  <div className='gameright_s_item'>
+                  <div className='gameright_s_item luckstarts'>
                     <div className='gameright_s_item_cnt'>
                       <h4>YOUR LUCK
                         STARTS HERE</h4>
@@ -661,7 +535,7 @@ function LandingPage() {
               </div>
 
               <div className='col-md-3 desktopview'>
-                <Link to="/casino" className='gameright_s_item height0 casinozone_s' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                <Link to="/casino" className='gameright_s_item height0 casinozone_s link_plain_block'>
                   <div className='gameright_s_item_cnt'>
                     <h4>Casino Zone</h4>
                     <p>Slots, cards & instant win games</p>
@@ -674,7 +548,7 @@ function LandingPage() {
               </div>
 
               <div className='col-md-3 desktopview'>
-                <Link to="/sports" className='gameright_s_item height0 sportsbg2' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                <Link to="/sports" className='gameright_s_item height0 sportsbg2 link_plain_block'>
                   <div className='gameright_s_item_cnt'>
                     <h4>Sports Arena</h4>
                     <p>Live matches & smart predictions</p>
@@ -687,7 +561,7 @@ function LandingPage() {
               </div>
 
               <div className='col-md-3 desktopview'>
-                <Link to="/rank" className='gameright_s_item height0 rewardsbg2' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                <Link to="/rank" className='gameright_s_item height0 rewardsbg2 link_plain_block'>
                   <div className='gameright_s_item_cnt'>
                     <h4>Daily Rewards</h4>
                     <p>Log in daily and unlock exciting gifts.</p>
@@ -701,7 +575,7 @@ function LandingPage() {
 
 
               <div className='col-md-3 desktopview'>
-                <Link to="/rank" className='gameright_s_item height0 battlebg' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                <Link to="/rank" className='gameright_s_item height0 battlebg link_plain_block'>
                   <div className='gameright_s_item_cnt'>
                     <h4>Battle Mode</h4>
                     <p>Compete with others and climb the leaderboard.</p>
@@ -721,24 +595,23 @@ function LandingPage() {
         <div className="top_match_section sportsmatch_s">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
-              <Link to="/sports" style={{ textDecoration: 'none', color: 'inherit' }}><h2 className="heading_h2" style={{ cursor: 'pointer' }}>TOP Matches</h2></Link>
+              <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">TOP Matches</h2></Link>
               <div className="top_hd_right d-flex align-items-center gap-2">
                 <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
               </div>
             </div>
 
             <div
-              className='match_slider_wrapper'
-              style={{ cursor: 'grab' }}
+              className="match_slider_wrapper cursor_grab"
             >
               <div className='match_slider_container' ref={topMatchesSliderRef}>
                 {topMatchesDisplayItems.map((match, index) => (
                   match.viewAll ? (
-                    <Link key="view-all-matches" to={match.to} className='match_slider slider_view_all_card matches_view_all' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key="view-all-matches" to={match.to} className='match_slider slider_view_all_card matches_view_all link_plain_block'>
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`topmatch-${match.id}-${index}`} to="/sports" className='match_slider' style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key={`topmatch-${match.id}-${index}`} to="/sports" className='match_slider link_plain_block'>
                       <div className='match_slider_inner'>
                         <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
                           <div className='hd_match d-flex align-items-center gap-2'>
@@ -796,11 +669,11 @@ function LandingPage() {
               <div className="game_items_slider mt-2" ref={betCasinoSliderRef}>
                 {betCasinoDisplayItems.map((item, index) => (
                   item.viewAll ? (
-                    <Link key="view-all-betcasino" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key="view-all-betcasino" to={item.to} className="game_items_inner slider_view_all_card link_plain_block">
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`betcasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key={`betcasino-${item.id}-${index}`} to="/casino" className="game_items_inner link_plain_block">
                       <div className='playbtn'>
                         <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
@@ -833,11 +706,11 @@ function LandingPage() {
               <div className="game_items_slider mt-2" ref={liveCasinoSliderRef}>
                 {liveCasinoDisplayItems.map((item, index) => (
                   item.viewAll ? (
-                    <Link key="view-all-livecasino" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key="view-all-livecasino" to={item.to} className="game_items_inner slider_view_all_card link_plain_block">
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`livecasino-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key={`livecasino-${item.id}-${index}`} to="/casino" className="game_items_inner link_plain_block">
                       <div className='playbtn'>
                         <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
@@ -871,11 +744,11 @@ function LandingPage() {
               <div className="game_items_slider mt-2" ref={highrollerSliderRef}>
                 {highrollerDisplayItems.map((item, index) => (
                   item.viewAll ? (
-                    <Link key="view-all-highroller" to={item.to} className="game_items_inner slider_view_all_card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key="view-all-highroller" to={item.to} className="game_items_inner slider_view_all_card link_plain_block">
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`highroller-${item.id}-${index}`} to="/casino" className="game_items_inner" style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key={`highroller-${item.id}-${index}`} to="/casino" className="game_items_inner link_plain_block">
                       <div className='playbtn'>
                         <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
@@ -912,13 +785,7 @@ function LandingPage() {
           </div>
           <div className="footer_description_container">
             <div
-              className="footer_description_content crownbet_content"
-              style={{
-                maxHeight: showMore ? 'none' : '320px',
-                overflow: 'hidden',
-                transition: 'max-height 0.4s ease-out',
-                position: 'relative',
-              }}
+              className={`footer_description_content crownbet_content ${showMore ? 'footer_description_content_expanded' : ''}`}
             >
               <h2 className="crownbet_title">Sports Betting at CrownBet</h2>
               <p>CrownBet is a modern sports betting platform where you can wager on thousands of sports events across global markets. Live odds, pre-match options, fast payouts, and a seamless betting experience — that’s what you get here.</p>

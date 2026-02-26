@@ -108,7 +108,7 @@
 .premium_login_right {
   flex: 1;
   width: 100%;
-  padding: 40px 44px 44px;
+  padding: 40px 0px 44px;
   display: flex;
   flex-direction: column;
   max-width: 440px;

@@ -79,6 +79,7 @@ function ProfileTransactions() {
 
   useEffect(() => {
     fetchTransactions(1, getTypeParam())
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- run on typeFilter change only
   }, [typeFilter])
 
   const handlePrev = () => {

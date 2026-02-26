@@ -6,10 +6,9 @@ import './sidebar.css'
 const MOBILE_BREAKPOINT = 991
 
 export default function SideBar({ isOpen, onClose }) {
-  const { setSidebarOpen } = useSidebar()
+  useSidebar()
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const sidebarRef = useRef(null);
-  const isCollapsed = !isOpen
 
   const closeIfMobile = () => {
     if (typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT) {

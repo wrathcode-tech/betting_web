@@ -8,10 +8,10 @@ function CasinoGame() {
     const navigate = useNavigate();
     const [currentSlide, setCurrentSlide] = useState(0);
     const [activeTab, setActiveTab] = useState('lobby');
-    const [providers, setProviders] = useState([]);
+    const [, setProviders] = useState([]);
     const [featuredGames, setFeaturedGames] = useState([]);
     const [allGames, setAllGames] = useState([]);
-    const [gamesLoading, setGamesLoading] = useState(false);
+    const [, setGamesLoading] = useState(false);
     const [slotsGames, setSlotsGames] = useState([]);
     const [liveGames, setLiveGames] = useState([]);
     const [tableGames, setTableGames] = useState([]);
@@ -46,7 +46,7 @@ function CasinoGame() {
             AuthService.bettingGamesByCategory('all', 1, 200).then((r) => r?.data?.games || []),
         ]).then(([provs, featured, all]) => {
             if (!cancelled) {
-                setProviders(Array.isArray(provs) ? provs : [])
+                setProviders(Array.isArray(provs) ? provs : []);
                 setFeaturedGames(Array.isArray(featured) ? featured : [])
                 setAllGames(Array.isArray(all) ? all : [])
             }

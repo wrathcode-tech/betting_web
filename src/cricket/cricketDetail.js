@@ -5,6 +5,8 @@ import MobileMenu from '../customComponents/MobileMenu'
 function CricketDetail() {
     const scrollContainerRef = useRef(null)
     const betslipContentRef = useRef(null)
+    const marketsSectionRef = useRef(null)
+    const [showMarketsSection, setShowMarketsSection] = useState(false)
     const [activeTab, setActiveTab] = useState('all')
     const [closedBlocks, setClosedBlocks] = useState(new Set())
     const [isBetslipOpen, setIsBetslipOpen] = useState(false)
@@ -97,6 +99,18 @@ function CricketDetail() {
             scrollContainer.scrollTop = scrollContainer.scrollHeight
         }
     }, [selectedBets])
+
+    // Defer heavy markets section until in view for faster FCP/LCP
+    useEffect(() => {
+        const el = marketsSectionRef.current
+        if (!el) return
+        const io = new IntersectionObserver(
+            (entries) => { if (entries[0].isIntersecting) setShowMarketsSection(true) },
+            { rootMargin: '200px', threshold: 0 }
+        )
+        io.observe(el)
+        return () => io.disconnect()
+    }, [])
 
     return (
         <>
@@ -198,21 +212,21 @@ function CricketDetail() {
                         <div className='match_info_section_wrapper'>
                             <div className='cricket_info_inner'>
                                 <div className='cricket_vector_icon'>
-                                    <img src="images/t20_vector.svg" alt="cricket" />
+                                    <img src="images/t20_vector.svg" alt="cricket" width="48" height="48" decoding="async" fetchPriority="high" />
                                 </div>
                                 <h2>Premier League, Women</h2>
                                 <div className='cricket_info_content'>
                                     <div className='vs_vector_icon'>
-                                        <img src="images/vs_vector.svg" alt="cricket" />
+                                        <img src="images/vs_vector.svg" alt="cricket" width="40" height="24" decoding="async" />
                                     </div>
 
-                                    <img className='team_bg_img' src="images/team_bg.svg" alt="cricket" />
+                                    <img className='team_bg_img' src="images/team_bg.svg" alt="cricket" width="400" height="200" decoding="async" fetchPriority="high" />
 
                                     <div className='d-flex align-items-center gap-2 team_dlex'>
 
                                         <div className='team_cricket_bl'>
                                             <div className='team_logo_lft'>
-                                                <img src="images/rcb_vector.svg" alt="cricket" />
+                                                <img src="images/rcb_vector.svg" alt="Royal Challengers Bengaluru" width="64" height="64" decoding="async" loading="eager" />
                                             </div>
                                             <p>Royal Challengers
                                                 Bengaluru</p>
@@ -220,7 +234,7 @@ function CricketDetail() {
 
                                         <div className='team_cricket_bl rightreverse'>
                                             <div className='team_logo_lft'>
-                                                <img src="images/delhi_vector.svg" alt="cricket" />
+                                                <img src="images/delhi_vector.svg" alt="Delhi Capitals" width="64" height="64" decoding="async" loading="eager" />
                                             </div>
                                             <p>Delhi
                                                 Capitals</p>
@@ -231,7 +245,9 @@ function CricketDetail() {
                             </div>
                         </div>
 
-                        <div className='cricket_summary_details_wrapper'>
+                        <div className='cricket_summary_details_wrapper' ref={marketsSectionRef}>
+                            {showMarketsSection ? (
+                            <>
                             <div className='top_tabs_cricket'>
                                 <ul>
                                     <li className={activeTab === 'all' ? 'active' : ''}>
@@ -676,6 +692,10 @@ function CricketDetail() {
                                     </div>
                                 )}
                             </div>
+                            </>
+                            ) : (
+                                <div className="cricket_markets_placeholder" aria-hidden="true" />
+                            )}
                         </div>
 
                     </div>

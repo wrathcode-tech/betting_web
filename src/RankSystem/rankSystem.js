@@ -42,7 +42,7 @@ function RankSystem() {
 
                         <div className='col-md-5'>
                             <div className='rank_system_hero_s_img'>
-                                <img src="images/rank_system_hero_s_img.svg" alt="Rank System" />
+                                <img src="images/rank_system_hero_s_img.png" alt="Rank System" />
                             </div>
                         </div>
 

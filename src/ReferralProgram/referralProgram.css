@@ -3,6 +3,16 @@
     color: #fff;
 }
 
+.referral_sentinel {
+    min-height: 1px;
+    width: 100%;
+}
+
+.referral_below_fold_placeholder {
+    min-height: 320px;
+    width: 100%;
+}
+
 .referral_program_section h2 {
     font-size: 36px;
     font-weight: 600;
@@ -89,6 +99,8 @@
     transition: transform 0.3s ease;
 }
 
+.referral_profit_tl_item img{ width: 100%; height: 100%; object-fit: contain; }
+
 .referral_profit_tl:hover .referral_profit_tl_item {
     transform: scale(1.1);
 }
@@ -131,6 +143,8 @@
     top: -12px;
     transition: transform 0.3s ease;
 }
+
+.notification_icon img{ width: 100%; height: 100%; object-fit: contain; }
 
 .invite_users_bl:hover .notification_icon {
     transform: scale(1.1) rotate(5deg);
@@ -959,7 +973,7 @@ table {
     }
     
     .referral_program_content {
-        padding: 12px;
+        padding: 5px;
         margin: 12px 0;
         border-radius: 12px;
     }
@@ -1222,7 +1236,7 @@ table {
     }
     
     .referral_program_content {
-        padding: 10px;
+        padding: 0px;
         margin: 10px 0;
         border-radius: 10px;
     }
@@ -1339,6 +1353,7 @@ table {
     
     .referral_profit_tl ul li h5 {
         font-size: 10px;
+        margin-bottom: 5px;
     }
     
     .referral_profit_tl ul li span.pricevalue {

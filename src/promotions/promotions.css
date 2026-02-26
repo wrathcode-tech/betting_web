@@ -4,6 +4,7 @@
     padding: 20px;
     border-radius: 8px;
     color: #fff;
+    margin-top: 15px;
 }
 
 .promotions_top_hd h1 {
@@ -101,6 +102,9 @@
 }
 
 
+
+
+
 @media (max-width: 1550px) {
 
     .promotions_content_item h2 {
@@ -128,6 +132,7 @@
 
 
 @media (max-width: 767px) {
+
     .promotions_img_item {
         max-width: 140px;
     }
@@ -137,6 +142,10 @@
     } 
     .promotions_content_item h2 {
         font-size: 18px;
+    }
+
+    .promotions_top_hd {
+        margin-top: 0px;
     }
 }
 
