@@ -343,6 +343,10 @@ button.capcha_refresh_btn {
     font-size: 12px;
   }
 
+  .payment_selected_dl ul {
+    grid-template-columns: repeat(2, 1fr);
+}
+
   .add_account_cta .add_account_text {
     font-size: 12px;
   }

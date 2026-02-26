@@ -629,7 +629,7 @@ function LandingPage() {
                     <Link to="/game"><button type="button" className='playearn_btn'>Start Playing</button></Link>
                   </div>
                   <div className='playearn_big_rgt'>
-                    <img loading="lazy" src="images/golden_treasure.svg" alt="PLAY & EARN BIG" />
+                    <img loading="lazy" src="images/golden_treasure.png" alt="PLAY & EARN BIG" />
                   </div>
                 </div>
               </div>
@@ -643,7 +643,7 @@ function LandingPage() {
                       <p>Exclusive games. Real rewards. Zero boredom.</p>
                     </div>
                     <div className='gameright_s_item_img'>
-                      <img loading="lazy" src="images/luxury_casino.svg" alt="YOUR LUCK STARTS HERE" />
+                      <img loading="lazy" src="images/luxury_casino.png" alt="YOUR LUCK STARTS HERE" />
                     </div>
                   </div>
 
@@ -653,7 +653,7 @@ function LandingPage() {
                       <p>Spin, play, and unlock exciting prizes every day.</p>
                     </div>
                     <div className='gameright_s_item_img'>
-                      <img loading="lazy" src="images/3d_gift_box.svg" alt="TURN FUN INTO REWARDS" />
+                      <img loading="lazy" src="images/3d_gift_box.png" alt="TURN FUN INTO REWARDS" />
                     </div>
                   </div>
 
@@ -667,7 +667,7 @@ function LandingPage() {
                     <p>Slots, cards & instant win games</p>
                   </div>
                   <div className='gameright_s_item_img'>
-                    <img loading="lazy" src="images/3d_casino_games.svg" alt="Casino Zone" />
+                    <img loading="lazy" src="images/3d_casino_games.png" alt="Casino Zone" />
                   </div>
                 </Link>
 
@@ -680,7 +680,7 @@ function LandingPage() {
                     <p>Live matches & smart predictions</p>
                   </div>
                   <div className='gameright_s_item_img'>
-                    <img loading="lazy" src="images/astronaut_spacesuit.svg" alt="Sports Arena" />
+                    <img loading="lazy" src="images/astronaut_spacesuit.png" alt="Sports Arena" />
                   </div>
                 </Link>
 
@@ -693,7 +693,7 @@ function LandingPage() {
                     <p>Log in daily and unlock exciting gifts.</p>
                   </div>
                   <div className='gameright_s_item_img'>
-                    <img loading="lazy" src="images/3d_gift_box_isolated.svg" alt="Daily Rewards" />
+                    <img loading="lazy" src="images/3d_gift_box_isolated.png" alt="Daily Rewards" />
                   </div>
                 </Link>
 
@@ -707,7 +707,7 @@ function LandingPage() {
                     <p>Compete with others and climb the leaderboard.</p>
                   </div>
                   <div className='gameright_s_item_img'>
-                    <img loading="lazy" src="images/alien_head.svg" alt="Battle Mode" />
+                    <img loading="lazy" src="images/alien_head.png" alt="Battle Mode" />
                   </div>
                 </Link>
 
