@@ -240,11 +240,12 @@ header {
     width: 370px;
     max-width: 62vw;
     transform-origin: center center;
-    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s ease;
+    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 1s cubic-bezier(0.22, 1, 0.36, 1);
     border-radius: 16px;
     overflow: hidden;
     pointer-events: none;
     transform-style: preserve-3d;
+    backface-visibility: hidden;
 }
 
 .slider3d_active {
@@ -259,6 +260,7 @@ header {
     border-radius: 16px;
     border: 7px solid #ffffff68;
     box-sizing: border-box;
+    transition: border-color 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .slider3d_active img {
@@ -293,9 +295,9 @@ header {
     line-height: 1.4;
 }
 
-/* Bottom se slide-up + fade animation – active par content aate waqt */
+/* Bottom se slide-up + fade animation – active par content aate waqt, slow smooth */
 .slider3d_card_overlay_animate {
-    animation: slider3dOverlayIn 0.4s ease-out forwards;
+    animation: slider3dOverlayIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes slider3dOverlayIn {
@@ -2883,6 +2885,10 @@ ul.mobile-menu li.active:before {
     width: 200px;
 }
 
+.cricket_ball_effect img{ width: 100%; height: 100%; object-fit: cover; }
+
+.football_ball_effect img{ width: 100%; height: 100%; object-fit: cover; }
+
 @media (max-width: 1440px) {
 
     img.hero_left_vector {
@@ -3736,13 +3742,13 @@ ul.mobile-menu li.active:before {
         margin-top: 7px;
     }
 
-    /* Mobile: native horizontal scroll for sliders (TOP Sports, TOP Slots, etc.) */
+    /* Mobile: horizontal slider scroll + allow vertical page scroll when touching slider */
     .game_items_slider_wrapper,
     .match_slider_wrapper {
         overflow-x: scroll !important;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-x;
         overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
     }
 
     .hero_vector_effect_bottom {

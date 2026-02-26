@@ -23,6 +23,8 @@
   width: 100%;
   max-width: 520px;
   max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
   z-index: 99999999;
   position: relative;
   animation: premiumLoginSlideIn 0.35s ease-out;
@@ -41,11 +43,36 @@
 
 .login_modal_content.premium_login_content {
   position: relative;
+  flex: 1;
+  min-height: 0;
+  max-height: calc(100vh - 32px);
   background: linear-gradient(165deg, #161F2C 0%, #161F2C 100%);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scrollbar: sirf jab scroll ho tab dikhe, light/dark theme */
+.login_modal_content.premium_login_content::-webkit-scrollbar {
+  width: 6px;
+}
+.login_modal_content.premium_login_content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 3px;
+}
+.login_modal_content.premium_login_content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+.login_modal_content.premium_login_content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+.login_modal_content.premium_login_content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) rgba(255, 255, 255, 0.06);
 }
 
 .premium_login_close {
@@ -432,6 +459,7 @@
   }
 
   .login_modal_content.premium_login_content {
+    max-height: 92vh;
     border-radius: 20px 20px 0 0;
     border-bottom: none;
   }

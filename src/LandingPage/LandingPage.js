@@ -335,11 +335,11 @@ function LandingPage() {
 
 
       <div className='cricket_ball_effect'>     
-        <img src="images/cricket_vector.png" alt="game" />
+        <img src="images/cricket_vector.png" alt="game" decoding="async" width="120" height="120" />
       </div>
 
       <div className='football_ball_effect'>     
-        <img src="images/football_vector.png" alt="game" />
+        <img src="images/football_vector.png" alt="game" decoding="async" width="120" height="120" />
       </div>
         <div className='container'>
 
@@ -363,10 +363,15 @@ function LandingPage() {
                           'slider3d_pos_right2';
                 return (
                   <div
-                    key={`${slideIndex}-${offset}`}
+                    key={slideIndex}
                     className={`slider3d ${positionClass} ${isCenter ? 'slider3d_active' : ''} ${isCenter ? 'slider3d_has_overlay' : ''}`}
                   >
-                    <img src={slide.src} alt={slide.alt} />
+                    <img
+                      src={slide.src}
+                      alt={slide.alt}
+                      decoding="async"
+                      {...(isCenter ? { fetchPriority: 'high' } : { loading: 'lazy' })}
+                    />
                     {isCenter && slide.heading != null && (
                       <div className="slider3d_card_overlay slider3d_card_overlay_animate">
                         <span className="slider3d_card_overlay_title">{slide.heading}</span>
@@ -425,9 +430,9 @@ function LandingPage() {
 
 
             <div className='hero_vector_effect_bottom'>
-              <img className='hero_left_vector' src="images/hero_left_vector.png" alt="game" />
-              <img className='hero_cntr_vector' src="images/hero_cntr_vector.png" alt="game" />
-              <img className='hero_right_vector' src="images/hero_right_vector.png" alt="game" />
+              <img className='hero_left_vector' src="images/hero_left_vector.png" alt="game" decoding="async" width="120" height="80" />
+              <img className='hero_cntr_vector' src="images/hero_cntr_vector.png" alt="game" decoding="async" width="90" height="60" />
+              <img className='hero_right_vector' src="images/hero_right_vector.png" alt="game" decoding="async" width="100" height="80" />
             </div>
 
           </div>

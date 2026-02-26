@@ -9,17 +9,32 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>Casino Game Development</title>
-    <!-- Preconnect to external origins for faster font/CSS -->
+    <!-- Critical: prevent layout shift and flash -->
+    <style>
+      body{background:#0d131c;margin:0;font-family:system-ui,-apple-system,sans-serif}
+      #root{min-height:100vh}
+    </style>
+    <!-- Preconnect for faster fetches -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <!-- Fonts: display=swap so text shows immediately; subset weights 400,500,600,700 for smaller file -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@latest/fonts/remixicon.css" />
-    <link rel="stylesheet" href="%PUBLIC_URL%/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="%PUBLIC_URL%/css/style.css" />
+    <!-- LCP preloads: hero + first 3D slide -->
     <link rel="preload" href="%PUBLIC_URL%/images/heroimg_chibi_fire.svg" as="image" />
-    <!-- Defer so parsing isn't blocked; one Bootstrap bundle is enough -->
+    <link rel="preload" href="%PUBLIC_URL%/images/home_bnr.png" as="image" />
+    <!-- Preload main CSS so they start early; then load non-blocking -->
+    <link rel="preload" href="%PUBLIC_URL%/css/style.css" as="style" />
+    <link rel="preload" href="%PUBLIC_URL%/css/bootstrap.min.css" as="style" />
+    <!-- Non-render-blocking CSS: parser not blocked (~2.7s savings) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@latest/fonts/remixicon.css" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="%PUBLIC_URL%/css/bootstrap.min.css" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="%PUBLIC_URL%/css/style.css" media="print" onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@latest/fonts/remixicon.css" />
+      <link rel="stylesheet" href="%PUBLIC_URL%/css/bootstrap.min.css" />
+      <link rel="stylesheet" href="%PUBLIC_URL%/css/style.css" />
+    </noscript>
     <script defer src="%PUBLIC_URL%/js/jquery.min.js"></script>
     <script defer src="%PUBLIC_URL%/js/bootstrap.bundle.js"></script>
   </head>

@@ -3,11 +3,19 @@ import { Link } from 'react-router-dom'
 import { useSidebar } from '../../context/SidebarContext'
 import './sidebar.css'
 
+const MOBILE_BREAKPOINT = 991
+
 export default function SideBar({ isOpen, onClose }) {
   const { setSidebarOpen } = useSidebar()
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const sidebarRef = useRef(null);
   const isCollapsed = !isOpen
+
+  const closeIfMobile = () => {
+    if (typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT) {
+      onClose()
+    }
+  }
 
   const toggleSubmenu = (menuName) => {
     setOpenSubmenu(openSubmenu === menuName ? null : menuName);
@@ -39,11 +47,11 @@ export default function SideBar({ isOpen, onClose }) {
       <div ref={sidebarRef} className={`sidebar ${isOpen ? 'sidebar_open' : 'sidebar_collapsed'}`}>
         <div className="sidebar_content">
           <div className="deposit_withdrawal_btn">
-            <Link to="/deposit" className="deposit_withdrawal_menu_btn deposit_btn">
+            <Link to="/deposit" className="deposit_withdrawal_menu_btn deposit_btn" onClick={closeIfMobile}>
               <i className="ri-wallet-3-line" aria-hidden />
               <span>Deposit</span>
             </Link>
-            <Link to="/withdrawal" className="deposit_withdrawal_menu_btn withdraw_btn">
+            <Link to="/withdrawal" className="deposit_withdrawal_menu_btn withdraw_btn" onClick={closeIfMobile}>
               <i className="ri-bank-line" aria-hidden />
               <span>Withdraw</span>
             </Link>
@@ -62,21 +70,21 @@ export default function SideBar({ isOpen, onClose }) {
                 </a>
                 <ul className="sidebar_submenu">
                     <li className="sidebar_flyout_header">Casino</li>
-                    <li><Link to="/casino"><i className="ri-gamepad-line" aria-hidden />Originals</Link></li>
-                    <li><Link to="/game"><i className="ri-dice-5-fill" aria-hidden />Slots</Link></li>
-                    <li><Link to="/casino"><i className="ri-live-line" aria-hidden />Live Casino</Link></li>
-                    <li><Link to="/casino"><i className="ri-table-line" aria-hidden />Table Game</Link></li>
-                    <li><Link to="/casino"><i className="ri-apps-line" aria-hidden />Providers</Link></li>
-                    <li><Link to="/casino"><i className="ri-fire-fill" aria-hidden />Hot Picks</Link></li>
-                    <li><Link to="/game"><i className="ri-star-fill" aria-hidden />Exclusives</Link></li>
-                    <li><Link to="/casino"><i className="ri-shopping-bag-line" aria-hidden />Buy Feature</Link></li>
-                    <li><Link to="/casino"><i className="ri-new-folder-line" aria-hidden />New Releases</Link></li>
-                    <li><Link to="/casino"><i className="ri-vip-crown-line" aria-hidden />Highroller Hall</Link></li>
-                    <li><Link to="/casino"><i className="ri-tv-line" aria-hidden />Game Shows</Link></li>
-                    <li><Link to="/game"><i className="ri-dice-5-fill" aria-hidden />Roulette</Link></li>
-                    <li><Link to="/casino"><i className="ri-spades-fill" aria-hidden />Blackjack</Link></li>
-                    <li><Link to="/casino"><i className="ri-diamond-fill" aria-hidden />Baccarat</Link></li>
-                    <li><Link to="/game"><i className="ri-gift-line" aria-hidden />Drops & Wins</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-gamepad-line" aria-hidden />Originals</Link></li>
+                    <li><Link to="/game" onClick={closeIfMobile}><i className="ri-dice-5-fill" aria-hidden />Slots</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-live-line" aria-hidden />Live Casino</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-table-line" aria-hidden />Table Game</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-apps-line" aria-hidden />Providers</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-fire-fill" aria-hidden />Hot Picks</Link></li>
+                    <li><Link to="/game" onClick={closeIfMobile}><i className="ri-star-fill" aria-hidden />Exclusives</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-shopping-bag-line" aria-hidden />Buy Feature</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-new-folder-line" aria-hidden />New Releases</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-vip-crown-line" aria-hidden />Highroller Hall</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-tv-line" aria-hidden />Game Shows</Link></li>
+                    <li><Link to="/game" onClick={closeIfMobile}><i className="ri-dice-5-fill" aria-hidden />Roulette</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-spades-fill" aria-hidden />Blackjack</Link></li>
+                    <li><Link to="/casino" onClick={closeIfMobile}><i className="ri-diamond-fill" aria-hidden />Baccarat</Link></li>
+                    <li><Link to="/game" onClick={closeIfMobile}><i className="ri-gift-line" aria-hidden />Drops & Wins</Link></li>
                   </ul>
               </li>
               <li className={`sidebar_menu_item ${openSubmenu === 'sports' ? 'active' : ''}`}>
@@ -86,11 +94,11 @@ export default function SideBar({ isOpen, onClose }) {
                 </a>
                 <ul className="sidebar_submenu">
                     <li className="sidebar_flyout_header">Sports</li>
-                    <li><Link to="/sports">Football</Link></li>
-                    <li><Link to="/sports">Basketball</Link></li>
-                    <li><Link to="/sports">Tennis</Link></li>
-                    <li><Link to="/cricket">Cricket</Link></li>
-                    <li><Link to="/sports">Horse Racing</Link></li>
+                    <li><Link to="/sports" onClick={closeIfMobile}>Football</Link></li>
+                    <li><Link to="/sports" onClick={closeIfMobile}>Basketball</Link></li>
+                    <li><Link to="/sports" onClick={closeIfMobile}>Tennis</Link></li>
+                    <li><Link to="/cricket" onClick={closeIfMobile}>Cricket</Link></li>
+                    <li><Link to="/sports" onClick={closeIfMobile}>Horse Racing</Link></li>
                   </ul>
               </li>
               <li className={`sidebar_menu_item ${openSubmenu === 'other' ? 'active' : ''}`}>
@@ -100,26 +108,26 @@ export default function SideBar({ isOpen, onClose }) {
                 </a>
                 <ul className="sidebar_submenu">
                     <li className="sidebar_flyout_header">Other</li>
-                    <li><Link to="/sports">Virtual Sports</Link></li>
-                    <li><Link to="/game">Lottery</Link></li>
-                    <li><Link to="/game">Poker</Link></li>
-                    <li><Link to="/game">Bingo</Link></li>
+                    <li><Link to="/sports" onClick={closeIfMobile}>Virtual Sports</Link></li>
+                    <li><Link to="/game" onClick={closeIfMobile}>Lottery</Link></li>
+                    <li><Link to="/game" onClick={closeIfMobile}>Poker</Link></li>
+                    <li><Link to="/game" onClick={closeIfMobile}>Bingo</Link></li>
                   </ul>
               </li>
               <li className="sidebar_menu_item sidebar_direct_link">
-                <Link to="/">
+                <Link to="/" onClick={closeIfMobile}>
                   <span><i className="ri-megaphone-line" aria-hidden />Promotions</span>
                   <span className="sidebar_collapsed_label">Promotions</span>
                 </Link>
               </li>
               <li className="sidebar_menu_item sidebar_direct_link">
-                <Link to="/referral">
+                <Link to="/referral" onClick={closeIfMobile}>
                   <span><i className="ri-user-shared-line" aria-hidden />Referral</span>
                   <span className="sidebar_collapsed_label">Refer & Earn</span>
                 </Link>
               </li>
               <li className="sidebar_menu_item sidebar_direct_link">
-                <Link to="/transactions">
+                <Link to="/transactions" onClick={closeIfMobile}>
                   <span><i className="ri-file-list-3-line" aria-hidden />Transactions</span>
                   <span className="sidebar_collapsed_label">Transactions</span>
                 </Link>

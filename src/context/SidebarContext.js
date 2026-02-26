@@ -16,6 +16,8 @@ export function SidebarProvider({ children }) {
     const handleResize = () => {
       if (window.innerWidth <= MOBILE_BREAKPOINT) {
         setSidebarOpen(false)
+      } else {
+        setSidebarOpen(true)
       }
     }
     window.addEventListener('resize', handleResize)

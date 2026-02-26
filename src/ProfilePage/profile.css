@@ -29,10 +29,10 @@
     min-height: 100vh;
     padding: 20px 0px;
     color: #fff;
-    background-image: url('../../public/images/profilebg.jpg');
-    background-size: cover;
+    /*  background-image: url('../../public/images/profilebg.jpg');
+   background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
+    background-repeat: no-repeat; */
 }
 
 .dashboard_page h1 {
