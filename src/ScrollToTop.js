@@ -12,9 +12,22 @@ export default function ScrollToTop() {
   const { pathname } = useLocation();
   const [showButton, setShowButton] = useState(false);
 
-  // Scroll to top on every route change
-  useEffect(() => {
+  // Scroll to top on every route change (desktop + mobile; run once and after delay for lazy-loaded content)
+  const scrollToTopNow = () => {
     window.scrollTo(0, 0);
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+  };
+  useEffect(() => {
+    scrollToTopNow();
+    const t = setTimeout(scrollToTopNow, 0);
+    const t2 = requestAnimationFrame(scrollToTopNow);
+    const t3 = setTimeout(scrollToTopNow, 150);
+    return () => {
+      clearTimeout(t);
+      cancelAnimationFrame(t2);
+      clearTimeout(t3);
+    };
   }, [pathname]);
 
   // Show button on any page that has scroll, when user has scrolled down; hide when full page fits on screen

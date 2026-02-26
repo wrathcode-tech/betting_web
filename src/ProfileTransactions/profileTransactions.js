@@ -6,6 +6,18 @@ import './profileTransactions.css'
 
 const PAGE_SIZE = 10
 
+// Dummy data when no transactions from API (same shape as API response)
+const DUMMY_TRANSACTIONS = [
+  { _id: 'dummy-1', createdAt: '2025-06-12T10:30:00.000Z', transactionId: 'TXN20250612001', type: 'deposit', amount: 5000, currency: 'INR', status: 'approved', paymentMethod: 'UPI', adminRemarks: 'Deposit via Google Pay' },
+  { _id: 'dummy-2', createdAt: '2025-06-11T14:22:00.000Z', transactionId: 'TXN20250611002', type: 'withdrawal', amount: 2500, currency: 'INR', status: 'completed', paymentMethod: 'BANK_TRANSFER', adminRemarks: 'Processed to bank account' },
+  { _id: 'dummy-3', createdAt: '2025-06-10T09:15:00.000Z', transactionId: 'TXN20250610003', type: 'deposit', amount: 10000, currency: 'INR', status: 'approved', paymentMethod: 'BANK', adminRemarks: '—' },
+  { _id: 'dummy-4', createdAt: '2025-06-09T16:45:00.000Z', transactionId: 'TXN20250609004', type: 'withdrawal', amount: 3000, currency: 'INR', status: 'pending', paymentMethod: 'UPI', adminRemarks: 'Under review' },
+  { _id: 'dummy-5', createdAt: '2025-06-08T11:00:00.000Z', transactionId: 'TXN20250608005', type: 'deposit', amount: 7500, currency: 'INR', status: 'approved', paymentMethod: 'UPI', adminRemarks: 'Bonus credited' },
+  { _id: 'dummy-6', createdAt: '2025-06-07T08:30:00.000Z', transactionId: 'TXN20250607006', type: 'deposit', amount: 2000, currency: 'INR', status: 'rejected', paymentMethod: 'BANK', adminRemarks: 'Invalid details' },
+  { _id: 'dummy-7', createdAt: '2025-06-06T13:20:00.000Z', transactionId: 'TXN20250606007', type: 'withdrawal', amount: 4500, currency: 'INR', status: 'completed', paymentMethod: 'BANK_TRANSFER', adminRemarks: '—' },
+  { _id: 'dummy-8', createdAt: '2025-06-05T17:55:00.000Z', transactionId: 'TXN20250605008', type: 'deposit', amount: 15000, currency: 'INR', status: 'approved', paymentMethod: 'BANK', adminRemarks: 'Welcome bonus' },
+]
+
 const TYPE_FILTER_OPTIONS = [
   { value: 'all', label: 'All' },
   { value: 'deposit', label: 'Deposit' },
@@ -96,7 +108,13 @@ function ProfileTransactions() {
     setTypeFilter(e.target.value)
   }
 
-  const list = transactions.map((t) => ({
+  const useDummy = !loading && transactions.length === 0
+  const rawList = useDummy ? DUMMY_TRANSACTIONS : transactions
+  const filteredRaw =
+    useDummy && typeFilter !== 'all'
+      ? rawList.filter((t) => t.type === typeFilter)
+      : rawList
+  const list = filteredRaw.map((t) => ({
     id: t._id,
     time: formatTime(t.createdAt),
     transactionId: t.transactionId || t._id,
@@ -233,7 +251,7 @@ function ProfileTransactions() {
                     Previous
                   </button>
                   <span className='pagination_info'>
-                    Page {pagination.page} of {pagination.totalPages || 1} ({pagination.total} total)
+                    Page {pagination.page} of {pagination.totalPages || 1} ({useDummy ? list.length : pagination.total} total)
                   </span>
                   <button
                     type="button"

@@ -12,6 +12,13 @@ import GamePlay from "./GamePlay/gamePlay";
 import SportsGame from "./sports/SportsGame";
 import ProfileTransactions from "./ProfileTransactions/profileTransactions";
 import Promotions from "./promotions/Promotions";
+import MyBets from "./StatementPages/MyBets";
+import MyWallet from "./StatementPages/MyWallet";
+import BettingProfitLoss from "./StatementPages/BettingProfitLoss";
+import TurnoverHistory from "./StatementPages/TurnoverHistory";
+import AccountStatement from "./StatementPages/AccountStatement";
+import BonusStatement from "./StatementPages/BonusStatement";
+import DepositTurnover from "./StatementPages/DepositTurnover";
 
 const CricketDetail = lazy(() => import("./cricket/cricketDetail"));
 const ReferralProgram = lazy(() => import("./ReferralProgram/referralProgram"));
@@ -35,6 +42,13 @@ const Routing = () => {
             <Route path="/game" element={<GamePlay />} />
             <Route path="/sports" element={<SportsGame />} />
             <Route path="/transactions" element={<ProfileTransactions />} />
+            <Route path="/my-bets" element={<MyBets />} />
+            <Route path="/my-wallet" element={<MyWallet />} />
+            <Route path="/betting-profit-loss" element={<BettingProfitLoss />} />
+            <Route path="/turnover-history" element={<TurnoverHistory />} />
+            <Route path="/account-statement" element={<AccountStatement />} />
+            <Route path="/bonus-statement" element={<BonusStatement />} />
+            <Route path="/deposit-turnover" element={<DepositTurnover />} />
             <Route path="/cricket" element={<Suspense fallback={null}><CricketDetail /></Suspense>} />
             <Route path="/referral" element={<Suspense fallback={null}><ReferralProgram /></Suspense>} />
             <Route path="/rank" element={<Suspense fallback={null}><RankSystem /></Suspense>} />
