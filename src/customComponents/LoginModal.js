@@ -137,9 +137,20 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
     try {
       const result = await AuthService.bettingRegister(mobile, otp, password, confirmPassword, referralCode)
       if (result?.status === 'success' || result?.success) {
-        alertSuccessMessage(result?.message || 'Registration successful! Please login.')
-        setActiveTab('login')
-        resetForm()
+        const token = result?.data?.accessToken || result?.token
+        const refreshToken = result?.data?.refreshToken
+        if (token) {
+          if (refreshToken) sessionStorage.setItem('refreshToken', refreshToken)
+          sessionStorage.setItem('token', token)
+          window.dispatchEvent(new CustomEvent('loginStateChange'))
+          alertSuccessMessage(result?.message || 'Registration successful!')
+          onHide()
+          navigate('/casino', { replace: true })
+        } else {
+          alertSuccessMessage(result?.message || 'Registration successful! Please login.')
+          setActiveTab('login')
+          resetForm()
+        }
       } else {
         alertErrorMessage(result?.message || 'Registration failed')
       }

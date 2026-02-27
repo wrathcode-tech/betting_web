@@ -48,6 +48,7 @@ export const ApiConfig = {
   bettingGamesLaunch: "launch",
   bettingGamesFeatured: "featured",
   bettingGamesPopular: "popular",
+  bettingGamesLanding: "landing",
 
   // ============webSocketUrl================
 

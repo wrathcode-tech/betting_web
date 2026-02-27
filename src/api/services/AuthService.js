@@ -261,6 +261,13 @@ const AuthService = {
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
     return ApiCallGet(url, headers);
   },
+  /** GET /api/v1/games/landing – no auth. Returns liveCasino, slots, trending, roulette, cardGames. */
+  bettingGamesLanding: async () => {
+    const { baseBettingGames, bettingGamesLanding } = ApiConfig;
+    const url = baseBettingGames + bettingGamesLanding;
+    const headers = { "Content-Type": "application/json" };
+    return ApiCallGet(url, headers);
+  },
   /** Launch game – returns launchURL for iframe. Requires login. */
   bettingGamesLaunch: async (gameCode, providerCode, platform = "desktop") => {
     const token = sessionStorage.getItem("token");
