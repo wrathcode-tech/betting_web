@@ -36,26 +36,20 @@
 .search_modal .top_slot_outer {
     overflow: visible;
 }
-/* Landing page jaisa: native horizontal scroll, touch scroll enable */
+/* Landing page jaisa: transform + drag only, scroll last item tak (no gap) */
 .search_modal .game_items_slider_wrapper {
     width: 100%;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    touch-action: pan-x;
-}
-.search_modal .game_items_slider_wrapper::-webkit-scrollbar {
-    display: none;
+    overflow: hidden !important;
+    /* Allow vertical modal scroll when touching slider on mobile */
+    touch-action: pan-x pan-y;
 }
 .search_modal .game_items_slider_wrapper .game_items_slider {
     display: flex !important;
     flex-wrap: nowrap !important;
-    transform: none !important;
     gap: 17px;
     width: max-content;
     min-width: 100%;
+    will-change: transform;
 }
 
 .search_modal .game_items_inner:hover {

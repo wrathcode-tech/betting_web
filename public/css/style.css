@@ -803,7 +803,8 @@ button.slotbtn {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    touch-action: manipulation;
+    /* Allow vertical page scroll when touching slider on mobile */
+    touch-action: pan-x pan-y;
 }
 
 .game_items_slider_wrapper::-webkit-scrollbar {
@@ -814,9 +815,8 @@ button.slotbtn {
 .game_items_slider_wrapper .match_slider_sports {
     display: flex;
     flex-wrap: nowrap;
-    align-items: center;
+    align-items: stretch;
     gap: 17px;
-    transform: none !important;
     width: max-content;
     min-width: 100%;
     flex-shrink: 0;
@@ -1018,7 +1018,7 @@ button.slotbtn {
     transform: scale(1.1);
 }
 
-/* View All card – same width/height as slider items, text centered */
+/* View All card – width as slider items, height auto (matches row/item height) */
 .slider_view_all_card {
     display: flex !important;
     align-items: center;
@@ -1028,10 +1028,10 @@ button.slotbtn {
     border: none;
 }
 
-/* Same size as game_items_inner (178x234) */
 .game_items_inner.slider_view_all_card {
-    min-height: 234px;
-    height: 234px;
+    align-self: stretch;
+    height: auto;
+    min-height: 0;
 }
 
 .game_items_inner.slider_view_all_card:hover {
@@ -1086,6 +1086,11 @@ button.slotbtn {
     padding: 50px 0px 0px;
     color: #fff;
     animation: fadeInUp 0.8s ease-out;
+}
+
+a.game_items_inner.link_plain img {
+    height: 100%;
+    object-fit: cover;
 }
 
 .top_match_section.sportsmatch_s {
@@ -2801,10 +2806,6 @@ img.user_header_img {
     overflow: hidden;
 }
 
-.top_slot_outer.top_slot_outer_casino .game_items_inner.slider_view_all_card {
-    min-height: 100px;
-    height:100px;
-}
 
 .user_profile_dropdown_header {
     padding: 16px 18px;
@@ -3476,7 +3477,7 @@ ul.mobile-menu li.active:before {
     }
 
     .trending_games_section h2 {
-        margin-bottom: 10px;
+        margin-bottom: 15px;
     }
 
     .trending_games_section {
@@ -3852,7 +3853,7 @@ ul.mobile-menu li.active:before {
     }
 
     .top_slot_outer {
-        padding: 30px 0px 0px;
+        padding: 24px 0px 0px;
     }
 
 }
@@ -3872,15 +3873,16 @@ ul.mobile-menu li.active:before {
     }
 
     .game_items_inner {
-        min-width: 130px;
-        max-width: 130px;
-        width: 130px;
-        border-radius: 15px;
+        min-width: 174px;
+        max-width: 174px;
+        width: 174px;
+        border-radius: 10px;
     }
 
     .game_items_inner.slider_view_all_card {
-        min-height: 171px;
-        height: 171px;
+        height: auto;
+        min-height: 0;
+        align-self: stretch;
     }
 
 

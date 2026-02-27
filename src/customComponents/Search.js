@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { clampSliderTranslate } from '../utils/sliderClamp'
+import { useSliderDrag } from '../hooks/useSliderDrag'
 import './Search.css'
 
 const MAX_CONTENT_BEFORE_VIEW_ALL = 15;
+const SEARCH_ITEM_WIDTH = 178 + 18;
 
 const searchGameItemsBase = [
     { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
@@ -26,6 +29,15 @@ function Search({ isOpen, onClose }) {
         ...gameItems.map((item) => ({ ...item, viewAll: false })),
         { viewAll: true, to: '/casino' },
     ];
+
+    const searchSliderRef = useRef(null);
+    const [searchSliderIndex, setSearchSliderIndex] = useState(0);
+    const { handleMouseDown: handleSliderMouseDown, handleClickCapture: handleSliderClickCapture } = useSliderDrag();
+
+    useEffect(() => {
+        const el = searchSliderRef.current;
+        if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -searchSliderIndex * SEARCH_ITEM_WIDTH)}px)`;
+    }, [searchSliderIndex]);
 
     if (!isOpen) return null
 
@@ -57,8 +69,19 @@ function Search({ isOpen, onClose }) {
                         <div className="top_hd d-flex align-items-center justify-content-between">
                             <h2 className="heading_h2">Games you should try</h2>
                         </div>
-                        <div className="game_items_slider_wrapper">
-                            <div className="game_items_slider">
+                        <div
+                            className="game_items_slider_wrapper"
+                            onMouseDown={(e) => handleSliderMouseDown(e, {
+                                sliderRef: searchSliderRef,
+                                getItemWidth: SEARCH_ITEM_WIDTH,
+                                itemsPerSet: displayItems.length,
+                                currentIndex: searchSliderIndex,
+                                setIndex: setSearchSliderIndex,
+                            })}
+                            onClickCapture={handleSliderClickCapture}
+                            style={{ cursor: 'grab' }}
+                        >
+                            <div className="game_items_slider" ref={searchSliderRef}>
                                 {displayItems.map((item, index) =>
                                     item.viewAll ? (
                                         <Link

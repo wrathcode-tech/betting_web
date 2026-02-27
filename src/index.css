@@ -78,7 +78,6 @@ a.dropdown_menu_item {
 .game_items_slider_wrapper .game_items_slider,
 .match_slider_wrapper .match_slider_container,
 .match_slider_wrapper .match_slider_sports {
-  transform: none !important;
   display: flex !important;
   flex-wrap: nowrap !important;
   will-change: auto;

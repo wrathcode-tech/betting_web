@@ -285,49 +285,43 @@ function LandingPage() {
   const landingRouletteItemsPerSet = landingRouletteDisplayItems.length;
   const landingCardGamesItemsPerSet = landingCardGamesDisplayItems.length;
 
-  // TOP SLOTS slider – sync transform to index (mouse drag only)
+  // Clamp translate so scroll stops at last item (no gap)
+  const clampSliderTranslate = (el, translateX) => {
+    if (!el?.parentElement) return translateX;
+    const contentWidth = el.offsetWidth;
+    const containerWidth = el.parentElement.clientWidth;
+    const maxTranslate = contentWidth <= containerWidth ? 0 : -(contentWidth - containerWidth);
+    return Math.max(maxTranslate, Math.min(0, translateX));
+  };
+
+  // TOP SLOTS slider – sync transform to index (clamped)
   useEffect(() => {
-    if (sliderRef.current) {
-      const itemWidth = 178 + 18;
-      const translateX = -currentIndex * itemWidth;
-      sliderRef.current.style.transform = `translateX(${translateX}px)`;
-    }
+    const el = sliderRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -currentIndex * (178 + 18))}px)`;
   }, [currentIndex]);
 
-  // BetCasino Original slider – sync transform to index
+  // BetCasino Original slider – sync transform to index (clamped)
   useEffect(() => {
-    if (betCasinoSliderRef.current) {
-      const itemWidth = 178 + 18;
-      const translateX = -betCasinoIndex * itemWidth;
-      betCasinoSliderRef.current.style.transform = `translateX(${translateX}px)`;
-    }
+    const el = betCasinoSliderRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -betCasinoIndex * (178 + 18))}px)`;
   }, [betCasinoIndex]);
 
-  // Live Casino slider – sync transform to index
+  // Live Casino slider – sync transform to index (clamped)
   useEffect(() => {
-    if (liveCasinoSliderRef.current) {
-      const itemWidth = 178 + 18;
-      const translateX = -liveCasinoIndex * itemWidth;
-      liveCasinoSliderRef.current.style.transform = `translateX(${translateX}px)`;
-    }
+    const el = liveCasinoSliderRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -liveCasinoIndex * (178 + 18))}px)`;
   }, [liveCasinoIndex]);
 
-  // Highroller Hall slider – sync transform to index
+  // Highroller Hall slider – sync transform to index (clamped)
   useEffect(() => {
-    if (highrollerSliderRef.current) {
-      const itemWidth = 178 + 18;
-      const translateX = -highrollerIndex * itemWidth;
-      highrollerSliderRef.current.style.transform = `translateX(${translateX}px)`;
-    }
+    const el = highrollerSliderRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -highrollerIndex * (178 + 18))}px)`;
   }, [highrollerIndex]);
 
-  // TOP Sports slider – sync transform to index
+  // TOP Sports slider – sync transform to index (clamped)
   useEffect(() => {
-    if (topSportsSliderRef.current) {
-      const itemWidth = 178 + 8;
-      const translateX = -topSportsIndex * itemWidth;
-      topSportsSliderRef.current.style.transform = `translateX(${translateX}px)`;
-    }
+    const el = topSportsSliderRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -topSportsIndex * (178 + 8))}px)`;
   }, [topSportsIndex]);
 
   // TOP Matches slider handlers
@@ -348,49 +342,43 @@ function LandingPage() {
     }
   };
 
-  // TOP Matches – sync transform to index
+  // TOP Matches – sync transform to index (clamped)
   useEffect(() => {
-    if (topMatchesSliderRef.current) {
-      const itemWidth = getTopMatchesItemWidth();
-      const translateX = -topMatchesIndex * itemWidth;
-      topMatchesSliderRef.current.style.transform = `translateX(${translateX}px)`;
-    }
+    const el = topMatchesSliderRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -topMatchesIndex * getTopMatchesItemWidth())}px)`;
   }, [topMatchesIndex]);
 
   // Handle window resize for TOP Matches slider
   useEffect(() => {
     const handleResize = () => {
-      if (topMatchesSliderRef.current) {
-        const itemWidth = getTopMatchesItemWidth();
-        const translateX = -topMatchesIndex * itemWidth;
-        topMatchesSliderRef.current.style.transform = `translateX(${translateX}px)`;
-      }
+      const el = topMatchesSliderRef.current;
+      if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -topMatchesIndex * getTopMatchesItemWidth())}px)`;
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [topMatchesIndex]);
 
-  // Landing API sliders – sync transform to index
+  // Landing API sliders – sync transform to index (clamped so no gap at end)
   useEffect(() => {
-    if (landingLiveCasinoRef.current)
-      landingLiveCasinoRef.current.style.transform = `translateX(${-landingLiveCasinoIndex * landingItemWidth}px)`;
+    const el = landingLiveCasinoRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingLiveCasinoIndex * landingItemWidth)}px)`;
   }, [landingLiveCasinoIndex, landingItemWidth]);
   useEffect(() => {
-    if (landingSlotsRef.current)
-      landingSlotsRef.current.style.transform = `translateX(${-landingSlotsIndex * landingItemWidth}px)`;
+    const el = landingSlotsRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingSlotsIndex * landingItemWidth)}px)`;
   }, [landingSlotsIndex, landingItemWidth]);
   useEffect(() => {
-    if (landingTrendingRef.current)
-      landingTrendingRef.current.style.transform = `translateX(${-landingTrendingIndex * landingItemWidth}px)`;
+    const el = landingTrendingRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingTrendingIndex * landingItemWidth)}px)`;
   }, [landingTrendingIndex, landingItemWidth]);
   useEffect(() => {
-    if (landingRouletteRef.current)
-      landingRouletteRef.current.style.transform = `translateX(${-landingRouletteIndex * landingItemWidth}px)`;
+    const el = landingRouletteRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingRouletteIndex * landingItemWidth)}px)`;
   }, [landingRouletteIndex, landingItemWidth]);
   useEffect(() => {
-    if (landingCardGamesRef.current)
-      landingCardGamesRef.current.style.transform = `translateX(${-landingCardGamesIndex * landingItemWidth}px)`;
+    const el = landingCardGamesRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingCardGamesIndex * landingItemWidth)}px)`;
   }, [landingCardGamesIndex, landingItemWidth]);
 
   // Sliders scroll only on mouse drag – no auto-slide
@@ -430,7 +418,8 @@ function LandingPage() {
       const d = dragStateRef.current;
       if (!d.isDragging || !d.sliderEl) return;
       const deltaX = e.clientX - d.startX;
-      const newTranslate = d.startTranslate - deltaX;
+      let newTranslate = d.startTranslate - deltaX;
+      newTranslate = clampSliderTranslate(d.sliderEl, newTranslate);
       d.sliderEl.style.transition = 'none';
       d.sliderEl.style.transform = `translateX(${newTranslate}px)`;
       d.lastTranslate = newTranslate;
@@ -443,12 +432,14 @@ function LandingPage() {
       document.body.style.userSelect = '';
       d.isDragging = false;
       if (moved) justDraggedRef.current = true;
+      const clampedTranslate = clampSliderTranslate(d.sliderEl, d.lastTranslate);
+      d.sliderEl.style.transform = `translateX(${clampedTranslate}px)`;
+      d.sliderEl.style.transition = '';
       const itemWidth = typeof d.getItemWidth === 'function' ? d.getItemWidth() : d.getItemWidth;
-      let nearestIndex = Math.round(-d.lastTranslate / itemWidth);
+      let nearestIndex = Math.round(-clampedTranslate / itemWidth);
       if (nearestIndex < 0) nearestIndex = 0;
       if (nearestIndex >= d.itemsPerSet) nearestIndex = d.itemsPerSet - 1;
       d.setIndex(nearestIndex);
-      d.sliderEl.style.transition = '';
     };
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
