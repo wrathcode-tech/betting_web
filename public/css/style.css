@@ -2801,6 +2801,11 @@ img.user_header_img {
     overflow: hidden;
 }
 
+.top_slot_outer.top_slot_outer_casino .game_items_inner.slider_view_all_card {
+    min-height: 100px;
+    height:100px;
+}
+
 .user_profile_dropdown_header {
     padding: 16px 18px;
     border-bottom: 1px solid #303030;
@@ -3877,6 +3882,9 @@ ul.mobile-menu li.active:before {
         min-height: 171px;
         height: 171px;
     }
+
+
+
 
     .playbtn {
         width: 48px;

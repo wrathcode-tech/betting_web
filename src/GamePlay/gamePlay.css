@@ -557,7 +557,9 @@
     .main_content_wrapper.sidebar_closed .right_content_side{ padding: 0px 10px; }  
 
     .gameplay_iframe_wrap iframe {
-        height: calc(100vh - 150px); }
+        height: calc(100vh - 0px); }
+
+        .gameplay_iframe_wrap body{ overflow: hidden !important; }        
 
         
 
