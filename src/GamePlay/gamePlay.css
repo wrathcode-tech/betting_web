@@ -1,15 +1,13 @@
 /* Game iframe layout (WCO launch) */
 .gameplay_page_with_iframe {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: #0d131c;
+  margin-bottom: 24px;
 }
 .gameplay_iframe_header {
   flex-shrink: 0;
-  background: #151515;
-  padding: 10px 16px;
-  border-bottom: 1px solid #1e2a38;
+  padding: 10px 0px;
 }
 .gameplay_iframe_header_inner {
   max-width: 1200px;
@@ -44,9 +42,42 @@
   font-size: 14px;
 }
 .gameplay_iframe_wrap {
-  flex: 1;
-  min-height: 0;
-  position: relative;
+    flex: 1 1;
+    min-height: 0;
+    position: relative;
+    border-radius: 20px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    -webkit-overflow-scrolling: touch;
+}
+
+.gameplay_iframe_wrap:hover,
+.gameplay_iframe_wrap.gameplay_iframe_wrap_scrolling {
+    scrollbar-color: rgba(160, 160, 160, 0.5) rgba(30, 40, 55, 0.8);
+}
+
+.gameplay_iframe_wrap::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.gameplay_iframe_wrap::-webkit-scrollbar-track {
+    background: rgba(30, 40, 55, 0.8);
+    border-radius: 10px;
+}
+
+.gameplay_iframe_wrap::-webkit-scrollbar-thumb {
+    background: rgba(160, 160, 160, 0.5);
+    border-radius: 10px;
+}
+
+.gameplay_iframe_wrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(180, 180, 180, 0.65);
+}
+
+.gameplay_iframe_wrap:not(:hover):not(.gameplay_iframe_wrap_scrolling)::-webkit-scrollbar-thumb {
+    background: transparent;
 }
 .gameplay_iframe {
   position: absolute;
@@ -400,6 +431,16 @@
 }
 
 .gameplay_outer .container{ overflow: hidden; }
+.gameplay_section_wrapper { width: 100%; display: flex; flex-direction: column; margin: 20px 0px; }
+
+.gameplay_iframe_wrap iframe {
+    align-items: center;
+    display: flex;
+    height: calc(100vh - 220px);
+    justify-content: center;
+    max-height: 800px;
+    position: relative;
+}
 
 /* Responsive Styles */
 @media (max-width: 768px) {
@@ -508,6 +549,17 @@
     .gameplay_section {
         margin: 0px 0px 15px;
     }
+
+    .gameplay_section_wrapper {
+        margin: 0px 0px;
+    }
+
+    .main_content_wrapper.sidebar_closed .right_content_side{ padding: 0px 10px; }  
+
+    .gameplay_iframe_wrap iframe {
+        height: calc(100vh - 150px); }
+
+        
 
 }
 
@@ -634,8 +686,57 @@
         gap: 4px;
     }
 
-    /* Ensure 2 items show on mobile */
-    .game_items_slider_wrapper {
+    /* Slider in best_popular_games etc. – keep hidden if needed; top_slot_outer_casino uses scroll */
+    .best_popular_games .game_items_slider_wrapper {
         overflow: hidden;
     }
+}
+
+/* Game play page: top_slot_outer_casino slider – same as home page (horizontal scroll + drag) */
+.top_slot_outer_casino .game_items_slider_wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    touch-action: pan-x;
+}
+
+.top_slot_outer_casino .game_items_slider_wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+.top_slot_outer_casino .game_items_slider_wrapper .game_items_slider,
+.popular_games_outer_casino .game_items_slider_wrapper .game_items_slider {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 17px;
+    width: max-content;
+    min-width: 100%;
+}
+
+/* Same slider behaviour for popular games + TOP SLOTS sections */
+.popular_games_outer_casino .game_items_slider_wrapper,
+.most_popular_games_outer_casino .game_items_slider_wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    touch-action: pan-x;
+}
+
+.popular_games_outer_casino .game_items_slider_wrapper::-webkit-scrollbar,
+.most_popular_games_outer_casino .game_items_slider_wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+.most_popular_games_outer_casino .game_items_slider_wrapper .game_items_slider {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 17px;
+    width: max-content;
+    min-width: 100%;
 }

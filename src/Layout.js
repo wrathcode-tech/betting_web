@@ -10,7 +10,6 @@ const SideBar = lazy(() => import('./customComponents/SideBar/sideBar'))
 function Layout() {
   const { sidebarOpen, setSidebarOpen } = useSidebar()
   const { pathname } = useLocation()
-  const isGamePage = pathname === '/game'
 
   const onCloseSidebar = useCallback(() => {
     setSidebarOpen(false)
@@ -22,16 +21,6 @@ function Layout() {
       setSidebarOpen(true)
     }
   }, [pathname, setSidebarOpen])
-
-  if (isGamePage) {
-    return (
-      <div className="main_content_wrapper game_page_layout">
-        <div className="right_content_side" style={{ width: '100%' }}>
-          <Outlet />
-        </div>
-      </div>
-    )
-  }
 
   return (
     <>
