@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, memo } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 import Routing from "./Routing";
@@ -7,7 +7,7 @@ const ToastContainer = lazy(() =>
   import("react-toastify").then((m) => ({ default: m.ToastContainer }))
 );
 
-function App() {
+const App = memo(function App() {
   return (
     <>
       <Routing />
@@ -28,6 +28,6 @@ function App() {
       </Suspense>
     </>
   );
-}
+});
 
 export default App;

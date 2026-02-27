@@ -120,6 +120,12 @@ export default function SideBar({ isOpen, onClose }) {
                 <i className="ri-more-2-line" aria-hidden />
                 <span className="sh-sub-title_text">Other Menu</span>
               </div>
+              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
+                <Link to="/game-rules" onClick={onLinkClick}>
+                  <span><i className="ri-book-2-line" aria-hidden />Game Rules</span>
+                  <span className="sidebar_collapsed_label">Game Rules</span>
+                </Link>
+              </li>
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/promotions' ? 'active' : ''}`}>
                 <Link to="/promotions" onClick={onLinkClick}>
                   <span><i className="ri-megaphone-line" aria-hidden />Promotions</span>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import AuthService from '../api/services/AuthService'
 
 const CasinoProvidersContext = createContext({
@@ -20,23 +20,24 @@ export function CasinoProvidersProvider({ children }) {
       .finally(() => setLoadingProviders(false))
   }, [])
 
-  // Fetch on mount (global data, no auth required)
   useEffect(() => {
     fetchProviders()
   }, [fetchProviders])
 
-  // Refetch on login so data is fresh if API returns more when authenticated
   useEffect(() => {
     const onLoginStateChange = () => fetchProviders()
     window.addEventListener('loginStateChange', onLoginStateChange)
     return () => window.removeEventListener('loginStateChange', onLoginStateChange)
   }, [fetchProviders])
 
-  const value = {
-    providers,
-    loadingProviders,
-    refetchProviders: fetchProviders,
-  }
+  const value = useMemo(
+    () => ({
+      providers,
+      loadingProviders,
+      refetchProviders: fetchProviders,
+    }),
+    [providers, loadingProviders, fetchProviders]
+  )
 
   return (
     <CasinoProvidersContext.Provider value={value}>

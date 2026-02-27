@@ -1,15 +1,15 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, memo } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import ScrollToTop from "./ScrollToTop";
 import { SidebarProvider } from "./context/SidebarContext";
 import { CasinoProvidersProvider } from "./context/CasinoProvidersContext";
 import Layout from "./Layout";
 
-function ProtectedRoute() {
+const ProtectedRoute = memo(function ProtectedRoute() {
   const isLoggedIn = !!(sessionStorage.getItem("token") || localStorage.getItem("token"));
   if (!isLoggedIn) return <Navigate to="/login" replace />;
   return <Outlet />;
-}
+});
 
 // Lazy load pages – only the current route's chunk loads (faster initial load)
 const LandingPage = lazy(() => import("./LandingPage/LandingPage"));
@@ -37,15 +37,15 @@ const AddAccount = lazy(() => import("./BankDetails/addAccount"));
 const AddBank = lazy(() => import("./BankDetails/addBank"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 
-function PageFallback() {
+const PageFallback = memo(function PageFallback() {
   return (
     <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0d131c" }}>
       <div style={{ width: 40, height: 40, border: "3px solid #1e2a38", borderTopColor: "#f97a31", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
     </div>
   );
-}
+});
 
-const Routing = () => {
+const Routing = memo(function Routing() {
   return (
     <Router>
       <SidebarProvider>
@@ -90,6 +90,6 @@ const Routing = () => {
       </SidebarProvider>
     </Router>
   );
-};
+});
 
 export default Routing;

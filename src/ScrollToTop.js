@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
@@ -8,16 +8,16 @@ import { useLocation } from 'react-router-dom';
  */
 const SCROLL_SHOW_THRESHOLD = 300;
 
-export default function ScrollToTop() {
+const scrollToTopNow = () => {
+  window.scrollTo(0, 0);
+  if (document.documentElement) document.documentElement.scrollTop = 0;
+  if (document.body) document.body.scrollTop = 0;
+};
+
+function ScrollToTop() {
   const { pathname } = useLocation();
   const [showButton, setShowButton] = useState(false);
 
-  // Scroll to top on every route change (desktop + mobile; run once and after delay for lazy-loaded content)
-  const scrollToTopNow = () => {
-    window.scrollTo(0, 0);
-    if (document.documentElement) document.documentElement.scrollTop = 0;
-    if (document.body) document.body.scrollTop = 0;
-  };
   useEffect(() => {
     scrollToTopNow();
     const t = setTimeout(scrollToTopNow, 0);
@@ -68,9 +68,9 @@ export default function ScrollToTop() {
     };
   }, [pathname]);
 
-  const scrollToTop = () => {
+  const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
   return (
     <>
@@ -89,3 +89,5 @@ export default function ScrollToTop() {
     </>
   );
 }
+
+export default memo(ScrollToTop);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import AuthService from '../api/services/AuthService'
 import MobileMenu from '../customComponents/MobileMenu'
 import Header from '../customComponents/Header'
@@ -61,52 +61,55 @@ function ProfileTransactions() {
   const [typeFilter, setTypeFilter] = useState('all')
   const [pagination, setPagination] = useState({ page: 1, limit: PAGE_SIZE, total: 0, totalPages: 1, hasMore: false })
 
-  const getTypeParam = () => {
-    if (typeFilter === 'deposit') return 'deposit'
-    if (typeFilter === 'withdrawal') return 'withdrawal'
-    return 'deposit,withdrawal'
-  }
-
-  const fetchTransactions = async (page = 1, typeParam = null) => {
-    const token = localStorage.getItem('token')
-    if (!token) {
+  const fetchTransactions = useCallback(
+    async (page = 1, typeParam = null) => {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setLoading(false)
+        return
+      }
+      setLoading(true)
+      const type = typeParam != null ? typeParam : (typeFilter === 'deposit' ? 'deposit' : typeFilter === 'withdrawal' ? 'withdrawal' : 'deposit,withdrawal')
+      const res = await AuthService.bettingGetTransactions(page, PAGE_SIZE, type)
       setLoading(false)
-      return
-    }
-    setLoading(true)
-    const type = typeParam != null ? typeParam : getTypeParam()
-    const res = await AuthService.bettingGetTransactions(page, PAGE_SIZE, type)
-    setLoading(false)
-    if (res?.success && res?.data) {
-      setTransactions(res.data.transactions || [])
-      setPagination({
-        page: res.data.pagination?.page ?? page,
-        limit: res.data.pagination?.limit ?? PAGE_SIZE,
-        total: res.data.pagination?.total ?? 0,
-        totalPages: res.data.pagination?.totalPages ?? 1,
-        hasMore: res.data.pagination?.hasMore ?? false,
-      })
-    }
-  }
+      if (res?.success && res?.data) {
+        setTransactions(res.data.transactions || [])
+        setPagination({
+          page: res.data.pagination?.page ?? page,
+          limit: res.data.pagination?.limit ?? PAGE_SIZE,
+          total: res.data.pagination?.total ?? 0,
+          totalPages: res.data.pagination?.totalPages ?? 1,
+          hasMore: res.data.pagination?.hasMore ?? false,
+        })
+      }
+    },
+    [typeFilter]
+  )
 
   useEffect(() => {
-    fetchTransactions(1, getTypeParam())
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- run on typeFilter change only
-  }, [typeFilter])
+    const type = typeFilter === 'deposit' ? 'deposit' : typeFilter === 'withdrawal' ? 'withdrawal' : 'deposit,withdrawal'
+    fetchTransactions(1, type)
+  }, [typeFilter, fetchTransactions])
 
-  const handlePrev = () => {
-    if (pagination.page <= 1) return
-    fetchTransactions(pagination.page - 1)
-  }
+  const handlePrev = useCallback(() => {
+    setPagination((prev) => {
+      if (prev.page <= 1) return prev
+      fetchTransactions(prev.page - 1)
+      return prev
+    })
+  }, [fetchTransactions])
 
-  const handleNext = () => {
-    if (!pagination.hasMore) return
-    fetchTransactions(pagination.page + 1)
-  }
+  const handleNext = useCallback(() => {
+    setPagination((prev) => {
+      if (!prev.hasMore) return prev
+      fetchTransactions(prev.page + 1)
+      return prev
+    })
+  }, [fetchTransactions])
 
-  const handleFilterChange = (e) => {
+  const handleFilterChange = useCallback((e) => {
     setTypeFilter(e.target.value)
-  }
+  }, [])
 
   const useDummy = !loading && transactions.length === 0
   const rawList = useDummy ? DUMMY_TRANSACTIONS : transactions
@@ -114,18 +117,22 @@ function ProfileTransactions() {
     useDummy && typeFilter !== 'all'
       ? rawList.filter((t) => t.type === typeFilter)
       : rawList
-  const list = filteredRaw.map((t) => ({
-    id: t._id,
-    time: formatTime(t.createdAt),
-    transactionId: t.transactionId || t._id,
-    type: t.type === 'deposit' ? 'Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : t.type,
-    amount: formatAmount(t.amount, t.currency),
-    approvedAmount: t.status === 'approved' || t.status === 'completed' ? formatAmount(t.amount, t.currency) : '—',
-    status: formatStatus(t.status),
-    statusRaw: t.status,
-    notes: t.adminRemarks || t.remarks || '—',
-    paymentMethod: formatPaymentMethod(t.paymentMethod),
-  }))
+  const list = useMemo(
+    () =>
+      filteredRaw.map((t) => ({
+        id: t._id,
+        time: formatTime(t.createdAt),
+        transactionId: t.transactionId || t._id,
+        type: t.type === 'deposit' ? 'Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : t.type,
+        amount: formatAmount(t.amount, t.currency),
+        approvedAmount: t.status === 'approved' || t.status === 'completed' ? formatAmount(t.amount, t.currency) : '—',
+        status: formatStatus(t.status),
+        statusRaw: t.status,
+        notes: t.adminRemarks || t.remarks || '—',
+        paymentMethod: formatPaymentMethod(t.paymentMethod),
+      })),
+    [filteredRaw]
+  )
 
   return (
     <>

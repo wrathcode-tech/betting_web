@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import './casino.css'
 import MobileMenu from '../customComponents/MobileMenu'
@@ -37,18 +37,21 @@ function CasinoGame() {
         }
     }, [searchParams, providers]);
 
-    const handlePlayGame = (game) => {
+    const handlePlayGame = useCallback((game) => {
         if (!game?.gameCode || !game?.providerCode) return;
         try { sessionStorage.removeItem('wcoGameSession'); } catch (_) {}
         navigate('/game', { state: { gameCode: game.gameCode, providerCode: game.providerCode, gameName: game.name } });
-    };
+    }, [navigate]);
 
-    const selectedProvider = selectedProviderCode && selectedProviderCode !== 'all'
-        ? providers.find((p) => p.code === selectedProviderCode) || null
-        : null;
+    const selectedProvider = useMemo(
+        () =>
+            selectedProviderCode && selectedProviderCode !== 'all'
+                ? providers.find((p) => p.code === selectedProviderCode) || null
+                : null,
+        [providers, selectedProviderCode]
+    );
 
-    // When "All" provider: categories = Lobby + unique categories from all providers. Otherwise single provider's categories.
-    const categoriesForProvider = (() => {
+    const categoriesForProvider = useMemo(() => {
         const lobby = { code: 'lobby', name: 'Lobby' };
         if (selectedProviderCode === 'all' || !selectedProviderCode) {
             const seen = new Set(['lobby']);
@@ -66,16 +69,16 @@ function CasinoGame() {
         return selectedProvider
             ? [lobby, ...(selectedProvider.categories || [])]
             : [lobby];
-    })();
+    }, [providers, selectedProviderCode, selectedProvider]);
 
-    const handleProviderChange = (code) => {
+    const handleProviderChange = useCallback((code) => {
         setSelectedProviderCode(code);
         setSelectedCategoryCode('lobby');
-    };
+    }, []);
 
-    const handleCategoryThumbError = (catCode) => {
+    const handleCategoryThumbError = useCallback((catCode) => {
         setCategoryThumbErrors((prev) => new Set([...prev, catCode]));
-    };
+    }, []);
 
     // Fetch first page when provider or category changes (providerCode 'all' → API expects 'ALL')
     useEffect(() => {

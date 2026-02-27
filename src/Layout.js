@@ -1,16 +1,19 @@
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense, lazy, memo, useCallback } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useSidebar } from './context/SidebarContext'
 
 const Header = lazy(() => import('./customComponents/Header'))
 const SideBar = lazy(() => import('./customComponents/SideBar/sideBar'))
 
-export default function Layout() {
+function Layout() {
   const { sidebarOpen, setSidebarOpen } = useSidebar()
   const { pathname } = useLocation()
   const isGamePage = pathname === '/game'
 
-  // Game page: no main header (no balance bar), no sidebar – full area for game
+  const onCloseSidebar = useCallback(() => {
+    setSidebarOpen(false)
+  }, [setSidebarOpen])
+
   if (isGamePage) {
     return (
       <div className="main_content_wrapper game_page_layout">
@@ -29,7 +32,7 @@ export default function Layout() {
       <div className={`main_content_wrapper ${sidebarOpen ? 'sidebar_open' : 'sidebar_closed'}`}>
         <aside className="left_sidebar_side" aria-label="Sidebar">
           <Suspense fallback={null}>
-            <SideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <SideBar isOpen={sidebarOpen} onClose={onCloseSidebar} />
           </Suspense>
         </aside>
         <div className="right_content_side">
@@ -39,3 +42,5 @@ export default function Layout() {
     </>
   )
 }
+
+export default memo(Layout)

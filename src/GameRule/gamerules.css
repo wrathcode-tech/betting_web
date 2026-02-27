@@ -1,53 +1,80 @@
-.game_rules_page_wrap {
-  padding-bottom: 48px;
-}
-
-.game_rules_hero {
+.game_rules_section {
   text-align: center;
-  padding: 32px 20px 40px;
+  margin: 10px 0px 40px;
   color: #fff;
 }
 
-.game_rules_hero h1 {
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0 0 8px;
-  background: linear-gradient(135deg, #fff 0%, rgba(249, 122, 49, 0.9) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.game_rules_hero p {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.75);
-  margin: 0;
-}
 
 .game_rules_grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  margin-bottom: 48px;
+  margin: 24px 0px;
 }
 
 .game_rules_card {
+  width: 100%;
+  text-align: left;
+}
+
+.game_rules_card.open {
+  color: #fff;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  border-color: rgba(249, 122, 49, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   background: linear-gradient(180deg, #16202c 0%, #1a2634 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 24px;
-  color: #fff;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.game_rules_card:hover {
-  border-color: rgba(249, 122, 49, 0.35);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+.promotions_top_hd {
+  width: 100%;
+  background-color: #16202c;
+  padding: 20px;
+  text-align: left;
+  border-radius: 8px;
+  color: #fff;
+  margin-top: 15px;
+}
+
+.promotions_top_hd h1 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.promotions_top_hd p {
+  font-size: 14px;
+  margin: 0px;
+}
+
+.game_rules_card.open .game_rules_card_header {
+  background: transparent;
+  border: none;
+}
+
+
+.game_rules_card_header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  background: linear-gradient(180deg, #16202c 0%, #1a2634 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
 }
 
 .game_rules_card_icon {
   width: 48px;
   height: 48px;
+  flex-shrink: 0;
   border-radius: 12px;
   background: linear-gradient(135deg, rgba(249, 122, 49, 0.25) 0%, rgba(249, 122, 49, 0.1) 100%);
   color: #F97A31;
@@ -55,19 +82,47 @@
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  margin-bottom: 16px;
 }
 
-.game_rules_card h2 {
+.game_rules_card_header h2 {
+  flex: 1;
   font-size: 18px;
   font-weight: 600;
-  margin: 0 0 16px;
+  margin: 0;
   color: #fff;
+}
+
+.game_rules_card_arrow {
+  font-size: 22px;
+  color: #F97A31;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.game_rules_card.open .game_rules_card_arrow {
+  transform: rotate(180deg);
+}
+
+.game_rules_card_body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+
+.game_rules_card.open .game_rules_card_body {
+  max-height: 1200px;
+}
+
+.game_rules_card_body {
+  width: 100%;
+}
+
+.game_rules_card_body ul {
+  padding: 24px;
 }
 
 .game_rules_card ul {
   list-style: none;
-  padding: 0;
   margin: 0;
 }
 
@@ -98,6 +153,26 @@
   border-radius: 50%;
   background: #F97A31;
   opacity: 0.9;
+}
+
+/* Cricket Betting Rules – list items with icon */
+.game_rules_card_list_with_icon li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-left: 0;
+}
+.game_rules_card_list_with_icon li::before {
+  display: none;
+}
+.game_rules_faq_li_icon {
+  color: #F97A31;
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.game_rules_card_list_with_icon li span {
+  flex: 1;
 }
 
 /* FAQ */
@@ -236,6 +311,17 @@
   font-size: 20px;
 }
 
+@media (max-width: 992px) {
+  .game_rules_grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .promotions_top_hd p {
+    font-size: 12px;
+  }
+
+}
+
 @media (max-width: 768px) {
   .game_rules_hero h1 {
     font-size: 24px;
@@ -251,12 +337,16 @@
     margin-bottom: 36px;
   }
 
-  .game_rules_card {
-    padding: 20px;
+  .game_rules_card_header {
+    padding: 10px 15px;
   }
 
-  .game_rules_card h2 {
-    font-size: 17px;
+  .game_rules_card_header h2 {
+    font-size: 15px;
+  }
+
+  .game_rules_card_body {
+    padding: 0px;
   }
 
   .game_rules_faq_title {
@@ -277,4 +367,41 @@
   .game_rules_faq_item.open .game_rules_faq_answer_wrap {
     max-height: 280px;
   }
+}
+
+
+
+@media (max-width: 767px) {
+
+  .game_rules_section {
+    margin: 0px 0px 0px;
+  }
+
+  .promotions_top_hd h1 {
+    font-size: 16px;
+  }
+
+  .game_rules_card_icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+
+  .game_rules_card_header h2 {
+    font-size: 13px;
+  }
+
+  .game_rules_card li {
+    font-size: 12px;
+  }
+
+  .game_rules_card_body ul {
+    padding: 10px 20px 20px;
+  }
+
+  .game_rules_section .promotions_top_hd {
+    margin-top: 0px;
+}
+
 }
