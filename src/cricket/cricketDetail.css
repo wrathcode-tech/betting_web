@@ -727,6 +727,10 @@ span.quicktext {
         font-size: 16px;
     }
 
+    .right_content_side .container {
+        padding: 0px;
+    }
+
     .footer_description_content p {
         font-size: 12px;
     }
@@ -795,7 +799,7 @@ span.quicktext {
     }
 
     .team_dlex {
-        bottom: 13px;
+        bottom: 17px;
         padding: 0px 6px;
     }
 
@@ -804,7 +808,7 @@ span.quicktext {
     }
 
     .team_dlex {
-        bottom: 17px;
+        bottom: 18px;
     }
 
     .team_logo_lft {
@@ -814,3 +818,16 @@ span.quicktext {
 
 
 }
+
+
+@media (max-width: 340px) {
+
+    .team_logo_lft {
+        width: 22px;
+        height: 22px;
+    }
+
+    .team_dlex {
+        bottom: 13px; }
+
+ }

@@ -19,7 +19,7 @@
     background-position: center;
     background-repeat: no-repeat;
     padding: 40px 0px;
-    margin-top: 40px;
+    margin-top: 90px;
     animation: fadeIn 0.8s ease-in;
 }
 
@@ -257,6 +257,8 @@ p.subtext {
     max-width: 370px;
 }
 
+.work_steps_bl_item_img img{ width: 100%; height: 100%; object-fit: contain; }
+
 .work_steps_bl_item.increase_rank_item {
     background: linear-gradient(267deg, rgba(2, 85, 33, 0.75) 0%, rgba(3, 56, 22, 0.28) 15%, rgba(2, 70, 27, 0.75) 40%, rgba(0, 0, 0, 1) 70%);
     flex-direction: row-reverse;
@@ -321,6 +323,8 @@ p.subtext {
     border-radius: 12px;
 }
 
+.work_level_reach_s ul li img{ width: 100%; height: 100%; object-fit: contain; }
+
 .work_level_reach_s ul li:nth-child(1) {
     animation-delay: 0.4s;
 }
@@ -373,6 +377,8 @@ p.subtext {
 .work_level_reach_s ul li:hover p {
     color: #E46F2C;
 }
+
+.bottom_img img{ width: 100%; height: 100%; object-fit: contain; }
 
 .work_level_reach_s ul li:hover h3 {
     color: #E46F2C;
@@ -589,6 +595,7 @@ html {
 
     .work_level_reach_s {
         padding: 24px 0px;
+        margin-bottom: 60px;
     }
 
     p.subtext {
@@ -622,6 +629,11 @@ html {
         text-align: center;
     }
 
+    .work_steps_bl {
+        margin-top: 18px;
+        gap: 24px;
+    }
+
     .work_steps_bl_item {
         animation-duration: 0.6s;
     }
@@ -630,7 +642,8 @@ html {
         animation-duration: 0.6s;
     }
 
-    .rank_system_hero_s{ margin-top: 0px; }
+    .rank_system_hero_s{         margin-top: 70px;
+        padding-top: 28px !important;  }
 
     .work_level_reach_s ul li p {
         font-size: 13px;

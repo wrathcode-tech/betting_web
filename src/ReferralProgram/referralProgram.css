@@ -22,7 +22,7 @@
 
 .referral_program_tabs {
     width: 100%;
-    background-color: #151515;
+    background-color: #161f2c;
     padding: 10px;
     border-radius: 10px;
 }
@@ -48,7 +48,7 @@
 .referral_program_content {
     width: 100%;
     display: block;
-    background-color: #151515;
+    background-color:#161f2c;
     padding: 18px;
     border-radius: 18px;
     margin: 20px 0px;
@@ -976,6 +976,7 @@ table {
         padding: 5px;
         margin: 12px 0;
         border-radius: 12px;
+        background-color: transparent;
     }
     
     .referral_profit_tl {
@@ -1122,6 +1123,10 @@ table {
     
     .rewards_history_data_left h5 {
         font-size: 16px;
+    }
+
+    .right_content_side .container {
+        padding: 0px;
     }
     
     .rewards_history_data_left tr th {
