@@ -5,7 +5,7 @@ import LoginModal from '../customComponents/LoginModal'
 export default function LoginPage() {
   const navigate = useNavigate()
 
-  const isLoggedIn = !!(sessionStorage.getItem('token') || localStorage.getItem('token'))
+  const isLoggedIn = !!(sessionStorage.getItem('token'))
 
   useEffect(() => {
     if (isLoggedIn) {

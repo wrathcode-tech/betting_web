@@ -56,7 +56,7 @@ export default function UserHeader() {
   // Balance from socket only (connect after login, disconnect on logout)
   useEffect(() => {
     const syncBalance = () => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token = sessionStorage.getItem('token') || sessionStorage.getItem('token');
       if (token) {
         connectBalanceSocket(token, (balance) => {
           setBalanceInr(balance);
@@ -268,7 +268,6 @@ export default function UserHeader() {
                 onClick={() => {
                   disconnectBalanceSocket();
                   sessionStorage.removeItem('token');
-                  localStorage.removeItem('token');
                   window.dispatchEvent(new CustomEvent('loginStateChange'));
                   setIsProfileDropdownOpen(false);
                   navigate('/', { replace: true });

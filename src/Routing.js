@@ -5,11 +5,11 @@ import { SidebarProvider } from "./context/SidebarContext";
 import { CasinoProvidersProvider } from "./context/CasinoProvidersContext";
 import Layout from "./Layout";
 
-const ProtectedRoute = memo(function ProtectedRoute() {
-  const isLoggedIn = !!(sessionStorage.getItem("token") || localStorage.getItem("token"));
+function ProtectedRoute() {
+  const isLoggedIn = !!(sessionStorage.getItem("token"));
   if (!isLoggedIn) return <Navigate to="/login" replace />;
   return <Outlet />;
-});
+};
 
 // Lazy load pages – only the current route's chunk loads (faster initial load)
 const LandingPage = lazy(() => import("./LandingPage/LandingPage"));

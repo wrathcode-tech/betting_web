@@ -102,6 +102,6 @@ export const ApiCallDelete = async (url, headers) => {
 
 const tokenExpire = () => {
   alertErrorMessage('Token is Expired Please Login Again');
-  localStorage.clear();
+  sessionStorage.clear();
   window.location.reload();
 }

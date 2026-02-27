@@ -7,7 +7,7 @@ import { useCasinoProviders } from '../context/CasinoProvidersContext'
 
 function CasinoGame() {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { providers } = useCasinoProviders();
     const [currentSlide, setCurrentSlide] = useState(0);
     const [selectedProviderCode, setSelectedProviderCode] = useState('all');
@@ -27,34 +27,21 @@ function CasinoGame() {
     const GAMES_PAGE_SIZE = 20;
     const GAME_THUMB_FALLBACK = `${process.env.PUBLIC_URL || ''}/images/home_bnr7.png`;
 
-    // Sync selected provider from URL ?provider= when providers are loaded
+    // Sync selected provider and category FROM URL on load/refresh
     useEffect(() => {
         const code = searchParams.get('provider');
-        if (!code) return;
-        const normalized = String(code).trim().toLowerCase();
-        if (normalized === 'all') {
-            setSelectedProviderCode('all');
-            return;
-        }
-        if (providers.some((p) => (p.code || '').toLowerCase() === normalized)) {
-            setSelectedProviderCode(providers.find((p) => (p.code || '').toLowerCase() === normalized).code);
+        if (code != null && code !== '') {
+            const normalized = String(code).trim().toLowerCase();
+            if (normalized === 'all') {
+                setSelectedProviderCode('all');
+            } else if (providers.some((p) => (p.code || '').toLowerCase() === normalized)) {
+                setSelectedProviderCode(providers.find((p) => (p.code || '').toLowerCase() === normalized).code);
+            }
         }
     }, [searchParams, providers]);
 
-    const handlePlayGame = useCallback((game) => {
-        if (!game?.gameCode || !game?.providerCode) return;
-        try { sessionStorage.removeItem('wcoGameSession'); } catch (_) {}
-        navigate('/game', { state: { gameCode: game.gameCode, providerCode: game.providerCode, gameName: game.name } });
-    }, [navigate]);
-
-    const selectedProvider = useMemo(
-        () =>
-            selectedProviderCode && selectedProviderCode !== 'all'
-                ? providers.find((p) => p.code === selectedProviderCode) || null
-                : null,
-        [providers, selectedProviderCode]
-    );
-
+    // Sync category FROM URL once we have categoriesForProvider (depends on provider)
+    const categoryParam = searchParams.get('category');
     const categoriesForProvider = useMemo(() => {
         const lobby = { code: 'lobby', name: 'Lobby' };
         if (selectedProviderCode === 'all' || !selectedProviderCode) {
@@ -70,15 +57,47 @@ function CasinoGame() {
             });
             return combined;
         }
-        return selectedProvider
-            ? [lobby, ...(selectedProvider.categories || [])]
-            : [lobby];
-    }, [providers, selectedProviderCode, selectedProvider]);
+        const sel = providers.find((p) => p.code === selectedProviderCode);
+        return sel ? [lobby, ...(sel.categories || [])] : [lobby];
+    }, [providers, selectedProviderCode]);
+
+    useEffect(() => {
+        if (categoryParam == null || categoryParam === '' || categoryParam === 'lobby') {
+            setSelectedCategoryCode('lobby');
+            return;
+        }
+        const normalized = String(categoryParam).trim().toLowerCase();
+        const exists = categoriesForProvider.some((c) => (c.code || '').toLowerCase() === normalized);
+        if (exists) {
+            const cat = categoriesForProvider.find((c) => (c.code || '').toLowerCase() === normalized);
+            if (cat) setSelectedCategoryCode(cat.code);
+        }
+    }, [categoryParam, categoriesForProvider]);
+
+    const handlePlayGame = useCallback((game) => {
+        if (!game?.gameCode || !game?.providerCode) return;
+        try { sessionStorage.removeItem('wcoGameSession'); } catch (_) {}
+        navigate('/game', { state: { gameCode: game.gameCode, providerCode: game.providerCode, gameName: game.name } });
+    }, [navigate]);
+
+    const selectedProvider = useMemo(
+        () =>
+            selectedProviderCode && selectedProviderCode !== 'all'
+                ? providers.find((p) => p.code === selectedProviderCode) || null
+                : null,
+        [providers, selectedProviderCode]
+    );
 
     const handleProviderChange = useCallback((code) => {
         setSelectedProviderCode(code);
         setSelectedCategoryCode('lobby');
-    }, []);
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.set('provider', code === 'all' ? 'all' : code);
+            next.set('category', 'lobby');
+            return next;
+        }, { replace: true });
+    }, [setSearchParams]);
 
     const handleCategoryThumbError = useCallback((catCode) => {
         setCategoryThumbErrors((prev) => new Set([...prev, catCode]));
@@ -286,7 +305,7 @@ function CasinoGame() {
                 <i className="ri-poker-spades-fill" />
             </span>
             <span className="provider_select_text">
-                {selectedProviderCode === 'all' ? 'All' : (selectedProvider?.name || 'Provider')}
+                {selectedProviderCode === 'all' ? 'Provider' : (selectedProvider?.name || 'Provider')}
             </span>
             <span className="provider_select_arrow" aria-hidden>
                 <i className={`ri-arrow-down-s-line ${providerDropdownOpen ? 'open' : ''}`} />
@@ -339,7 +358,16 @@ function CasinoGame() {
                                                     role="tab"
                                                     aria-selected={selectedCategoryCode === cat.code}
                                                     className={selectedCategoryCode === cat.code ? 'active' : ''}
-                                                    onClick={() => setSelectedCategoryCode(cat.code)}
+                                                    onClick={() => {
+                                                        setSelectedCategoryCode(cat.code);
+                                                        setSearchParams((prev) => {
+                                                            const next = new URLSearchParams(prev);
+                                                            next.set('provider', selectedProviderCode === 'all' ? 'all' : selectedProviderCode);
+                                                            if (cat.code === 'lobby') next.set('category', 'lobby');
+                                                            else next.set('category', cat.code);
+                                                            return next;
+                                                        }, { replace: true });
+                                                    }}
                                                 >
                                                     {showThumb ? (
                                                         <img

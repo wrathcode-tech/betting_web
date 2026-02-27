@@ -171,13 +171,13 @@ export default function LoginModal({ show, onHide, initialTab = 'login' }) {
         const token = result?.data?.accessToken || result?.token
         const refreshToken = result?.data?.refreshToken
         if (token) {
-          localStorage.setItem('token', token)
-          if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
+          // sessionStorage.setItem('token', token)
+          if (refreshToken) sessionStorage.setItem('refreshToken', refreshToken)
           sessionStorage.setItem('token', token)
           window.dispatchEvent(new CustomEvent('loginStateChange'))
           alertSuccessMessage('Login successful!')
           onHide()
-          navigate('/', { replace: true })
+          navigate('/casino', { replace: true })
         } else {
           alertErrorMessage('Login failed: No token received')
         }

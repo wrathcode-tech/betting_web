@@ -60,7 +60,7 @@ const AuthService = {
   },
 
   bettingLogout: async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingAuth, bettingLogout } = ApiConfig;
     const url = baseBettingAuth + bettingLogout;
     const headers = {
@@ -71,7 +71,7 @@ const AuthService = {
   },
 
   bettingGetMe: async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingAuth, bettingGetMe } = ApiConfig;
     const url = baseBettingAuth + bettingGetMe;
     const headers = {
@@ -82,7 +82,7 @@ const AuthService = {
   },
 
   bettingUpdateProfile: async (payload, profileImageFile = null) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingAuth, bettingUpdateProfile } = ApiConfig;
     const url = baseBettingAuth + bettingUpdateProfile;
     const authHeader = `Bearer ${token}`;
@@ -96,7 +96,7 @@ const AuthService = {
   },
 
   bettingChangePassword: async (currentPassword, newPassword, confirmPassword) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingAuth, bettingChangePassword } = ApiConfig;
     const url = baseBettingAuth + bettingChangePassword;
     const params = { currentPassword, newPassword, confirmPassword };
@@ -108,7 +108,7 @@ const AuthService = {
   },
 
   bettingGetDepositOptions: async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingWallet, bettingDepositOptions } = ApiConfig;
     const url = baseBettingWallet + bettingDepositOptions;
     const headers = {
@@ -119,7 +119,7 @@ const AuthService = {
   },
 
   bettingGetBalance: async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingWallet, bettingBalance } = ApiConfig;
     const url = baseBettingWallet + bettingBalance;
     const headers = {
@@ -130,7 +130,7 @@ const AuthService = {
   },
 
   bettingGetTransactions: async (page = 1, limit = 10, type = "deposit,withdrawal", status = "") => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingWallet, bettingTransactions } = ApiConfig;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (type) params.set("type", type);
@@ -144,7 +144,7 @@ const AuthService = {
   },
 
   bettingCreateDeposit: async (payload, paymentProofFile = null) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingWallet, bettingDeposit } = ApiConfig;
     const url = baseBettingWallet + bettingDeposit;
     const authHeader = `Bearer ${token}`;
@@ -165,7 +165,7 @@ const AuthService = {
 
   /** Uses auth route POST /api/v1/auth/send-otp-bank (same base as signup OTP) */
   bettingBankAccountsSendOtp: async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingAuth, bettingSendOtpBank } = ApiConfig;
     const url = baseBettingAuth + bettingSendOtpBank;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -173,7 +173,7 @@ const AuthService = {
   },
 
   bettingBankAccountsAdd: async (payload) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingBankAccounts } = ApiConfig;
     const url = baseBettingBankAccounts;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -181,7 +181,7 @@ const AuthService = {
   },
 
   bettingBankAccountsList: async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingBankAccounts } = ApiConfig;
     const url = baseBettingBankAccounts;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -189,7 +189,7 @@ const AuthService = {
   },
 
   bettingBankAccountsDelete: async (accountId) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingBankAccounts } = ApiConfig;
     const url = `${baseBettingBankAccounts}/${accountId}`;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -197,7 +197,7 @@ const AuthService = {
   },
 
   bettingBankAccountsSetDefault: async (accountId) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingBankAccounts } = ApiConfig;
     const url = `${baseBettingBankAccounts}/${accountId}/default`;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -206,19 +206,19 @@ const AuthService = {
 
   // ---------- Betting Games (WCO – list + launch for iframe) ----------
   bettingGamesGetProviders: async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames, bettingGamesProviders } = ApiConfig;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
     return ApiCallGet(baseBettingGames + bettingGamesProviders, headers);
   },
   bettingGamesGetCategories: async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames, bettingGamesCategories } = ApiConfig;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
     return ApiCallGet(baseBettingGames + bettingGamesCategories, headers);
   },
   bettingGamesByCategory: async (category, page = 1, limit = 20, search = "") => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames } = ApiConfig;
     const params = new URLSearchParams({ page, limit });
     if (search) params.set("search", search);
@@ -227,7 +227,7 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
   bettingGamesByProvider: async (providerCode, page = 1, limit = 20, search = "") => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames } = ApiConfig;
     const params = new URLSearchParams({ page, limit });
     if (search) params.set("search", search);
@@ -237,7 +237,7 @@ const AuthService = {
   },
   /** GET /api/v1/games?providerCode=&category=&page=1&limit=20. providerCode "all" (case-insensitive) → "ALL" (no provider filter). */
   bettingGamesList: async (providerCode, category = "all", page = 1, limit = 20) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames } = ApiConfig;
     const normalizedProvider = providerCode && String(providerCode).toLowerCase() === "all" ? "ALL" : providerCode;
     const params = new URLSearchParams({ providerCode: normalizedProvider, page, limit: Math.min(limit, 50) });
@@ -248,14 +248,14 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
   bettingGamesFeatured: async (limit = 20) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames, bettingGamesFeatured } = ApiConfig;
     const url = `${baseBettingGames}${bettingGamesFeatured}?limit=${limit}`;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
     return ApiCallGet(url, headers);
   },
   bettingGamesPopular: async (limit = 20) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames, bettingGamesPopular } = ApiConfig;
     const url = `${baseBettingGames}${bettingGamesPopular}?limit=${limit}`;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
@@ -263,7 +263,7 @@ const AuthService = {
   },
   /** Launch game – returns launchURL for iframe. Requires login. */
   bettingGamesLaunch: async (gameCode, providerCode, platform = "desktop") => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required to play" };
     const { baseBettingGames, bettingGamesLaunch } = ApiConfig;
     const url = baseBettingGames + bettingGamesLaunch;
