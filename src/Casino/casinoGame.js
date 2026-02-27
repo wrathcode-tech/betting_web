@@ -20,6 +20,10 @@ function CasinoGame() {
     const [hasMoreGames, setHasMoreGames] = useState(true);
     const sliderRef = useRef(null);
     const loadMoreSentinelRef = useRef(null);
+    const providerDropdownRef = useRef(null);
+    const categoriesListRef = useRef(null);
+    const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
+    const [providerSearchQuery, setProviderSearchQuery] = useState('');
     const GAMES_PAGE_SIZE = 20;
     const GAME_THUMB_FALLBACK = `${process.env.PUBLIC_URL || ''}/images/home_bnr7.png`;
 
@@ -78,6 +82,50 @@ function CasinoGame() {
 
     const handleCategoryThumbError = useCallback((catCode) => {
         setCategoryThumbErrors((prev) => new Set([...prev, catCode]));
+    }, []);
+
+    const handleProviderSelect = useCallback((code) => {
+        handleProviderChange(code);
+        setProviderDropdownOpen(false);
+        setProviderSearchQuery('');
+    }, [handleProviderChange]);
+
+    const filteredProviders = useMemo(() => {
+        const q = (providerSearchQuery || '').trim().toLowerCase();
+        if (!q) return providers;
+        return providers.filter((p) => (p.name || '').toLowerCase().includes(q));
+    }, [providers, providerSearchQuery]);
+
+    useEffect(() => {
+        if (!providerDropdownOpen) setProviderSearchQuery('');
+    }, [providerDropdownOpen]);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (providerDropdownRef.current && !providerDropdownRef.current.contains(e.target)) {
+                setProviderDropdownOpen(false);
+            }
+        };
+        if (providerDropdownOpen) {
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [providerDropdownOpen]);
+
+    useEffect(() => {
+        const list = categoriesListRef.current;
+        if (!list) return;
+        let scrollTimeout;
+        const handleScroll = () => {
+            list.classList.add('scrolling');
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => list.classList.remove('scrolling'), 600);
+        };
+        list.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            list.removeEventListener('scroll', handleScroll);
+            clearTimeout(scrollTimeout);
+        };
     }, []);
 
     // Fetch first page when provider or category changes (providerCode 'all' → API expects 'ALL')
@@ -195,13 +243,8 @@ function CasinoGame() {
                         <div className='lobby_section'>
                             <div className='d-flex align-items-center justify-content-between casinotop_tabbar'>
                                 <div className="casino_provider_category_tabs">
-                                    <div className='d-flex align-items-center justify-content-end'>
-                                <div className='searchright_lobby w-10' onClick={() => window.dispatchEvent(new CustomEvent('openSearchModal'))} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && window.dispatchEvent(new CustomEvent('openSearchModal'))} aria-label="Open search">
-                                        <button type="button"><i className="ri-search-line"></i></button>
-                                        <span>Search</span>
-                                    </div>
-                                    </div>
-                                    <ul className='lobbytabs_list lobbytabs_list_providers' role="tablist">
+                                  
+                                    {/* <ul className='lobbytabs_list lobbytabs_list_providers' role="tablist">
                                         <li
                                             role="tab"
                                             aria-selected={selectedProviderCode === 'all'}
@@ -222,9 +265,71 @@ function CasinoGame() {
                                                 {p.totalGames != null && <span>{p.totalGames}</span>}
                                             </li>
                                         ))}
-                                    </ul>
+                                    </ul> */}
                                    
-                                    <ul className='lobbytabs_list lobbytabs_list_categories' role="tablist">
+<div className='d-flex align-items-start justify-content-start gap-3 lobbytab_bl_s'>
+<div className='d-flex align-items-center justify-content-end gap-3 left_lobby_block'>
+                                <div className='searchright_lobby w-10' onClick={() => window.dispatchEvent(new CustomEvent('openSearchModal'))} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && window.dispatchEvent(new CustomEvent('openSearchModal'))} aria-label="Open search">
+                                        <button type="button"><i className="ri-search-line"></i></button>
+                                        {/* <span>Search</span> */}
+                                    </div>
+                                    <div className='provider_select_wrapper' ref={providerDropdownRef}>
+        <button
+            type="button"
+            className={`provider_select_trigger ${providerDropdownOpen ? 'open' : ''}`}
+            onClick={() => setProviderDropdownOpen((prev) => !prev)}
+            aria-haspopup="listbox"
+            aria-expanded={providerDropdownOpen}
+            aria-label="Select provider"
+        >
+            <span className="provider_select_icon" aria-hidden>
+                <i className="ri-poker-spades-fill" />
+            </span>
+            <span className="provider_select_text">
+                {selectedProviderCode === 'all' ? 'All' : (selectedProvider?.name || 'Provider')}
+            </span>
+            <span className="provider_select_arrow" aria-hidden>
+                <i className={`ri-arrow-down-s-line ${providerDropdownOpen ? 'open' : ''}`} />
+            </span>
+        </button>
+        {providerDropdownOpen && (
+            <div className="provider_select_dropdown" role="listbox">
+                <div className="provider_dropdown_search_wrapper">
+                    <i className="ri-search-line provider_dropdown_search_icon" aria-hidden />
+                    <input
+                        type="text"
+                        className="provider_dropdown_search_input"
+                        placeholder="Search"
+                        value={providerSearchQuery}
+                        onChange={(e) => setProviderSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        aria-label="Search providers"
+                        autoFocus
+                    />
+                </div>
+                <div className="provider_select_dropdown_list">
+                    <button type="button" role="option" aria-selected={selectedProviderCode === 'all'} className={selectedProviderCode === 'all' ? 'active' : ''} onClick={() => handleProviderSelect('all')}>
+                        <span className="provider_option_label">All</span>
+                        {providers.length > 0 && (
+                            <span className="provider_option_count">
+                                {providers.reduce((sum, p) => sum + (Number(p.totalGames) || 0), 0)}
+                            </span>
+                        )}
+                    </button>
+                    {filteredProviders.map((p) => (
+                        <button type="button" key={p.code} role="option" aria-selected={selectedProviderCode === p.code} className={selectedProviderCode === p.code ? 'active' : ''} onClick={() => handleProviderSelect(p.code)}>
+                            <span className="provider_option_label">{p.name}</span>
+                            {p.totalGames != null && <span className="provider_option_count">{p.totalGames}</span>}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        )}
+    </div>
+                                    </div>
+ 
+
+                                    <ul ref={categoriesListRef} className='lobbytabs_list lobbytabs_list_categories' role="tablist">
                                         {categoriesForProvider.map((cat) => {
                                             const isLobby = cat.code === 'lobby';
                                             const showThumb = cat.thumb && !categoryThumbErrors.has(cat.code) && !isLobby;
@@ -251,6 +356,11 @@ function CasinoGame() {
                                             );
                                         })}
                                     </ul>
+
+                                
+
+                                    </div>
+
                                 </div>
                               
                             </div>
@@ -258,13 +368,7 @@ function CasinoGame() {
                             <div className='lobbytabs_content'>
                                 {/* Provider + category games (GET /api/v1/games) */}
                                 <div className="inner_tabs_block show">
-                                    {loadingProviderCategory && providerCategoryGames.length === 0 ? (
-                                        <div className="game_items_grid d-flex justify-content-center align-items-center loader-color" style={{ minHeight: 200 }}>
-                                            <div className="spinner-border" role="status">
-                                                <span className="visually-hidden">Loading…</span>
-                                            </div>
-                                        </div>
-                                    ) : providerCategoryGames.length > 0 ? (
+                                    {loadingProviderCategory && providerCategoryGames.length === 0 ? null : providerCategoryGames.length > 0 ? (
                                         <div className="top_slot_outer">
                                             <div className="top_hd d-flex align-items-center justify-content-between">
                                                 <h2 className="heading_h2">
@@ -300,13 +404,6 @@ function CasinoGame() {
                                                 })}
                                             </div>
                                             <div ref={loadMoreSentinelRef} style={{ height: 1 }} aria-hidden />
-                                            {loadingMore && (
-                                                <div className="game_items_grid d-flex justify-content-center loader-color py-3">
-                                                    <div className="spinner-border" role="status">
-                                                        <span className="visually-hidden">Loading more…</span>
-                                                    </div>
-                                                </div>
-                                            )}
                                         </div>
                                     ) : selectedProviderCode && !loadingProviderCategory ? (
                                         <div className="text-center py-4">No games in this category.</div>

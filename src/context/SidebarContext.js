@@ -7,10 +7,13 @@ const SidebarContext = createContext({
   setSidebarOpen: () => {},
 })
 
+function getInitialSidebarOpen() {
+  if (typeof window === 'undefined') return true
+  return window.innerWidth > MOBILE_BREAKPOINT
+}
+
 export function SidebarProvider({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(() =>
-    typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT ? false : true
-  )
+  const [sidebarOpen, setSidebarOpen] = useState(getInitialSidebarOpen)
 
   useEffect(() => {
     const handleResize = () => {

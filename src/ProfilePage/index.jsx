@@ -106,9 +106,7 @@ function ProfilePage() {
         <Header />
         <div className="dashboard_page">
           <div className="container">
-            <div className="profile_section">
-              <p className="text-white">Loading profile...</p>
-            </div>
+            <div className="profile_section" />
           </div>
         </div>
         <MobileMenu />

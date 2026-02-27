@@ -166,9 +166,7 @@ function ProfileTransactions() {
               </div>
             </div>
 
-            {loading ? (
-              <p className="text-white">Loading transactions...</p>
-            ) : list.length === 0 ? (
+            {loading ? null : list.length === 0 ? (
               <p className="text-white-50">No deposit or withdrawal transactions yet.</p>
             ) : (
               <>

@@ -20,7 +20,7 @@ function MobileMenu() {
                     </li>
 
                     <li className={`mobile-menu__item ${!sidebarOpen && (location.pathname === '/casino' || location.pathname.startsWith('/casino/')) ? 'active' : ''}`}>
-                        <NavLink to="/casino" className="mobile-menu__link">
+                        <NavLink to="/casino" className="mobile-menu__link" onClick={() => setSidebarOpen(false)}>
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-poker-spades-fill"></i>
                             </span>
@@ -29,7 +29,7 @@ function MobileMenu() {
                     </li>
 
                     <li className={`mobile-menu__item ${!sidebarOpen && location.pathname === '/' ? 'active' : ''}`}>
-                        <NavLink to="/" end className="mobile-menu__link" onClick={() => setSidebarOpen(true)}>
+                        <NavLink to="/" end className="mobile-menu__link" onClick={() => setSidebarOpen(false)}>
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-home-4-line"></i>
                             </span>
@@ -38,7 +38,7 @@ function MobileMenu() {
                     </li>
 
                     <li className={`mobile-menu__item ${!sidebarOpen && (location.pathname === '/sports' || location.pathname.startsWith('/sports/')) ? 'active' : ''}`}>
-                        <NavLink to="/sports" className="mobile-menu__link">
+                        <NavLink to="/sports" className="mobile-menu__link" onClick={() => setSidebarOpen(false)}>
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-basketball-fill"></i>
                             </span>
@@ -47,7 +47,7 @@ function MobileMenu() {
                     </li>
 
                     <li className={`mobile-menu__item ${!sidebarOpen && (location.pathname === '/profile' || location.pathname.startsWith('/profile/')) ? 'active' : ''}`}>
-                        <NavLink to="/profile" className="mobile-menu__link">
+                        <NavLink to="/profile" className="mobile-menu__link" onClick={() => setSidebarOpen(false)}>
                             <span className="icon mobile-menu__icon">
                                 <i className="ri-user-line"></i>
                             </span>

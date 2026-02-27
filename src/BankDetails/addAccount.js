@@ -141,7 +141,7 @@ function AddAccount() {
           <div className="choose_payment_option_bl">
             <h5>Your bank accounts</h5>
             {loading ? (
-              <p className="text-white-50">Loading...</p>
+              <div className="account_cards_row" />
             ) : (
               <div className="account_cards_row">
                 {accounts.map((acc) => (

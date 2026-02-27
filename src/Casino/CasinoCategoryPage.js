@@ -74,7 +74,7 @@ export default function CasinoCategoryPage() {
             {isApiCategory && (
               <div className="top_slot_outer">
                 {loading ? (
-                  <div className="casino_loading">Loading games...</div>
+                  <div className="game_items_grid" />
                 ) : (
                   <div className="game_items_grid">
                     {apiGames.map((g) => (

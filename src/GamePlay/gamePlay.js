@@ -158,11 +158,8 @@ function GamePlay() {
     return (
       <>
         <Header />
-        <div className="dashboard_page gameplay_loading_wrap">
-          <div className="gameplay_loading">
-            <div className="gameplay_spinner" />
-            <p>Loading game...</p>
-          </div>
+        <div className="dashboard_page">
+          <div />
         </div>
         <MobileMenu />
       </>

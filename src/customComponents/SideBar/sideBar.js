@@ -84,7 +84,20 @@ export default function SideBar({ isOpen, onClose }) {
                   <span><img src="/images/casino_icon.svg" alt="home" />Home</span>
                 </Link>
               </li> */}
-              <li className={`sidebar_menu_item ${openSubmenu === 'casino' ? 'active' : ''} ${pathname.startsWith('/casino') ? 'current_section' : ''}`}>
+                <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
+                <Link to="/casino" onClick={onLinkClick}>
+                  <span><i className="ri-poker-spades-fill" aria-hidden />Casino</span>
+                  <span className="sidebar_collapsed_label">Casino</span>
+                </Link>
+              </li>
+
+              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
+                <Link to="/sports" onClick={onLinkClick}>
+                  <span><i className="ri-basketball-fill" aria-hidden />Sports</span>
+                  <span className="sidebar_collapsed_label">Sports</span>
+                </Link>
+              </li>
+              {/* <li className={`sidebar_menu_item ${openSubmenu === 'casino' ? 'active' : ''} ${pathname.startsWith('/casino') ? 'current_section' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('casino'); }}>
                   <i className={openSubmenu === 'casino' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
                   <span><i className="ri-poker-spades-fill" aria-hidden />Casino</span>
@@ -101,8 +114,8 @@ export default function SideBar({ isOpen, onClose }) {
                       </li>
                     ))}
                   </ul>
-              </li>
-              <li className={`sidebar_menu_item ${openSubmenu === 'sports' ? 'active' : ''} ${pathname === '/sports' || pathname === '/cricket' ? 'current_section' : ''}`}>
+              </li> */}
+              {/* <li className={`sidebar_menu_item ${openSubmenu === 'sports' ? 'active' : ''} ${pathname === '/sports' || pathname === '/cricket' ? 'current_section' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('sports'); }}>
                   <i className={openSubmenu === 'sports' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
                   <span><i className="ri-basketball-fill" aria-hidden />Sports</span>
@@ -115,7 +128,7 @@ export default function SideBar({ isOpen, onClose }) {
                     <li><Link to="/cricket" onClick={onLinkClick} className={isCricketActive ? 'active' : ''}>Cricket</Link></li>
                     <li><Link to="/sports" onClick={onLinkClick} className={isSportsActive ? 'active' : ''}>Horse Racing</Link></li>
                   </ul>
-              </li>
+              </li> */}
               <div className="sh-sub-title">
                 <i className="ri-more-2-line" aria-hidden />
                 <span className="sh-sub-title_text">Other Menu</span>

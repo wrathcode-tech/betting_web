@@ -1,6 +1,8 @@
-import React, { Suspense, lazy, memo, useCallback } from 'react'
+import React, { Suspense, lazy, memo, useCallback, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useSidebar } from './context/SidebarContext'
+
+const DESKTOP_BREAKPOINT = 991
 
 const Header = lazy(() => import('./customComponents/Header'))
 const SideBar = lazy(() => import('./customComponents/SideBar/sideBar'))
@@ -13,6 +15,13 @@ function Layout() {
   const onCloseSidebar = useCallback(() => {
     setSidebarOpen(false)
   }, [setSidebarOpen])
+
+  // Desktop: sidebar default open on every page / after navigation
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth > DESKTOP_BREAKPOINT) {
+      setSidebarOpen(true)
+    }
+  }, [pathname, setSidebarOpen])
 
   if (isGamePage) {
     return (

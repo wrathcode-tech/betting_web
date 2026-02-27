@@ -239,7 +239,6 @@ ul.lobbytabs_list {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: rgba(120, 120, 120, 0.6) transparent;
-    padding-bottom: 5px;
 }
 
 ul.lobbytabs_list:hover,
@@ -256,8 +255,28 @@ ul.lobbytabs_list::-webkit-scrollbar-track {
 }
 
 ul.lobbytabs_list::-webkit-scrollbar-thumb {
-    background-color: rgba(120, 120, 120, 0.6);
+    background-color: rgba(120, 120, 120, 0.256);
     border-radius: 10px;
+}
+
+/* Categories list: scrollbar hidden by default, show only on hover or when user scrolls */
+ul.lobbytabs_list.lobbytabs_list_categories {
+    scrollbar-color: transparent transparent;
+}
+
+ul.lobbytabs_list.lobbytabs_list_categories::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 10px;
+}
+
+ul.lobbytabs_list.lobbytabs_list_categories:hover,
+ul.lobbytabs_list.lobbytabs_list_categories.scrolling {
+    scrollbar-color: rgba(120, 120, 120, 0.256) transparent;
+}
+
+ul.lobbytabs_list.lobbytabs_list_categories:hover::-webkit-scrollbar-thumb,
+ul.lobbytabs_list.lobbytabs_list_categories.scrolling::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.312);
 }
 
 ul.lobbytabs_list li {
@@ -267,14 +286,14 @@ ul.lobbytabs_list li {
 ul.lobbytabs_list li {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
+    gap: 5px;
+    font-size: 13px;
     color: #ffffffb5;
     font-weight: 500;
     background-color: #343c45;
-    border:none;
-    box-shadow: 0 4px 0px #343c45, inset 0 4px 3px #343c45;
-    padding: 10px;
+    border: none;
+    /* box-shadow: 0 4px 0px #343c45, inset 0 4px 3px #343c45; */
+    padding:8px 10px;
     border-radius: 8px;
     transition: all 0.5s;
     cursor: pointer;
@@ -284,7 +303,7 @@ ul.lobbytabs_list li.active {
     border-color: none;
     color: #fff;
     background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
-     box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+     /* box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d; */
 }
 
 ul.lobbytabs_list li span {
@@ -306,16 +325,205 @@ ul.lobbytabs_list li.active span {
 
 .lobbytabs_content {
     width: 100%;
-    margin-top: 20px;
+    margin-top:0px;
 }
 
 .searchright_lobby {
     background-color: #343c45;
     border-radius: 8px;
-    padding: 6px 15px;
+    padding: 10px 15px;
     cursor: pointer;
     transition: all 0.3s ease;
+    min-height: 41px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
+
+.lobbytab_bl_s {
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* Provider dropdown – trigger (icon + text + arrow) like reference */
+.provider_select_wrapper {
+    position: relative;
+}
+
+.lobby_section {
+    padding-top: 20px;
+}
+
+.provider_select_trigger {
+    width: 100%;
+    min-height: 41px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #ffffffb5;
+    font-weight: 500;
+    background-color: #343c45;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.provider_select_trigger:hover {
+    color: #fff;
+    background-color: #3d4650;
+}
+
+.provider_select_icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: #f97a31;
+}
+
+.provider_select_icon i {
+    font-size: 20px;
+}
+
+.provider_select_text {
+    flex: 1;
+}
+
+.provider_select_arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffffb5;
+    flex-shrink: 0;
+}
+
+.provider_select_arrow i {
+    font-size: 1em;
+    transition: transform 0.25s ease;
+}
+
+.provider_select_trigger.open .provider_select_arrow i {
+    transform: rotate(180deg);
+}
+
+.provider_select_dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background-color: #343c45;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+    min-width: 240px;
+    border-radius: 10px;
+    border-width: 1px;
+    font-size: 12px;
+    padding: 9px;
+}
+
+.provider_dropdown_search_wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #252e3b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    /* font-size: 12px; */
+    padding: 7px 12px;
+    flex-shrink: 0;
+}
+
+.provider_dropdown_search_icon {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.5);
+    flex-shrink: 0;
+}
+
+.provider_dropdown_search_input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 12px;
+    color: #fff;
+}
+
+.provider_dropdown_search_input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.provider_select_dropdown_list {
+    overflow-y: auto;
+    max-height: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: -2px 0 0;
+}
+
+.provider_select_dropdown_list button {
+    border-radius: 6px;
+}
+
+.provider_select_dropdown button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #ffffffb5;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.provider_option_label {
+    flex: 1;
+    min-width: 0;
+}
+
+.provider_option_count {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.provider_select_dropdown button.active .provider_option_count {
+    color: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.provider_select_dropdown button:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+.provider_select_dropdown button.active {
+    color: #fff;
+    background: #4c535a;
+}
+
 
 /* Mobile responsive for searchright_lobby */
 @media (max-width: 991px) {
@@ -435,6 +643,17 @@ ul.lobbytabs_list li.active span {
     ul.lobbytabs_list li {
         font-size: 12px;
         padding: 6px 10px;
+    }
+
+    .lobbytab_bl_s {
+        flex-direction: column;
+    }
+    .d-flex.left_lobby_block {
+        width: 100%;
+    }
+
+    .provider_select_wrapper {
+        width: 100%;
     }
 
     .casino_category_page_wrapper header .header_logo img {
