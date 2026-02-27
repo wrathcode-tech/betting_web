@@ -396,7 +396,7 @@ function CasinoGame() {
                             <div className='lobbytabs_content'>
                                 {/* Provider + category games (GET /api/v1/games) */}
                                 <div className="inner_tabs_block show">
-                                    {loadingProviderCategory && providerCategoryGames.length === 0 ? null : providerCategoryGames.length > 0 ? (
+                                    {providerCategoryGames.length > 0 ? (
                                         <div className="top_slot_outer">
                                             <div className="top_hd d-flex align-items-center justify-content-between">
                                                 <h2 className="heading_h2">
@@ -435,7 +435,19 @@ function CasinoGame() {
                                         </div>
                                     ) : selectedProviderCode && !loadingProviderCategory ? (
                                         <div className="text-center py-4">No games in this category.</div>
-                                    ) : null}
+                                    ) : (
+                                        <div className="top_slot_outer">
+                                            <div className="top_hd d-flex align-items-center justify-content-between">
+                                                <h2 className="heading_h2">
+                                                    {selectedProviderCode === 'all' ? 'All Games' : (selectedProvider?.name || 'Games')}
+                                                    {selectedCategoryCode !== 'lobby' && categoriesForProvider.find((c) => c.code === selectedCategoryCode)?.name && (
+                                                        <span> – {categoriesForProvider.find((c) => c.code === selectedCategoryCode).name}</span>
+                                                    )}
+                                                </h2>
+                                            </div>
+                                            <div className="game_items_grid" />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

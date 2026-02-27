@@ -183,6 +183,9 @@
     padding:10px 0px;
 }
 
+.search_modal .game_items_slider_wrapper {
+    overflow: auto !important; }
+
 .search_box_bl input[type="text"] {
     font-size: 12px; }
 

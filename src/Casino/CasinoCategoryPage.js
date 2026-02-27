@@ -73,11 +73,8 @@ export default function CasinoCategoryPage() {
 
             {isApiCategory && (
               <div className="top_slot_outer">
-                {loading ? (
-                  <div className="game_items_grid" />
-                ) : (
-                  <div className="game_items_grid">
-                    {apiGames.map((g) => (
+                <div className="game_items_grid">
+                  {apiGames.map((g) => (
                       <Link
                         key={`${g.providerCode}-${g.gameCode}`}
                         to="/game"
@@ -91,9 +88,8 @@ export default function CasinoCategoryPage() {
                         <img loading="lazy" src={g.thumbnail || `${process.env.PUBLIC_URL || ''}/images/betcasino_img.png`} alt={g.name} />
                         <span className="game_card_name">{g.name || g.gameCode}</span>
                       </Link>
-                    ))}
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
             )}
           </div>

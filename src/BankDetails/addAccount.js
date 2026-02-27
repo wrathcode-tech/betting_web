@@ -140,10 +140,7 @@ function AddAccount() {
 
           <div className="choose_payment_option_bl">
             <h5>Your bank accounts</h5>
-            {loading ? (
-              <div className="account_cards_row" />
-            ) : (
-              <div className="account_cards_row">
+            <div className="account_cards_row">
                 {accounts.map((acc) => (
                   <div
                     key={acc._id}
@@ -180,7 +177,6 @@ function AddAccount() {
                   </button>
                 )}
               </div>
-            )}
           </div>
 
           {showBankForm && (

@@ -178,7 +178,7 @@ function NewDeposit() {
           {/* 3. Admin details */}
           <div className="account_detail_payment">
             <h5>Pay to this {selectedPayment === 'bank' ? 'bank' : 'UPI'} account</h5>
-            {optionsLoading && !currentDetail?.bankName && !currentDetail?.upiId ? null : selectedPayment === 'bank' ? (
+            {selectedPayment === 'bank' ? (
               <>
                 <ul>
                   <li><span>Bank name</span>{bankDetail.bankName || '—'}</li>

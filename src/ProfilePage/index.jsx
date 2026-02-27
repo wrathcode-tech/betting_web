@@ -100,21 +100,7 @@ function ProfilePage() {
     }
   }
 
-  if (loading) {
-    return (
-      <>
-        <Header />
-        <div className="dashboard_page">
-          <div className="container">
-            <div className="profile_section" />
-          </div>
-        </div>
-        <MobileMenu />
-      </>
-    )
-  }
-
-  if (!user) {
+  if (!user && !loading) {
     return (
       <>
         <Header />

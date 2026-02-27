@@ -261,17 +261,6 @@ function GamePlay() {
     );
   }
 
-  if (loading) {
-    return (
-      <>
-        <div className="dashboard_page">
-          <div />
-        </div>
-        <MobileMenu />
-      </>
-    );
-  }
-
   if (error) {
     return (
       <>
