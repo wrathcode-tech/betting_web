@@ -193,6 +193,26 @@
     white-space: nowrap;
 }
 
+.transaction_payment_proof_link {
+    display: inline-flex;
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+}
+
+.transaction_payment_proof_thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.transaction_card_row_proof .transaction_payment_proof_thumb {
+    width: 80px;
+    height: 80px;
+}
+
 .status_badge {
     display: inline-block;
     padding: 5px 12px;

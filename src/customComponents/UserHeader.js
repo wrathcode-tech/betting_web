@@ -232,7 +232,7 @@ export default function UserHeader() {
                   <i className="ri-user-line"></i>
                   <span>My Profile</span>
                 </Link>
-                <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                <Link to="/add-account" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-settings-3-line"></i>
                   <span>Account</span>
                 </Link>

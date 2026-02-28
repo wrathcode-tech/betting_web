@@ -57,6 +57,10 @@ p.bank {
   border:none;
 }
 
+.payment_topbr_options {
+  margin-top: 8px;
+}
+
 .payment_selected_dl {
   width: 100%;
   background-color: #161F2C;

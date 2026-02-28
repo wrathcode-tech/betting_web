@@ -129,18 +129,68 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
-  bettingGetTransactions: async (page = 1, limit = 10, type = "deposit,withdrawal", status = "") => {
+  /** GET /api/v1/wallet/deposit-transactions – auth required. Returns { data: { transactions, pagination } }. */
+  walletDepositTransactions: async (page = 1, limit = 10) => {
     const token = sessionStorage.getItem("token");
-    const { baseBettingWallet, bettingTransactions } = ApiConfig;
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingWallet, bettingDepositTransactions } = ApiConfig;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-    if (type) params.set("type", type);
-    if (status) params.set("status", status);
-    const url = `${baseBettingWallet}${bettingTransactions}?${params.toString()}`;
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
+    const url = `${baseBettingWallet}${bettingDepositTransactions}?${params.toString()}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
     return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/wallet/withdrawal-transactions – auth required. Returns { data: { transactions, pagination } }. */
+  walletWithdrawalTransactions: async (page = 1, limit = 10) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingWallet, bettingWithdrawalTransactions } = ApiConfig;
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    const url = `${baseBettingWallet}${bettingWithdrawalTransactions}?${params.toString()}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  /** POST /api/v1/wallet/withdrawal – auth required. Body: { accountId, amount, otp, note }. */
+  walletWithdrawal: async (accountId, amount, otp, note = "") => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingWallet, bettingWithdrawal } = ApiConfig;
+    const url = baseBettingWallet + bettingWithdrawal;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    const payload = {
+      accountId,
+      amount: Number(amount),
+      otp: String(otp || "").trim(),
+      note: String(note || "").slice(0, 200),
+    };
+    return ApiCallPost(url, payload, headers);
+  },
+
+  /** POST /api/v1/wallet/send-withdrawal-otp – auth required. Body: empty {}. Sends OTP to user's registered mobile. */
+  walletRequestWithdrawalOtp: async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingWallet, bettingSendWithdrawalOtp } = ApiConfig;
+    const url = baseBettingWallet + bettingSendWithdrawalOtp;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPost(url, {}, headers);
+  },
+
+  /** POST /api/v1/wallet/send-withdrawal-otp – auth required. Body: { accountId, amount, otp, note }. Verifies OTP and processes withdrawal. */
+  walletSendWithdrawalOtp: async (accountId, amount, note = "", otp = "") => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingWallet, bettingSendWithdrawalOtp } = ApiConfig;
+    const url = baseBettingWallet + bettingSendWithdrawalOtp;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    const payload = {
+      accountId,
+      amount: Number(amount),
+      note: String(note || "").slice(0, 200),
+      otp: String(otp || "").trim(),
+    };
+    return ApiCallPost(url, payload, headers);
   },
 
   bettingCreateDeposit: async (payload, paymentProofFile = null) => {

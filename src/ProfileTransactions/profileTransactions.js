@@ -1,22 +1,18 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import AuthService from '../api/services/AuthService'
+import { ApiConfig } from '../api/apiConfig/apiConfig'
 import MobileMenu from '../customComponents/MobileMenu'
 import Header from '../customComponents/Header'
 import './profileTransactions.css'
 
-const PAGE_SIZE = 10
+function getPaymentProofFullUrl(url) {
+  if (!url || typeof url !== 'string') return null
+  if (url.startsWith('http')) return url
+  const base = ApiConfig.baseBettingUrl || ''
+  return base ? `${base.replace(/\/$/, '')}${url.startsWith('/') ? url : `/${url}`}` : url
+}
 
-// Dummy data when no transactions from API (same shape as API response)
-const DUMMY_TRANSACTIONS = [
-  { _id: 'dummy-1', createdAt: '2025-06-12T10:30:00.000Z', transactionId: 'TXN20250612001', type: 'deposit', amount: 5000, currency: 'INR', status: 'approved', paymentMethod: 'UPI', adminRemarks: 'Deposit via Google Pay' },
-  { _id: 'dummy-2', createdAt: '2025-06-11T14:22:00.000Z', transactionId: 'TXN20250611002', type: 'withdrawal', amount: 2500, currency: 'INR', status: 'completed', paymentMethod: 'BANK_TRANSFER', adminRemarks: 'Processed to bank account' },
-  { _id: 'dummy-3', createdAt: '2025-06-10T09:15:00.000Z', transactionId: 'TXN20250610003', type: 'deposit', amount: 10000, currency: 'INR', status: 'approved', paymentMethod: 'BANK', adminRemarks: '—' },
-  { _id: 'dummy-4', createdAt: '2025-06-09T16:45:00.000Z', transactionId: 'TXN20250609004', type: 'withdrawal', amount: 3000, currency: 'INR', status: 'pending', paymentMethod: 'UPI', adminRemarks: 'Under review' },
-  { _id: 'dummy-5', createdAt: '2025-06-08T11:00:00.000Z', transactionId: 'TXN20250608005', type: 'deposit', amount: 7500, currency: 'INR', status: 'approved', paymentMethod: 'UPI', adminRemarks: 'Bonus credited' },
-  { _id: 'dummy-6', createdAt: '2025-06-07T08:30:00.000Z', transactionId: 'TXN20250607006', type: 'deposit', amount: 2000, currency: 'INR', status: 'rejected', paymentMethod: 'BANK', adminRemarks: 'Invalid details' },
-  { _id: 'dummy-7', createdAt: '2025-06-06T13:20:00.000Z', transactionId: 'TXN20250606007', type: 'withdrawal', amount: 4500, currency: 'INR', status: 'completed', paymentMethod: 'BANK_TRANSFER', adminRemarks: '—' },
-  { _id: 'dummy-8', createdAt: '2025-06-05T17:55:00.000Z', transactionId: 'TXN20250605008', type: 'deposit', amount: 15000, currency: 'INR', status: 'approved', paymentMethod: 'BANK', adminRemarks: 'Welcome bonus' },
-]
+const PAGE_SIZE = 10
 
 const TYPE_FILTER_OPTIONS = [
   { value: 'all', label: 'All' },
@@ -63,17 +59,59 @@ function ProfileTransactions() {
 
   const fetchTransactions = useCallback(
     async (page = 1, typeParam = null) => {
-      const token = localStorage.getItem('token')
+      const token = sessionStorage.getItem('token')
       if (!token) {
         setLoading(false)
         return
       }
       setLoading(true)
-      const type = typeParam != null ? typeParam : (typeFilter === 'deposit' ? 'deposit' : typeFilter === 'withdrawal' ? 'withdrawal' : 'deposit,withdrawal')
-      const res = await AuthService.bettingGetTransactions(page, PAGE_SIZE, type)
+      const effectiveType = typeParam != null ? typeParam : typeFilter
+
+      if (effectiveType === 'withdrawal') {
+        const res = await AuthService.walletWithdrawalTransactions(page, PAGE_SIZE)
+        setLoading(false)
+        if (res?.success && res?.data) {
+          const list = res.data.transactions || []
+          setTransactions(list)
+          setPagination({
+            page: res.data.pagination?.page ?? page,
+            limit: res.data.pagination?.limit ?? PAGE_SIZE,
+            total: res.data.pagination?.total ?? 0,
+            totalPages: res.data.pagination?.totalPages ?? 1,
+            hasMore: res.data.pagination?.hasMore ?? false,
+          })
+        }
+        return
+      }
+
+      if (effectiveType === 'all') {
+        const [depRes, wdrRes] = await Promise.all([
+          AuthService.walletDepositTransactions(1, 50),
+          AuthService.walletWithdrawalTransactions(1, 50),
+        ])
+        setLoading(false)
+        const deposits = depRes?.success && depRes?.data ? depRes.data.transactions || [] : []
+        const withdrawals = wdrRes?.success && wdrRes?.data ? wdrRes.data.transactions || [] : []
+        const merged = [...deposits, ...withdrawals].sort(
+          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+        )
+        const total = merged.length
+        setTransactions(merged)
+        setPagination({
+          page: 1,
+          limit: PAGE_SIZE,
+          total,
+          totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+          hasMore: total > PAGE_SIZE,
+        })
+        return
+      }
+
+      const res = await AuthService.walletDepositTransactions(page, PAGE_SIZE)
       setLoading(false)
       if (res?.success && res?.data) {
-        setTransactions(res.data.transactions || [])
+        const list = res.data.transactions || []
+        setTransactions(list)
         setPagination({
           page: res.data.pagination?.page ?? page,
           limit: res.data.pagination?.limit ?? PAGE_SIZE,
@@ -87,52 +125,63 @@ function ProfileTransactions() {
   )
 
   useEffect(() => {
-    const type = typeFilter === 'deposit' ? 'deposit' : typeFilter === 'withdrawal' ? 'withdrawal' : 'deposit,withdrawal'
-    fetchTransactions(1, type)
+    fetchTransactions(1, typeFilter)
   }, [typeFilter, fetchTransactions])
 
   const handlePrev = useCallback(() => {
+    if (typeFilter === 'all') {
+      setPagination((prev) => {
+        if (prev.page <= 1) return prev
+        const nextPage = prev.page - 1
+        return { ...prev, page: nextPage, hasMore: nextPage < prev.totalPages }
+      })
+      return
+    }
     setPagination((prev) => {
       if (prev.page <= 1) return prev
       fetchTransactions(prev.page - 1)
       return prev
     })
-  }, [fetchTransactions])
+  }, [fetchTransactions, typeFilter])
 
   const handleNext = useCallback(() => {
+    if (typeFilter === 'all') {
+      setPagination((prev) => {
+        if (!prev.hasMore) return prev
+        const nextPage = prev.page + 1
+        return { ...prev, page: nextPage, hasMore: nextPage < prev.totalPages }
+      })
+      return
+    }
     setPagination((prev) => {
       if (!prev.hasMore) return prev
       fetchTransactions(prev.page + 1)
       return prev
     })
-  }, [fetchTransactions])
+  }, [fetchTransactions, typeFilter])
 
   const handleFilterChange = useCallback((e) => {
     setTypeFilter(e.target.value)
   }, [])
 
-  const useDummy = !loading && transactions.length === 0
-  const rawList = useDummy ? DUMMY_TRANSACTIONS : transactions
-  const filteredRaw =
-    useDummy && typeFilter !== 'all'
-      ? rawList.filter((t) => t.type === typeFilter)
-      : rawList
-  const list = useMemo(
-    () =>
-      filteredRaw.map((t) => ({
-        id: t._id,
-        time: formatTime(t.createdAt),
-        transactionId: t.transactionId || t._id,
-        type: t.type === 'deposit' ? 'Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : t.type,
-        amount: formatAmount(t.amount, t.currency),
-        approvedAmount: t.status === 'approved' || t.status === 'completed' ? formatAmount(t.amount, t.currency) : '—',
-        status: formatStatus(t.status),
-        statusRaw: t.status,
-        notes: t.adminRemarks || t.remarks || '—',
-        paymentMethod: formatPaymentMethod(t.paymentMethod),
-      })),
-    [filteredRaw]
-  )
+  const list = useMemo(() => {
+    const source = typeFilter === 'all'
+      ? transactions.slice((pagination.page - 1) * PAGE_SIZE, pagination.page * PAGE_SIZE)
+      : transactions
+    return source.map((t) => ({
+      id: t._id,
+      time: formatTime(t.createdAt),
+      transactionId: t.transactionId || t._id,
+      type: t.type === 'deposit' ? 'Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : t.type,
+      amount: formatAmount(t.amount, t.currency),
+      approvedAmount: t.status === 'approved' || t.status === 'completed' ? formatAmount(t.amount, t.currency) : '—',
+      status: formatStatus(t.status),
+      statusRaw: t.status,
+      notes: t.adminRemarks || t.remarks || '—',
+      paymentMethod: formatPaymentMethod(t.paymentMethod),
+      paymentProofUrl: t.type === 'deposit' ? getPaymentProofFullUrl(t.paymentProofUrl) : null,
+    }))
+  }, [transactions, typeFilter, pagination.page])
 
   return (
     <>
@@ -178,10 +227,9 @@ function ProfileTransactions() {
                         <th>Transaction ID</th>
                         <th>Transaction Type</th>
                         <th>Amount</th>
-                        <th>Approved Amount</th>
                         <th>Transaction Status</th>
-                        <th>Notes</th>
                         <th>Payment Method</th>
+                        <th>Payment Proof</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -191,14 +239,21 @@ function ProfileTransactions() {
                           <td>{tx.transactionId}</td>
                           <td>{tx.type}</td>
                           <td>{tx.amount}</td>
-                          <td>{tx.approvedAmount}</td>
                           <td>
                             <span className={`status_badge status_${(tx.statusRaw || '').toLowerCase()}`}>
                               {tx.status}
                             </span>
                           </td>
-                          <td>{tx.notes}</td>
                           <td>{tx.paymentMethod}</td>
+                          <td>
+                            {tx.paymentProofUrl ? (
+                              <a href={tx.paymentProofUrl} target="_blank" rel="noopener noreferrer" className="transaction_payment_proof_link" aria-label="View payment proof">
+                                <img src={tx.paymentProofUrl} alt="Payment proof" className="transaction_payment_proof_thumb" />
+                              </a>
+                            ) : (
+                              '—'
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -241,6 +296,16 @@ function ProfileTransactions() {
                           <span className='transaction_label'>Notes</span>
                           <span className='transaction_value'>{tx.notes}</span>
                         </div>
+                        {tx.paymentProofUrl && (
+                          <div className='transaction_card_row transaction_card_row_proof'>
+                            <span className='transaction_label'>Payment Proof</span>
+                            <span className='transaction_value'>
+                              <a href={tx.paymentProofUrl} target="_blank" rel="noopener noreferrer" className="transaction_payment_proof_link" aria-label="View payment proof">
+                                <img src={tx.paymentProofUrl} alt="Payment proof" className="transaction_payment_proof_thumb" />
+                              </a>
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -256,7 +321,7 @@ function ProfileTransactions() {
                     Previous
                   </button>
                   <span className='pagination_info'>
-                    Page {pagination.page} of {pagination.totalPages || 1} ({useDummy ? list.length : pagination.total} total)
+                    Page {pagination.page} of {pagination.totalPages || 1} ({pagination.total} total)
                   </span>
                   <button
                     type="button"

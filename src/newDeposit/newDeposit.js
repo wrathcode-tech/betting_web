@@ -29,10 +29,33 @@ const BANK_TRANSFER_OPTIONS = [
   { value: 'rtgs', label: 'RTGS' },
 ];
 
+// Option 1 = 1st admin account, Option 2 = 2nd, Option 3 = 3rd (static until API)
+const BANK_ACCOUNTS_STATIC = {
+  option1: {
+    bankName: 'State Bank of India',
+    accountHolderName: 'Admin Account',
+    accountNumber: '1234567890123456',
+    ifscCode: 'SBIN0001234',
+  },
+  option2: {
+    bankName: 'HDFC Bank',
+    accountHolderName: 'Admin Account',
+    accountNumber: '9876543210987654',
+    ifscCode: 'HDFC0000567',
+  },
+  option3: {
+    bankName: 'ICICI Bank',
+    accountHolderName: 'Admin Account',
+    accountNumber: '5555666677778888',
+    ifscCode: 'ICIC0000890',
+  },
+};
+
 function NewDeposit() {
   const [depositOptions, setDepositOptions] = useState({ bank: null, upi: null });
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState('bank');
+  const [selectedBankOption, setSelectedBankOption] = useState('option1');
   const [bankTransferMethod, setBankTransferMethod] = useState('imps');
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [amountInput, setAmountInput] = useState('');
@@ -67,11 +90,11 @@ function NewDeposit() {
     setAmountInput('');
   };
 
-  // Admin details to show: from API or dummy
-  const bankDetail = depositOptions.bank || DUMMY_BANK;
+  // Bank: Option 1 → 1st account, Option 2 → 2nd, Option 3 → 3rd. UPI: from API or dummy.
+  const displayBankDetail = BANK_ACCOUNTS_STATIC[selectedBankOption] || BANK_ACCOUNTS_STATIC.option1;
   const upiDetail = depositOptions.upi || DUMMY_UPI;
-  const currentDetail = selectedPayment === 'bank' ? bankDetail : upiDetail;
-  const currentDetailId = selectedPayment === 'bank' ? depositOptions.bank?.id : depositOptions.upi?.id;
+  const currentDetail = selectedPayment === 'bank' ? displayBankDetail : upiDetail;
+  const currentDetailId = selectedPayment === 'bank' ? null : depositOptions.upi?.id;
 
   const handleConfirmPayment = async () => {
     const amount = Number(amountInput?.replace(/,/g, '')) || 0;
@@ -144,6 +167,33 @@ function NewDeposit() {
             </button>
           </div>
 
+          {/* Bank sub-options: Option 1, 2, 3 (only when Bank is selected) */}
+          {selectedPayment === 'bank' && (
+            <div className="payment_topbr payment_topbr_options">
+              <button
+                type="button"
+                className={selectedBankOption === 'option1' ? 'active' : ''}
+                onClick={() => setSelectedBankOption('option1')}
+              >
+                Option 1
+              </button>
+              <button
+                type="button"
+                className={selectedBankOption === 'option2' ? 'active' : ''}
+                onClick={() => setSelectedBankOption('option2')}
+              >
+                Option 2
+              </button>
+              <button
+                type="button"
+                className={selectedBankOption === 'option3' ? 'active' : ''}
+                onClick={() => setSelectedBankOption('option3')}
+              >
+                Option 3
+              </button>
+            </div>
+          )}
+
           {/* 2. Amount */}
           <div className="payment_selected_dl">
             <ul>
@@ -181,10 +231,10 @@ function NewDeposit() {
             {selectedPayment === 'bank' ? (
               <>
                 <ul>
-                  <li><span>Bank name</span>{bankDetail.bankName || '—'}</li>
-                  <li><span>Account Name</span>{bankDetail.accountHolderName || '—'}</li>
-                  <li><span>Account Number</span>{bankDetail.accountNumber || '—'}</li>
-                  <li><span>IFSC Code</span>{bankDetail.ifscCode || '—'}</li>
+                  <li><span>Bank name</span>{displayBankDetail.bankName || '—'}</li>
+                  <li><span>Account Holder Name</span>{displayBankDetail.accountHolderName || '—'}</li>
+                  <li><span>Account Number</span>{displayBankDetail.accountNumber || '—'}</li>
+                  <li><span>IFSC Code</span>{displayBankDetail.ifscCode || '—'}</li>
                 </ul>
                 <div className="enter_amount_deposit">
                   <h5>Transfer type (IMPS / NEFT / RTGS)</h5>

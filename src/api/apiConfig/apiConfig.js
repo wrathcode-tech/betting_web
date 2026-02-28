@@ -35,7 +35,10 @@ export const ApiConfig = {
   bettingDepositOptions: "deposit-options",
   bettingDeposit: "deposit",
   bettingBalance: "balance",
-  bettingTransactions: "transactions",
+  bettingDepositTransactions: "deposit-transactions",
+  bettingWithdrawalTransactions: "withdrawal-transactions",
+  bettingWithdrawal: "withdrawal",
+  bettingSendWithdrawalOtp: "send-withdrawal-otp",
 
   // Bank accounts (base + paths must match backend: POST /api/v1/bank-accounts/send-otp etc.)
   baseBettingBankAccounts: `${bettingUrl}/api/v1/bank-accounts`,
