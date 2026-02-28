@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Swal from 'sweetalert2';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
@@ -56,10 +57,28 @@ function AddAccount() {
 
   const removeAccount = async (e, accountId) => {
     e.stopPropagation();
-    if (!window.confirm('Remove this bank account?')) return;
+    const { isConfirmed } = await Swal.fire({
+      title: 'Remove bank account?',
+      text: 'This account will be removed from your saved accounts. You can add it again later.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, remove it',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+    });
+    if (!isConfirmed) return;
     const res = await AuthService.bettingBankAccountsDelete(accountId);
     if (res?.success) {
-      alertSuccessMessage('Account removed');
+      await Swal.fire({
+        title: 'Removed',
+        text: 'Bank account has been removed successfully.',
+        icon: 'success',
+        confirmButtonColor: '#198754',
+        timer: 2000,
+        timerProgressBar: true,
+      });
       await fetchAccounts();
     } else {
       alertErrorMessage(res?.message || 'Failed to delete');

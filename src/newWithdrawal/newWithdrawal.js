@@ -8,8 +8,6 @@ import '../newDeposit/newDeposit.css';
 import '../BankDetails/addAccount.css';
 import './newWithdrawal.css';
 
-const MAX_ACCOUNTS = 3;
-
 function maskAccountNumber(num) {
   if (!num || num.length < 4) return '****';
   return '****' + num.slice(-4);
@@ -159,8 +157,8 @@ function NewWithdrawal() {
             </div>
           ) : (
             <div className="choose_payment_option_bl">
-              <h5>Your bank accounts</h5>
-              <p className="text-white-50 small mb-2">Select an account to use for withdrawal. You can add or manage accounts from Add Account page.</p>
+              <h5>Your bank account</h5>
+              <p className="text-white-50 small mb-2">Withdrawal will be sent to the selected account below.</p>
               <div className="account_cards_row">
                 {accounts.map((acc) => (
                   <div
@@ -183,16 +181,6 @@ function NewWithdrawal() {
                     </div>
                   </div>
                 ))}
-                {accounts.length < MAX_ACCOUNTS && (
-                  <button
-                    type="button"
-                    className="account_card account_card_add"
-                    onClick={() => navigate('/add-account')}
-                  >
-                    <span className="account_card_add_icon"><i className="ri-add-line" /></span>
-                    <span className="account_card_add_text">Add Account</span>
-                  </button>
-                )}
               </div>
             </div>
           )}
