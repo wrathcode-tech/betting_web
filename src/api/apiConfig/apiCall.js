@@ -9,18 +9,18 @@ const handleApiError = (error) => {
   if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
     return { success: false, message: 'Request timeout. Please try again.' };
   }
-  
+
   // Handle network errors
   if (!error.response) {
     return { success: false, message: 'Network error. Please check your connection.' };
   }
-  
+
   // Handle token expiry
   if (error?.response?.data?.message === "Token is expired") {
     tokenExpire();
     return;
   }
-  
+
   return error?.response?.data;
 };
 
@@ -46,7 +46,7 @@ export const ApiCallPostFormData = async (url, formData, authHeader) => {
 
 export const ApiCallGet = async (url, headers) => {
   try {
-    const response = await axios.get(url, { headers: headers, timeout: TIMEOUT });   
+    const response = await axios.get(url, { headers: headers, timeout: TIMEOUT });
     return response?.data;
   } catch (error) {
     return handleApiError(error);
@@ -55,7 +55,7 @@ export const ApiCallGet = async (url, headers) => {
 
 export const ApiCallGetVerifyRegistration = async (url, headers) => {
   try {
-    const response = await axios.get(url, { headers: headers, timeout: TIMEOUT });   
+    const response = await axios.get(url, { headers: headers, timeout: TIMEOUT });
     return response?.data;
   } catch (error) {
     return error?.response?.data;

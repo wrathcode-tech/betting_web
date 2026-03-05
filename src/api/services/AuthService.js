@@ -321,11 +321,36 @@ const AuthService = {
   /** Launch game – returns launchURL for iframe. Requires login. */
   bettingGamesLaunch: async (gameCode, providerCode, platform = "desktop") => {
     const token = sessionStorage.getItem("token");
+    console.log("🚀 ~ token:", token)
     if (!token) return { success: false, message: "Login required to play" };
     const { baseBettingGames, bettingGamesLaunch } = ApiConfig;
     const url = baseBettingGames + bettingGamesLaunch;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
     return ApiCallPost(url, { gameCode, providerCode, platform }, headers);
+  },
+
+  /** GET /api/v1/sportsbook/{sportName}/matches – sportName: cricket, soccer, tennis. Auth: Bearer token. */
+  sportsbookMatches: async (sportName) => {
+    const token = sessionStorage.getItem("token");
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/${encodeURIComponent(sportName)}/matches`;
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/sportsbook/{sportName}/odds?gameId={gameId} – Returns matchOdds, bookMakerOdds, fancyOdds, premiumFancy. Auth: Bearer token. */
+  sportsbookOdds: async (sportName, gameId) => {
+    const token = sessionStorage.getItem("token");
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/${encodeURIComponent(sportName)}/odds?gameId=${encodeURIComponent(gameId)}`;
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    return ApiCallGet(url, headers);
   },
 
   // ============================================================================

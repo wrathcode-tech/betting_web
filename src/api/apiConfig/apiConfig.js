@@ -27,7 +27,7 @@ export const ApiConfig = {
 
   // ============URLs================
 
- 
+
   // ============Betting URLs================
   baseBettingAuth: `${bettingUrl}/api/v1/auth/`,
   baseBettingWallet: `${bettingUrl}/api/v1/wallet/`,
@@ -52,6 +52,9 @@ export const ApiConfig = {
   bettingGamesFeatured: "featured",
   bettingGamesPopular: "popular",
   bettingGamesLanding: "landing",
+
+  // Sportsbook – GET /api/v1/sportsbook/{sportName}/matches (sportName: cricket, soccer, tennis)
+  baseBettingSportsbook: `${bettingUrl}/api/v1/sportsbook`,
 
   // ============webSocketUrl================
 

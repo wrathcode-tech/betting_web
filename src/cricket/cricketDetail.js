@@ -1,8 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import './cricketDetail.css'
 import MobileMenu from '../customComponents/MobileMenu'
+import AuthService from '../api/services/AuthService'
 
 function CricketDetail() {
+    const location = useLocation()
     const scrollContainerRef = useRef(null)
     const betslipContentRef = useRef(null)
     const marketsSectionRef = useRef(null)
@@ -13,6 +16,53 @@ function CricketDetail() {
     const [selectedBets, setSelectedBets] = useState([])
     const [betslipTab, setBetslipTab] = useState('single')
     const [stake, setStake] = useState(5)
+
+    const [defaultMatch, setDefaultMatch] = useState(null)
+    const gameIdFromState = location.state?.gameId
+    const eventNameFromState = location.state?.eventName ?? defaultMatch?.eventName
+    const gameId = gameIdFromState ?? defaultMatch?.gameId
+    const [oddsData, setOddsData] = useState(null)
+    const [oddsLoading, setOddsLoading] = useState(false)
+
+    useEffect(() => {
+        if (gameIdFromState) return
+        let cancelled = false
+        AuthService.sportsbookMatches('cricket')
+            .then((res) => {
+                if (cancelled || !res) return
+                const raw = res.data ?? res
+                const d = raw?.data ?? raw
+                const list = Array.isArray(d) ? d : (Array.isArray(d?.data) ? d.data : [])
+                const first = list.find((m) => m.gameId)
+                if (first) setDefaultMatch({ gameId: first.gameId, eventName: first.eventName })
+            })
+            .catch(() => {})
+        return () => { cancelled = true }
+    }, [gameIdFromState])
+
+    useEffect(() => {
+        if (!gameId) return
+        let cancelled = false
+        setOddsLoading(true)
+        AuthService.sportsbookOdds('cricket', gameId)
+            .then((res) => {
+                if (cancelled || !res) return
+                const raw = res.data ?? res
+                const d = raw?.data ?? raw
+                if (!d || typeof d !== 'object') return
+                const normalized = {
+                    matchOdds: Array.isArray(d.matchOdds) ? d.matchOdds : [],
+                    fancyOdds: Array.isArray(d.fancyOdds) ? d.fancyOdds : [],
+                    otherMarketOdds: Array.isArray(d.otherMarketOdds) ? d.otherMarketOdds : [],
+                    bookMakerOdds: Array.isArray(d.bookMakerOdds) ? d.bookMakerOdds : [],
+                    premiumFancy: Array.isArray(d.premiumFancy) ? d.premiumFancy : [],
+                }
+                setOddsData(normalized)
+            })
+            .catch(() => { if (!cancelled) setOddsData(null) })
+            .finally(() => { if (!cancelled) setOddsLoading(false) })
+        return () => { cancelled = true }
+    }, [gameId])
 
     const toggleBlock = (blockId) => {
         setClosedBlocks(prev => {
@@ -214,7 +264,7 @@ function CricketDetail() {
                                 <div className='cricket_vector_icon'>
                                     <img src="images/t20_vector.svg" alt="cricket" width="48" height="48" decoding="async" fetchPriority="high" />
                                 </div>
-                                <h2>Premier League, Women</h2>
+                                <h2>{eventNameFromState || 'Premier League, Women'}</h2>
                                 <div className='cricket_info_content'>
                                     <div className='vs_vector_icon'>
                                         <img src="images/vs_vector.svg" alt="cricket" width="40" height="24" decoding="async" />
@@ -277,6 +327,29 @@ function CricketDetail() {
                             <div className='match_summary_content_tabs'>
                                 {activeTab === 'all' && (
                                     <>
+                                        {oddsLoading && gameId && (
+                                            <div className='match_block' style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
+                                        )}
+                                        {oddsData?.matchOdds?.map((market, mIdx) => (
+                                            <div key={market.marketId || mIdx} className='match_block'>
+                                                <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock(`api-mo-${mIdx}`)}>
+                                                    <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>{market.market || 'Match Odds'} {market.status === 'OPEN' && <span style={{ fontSize: '11px', color: '#4caf50' }}>OPEN</span>}</h6>
+                                                    <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has(`api-mo-${mIdx}`) ? 'rotated' : ''}`}></i></button>
+                                                </div>
+                                                <div className={`d-flex flex-wrap align-items-center mt-2 gap-2 ${closedBlocks.has(`api-mo-${mIdx}`) ? 'hidden' : ''}`}>
+                                                    {market.oddDatas?.map((odd, oIdx) => (
+                                                        <div key={odd.sid ?? oIdx} className='d-flex align-items-center gap-2'>
+                                                            <div className={`team_cricket_bl_name ${isBetSelected(odd.selectionName, market.market, odd.b1 || odd.l1 || '0', `api-${mIdx}-${oIdx}-back`) ? 'selected' : ''}`} onClick={() => handleBetClick(odd.selectionName, market.market, odd.b1 || '0', `api-${mIdx}-${oIdx}-back`)}>
+                                                                {odd.selectionName} <span>Back {odd.b1 || '-'}</span> {odd.bs1 ? `(${odd.bs1})` : ''}
+                                                            </div>
+                                                            <div className={`team_cricket_bl_name ${isBetSelected(odd.selectionName, market.market, odd.l1 || '0', `api-${mIdx}-${oIdx}-lay`) ? 'selected' : ''}`} onClick={() => handleBetClick(odd.selectionName, market.market, odd.l1 || '0', `api-${mIdx}-${oIdx}-lay`)}>
+                                                                Lay {odd.l1 || '-'} {odd.ls1 ? `(${odd.ls1})` : ''}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
                                         <div className='match_block'>
                                             <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('all-1')}>
                                                 <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>Winner (incl. super over)</h6>
