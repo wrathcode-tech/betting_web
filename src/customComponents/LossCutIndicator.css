@@ -1,0 +1,154 @@
+.loss_cut_indicator {
+  background-color: #252d38;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.loss_cut_compact {
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.loss_cut_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.loss_cut_label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.loss_cut_value {
+  font-weight: 600;
+  color: #fff;
+}
+
+.loss_cut_progress_wrap {
+  height: 8px;
+  background-color: #1a2332;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.loss_cut_progress_bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Safe zone – green */
+.loss_cut_safe .loss_cut_progress_bar {
+  background: linear-gradient(90deg, #4caf50, #66bb6a);
+}
+
+/* Warning zone – orange */
+.loss_cut_warning .loss_cut_progress_bar {
+  background: linear-gradient(90deg, #F97A31, #ff9800);
+}
+
+.loss_cut_warning .loss_cut_message {
+  color: #F97A31;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 8px 0 0 0;
+}
+
+/* Limit reached – red */
+.loss_cut_reached .loss_cut_progress_bar {
+  background: linear-gradient(90deg, #f44336, #e57373);
+}
+
+.loss_cut_reached .loss_cut_message {
+  color: #f44336;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 8px 0 0 0;
+}
+
+.loss_cut_reached {
+  border-color: rgba(244, 67, 54, 0.5);
+}
+
+.loss_cut_limit_right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.loss_cut_set_btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #F97A31;
+  background: transparent;
+  border: 1px solid #F97A31;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.loss_cut_set_btn:hover {
+  background: rgba(249, 122, 49, 0.15);
+}
+
+.loss_cut_edit_row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.loss_cut_input {
+  width: 100px;
+  padding: 6px 8px;
+  font-size: 13px;
+  background: #1a2332;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fff;
+}
+
+.loss_cut_input:focus {
+  outline: none;
+  border-color: #F97A31;
+}
+
+.loss_cut_save_btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #F97A31;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.loss_cut_save_btn:hover:not(:disabled) {
+  background: #e06d28;
+}
+
+.loss_cut_save_btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.loss_cut_cancel_btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.loss_cut_cancel_btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}

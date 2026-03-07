@@ -1,0 +1,101 @@
+/* My Bets – Cancel button */
+.mybets_cancel_btn {
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ff6b6b;
+    background: transparent;
+    border: 1px solid rgba(255, 107, 107, 0.6);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.mybets_cancel_btn:hover:not(:disabled) {
+    background: rgba(255, 107, 107, 0.15);
+    color: #ff8787;
+    border-color: #ff6b6b;
+}
+
+.mybets_cancel_btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.transaction_card_row .mybets_cancel_btn {
+    margin-top: 4px;
+}
+
+/* Cash Out button */
+.mybets_cashout_btn {
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: #F97A31;
+    border: 1px solid #F97A31;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    margin-right: 8px;
+}
+
+.mybets_cashout_btn:hover:not(:disabled) {
+    background: #e06d28;
+    border-color: #e06d28;
+}
+
+.mybets_cashout_btn:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+.mybets_cashout_btn_sm {
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--theme-primary, #F97A31);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.mybets_cashout_btn_sm:hover {
+    background: var(--theme-primary-hover, #e06d28);
+}
+
+.transaction_card_actions_btns {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.mybets_cashout_suspended {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+}
+
+.mybets_actions_cell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.mybets_card_actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.mybets_bet_closed {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+}
