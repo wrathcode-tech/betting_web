@@ -587,15 +587,14 @@ function CricketDetail() {
         }
     }, [])
 
-    // Auto-scroll betslip content when new bets are added
+    // Scroll betslip content to top when opened or when data/tab changes (data top se dikhe)
     useEffect(() => {
-        if (betslipContentRef.current && selectedBets.length > 0) {
-            const scrollContainer = betslipContentRef.current
-            scrollContainer.scrollTop = scrollContainer.scrollHeight
-        }
-    }, [selectedBets])
+        if (!betslipContentRef.current) return
+        betslipContentRef.current.scrollTop = 0
+    }, [isBetslipOpen, betslipView, selectedBets.length])
 
     const showOpenBetsData = (isBetslipOpen && betslipView === 'openbets') || activeTab === 'open-bets'
+    const shouldFetchOpenBets = isBetslipOpen || activeTab === 'open-bets'
 
     // Fetch loss limit and exposure on page load so Open Bets tab has data as soon as it renders
     useEffect(() => {
@@ -646,9 +645,9 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [isBetslipOpen, activeTab])
 
-    // Refetch open bets when Open Bets tab or popup open bets is shown (e.g. after cashout/place bet)
+    // Fetch open bets as soon as popup opens (or page Open Bets tab), so OPEN BETS tab shows data without waiting for click
     useEffect(() => {
-        if (!showOpenBetsData) return
+        if (!shouldFetchOpenBets) return
         setOpenBetsLoading(true)
         AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
             .then((res) => {
@@ -658,7 +657,7 @@ function CricketDetail() {
             })
             .catch(() => setOpenBetsList([]))
             .finally(() => setOpenBetsLoading(false))
-    }, [showOpenBetsData])
+    }, [shouldFetchOpenBets])
 
     // Defer heavy markets section until in view for faster FCP/LCP
     useEffect(() => {
@@ -1500,8 +1499,8 @@ function CricketDetail() {
                                         <label className='betslip_label'>Odd Value</label>
                                         <div className='betslip_odd_stepper'>
                                             <button type='button' className='betslip_odd_btn' onClick={() => {
-                                                const curr = slipOdds != null ? slipOdds : (selectedBets[0] ? (selectedBets[0].oddsDisplay ?? selectedBets[0].odds) : null)
-                                                if (curr != null && curr > 1.01) setSlipOdds(Number((curr - 0.01).toFixed(2)))
+                                                const curr = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
+                                                if (curr > 1.01) setSlipOdds(Number((curr - 0.01).toFixed(2)))
                                             }}>−</button>
                                             <input
                                                 type='text'
@@ -1510,8 +1509,9 @@ function CricketDetail() {
                                                 readOnly
                                             />
                                             <button type='button' className='betslip_odd_btn' onClick={() => {
-                                                const next = slipOdds != null ? slipOdds + 0.01 : (selectedBets[0] ? (selectedBets[0].oddsDisplay ?? selectedBets[0].odds) + 0.01 : null)
-                                                if (next != null) setSlipOdds(Number(next.toFixed(2)))
+                                                const base = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
+                                                const next = base + 0.01
+                                                setSlipOdds(Number(next.toFixed(2)))
                                             }}>+</button>
                                         </div>
                                     </div>

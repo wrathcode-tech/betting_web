@@ -46,14 +46,22 @@ export function CasinoProvidersProvider({ children }) {
   )
 }
 
+const defaultCasinoProvidersValue = {
+  providers: [],
+  loadingProviders: false,
+  refetchProviders: () => {},
+}
+
 export function useCasinoProviders() {
-  const ctx = useContext(CasinoProvidersContext)
-  if (!ctx) {
+  try {
+    const ctx = useContext(CasinoProvidersContext)
+    if (!ctx || typeof ctx !== 'object') return defaultCasinoProvidersValue
     return {
-      providers: [],
-      loadingProviders: false,
-      refetchProviders: () => {},
+      providers: Array.isArray(ctx.providers) ? ctx.providers : defaultCasinoProvidersValue.providers,
+      loadingProviders: !!ctx.loadingProviders,
+      refetchProviders: typeof ctx.refetchProviders === 'function' ? ctx.refetchProviders : () => {},
     }
+  } catch (_) {
+    return defaultCasinoProvidersValue
   }
-  return ctx
 }

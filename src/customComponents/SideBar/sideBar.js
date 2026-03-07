@@ -6,9 +6,12 @@ import './sidebar.css'
 
 const MOBILE_BREAKPOINT = 991
 
+const emptyProviders = { providers: [], loadingProviders: false, refetchProviders: () => {} }
+
 export default function SideBar({ isOpen, onClose }) {
   const { setSidebarOpen } = useSidebar()
-  const { providers } = useCasinoProviders()
+  const casinoState = typeof useCasinoProviders === 'function' ? useCasinoProviders() : emptyProviders
+  const { providers = [] } = casinoState && typeof casinoState === 'object' ? casinoState : emptyProviders
   const { pathname } = useLocation()
   const [searchParams] = useSearchParams()
   const [openSubmenu, setOpenSubmenu] = useState(null)
