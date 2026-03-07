@@ -65,14 +65,44 @@ const topSportsItems = [
   { id: 14, icon: 'nba_icon.svg', title: 'Baseball' },
   { id: 15, icon: 'fifa_icon.svg', title: 'Boxing' },
 ]
-const topMatchesItems = [
-  { id: 1, tournament: 'ICC U19 World Cup', teams: 'India vs Australia', time: 'Today 01:00 PM', viewCount: '3.12', viewK: '357K', likeCount: '3.12', likeK: '357K' },
-  { id: 2, tournament: 'Premier League', teams: 'Manchester United vs Liverpool', time: 'Today 03:30 PM', viewCount: '5.24', viewK: '421K', likeCount: '4.18', likeK: '389K' },
-  { id: 3, tournament: 'NBA Championship', teams: 'Lakers vs Warriors', time: 'Today 06:00 PM', viewCount: '7.89', viewK: '512K', likeCount: '6.45', likeK: '478K' },
-  { id: 4, tournament: 'Tennis Grand Slam', teams: 'Djokovic vs Nadal', time: 'Today 08:00 PM', viewCount: '4.56', viewK: '298K', likeCount: '3.89', likeK: '267K' },
-  { id: 5, tournament: 'Cricket T20', teams: 'Pakistan vs England', time: 'Tomorrow 02:00 PM', viewCount: '6.23', viewK: '445K', likeCount: '5.67', likeK: '412K' },
-  { id: 6, tournament: 'FIFA World Cup', teams: 'Brazil vs Argentina', time: 'Tomorrow 04:30 PM', viewCount: '9.12', viewK: '678K', likeCount: '8.45', likeK: '623K' },
+// Fallback when API has no matches
+const topMatchesItemsFallback = [
+  { id: 'f1', tournament: 'Cricket', teams: 'Loading matches...', time: '—', viewCount: '—', viewK: '—', likeCount: '—', likeK: '—', gameId: null },
 ]
+
+function parseMatchesFromResponse(res) {
+  if (!res) return []
+  if (Array.isArray(res)) return res
+  const raw = res.data ?? res
+  const d = raw?.data ?? raw
+  if (Array.isArray(d)) return d
+  if (Array.isArray(d?.data)) return d.data
+  if (Array.isArray(d?.matches)) return d.matches
+  if (Array.isArray(raw?.matches)) return raw.matches
+  return []
+}
+
+function formatMatchTime(isoStr) {
+  if (!isoStr) return ''
+  try {
+    const d = new Date(isoStr)
+    if (isNaN(d.getTime())) return isoStr
+    const today = new Date()
+    const isToday = d.toDateString() === today.toDateString()
+    const dateStr = isToday ? 'Today' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+    const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+    return `${dateStr} ${timeStr}`
+  } catch {
+    return isoStr
+  }
+}
+
+function toOddDatasArray(oddDatas) {
+  if (!oddDatas) return []
+  if (Array.isArray(oddDatas)) return oddDatas
+  if (typeof oddDatas === 'object') return Object.values(oddDatas).filter(Boolean)
+  return []
+}
 
 function LandingPage() {
   // TOP SLOTS slider state
@@ -89,6 +119,11 @@ function LandingPage() {
   const [highrollerIndex, setHighrollerIndex] = useState(0);
   const [topSportsIndex, setTopSportsIndex] = useState(0);
   const [topMatchesIndex, setTopMatchesIndex] = useState(0);
+
+  // TOP Matches from API (cricket)
+  const [topMatchesFromApi, setTopMatchesFromApi] = useState([]);
+  const [topMatchesLoading, setTopMatchesLoading] = useState(true);
+  const [topMatchesOddsByGameId, setTopMatchesOddsByGameId] = useState({});
 
   // Landing API games (liveCasino, slots, trending, roulette, cardGames)
   const [landingGames, setLandingGames] = useState({
@@ -150,6 +185,62 @@ function LandingPage() {
       .finally(() => { if (!cancelled) setLandingGamesLoading(false); });
     return () => { cancelled = true; };
   }, []);
+
+  // Fetch TOP Matches (cricket) from API
+  useEffect(() => {
+    let cancelled = false;
+    setTopMatchesLoading(true);
+    AuthService.sportsbookMatches('cricket')
+      .then((res) => {
+        if (cancelled) return;
+        const list = parseMatchesFromResponse(res);
+        const mapped = list
+          .filter((m) => m.gameId ?? m.game_id)
+          .map((m) => ({
+            id: m.gameId ?? m.game_id,
+            gameId: m.gameId ?? m.game_id,
+            tournament: m.seriesName ?? m.series_name ?? 'Cricket',
+            teams: m.eventName ?? m.event_name ?? m.name ?? '—',
+            time: formatMatchTime(m.eventTime ?? m.event_time ?? m.startTime),
+            viewCount: '—',
+            viewK: '—',
+            likeCount: '—',
+            likeK: '—',
+            inPlay: m.inPlay ?? m.in_play ?? false,
+          }))
+          .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
+        setTopMatchesFromApi(mapped);
+      })
+      .catch(() => { if (!cancelled) setTopMatchesFromApi([]); })
+      .finally(() => { if (!cancelled) setTopMatchesLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fetch odds for first 8 TOP Matches (for back/lay display)
+  useEffect(() => {
+    const gameIds = topMatchesFromApi.slice(0, 8).map((m) => m.gameId).filter(Boolean);
+    if (gameIds.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      gameIds.map((gameId) =>
+        AuthService.sportsbookOdds('cricket', gameId).then((res) => ({ gameId, res }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      setTopMatchesOddsByGameId((prev) => {
+        const next = { ...prev };
+        results.forEach(({ gameId, res }) => {
+          if (!res) return;
+          const raw = res.data ?? res;
+          const d = raw?.data ?? raw;
+          const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds : [];
+          next[gameId] = { ...(next[gameId] || {}), matchOdds };
+        });
+        return next;
+      });
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [topMatchesFromApi]);
 
   // Hero 3D slider – 7 items, 5 visible at a time, infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);
@@ -239,7 +330,14 @@ function LandingPage() {
   const liveCasinoDisplayItems = useMemo(() => [...liveCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
   const highrollerDisplayItems = useMemo(() => [...highrollerItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
   const topSportsDisplayItems = useMemo(() => [...topSportsItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }], [])
-  const topMatchesDisplayItems = useMemo(() => [...topMatchesItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }], [])
+
+  // TOP Matches: API data + View All (fallback when no API data)
+  const topMatchesDisplayItems = useMemo(() => {
+    const list = topMatchesFromApi.length > 0
+      ? topMatchesFromApi.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL)
+      : topMatchesItemsFallback;
+    return [...list.map((m) => ({ ...m, viewAll: false })), { viewAll: true, to: '/sports' }];
+  }, [topMatchesFromApi]);
 
   // Landing API sections: display items = games + View All card
   const landingSectionConfig = useMemo(() => ({
@@ -996,18 +1094,35 @@ function LandingPage() {
               style={{ cursor: 'grab' }}
             >
               <div className='match_slider_container' ref={topMatchesSliderRef}>
-                {topMatchesDisplayItems.map((match, index) => (
-                  match.viewAll ? (
-                    <Link key="view-all-matches" to={match.to} className='match_slider slider_view_all_card matches_view_all link_plain_block'>
-                      <span className="slider_view_all_text">View All</span>
-                    </Link>
-                  ) : (
-                    <Link key={`topmatch-${match.id}-${index}`} to="/sports" className='match_slider link_plain_block'>
+                {topMatchesDisplayItems.map((match, index) => {
+                  if (match.viewAll) {
+                    return (
+                      <Link key="view-all-matches" to={match.to} className='match_slider slider_view_all_card matches_view_all link_plain_block'>
+                        <span className="slider_view_all_text">View All</span>
+                      </Link>
+                    );
+                  }
+                  const oddsPayload = match.gameId ? topMatchesOddsByGameId[match.gameId] : null;
+                  const matchOdds = oddsPayload?.matchOdds ?? [];
+                  const market = matchOdds[0];
+                  const oddList = market ? toOddDatasArray(market.oddDatas) : [];
+                  const cardOdds = oddList.slice(0, 3);
+                  const o1 = cardOdds[0];
+                  const o2 = cardOdds[1];
+                  const o3 = cardOdds[2];
+                  const hasOdds = cardOdds.length > 0;
+                  const toUrl = match.gameId ? '/cricket' : '/sports';
+                  const linkState = match.gameId ? { gameId: match.gameId, eventName: match.teams, sportName: 'cricket', inPlay: match.inPlay } : undefined;
+                  return (
+                    <Link key={`topmatch-${match.id}-${index}`} to={toUrl} state={linkState} className='match_slider link_plain_block'>
                       <div className='match_slider_inner'>
                         <div className='matchtp_hd d-flex justify-content-between align-items-center gap-2'>
                           <div className='hd_match d-flex align-items-center gap-2'>
                             <img loading="lazy" src="images/cricket_world.png" alt="match" />
                             <h3>Match</h3>
+                            {match.inPlay && (
+                              <span className='match_live_badge' style={{ background: '#e53935', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>Live</span>
+                            )}
                           </div>
                           <ul>
                             <li>MO</li>
@@ -1022,22 +1137,22 @@ function LandingPage() {
                         </div>
                         <div className='d-flex justify-content-between align-items-center gap-2'>
                           <div className='view_matchlike'>
-                            <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
-                            <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
+                            <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{hasOdds && o1 ? (o1.b1 ?? o1.back ?? '—') : match.viewCount} <span>{hasOdds && o1 && (o1.bs1 ?? o1.ls1) ? `${Number(o1.bs1 || o1.ls1 || 0) / 1000}K` : match.viewK}</span></button>
+                            <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{hasOdds && o1 ? (o1.l1 ?? o1.lay ?? '—') : match.likeCount} <span>{hasOdds && o1 && (o1.bs1 ?? o1.ls1) ? `${Number(o1.bs1 || o1.ls1 || 0) / 1000}K` : match.likeK}</span></button>
                           </div>
                           <div className='view_matchlike'>
                             <button type="button" className='view_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
                             <button type="button" className='like_match disabled' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}><i className="ri-lock-line"></i></button>
                           </div>
                           <div className='view_matchlike'>
-                            <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.viewCount} <span>{match.viewK}</span></button>
-                            <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{match.likeCount} <span>{match.likeK}</span></button>
+                            <button type="button" className='view_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{hasOdds && o2 ? (o2.b1 ?? o2.back ?? '—') : match.viewCount} <span>{hasOdds && o2 && (o2.bs1 ?? o2.ls1) ? `${Number(o2.bs1 || o2.ls1 || 0) / 1000}K` : match.viewK}</span></button>
+                            <button type="button" className='like_match' onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{hasOdds && o2 ? (o2.l1 ?? o2.lay ?? '—') : match.likeCount} <span>{hasOdds && o2 && (o2.bs1 ?? o2.ls1) ? `${Number(o2.bs1 || o2.ls1 || 0) / 1000}K` : match.likeK}</span></button>
                           </div>
                         </div>
                       </div>
                     </Link>
-                  )
-                ))}
+                  );
+                })}
               </div>
             </div>
 

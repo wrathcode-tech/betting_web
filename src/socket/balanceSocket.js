@@ -40,7 +40,7 @@ function ensureHandlers() {
   });
 
   socket.on('balance', (payload) => {
-    const balance = payload?.balance;
+    const balance = payload?.balance ?? payload?.balanceAfter;
     if (typeof balance === 'number') {
       lastBalance = balance;
       if (typeof balanceCallback === 'function') {

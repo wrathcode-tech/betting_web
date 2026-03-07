@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
-import { getLastBalance } from '../socket/balanceSocket';
+import { useBalance } from '../context/BalanceContext';
 import '../newDeposit/newDeposit.css';
 import '../BankDetails/addAccount.css';
 import './newWithdrawal.css';
@@ -23,7 +23,7 @@ function NewWithdrawal() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [balance, setBalance] = useState(() => getLastBalance());
+  const { balance } = useBalance();
 
   const fetchAccounts = async () => {
     const token = sessionStorage.getItem('token');
@@ -41,16 +41,6 @@ function NewWithdrawal() {
 
   useEffect(() => {
     fetchAccounts();
-  }, []);
-
-  // Sync balance from socket (same as header / game page)
-  useEffect(() => {
-    setBalance(getLastBalance());
-    const onWalletUpdate = (e) => {
-      if (e.detail?.balance != null) setBalance(e.detail.balance);
-    };
-    window.addEventListener('walletBalanceUpdate', onWalletUpdate);
-    return () => window.removeEventListener('walletBalanceUpdate', onWalletUpdate);
   }, []);
 
   const selectAccount = async (accountId) => {

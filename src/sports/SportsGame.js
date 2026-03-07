@@ -3,52 +3,40 @@ import { useNavigate } from 'react-router-dom'
 import './sportsGame.css'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
+import {
+    connectSportsbookSocket,
+    subscribeMatches,
+    unsubscribeMatches,
+    subscribeOdds,
+    unsubscribeOdds,
+    addMatchesListener,
+    removeMatchesListener,
+    addOddsListener,
+    removeOddsListener,
+} from '../socket/sportsbookSocket'
 
 const GALLERY_SLIDES = ['images/sports_slider_img2.png', 'images/sports_slider_img.png', 'images/sports_slider_img3.png']
 const GALLERY_SLIDES_MOBILE = ['images/sports_bnr_mobile2.jpg', 'images/sports_bnr_mobile.jpg', 'images/sports_bnr_mobile3.jpg']
 const TABS = [
     { id: 'cricket', label: 'Cricket', icon: 'images/menu-icon19.svg' },
-    { id: 'tennis', label: 'Tennis', icon: 'images/menu-icon20.svg' },
-    { id: 'basketball', label: 'Basketball', icon: 'images/menu-icon6.svg' },
-    { id: 'table-tennis', label: 'Table Tennis', icon: 'images/menu-icon7.svg' },
-    { id: 'hockey', label: 'Hockey', icon: 'images/menu-icon10.svg' },
-    { id: 'counter-strike', label: 'Counter-Strike', icon: 'images/menu-icon11.svg' },
+    // { id: 'tennis', label: 'Tennis', icon: 'images/menu-icon20.svg' },
+    // { id: 'basketball', label: 'Basketball', icon: 'images/menu-icon6.svg' },
+    // { id: 'table-tennis', label: 'Table Tennis', icon: 'images/menu-icon7.svg' },
+    // { id: 'hockey', label: 'Hockey', icon: 'images/menu-icon10.svg' },
+    // { id: 'counter-strike', label: 'Counter-Strike', icon: 'images/menu-icon11.svg' },
 ]
-const MATCH_DATA = {
-    cricket: [
-        { tournament: 'ICC U19 World Cup', teams: 'India vs Australia', time: 'Today 01:00 PM', icon: 'images/cricket_world.png' },
-        { tournament: 'ICC U19 World Cup', teams: 'India vs Australia', time: 'Today 01:00 PM', icon: 'images/cricket_world.png' },
-        { tournament: 'ICC U19 World Cup', teams: 'India vs Australia', time: 'Today 01:00 PM', icon: 'images/cricket_world.png' },
-        { tournament: 'ICC U19 World Cup', teams: 'India vs Australia', time: 'Today 01:00 PM', icon: 'images/cricket_world.png' },
-        { tournament: 'ICC U19 World Cup', teams: 'India vs Australia', time: 'Today 01:00 PM', icon: 'images/cricket_world.png' },
-        { tournament: 'ICC U19 World Cup', teams: 'India vs Australia', time: 'Today 01:00 PM', icon: 'images/cricket_world.png' },
-    ],
-    tennis: [
-        { tournament: 'ATP Masters 1000', teams: 'Djokovic vs Nadal', time: 'Today 02:30 PM', icon: 'images/menu-icon20.svg' },
-        { tournament: 'Wimbledon Championship', teams: 'Federer vs Murray', time: 'Today 03:00 PM', icon: 'images/menu-icon20.svg' },
-        { tournament: 'US Open', teams: 'Medvedev vs Tsitsipas', time: 'Today 04:00 PM', icon: 'images/menu-icon20.svg' },
-    ],
-    basketball: [
-        { tournament: 'NBA Regular Season', teams: 'Lakers vs Warriors', time: 'Today 06:00 PM', icon: 'images/menu-icon6.svg' },
-        { tournament: 'NBA Regular Season', teams: 'Celtics vs Heat', time: 'Today 07:00 PM', icon: 'images/menu-icon6.svg' },
-        { tournament: 'NBA Regular Season', teams: 'Bucks vs Nets', time: 'Today 08:00 PM', icon: 'images/menu-icon6.svg' },
-    ],
-    'table-tennis': [
-        { tournament: 'ITTF World Tour', teams: 'Ma Long vs Fan Zhendong', time: 'Today 10:00 AM', icon: 'images/menu-icon7.svg' },
-        { tournament: 'ITTF World Tour', teams: 'Xu Xin vs Lin Gaoyuan', time: 'Today 11:00 AM', icon: 'images/menu-icon7.svg' },
-        { tournament: 'ITTF World Tour', teams: 'Ma Long vs Fan Zhendong', time: 'Today 10:00 AM', icon: 'images/menu-icon7.svg' },
-    ],
-    hockey: [
-        { tournament: 'NHL Regular Season', teams: 'Maple Leafs vs Canadiens', time: 'Today 12:00 PM', icon: 'images/menu-icon10.svg' },
-        { tournament: 'NHL Regular Season', teams: 'Rangers vs Bruins', time: 'Today 01:30 PM', icon: 'images/menu-icon10.svg' },
-        { tournament: 'NHL Regular Season', teams: 'Avalanche vs Lightning', time: 'Today 03:00 PM', icon: 'images/menu-icon10.svg' },
-    ],
-    'counter-strike': [
-        { tournament: 'ESL Pro League', teams: 'NAVI vs FaZe Clan', time: 'Today 07:00 PM', icon: 'images/menu-icon11.svg' },
-        { tournament: 'BLAST Premier', teams: 'G2 vs Team Liquid', time: 'Today 08:00 PM', icon: 'images/menu-icon11.svg' },
-        { tournament: 'IEM Katowice', teams: 'Vitality vs Astralis', time: 'Today 09:00 PM', icon: 'images/menu-icon11.svg' },
-    ],
-}
+// Dummy data – commented out; cricket uses API (sportsbookMatches). Other tabs show empty until API is added.
+// const MATCH_DATA = {
+//     cricket: [
+//         { tournament: 'ICC U19 World Cup', teams: 'India vs Australia', time: 'Today 01:00 PM', icon: 'images/cricket_world.png' },
+//         ...
+//     ],
+//     tennis: [ ... ],
+//     basketball: [ ... ],
+//     'table-tennis': [ ... ],
+//     hockey: [ ... ],
+//     'counter-strike': [ ... ],
+// }
 
 function toOddDatasArray(oddDatas) {
     if (!oddDatas) return []
@@ -72,6 +60,32 @@ function formatMatchTime(isoStr) {
     }
 }
 
+function getDayGroup(isoStr) {
+    if (!isoStr) return ''
+    try {
+        const d = new Date(isoStr)
+        if (isNaN(d.getTime())) return ''
+        const today = new Date()
+        const tomorrow = new Date(today)
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        if (d.toDateString() === today.toDateString()) return 'Today'
+        if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow'
+        return d.toLocaleDateString('en-IN', { weekday: 'long' })
+    } catch {
+        return ''
+    }
+}
+
+function formatOddsSize(size) {
+    if (size == null || size === '') return '0.00K'
+    const n = Number(size)
+    if (!Number.isFinite(n)) return String(size)
+    if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 2)}K`
+    return `${n}`
+}
+
+const MARKET_ICONS = ['MC', 'BM', 'P', 'D', 'F']
+
 function SportsGame() {
     const navigate = useNavigate()
     const [activeTab, setActiveTab] = useState('cricket')
@@ -84,61 +98,175 @@ function SportsGame() {
     const [cricketMatches, setCricketMatches] = useState([])
     const [cricketMatchesLoading, setCricketMatchesLoading] = useState(true)
     const [cricketOddsByGameId, setCricketOddsByGameId] = useState({})
+    const subscribedOddsRef = useRef(new Set())
+    const [sportsFilter, setSportsFilter] = useState('all') // 'all' | 'live' | 'virtual' | 'premium'
 
+    const parseMatchesFromResponse = (res) => {
+        if (!res) return []
+        if (Array.isArray(res)) return res
+        const raw = res.data ?? res
+        const d = raw?.data ?? raw
+        if (Array.isArray(d)) return d
+        if (Array.isArray(d?.data)) return d.data
+        if (Array.isArray(d?.matches)) return d.matches
+        if (Array.isArray(raw?.matches)) return raw.matches
+        return []
+    }
+
+    // REST: pehle matches load – taaki matches hamesha dikhen (bina login / socket fail bhi)
     useEffect(() => {
         let cancelled = false
         setCricketMatchesLoading(true)
         AuthService.sportsbookMatches('cricket')
             .then((res) => {
-                if (cancelled || !res) return
-                const raw = res.data ?? res
-                const d = raw?.data ?? raw
-                const list = Array.isArray(d) ? d : (Array.isArray(d?.data) ? d.data : [])
-                setCricketMatches(list)
+                if (cancelled) return
+                setCricketMatches(parseMatchesFromResponse(res))
             })
             .catch(() => { if (!cancelled) setCricketMatches([]) })
             .finally(() => { if (!cancelled) setCricketMatchesLoading(false) })
         return () => { cancelled = true }
     }, [])
 
+    // REST: pehle odds API – first 15 games ke liye initial odds
     useEffect(() => {
         const gameIds = cricketMatches.filter((m) => m.gameId).map((m) => m.gameId).slice(0, 15)
         if (gameIds.length === 0) return
         let cancelled = false
-        gameIds.forEach((gameId) => {
-            AuthService.sportsbookOdds('cricket', gameId)
-                .then((res) => {
-                    if (cancelled || !res) return
+        const sportName = 'cricket'
+        Promise.all(
+            gameIds.map((gameId) =>
+                AuthService.sportsbookOdds(sportName, gameId).then((res) => ({ gameId, res }))
+            )
+        ).then((results) => {
+            if (cancelled) return
+            setCricketOddsByGameId((prev) => {
+                const next = { ...prev }
+                results.forEach(({ gameId, res }) => {
+                    if (!res) return
                     const raw = res.data ?? res
                     const d = raw?.data ?? raw
-                    if (!d || typeof d !== 'object') return
-                    const matchOdds = Array.isArray(d.matchOdds) ? d.matchOdds : []
-                    setCricketOddsByGameId((prev) => ({ ...prev, [gameId]: { matchOdds } }))
+                    const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds : []
+                    next[gameId] = { ...(next[gameId] || {}), matchOdds }
                 })
-                .catch(() => {})
-        })
+                return next
+            })
+        }).catch(() => {})
         return () => { cancelled = true }
     }, [cricketMatches])
 
+    // Socket (doc): sport screen → subscribe:matches { sport: 'cricket' }, on('matches') { sport, data, timestamp }. Leave → unsubscribe:matches.
+    useEffect(() => {
+        const token = sessionStorage.getItem('token')
+        const oddsSubs = subscribedOddsRef.current
+        if (!token) return
+
+        connectSportsbookSocket(token)
+        const onMatches = (payload) => {
+            if (payload?.sport !== 'cricket') return
+            const raw = payload.data ?? payload.matches
+            if (raw === undefined) return
+            const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : [])
+            setCricketMatches((prev) => {
+                if (list.length === 0 && prev.length > 0) return prev
+                return list
+            })
+            setCricketMatchesLoading(false)
+        }
+        addMatchesListener(onMatches)
+        subscribeMatches('cricket')
+
+        return () => {
+            removeMatchesListener(onMatches)
+            unsubscribeMatches('cricket')
+            oddsSubs.forEach((gid) => unsubscribeOdds(gid))
+            oddsSubs.clear()
+        }
+    }, [])
+
+    // Socket (doc): on('odds') { gameId, data: { matchOdds?, bookMakerOdds?, ... }, timestamp } – snapshot then ~500ms.
+    useEffect(() => {
+        const onOdds = (payload) => {
+            if (!payload?.gameId || payload?.data === undefined) return
+            const matchOdds = Array.isArray(payload.data?.matchOdds) ? payload.data.matchOdds : []
+            setCricketOddsByGameId((prev) => ({ ...prev, [payload.gameId]: { matchOdds } }))
+        }
+        addOddsListener(onOdds)
+        return () => removeOddsListener(onOdds)
+    }, [])
+
+    useEffect(() => {
+        const gameIds = cricketMatches.filter((m) => m.gameId).map((m) => m.gameId).slice(0, 15)
+        const prev = subscribedOddsRef.current
+        gameIds.forEach((gameId) => {
+            if (!prev.has(gameId)) {
+                subscribeOdds(gameId)
+                prev.add(gameId)
+            }
+        })
+        prev.forEach((gameId) => {
+            if (!gameIds.includes(gameId)) {
+                unsubscribeOdds(gameId)
+                prev.delete(gameId)
+            }
+        })
+    }, [cricketMatches])
+
     const totalSlides = GALLERY_SLIDES.length
-    const cricketDisplayMatches = useMemo(() =>
-        cricketMatches.map((m) => ({
-            tournament: m.seriesName || 'Cricket',
-            teams: m.eventName || '',
-            time: formatMatchTime(m.eventTime),
-            icon: 'images/cricket_world.png',
-            eventId: m.eventId,
-            gameId: m.gameId,
-            marketId: m.marketId,
-            inPlay: m.inPlay,
-            seriesId: m.seriesId,
-        })),
-        [cricketMatches]
-    )
+    const cricketDisplayMatches = useMemo(() => {
+        const list = cricketMatches.map((m) => {
+            const eventTime = m.eventTime ?? m.event_time ?? m.startTime
+            let timeOnly = ''
+            if (eventTime) {
+                try {
+                    const d = new Date(eventTime)
+                    if (!isNaN(d.getTime())) timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+                } catch {}
+            }
+            return {
+                tournament: m.seriesName ?? m.series_name ?? 'Cricket',
+                teams: m.eventName ?? m.event_name ?? m.name ?? '',
+                time: formatMatchTime(eventTime),
+                timeOnly,
+                dayGroup: getDayGroup(eventTime),
+                icon: 'images/cricket_world.png',
+                eventId: m.eventId ?? m.event_id,
+                gameId: m.gameId ?? m.game_id,
+                marketId: m.marketId ?? m.market_id,
+                inPlay: m.inPlay ?? m.in_play ?? false,
+                seriesId: m.seriesId ?? m.series_id,
+            }
+        })
+        return list.sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
+    }, [cricketMatches])
     const activeMatches = useMemo(() => {
         if (activeTab === 'cricket') return cricketDisplayMatches
-        return MATCH_DATA[activeTab] || MATCH_DATA.cricket
+        return [] // Other tabs: no dummy data; add API (e.g. sportsbookMatches('soccer')) when ready
     }, [activeTab, cricketDisplayMatches])
+
+    const gridMatches = useMemo(() => {
+        if (activeTab !== 'cricket') return []
+        if (sportsFilter === 'live') return activeMatches.filter((m) => m.inPlay)
+        // all / virtual / premium: show all, with live matches at top
+        return [...activeMatches].sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
+    }, [activeTab, sportsFilter, activeMatches])
+
+    const matchesByDay = useMemo(() => {
+        const liveMatches = gridMatches.filter((m) => m.inPlay)
+        const nonLive = gridMatches.filter((m) => !m.inPlay)
+        const groups = {}
+        nonLive.forEach((m) => {
+            const day = m.dayGroup || 'Other'
+            if (!groups[day]) groups[day] = []
+            groups[day].push(m)
+        })
+        const order = ['Today', 'Tomorrow']
+        const rest = Object.keys(groups).filter((d) => !order.includes(d))
+        const daySections = [...order.filter((d) => groups[d]?.length), ...rest].map((day) => ({ day, matches: groups[day], isLiveSection: false }))
+        if (liveMatches.length > 0) {
+            return [{ day: 'Live', matches: liveMatches, isLiveSection: true }, ...daySections]
+        }
+        return daySections
+    }, [gridMatches])
 
     const handleBannerPrev = useCallback(() => {
         setCurrentSlide((prev) => (prev <= 0 ? totalSlides - 1 : prev - 1))
@@ -198,8 +326,13 @@ function SportsGame() {
         const oddsPayload = cricketOddsByGameId[match.gameId]
         if (!oddsPayload?.matchOdds?.length) return []
         const market = oddsPayload.matchOdds[0]
-        const arr = toOddDatasArray(market.oddDatas).slice(0, 3)
-        return arr.map((o) => ({ back: o.b1 ?? '-', lay: o.l1 ?? '-', size: o.bs1 || o.ls1 }))
+        const arr = toOddDatasArray(market.oddDatas).slice(0, 6)
+        return arr.map((o) => ({
+            back: o.b1 ?? o.back ?? '-',
+            lay: o.l1 ?? o.lay ?? '-',
+            size: o.bs1 ?? o.ls1 ?? o.size,
+            sizeFormatted: formatOddsSize(o.bs1 ?? o.ls1 ?? o.size),
+        }))
     }, [cricketOddsByGameId])
 
     const renderMatchCard = useCallback((match, index) => {
@@ -249,17 +382,17 @@ function SportsGame() {
                     <div className='d-flex justify-content-between align-items-center gap-2'>
                         <div className='view_matchlike'>
                             <button className='view_match' onClick={(e) => e.stopPropagation()}>
-                                {hasOdds && o1 ? o1.back : '3.12'} <span>{hasOdds && o1 && o1.size ? o1.size : '357K'}</span>
+                                {hasOdds && o1 ? o1.back : '3.12'} <span>{hasOdds && o1 && (o1.sizeFormatted ?? o1.size) ? (o1.sizeFormatted ?? o1.size) : '357K'}</span>
                             </button>
                             <button className='like_match' onClick={(e) => e.stopPropagation()}>
-                                {hasOdds && o1 ? o1.lay : '3.12'} <span>{hasOdds && o1 && o1.size ? o1.size : '357K'}</span>
+                                {hasOdds && o1 ? o1.lay : '3.12'} <span>{hasOdds && o1 && (o1.sizeFormatted ?? o1.size) ? (o1.sizeFormatted ?? o1.size) : '357K'}</span>
                             </button>
                         </div>
                         <div className='view_matchlike'>
                             {hasOdds && o2 ? (
                                 <>
-                                    <button className='view_match' onClick={(e) => e.stopPropagation()}>{o2.back} <span>{o2.size || '357K'}</span></button>
-                                    <button className='like_match' onClick={(e) => e.stopPropagation()}>{o2.lay} <span>{o2.size || '357K'}</span></button>
+                                    <button className='view_match' onClick={(e) => e.stopPropagation()}>{o2.back} <span>{(o2.sizeFormatted ?? o2.size) || '357K'}</span></button>
+                                    <button className='like_match' onClick={(e) => e.stopPropagation()}>{o2.lay} <span>{(o2.sizeFormatted ?? o2.size) || '357K'}</span></button>
                                 </>
                             ) : (
                                 <>
@@ -270,10 +403,10 @@ function SportsGame() {
                         </div>
                         <div className='view_matchlike'>
                             <button className='view_match' onClick={(e) => e.stopPropagation()}>
-                                {hasOdds && o3 ? o3.back : '3.12'} <span>{hasOdds && o3 && o3.size ? o3.size : '357K'}</span>
+                                {hasOdds && o3 ? o3.back : '3.12'} <span>{hasOdds && o3 && (o3.sizeFormatted ?? o3.size) ? (o3.sizeFormatted ?? o3.size) : '357K'}</span>
                             </button>
                             <button className='like_match' onClick={(e) => e.stopPropagation()}>
-                                {hasOdds && o3 ? o3.lay : '3.12'} <span>{hasOdds && o3 && o3.size ? o3.size : '357K'}</span>
+                                {hasOdds && o3 ? o3.lay : '3.12'} <span>{hasOdds && o3 && (o3.sizeFormatted ?? o3.size) ? (o3.sizeFormatted ?? o3.size) : '357K'}</span>
                             </button>
                         </div>
                     </div>
@@ -342,9 +475,9 @@ function SportsGame() {
                     <div className='sports_game_section'>
                         <div className='sports_top_match_section'>
                             <div className="top_match_section">
-                                <div className="top_hd d-flex align-items-center justify-content-between">
+                                {/* <div className="top_hd d-flex align-items-center justify-content-between">
                                     <h2 className="heading_h2">TOP SLOTS</h2>
-                                </div>
+                                </div> */}
 
                                 <ul className='match_type_tabs'>
                                     {TABS.map((tab) => (
@@ -360,7 +493,89 @@ function SportsGame() {
                                     ))}
                                 </ul>
 
-                                <div className="match_slider_wrapper">
+                                {activeTab === 'cricket' && (
+                                    <div className='sports_grid_section'>
+                                        <div className='sports_grid_header'>
+                                            <div className='sports_grid_title'>
+                                                <img src='images/menu-icon19.svg' alt='' className='sports_grid_icon' />
+                                                <h2 className='sports_grid_heading'>Cricket</h2>
+                                            </div>
+                                            <div className='sports_grid_filters'>
+                                                <button type='button' className={`sports_filter_btn ${sportsFilter === 'all' ? 'active' : ''}`} onClick={() => setSportsFilter('all')}>All</button>
+                                                <button type='button' className={`sports_filter_btn ${sportsFilter === 'live' ? 'active' : ''}`} onClick={() => setSportsFilter('live')}>+ Live</button>
+                                                <button type='button' className={`sports_filter_btn ${sportsFilter === 'virtual' ? 'active' : ''}`} onClick={() => setSportsFilter('virtual')}>+ Virtual</button>
+                                                <button type='button' className={`sports_filter_btn ${sportsFilter === 'premium' ? 'active' : ''}`} onClick={() => setSportsFilter('premium')}>+ Premium</button>
+                                            </div>
+                                        </div>
+                                        <div className='sports_grid_table_wrap'>
+                                            <table className='sports_grid_table'>
+                                                <tbody>
+                                                    {cricketMatchesLoading ? (
+                                                        <tr><td colSpan={20} className='sports_grid_loading'>Loading cricket matches...</td></tr>
+                                                    ) : matchesByDay.length === 0 ? (
+                                                        <tr><td colSpan={20} className='sports_grid_empty'>No matches at the moment.</td></tr>
+                                                    ) : (
+                                                        matchesByDay.map(({ day, matches }) =>
+                                                            matches.map((match, idx) => {
+                                                                const cardOdds = getCardOdds(match)
+                                                                return (
+                                                                    <tr
+                                                                        key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
+                                                                        className='sports_grid_row'
+                                                                        onClick={(e) => !e.target.closest('button') && handleMatchCardClick(e, match)}
+                                                                    >
+                                                                        <td className='sports_grid_match_cell'>
+                                                                            <div className='sports_grid_day_time'>
+                                                                                {match.dayGroup}{match.timeOnly ? ` ${match.timeOnly}` : ''}
+                                                                            </div>
+                                                                            {match.inPlay && <span className='sports_grid_live'>LIVE</span>}
+                                                                            <div className='sports_grid_tournament'>{match.tournament}</div>
+                                                                            <div className='sports_grid_teams'>{match.teams}</div>
+                                                                        </td>
+                                                                        <td className='sports_grid_icons_cell'>
+                                                                            {MARKET_ICONS.map((icon) => (
+                                                                                <span key={icon} className='sports_grid_market_icon'>{icon}</span>
+                                                                            ))}
+                                                                        </td>
+                                                                        {Array.from({ length: 6 }).map((_, i) => {
+                                                                            const pair = cardOdds[i]
+                                                                            return (
+                                                                                <React.Fragment key={i}>
+                                                                                    <td className='sports_grid_odds_cell sports_grid_back'>
+                                                                                        {pair ? (
+                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                <span className='sports_grid_odds_val'>{pair.back}</span>
+                                                                                                <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
+                                                                                            </button>
+                                                                                        ) : (
+                                                                                            <span className='sports_grid_odds_dash'>−</span>
+                                                                                        )}
+                                                                                    </td>
+                                                                                    <td className='sports_grid_odds_cell sports_grid_lay'>
+                                                                                        {pair ? (
+                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                <span className='sports_grid_odds_val'>{pair.lay}</span>
+                                                                                                <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
+                                                                                            </button>
+                                                                                        ) : (
+                                                                                            <span className='sports_grid_odds_dash'>−</span>
+                                                                                        )}
+                                                                                    </td>
+                                                                                </React.Fragment>
+                                                                            )
+                                                                        })}
+                                                                    </tr>
+                                                                )
+                                                            })
+                                                        )
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className={`match_slider_wrapper ${activeTab === 'cricket' ? 'sports_grid_cards_hidden' : ''}`}>
                                     {activeTab === 'cricket' && cricketMatchesLoading ? (
                                         <div className="match_slider_loading" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #888)' }}>
                                             Loading cricket matches...

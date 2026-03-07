@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-
 import ScrollToTop from "./ScrollToTop";
 import { SidebarProvider } from "./context/SidebarContext";
 import { CasinoProvidersProvider } from "./context/CasinoProvidersContext";
+import { BalanceProvider } from "./context/BalanceContext";
 import Layout from "./Layout";
 
 function ProtectedRoute() {
@@ -22,6 +23,7 @@ const SportsGame = lazy(() => import("./sports/SportsGame"));
 const ProfileTransactions = lazy(() => import("./ProfileTransactions/profileTransactions"));
 const Promotions = lazy(() => import("./promotions/Promotions"));
 const MyBets = lazy(() => import("./StatementPages/MyBets"));
+const BetHistory = lazy(() => import("./StatementPages/BetHistory"));
 const MyWallet = lazy(() => import("./StatementPages/MyWallet"));
 const BettingProfitLoss = lazy(() => import("./StatementPages/BettingProfitLoss"));
 const TurnoverHistory = lazy(() => import("./StatementPages/TurnoverHistory"));
@@ -43,6 +45,7 @@ const Routing = memo(function Routing() {
     <Router>
       <SidebarProvider>
         <CasinoProvidersProvider>
+        <BalanceProvider>
         <ScrollToTop />
         <Suspense fallback={null}>
           <Routes>
@@ -62,6 +65,7 @@ const Routing = memo(function Routing() {
                 <Route path="/game-history" element={<GameHistory />} />
                 <Route path="/transactions" element={<ProfileTransactions />} />
                 <Route path="/my-bets" element={<MyBets />} />
+                <Route path="/bet-history" element={<BetHistory />} />
                 <Route path="/my-wallet" element={<MyWallet />} />
                 <Route path="/betting-profit-loss" element={<BettingProfitLoss />} />
                 <Route path="/turnover-history" element={<TurnoverHistory />} />
@@ -80,6 +84,7 @@ const Routing = memo(function Routing() {
             </Route>
           </Routes>
         </Suspense>
+        </BalanceProvider>
         </CasinoProvidersProvider>
       </SidebarProvider>
     </Router>

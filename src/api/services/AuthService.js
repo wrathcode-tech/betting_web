@@ -374,6 +374,124 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
+  /** POST /api/v1/sportsbook/bet/place – Place a back/lay bet. Body: sport, gameId, eventName, marketType, marketId, selectionId, selectionName, betType, odds, stake, etc. */
+  sportsbookPlaceBet: async (body) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/bet/place`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPost(url, body, headers);
+  },
+
+  /** POST /api/v1/sportsbook/bet/{betId}/cancel – Cancel an open bet. */
+  sportsbookCancelBet: async (betId) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}/cancel`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPost(url, {}, headers);
+  },
+
+  /** POST /api/v1/sportsbook/bet/{betId}/cashout – Cash out an active bet. */
+  sportsbookCashout: async (betId) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}/cashout`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPost(url, {}, headers);
+  },
+
+  /** GET /api/v1/sportsbook/bet/{betId}/cashout-value – Get cashout value for a bet. */
+  sportsbookCashoutValue: async (betId) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}/cashout-value`;
+    const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/sportsbook/loss-limit – Current loss limit settings (dailyLossLimit, isActive, currency). */
+  sportsbookGetLossLimit: async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/loss-limit`;
+    const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    return ApiCallGet(url, headers);
+  },
+
+  /** PUT /api/v1/sportsbook/loss-limit – Set/update daily loss limit. Body: { dailyLossLimit } (0–500000 or null to remove). */
+  sportsbookSetLossLimit: async (dailyLossLimit) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/loss-limit`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    const body = dailyLossLimit == null || dailyLossLimit === "" ? { dailyLossLimit: null } : { dailyLossLimit: Number(dailyLossLimit) };
+    return ApiCallPut(url, body, headers);
+  },
+
+  /** GET /api/v1/sportsbook/bet/open – Open bets with pagination/filters. Params: page, limit, sport, marketType, gameId. */
+  sportsbookOpenBets: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    const { baseBettingSportsbook } = ApiConfig;
+    const q = new URLSearchParams(params).toString();
+    const url = `${baseBettingSportsbook}/bet/open${q ? `?${q}` : ""}`;
+    const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/sportsbook/bet/history – Bet history. Params: page, limit, sport, result, from, to. */
+  sportsbookBetHistory: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    const { baseBettingSportsbook } = ApiConfig;
+    const q = new URLSearchParams(params).toString();
+    const url = `${baseBettingSportsbook}/bet/history${q ? `?${q}` : ""}`;
+    const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/sportsbook/bet/{betId} – Single bet details. */
+  sportsbookBetById: async (betId) => {
+    const token = sessionStorage.getItem("token");
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}`;
+    const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/sportsbook/exposure – User exposure (total risk). May return loss_limit, current_loss for Loss Cut. */
+  sportsbookExposure: async () => {
+    const token = sessionStorage.getItem("token");
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/exposure`;
+    const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/sportsbook/profit-loss – P&L. Params: sport, from, to. */
+  sportsbookProfitLoss: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    const { baseBettingSportsbook } = ApiConfig;
+    const q = new URLSearchParams(params).toString();
+    const url = `${baseBettingSportsbook}/profit-loss${q ? `?${q}` : ""}`;
+    const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/sportsbook/betfair-result/{type}?marketId=X – type: match-odds | bookmaker | fancy. marketId comma-separated for multiple. */
+  sportsbookBetfairResult: async (type, marketId) => {
+    const token = sessionStorage.getItem("token");
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/betfair-result/${encodeURIComponent(type)}?marketId=${encodeURIComponent(marketId)}`;
+    const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    return ApiCallGet(url, headers);
+  },
+
   // ============================================================================
   // END OF BETTING AUTH METHODS
   // ============================================================================

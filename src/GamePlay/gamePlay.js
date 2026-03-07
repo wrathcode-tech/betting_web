@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './gamePlay.css';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
+import { useBalance } from '../context/BalanceContext';
 import { getLastBalance } from '../socket/balanceSocket';
 
 const BEST_GAMES_ITEMS = [
@@ -70,9 +71,9 @@ function GamePlay() {
 
   // sessionStorage me session sirf page refresh pe use hoga (casino se navigate = already cleared)
   const restored = useMemo(() => getStoredSession(), []);
+  const { balance, setBalance } = useBalance();
 
   const [launchURL, setLaunchURL] = useState(restored?.launchURL ?? null);
-  const [balance, setBalance] = useState(restored?.balance ?? getLastBalance() ?? null);
   const [gameName, setGameName] = useState(restored?.gameName ?? stateGameName ?? '');
   const [gameCode, setGameCode] = useState(restored?.gameCode ?? stateGameCode ?? null);
   const [providerCode, setProviderCode] = useState(restored?.providerCode ?? stateProviderCode ?? null);
@@ -171,15 +172,15 @@ function GamePlay() {
   }, []);
 
   useEffect(() => {
-    // Page refresh: sessionStorage se restore karo; balance from socket (getLastBalance) or restored
+    // Page refresh: sessionStorage se restore karo; balance from context (already synced by BalanceProvider)
     if (restored?.launchURL) {
       setLaunchURL(restored.launchURL);
       setGameName(restored.gameName || stateGameName || '');
       setGameCode(restored.gameCode);
       setProviderCode(restored.providerCode);
       const initialBalance = getLastBalance() ?? restored.balance ?? null;
-      setBalance(initialBalance);
       if (typeof initialBalance === 'number') {
+        setBalance(initialBalance);
         saveSession({ ...restored, balance: initialBalance });
       }
       return;
@@ -201,7 +202,7 @@ function GamePlay() {
         if (res?.success && res?.data?.launchURL) {
           const d = res.data;
           setLaunchURL(d.launchURL);
-          setBalance(d.balance != null ? d.balance : null);
+          if (d.balance != null) setBalance(d.balance);
           saveSession({
             launchURL: d.launchURL,
             sessionId: d.sessionId,
@@ -220,21 +221,13 @@ function GamePlay() {
       .finally(() => {
         setLoading(false);
       });
-  }, [stateGameCode, stateProviderCode, stateGameName, restored?.launchURL]);
+  }, [stateGameCode, stateProviderCode, stateGameName, restored?.launchURL, setBalance]);
 
-  // Real-time balance from socket (walletBalanceUpdate fired by UserHeader on balance event)
+  // Persist context balance to session when it changes (e.g. socket update)
   useEffect(() => {
-    const onBalance = (e) => {
-      const bal = e.detail?.balance;
-      if (typeof bal === 'number') {
-        setBalance(bal);
-        const stored = getStoredSession();
-        if (stored) saveSession({ ...stored, balance: bal });
-      }
-    };
-    window.addEventListener('walletBalanceUpdate', onBalance);
-    return () => window.removeEventListener('walletBalanceUpdate', onBalance);
-  }, []);
+    const stored = getStoredSession();
+    if (stored && balance != null) saveSession({ ...stored, balance });
+  }, [balance]);
 
   const handleBack = () => {
     clearStoredSession();

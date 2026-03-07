@@ -6,7 +6,11 @@ import LoginModal from './LoginModal'
 import SideBar from './SideBar/sideBar'
 import Chat from '../cricket/Chat'
 import Search from './Search'
-import { connectBalanceSocket, disconnectBalanceSocket } from '../socket/balanceSocket'
+import { useBalance } from '../context/BalanceContext'
+import {
+  connectSportsbookSocket,
+  disconnectSportsbookSocket,
+} from '../socket/sportsbookSocket'
 
 const CURRENCY_LIST = [
   { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹', icon: 'images/digital_currency.svg' },
@@ -30,12 +34,12 @@ export default function UserHeader() {
   const [casinoDropdownOpen, setCasinoDropdownOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [currencySearch, setCurrencySearch] = useState('');
-  const [balanceInr, setBalanceInr] = useState(null);
+  const { balance: balanceFromContext } = useBalance();
   const dropdownRef = useRef(null);
   const currencyDropdownRef = useRef(null);
   const casinoDropdownRef = useRef(null);
 
-  const balance = balanceInr != null ? Number(balanceInr) : 0;
+  const balance = balanceFromContext != null ? Number(balanceFromContext) : 0;
   const defaultCurrency = { ...CURRENCY_LIST[0], balance: `${INR_SYMBOL}0.00` };
 
   // Balance from socket only (INR) – no external rates API
@@ -53,32 +57,16 @@ export default function UserHeader() {
     (c) => c.code.toLowerCase().includes(currencySearch.toLowerCase()) || c.name.toLowerCase().includes(currencySearch.toLowerCase())
   );
 
-  // Balance from socket only (connect after login, disconnect on logout)
+  // Sportsbook socket for matches/odds (balance updates via BalanceContext)
   useEffect(() => {
-    const syncBalance = () => {
-      const token = sessionStorage.getItem('token') || sessionStorage.getItem('token');
-      if (token) {
-        connectBalanceSocket(token, (balance) => {
-          setBalanceInr(balance);
-          window.dispatchEvent(new CustomEvent('walletBalanceUpdate', { detail: { balance } }));
-        });
-      } else {
-        disconnectBalanceSocket();
-        setBalanceInr(null);
-      }
+    const sync = () => {
+      const t = sessionStorage.getItem('token');
+      if (t) connectSportsbookSocket(t);
+      else disconnectSportsbookSocket();
     };
-    syncBalance();
-    window.addEventListener('loginStateChange', syncBalance);
-    return () => window.removeEventListener('loginStateChange', syncBalance);
-  }, []);
-
-  // Optional: allow external updates (e.g. deposit page) to push balance into header
-  useEffect(() => {
-    const onWalletUpdate = (e) => {
-      if (e.detail?.balance != null) setBalanceInr(e.detail.balance);
-    };
-    window.addEventListener('walletBalanceUpdate', onWalletUpdate);
-    return () => window.removeEventListener('walletBalanceUpdate', onWalletUpdate);
+    sync();
+    window.addEventListener('loginStateChange', sync);
+    return () => window.removeEventListener('loginStateChange', sync);
   }, []);
 
   useEffect(() => {
@@ -266,7 +254,6 @@ export default function UserHeader() {
                 type="button"
                 className="dropdown_logout_btn"
                 onClick={() => {
-                  disconnectBalanceSocket();
                   sessionStorage.removeItem('token');
                   window.dispatchEvent(new CustomEvent('loginStateChange'));
                   setIsProfileDropdownOpen(false);

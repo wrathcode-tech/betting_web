@@ -1,30 +1,141 @@
-import React from 'react'
-import StatementPage from './StatementPage'
+import React, { useState, useEffect, useCallback } from 'react'
+import Header from '../customComponents/Header'
+import MobileMenu from '../customComponents/MobileMenu'
+import AuthService from '../api/services/AuthService'
+import '../ProfileTransactions/profileTransactions.css'
 
-const COLUMNS = [
-  { key: 'date', label: 'Date' },
-  { key: 'event', label: 'Event' },
-  { key: 'market', label: 'Market' },
-  { key: 'stake', label: 'Stake', type: 'amount' },
-  { key: 'pnl', label: 'P&L', type: 'amount' },
-  { key: 'status', label: 'Status', type: 'status' },
-]
+function BettingProfitLoss() {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [sport, setSport] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
 
-const DUMMY_DATA = [
-  { id: '1', date: '12/06/2025', event: 'RCB vs DC', market: 'Match Winner', stake: '₹500', pnl: '₹375', status: 'Won', statusRaw: 'won', cardTitle: 'RCB vs DC' },
-  { id: '2', date: '11/06/2025', event: 'India vs Australia', market: 'Top Batsman', stake: '₹1,000', pnl: '₹0', status: 'Lost', statusRaw: 'lost', cardTitle: 'India vs Australia' },
-  { id: '3', date: '10/06/2025', event: 'Mumbai vs Chennai', market: 'Total Runs', stake: '₹250', pnl: '−₹250', status: 'Lost', statusRaw: 'lost', cardTitle: 'Mumbai vs Chennai' },
-  { id: '4', date: '09/06/2025', event: 'IPL Final', market: 'Match Winner', stake: '₹2,000', pnl: '₹1,700', status: 'Won', statusRaw: 'won', cardTitle: 'IPL Final' },
-  { id: '5', date: '08/06/2025', event: 'England vs SA', market: '1st Innings', stake: '₹750', pnl: '—', status: 'Pending', statusRaw: 'pending', cardTitle: 'England vs SA' },
-]
+  const fetchPnL = useCallback(async () => {
+    setLoading(true)
+    try {
+      const params = {}
+      if (sport) params.sport = sport
+      if (from) params.from = from
+      if (to) params.to = to
+      const res = await AuthService.sportsbookProfitLoss(params)
+      const d = res?.data ?? res
+      setData(d || null)
+    } catch {
+      setData(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [sport, from, to])
 
-export default function BettingProfitLoss() {
+  useEffect(() => {
+    fetchPnL()
+  }, [fetchPnL])
+
+  const formatAmount = (n) => {
+    if (n == null) return '—'
+    const num = Number(n)
+    const str = num >= 0 ? `₹${num.toLocaleString()}` : `−₹${Math.abs(num).toLocaleString()}`
+    return str
+  }
+
   return (
-    <StatementPage
-      title="Betting Profit and Loss"
-      columns={COLUMNS}
-      data={DUMMY_DATA}
-      emptyMessage="No betting P&L data yet."
-    />
+    <>
+      <Header />
+      <div className="dashboard_page">
+        <div className="container-fluid">
+          <div className="profile_transactions_section">
+            <div className="transactions_header">
+              <h1>Betting Profit & Loss</h1>
+              <div className="transactions_header_right">
+                <div className="date_range_picker">
+                  <input
+                    type="date"
+                    className="date_input"
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                  />
+                  <input
+                    type="date"
+                    className="date_input"
+                    value={to}
+                    onChange={(e) => setTo(e.target.value)}
+                  />
+                </div>
+                <select
+                  className="transactions_filter_select deposit_btn_style"
+                  value={sport}
+                  onChange={(e) => setSport(e.target.value)}
+                >
+                  <option value="">All Sports</option>
+                  <option value="cricket">Cricket</option>
+                  <option value="soccer">Soccer</option>
+                  <option value="tennis">Tennis</option>
+                </select>
+                <button type="button" className="deposit_btn_style" onClick={fetchPnL}>
+                  Apply
+                </button>
+              </div>
+            </div>
+
+            {loading ? (
+              <p className="text-white-50">Loading...</p>
+            ) : !data ? (
+              <p className="text-white-50">No P&L data.</p>
+            ) : (
+              <div className="transactions_cards_wrapper" style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                <div className="transaction_card" style={{ minWidth: 200 }}>
+                  <div className="transaction_card_header">
+                    <h3>Total P&L</h3>
+                  </div>
+                  <div className="transaction_card_body">
+                    <div className="transaction_card_row">
+                      <span className="transaction_label">Net Profit / Loss</span>
+                      <span className={`transaction_value amount_value ${Number(data.totalProfitLoss) >= 0 ? '' : 'text-danger'}`}>
+                        {formatAmount(data.totalProfitLoss)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="transaction_card" style={{ minWidth: 200 }}>
+                  <div className="transaction_card_header">
+                    <h3>Summary</h3>
+                  </div>
+                  <div className="transaction_card_body">
+                    <div className="transaction_card_row">
+                      <span className="transaction_label">Total Bets</span>
+                      <span className="transaction_value">{data.totalBets ?? '—'}</span>
+                    </div>
+                    <div className="transaction_card_row">
+                      <span className="transaction_label">Total Stake</span>
+                      <span className="transaction_value amount_value">{formatAmount(data.totalStake)}</span>
+                    </div>
+                    <div className="transaction_card_row">
+                      <span className="transaction_label">Won</span>
+                      <span className="transaction_value">{data.totalWon ?? '—'}</span>
+                    </div>
+                    <div className="transaction_card_row">
+                      <span className="transaction_label">Lost</span>
+                      <span className="transaction_value">{data.totalLost ?? '—'}</span>
+                    </div>
+                    <div className="transaction_card_row">
+                      <span className="transaction_label">Gross Profit</span>
+                      <span className="transaction_value amount_value">{formatAmount(data.grossProfit)}</span>
+                    </div>
+                    <div className="transaction_card_row">
+                      <span className="transaction_label">Gross Loss</span>
+                      <span className="transaction_value amount_value">{formatAmount(data.grossLoss)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <MobileMenu />
+    </>
   )
 }
+
+export default BettingProfitLoss

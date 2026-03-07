@@ -163,6 +163,12 @@ export default function SideBar({ isOpen, onClose }) {
                   <span className="sidebar_collapsed_label">My Bets</span>
                 </Link>
               </li>
+              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/bet-history' ? 'active' : ''}`}>
+                <Link to="/bet-history" onClick={onLinkClick}>
+                  <span><i className="ri-history-line" aria-hidden />Bet History</span>
+                  <span className="sidebar_collapsed_label">Bet History</span>
+                </Link>
+              </li>
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/my-wallet' ? 'active' : ''}`}>
                 <Link to="/my-wallet" onClick={onLinkClick}>
                   <span><i className="ri-wallet-3-line" aria-hidden />My Wallet</span>
