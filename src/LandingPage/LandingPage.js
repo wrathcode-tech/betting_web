@@ -694,6 +694,7 @@ function LandingPage() {
                       <video width="100%" height="auto" autoPlay muted loop playsInline loading="lazy">
                         <source src={src} type="video/mp4" />
                       </video>
+                      <span className='game_video_bl_title'>{category}</span>
                     </Link>
                   );
                 })
@@ -944,7 +945,7 @@ function LandingPage() {
           <div className="container-fluid">
             <div className="row">
               <div className="col-md-6">
-                <Link to="/casino" className="casino_sport_section_lft link_plain">
+                <Link to="/casino" className="casino_sport_section_lft link_plain desktopview">
                   <div className="cntlft">
                     <h3>Casino</h3>
                     <p>Enjoy BetFury Originals and other casino games from top providers.</p>
@@ -955,7 +956,7 @@ function LandingPage() {
                 </Link>
               </div>
               <div className="col-md-6">
-                <Link to="/sports" className="casino_sport_section_lft sport_bg link_plain">
+                <Link to="/sports" className="casino_sport_section_lft sport_bg link_plain desktopview">
                   <div className="cntlft">
                     <h3>Sport</h3>
                     <p>Bet on popular sports events with high odds and other great features.</p>
@@ -976,7 +977,7 @@ function LandingPage() {
           <div className='container-fluid'>
             <div className='row'>
               <div className='col-md-8'>
-                <div className='playearn_big_lft'>
+                <div className='playearn_big_lft desktopview'>
                   <div className='playearn_big_lft_cnt'>
                     <h2>PLAY & EARN BIG</h2>
                     <p>Daily rewards, instant wins aur non-stop fun.</p>
@@ -1171,7 +1172,7 @@ function LandingPage() {
           </div>
         </div>
 
-        <div className="p_space_footer landing_footer_section">
+        <div className="p_space_footer landing_footer_section desktopview">
           <div className="d-flex topfooter">
             <div className="secure_img">
               <img src="/images/secure.png" alt="game" width="80" height="40" decoding="async" loading="lazy" />
