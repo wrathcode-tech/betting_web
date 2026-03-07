@@ -123,7 +123,7 @@ function ProfilePage() {
       <div className="dashboard_page">
         <div className="container">
           <div className="profile_section">
-            <h1>Profile</h1>
+            <h1>My Profile</h1>
             <div className="row">
               <div className="col-md-6">
                 <div className="profile_bio_info d-flex align-items-center gap-3">
@@ -147,20 +147,21 @@ function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="ranklist">
+                <div className="statistics_profile">
+                <h2>Statistics</h2>
                   <ul>
                     <li><span>Total deposit</span>₹{Number(safeUser.wallet?.totalDeposited ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
-                    <li><span>Points</span>860</li>
-                    <li><span>Level</span>1</li>
+                    <li><span>Total Wagered</span>860</li>
+                    <li><span>Total Bets</span>0</li>
                   </ul>
                 </div>
 
                 <div className="statistics_profile">
-                  <h2>Statistics</h2>
+                  <h2></h2>
                   <ul>
-                    <li><span>Total Wagered</span>0.00</li>
-                    <li><span>Total Bets</span>0</li>
-                    <li><span>Earned Staking</span>0.00</li>
+                    <li><span>Exposure Credited</span>0.00</li>
+                    <li><span>Available Balance</span>0</li>
+                    <li><span>Bonus Rewarded</span>0.00</li>
                   </ul>
                 </div>
 

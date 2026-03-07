@@ -1,0 +1,172 @@
+/* Game History – reuses profile_transactions_section from ProfileTransactions */
+
+/* Win = green, Loss = red */
+.game_history_page .game_history_table td.amount_positive {
+  color: #4CAF50 !important;
+}
+
+.game_history_page .game_history_table td.amount_negative {
+  color: #f44336 !important;
+}
+
+.game_history_page .transaction_value.amount_positive {
+  color: #4CAF50 !important;
+}
+
+.game_history_page .transaction_value.amount_negative {
+  color: #f44336 !important;
+}
+
+/* Clickable table rows */
+.game_history_row_clickable {
+  cursor: pointer;
+}
+
+.game_history_row_clickable:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.game_history_card_clickable {
+  cursor: pointer;
+}
+
+/* BET HISTORY modal */
+.game_history_modal_overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.game_history_modal {
+  background: #16202c;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.game_history_modal_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.game_history_modal_header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.game_history_modal_close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+
+.game_history_modal_close:hover {
+  opacity: 1;
+}
+
+.game_history_modal_game_bar {
+  background: rgba(59, 130, 246, 0.5);
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.game_history_modal_section {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.game_history_modal_section h3 {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.game_history_modal_details {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.game_history_modal_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 16px;
+}
+
+.game_history_modal_row:last-child {
+  border-bottom: none;
+}
+
+.game_history_modal_label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+}
+
+.game_history_modal_value {
+  font-size: 13px;
+  color: #fff;
+  text-align: right;
+  word-break: break-all;
+}
+
+.game_history_modal_value.amount_positive {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.game_history_modal_value.amount_negative {
+  color: #e07a5a;
+  font-weight: 600;
+}
+
+/* Mobile: show cards, hide table */
+.game_history_cards_wrapper {
+  display: none;
+  width: 100%;
+  gap: 15px;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .game_history_page .transactions_table_wrapper {
+    display: none;
+  }
+
+  .game_history_cards_wrapper {
+    display: flex;
+  }
+
+  .game_history_modal {
+    max-height: 85vh;
+  }
+}

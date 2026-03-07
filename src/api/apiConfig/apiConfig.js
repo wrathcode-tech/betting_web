@@ -52,9 +52,14 @@ export const ApiConfig = {
   bettingGamesFeatured: "featured",
   bettingGamesPopular: "popular",
   bettingGamesLanding: "landing",
+  bettingGamesTransactions: "transactions",
 
   // Sportsbook – GET /api/v1/sportsbook/{sportName}/matches (sportName: cricket, soccer, tennis)
   baseBettingSportsbook: `${bettingUrl}/api/v1/sportsbook`,
+
+  // User – master deposit accounts for /deposit page
+  baseBettingUser: `${bettingUrl}/api/v1/user`,
+  depositAccountsMaster: "deposit-accounts/master",
 
   // ============webSocketUrl================
 

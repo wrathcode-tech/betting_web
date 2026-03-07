@@ -97,9 +97,9 @@ function AddAccount() {
   };
 
   const handleSendOtp = async () => {
-    const { accountHolderName, accountNumber, bankName, ifscCode } = form;
-    if (!accountHolderName?.trim() || !accountNumber?.trim() || !bankName?.trim() || !ifscCode?.trim()) {
-      alertErrorMessage('Please fill Account Holder, Account Number, Bank Name and IFSC');
+    const { accountHolderName, accountNumber, bankName, branchName, ifscCode } = form;
+    if (!accountHolderName?.trim() || !accountNumber?.trim() || !bankName?.trim() || !branchName?.trim() || !ifscCode?.trim()) {
+      alertErrorMessage('Please fill Account Holder, Account Number, Bank Name, Branch Name and IFSC');
       return;
     }
     if (ifscCode.trim().length !== 11) {
@@ -120,6 +120,10 @@ function AddAccount() {
   const handleAddAccount = async (e) => {
     e.preventDefault();
     const { accountHolderName, accountNumber, bankName, branchName, ifscCode, otp } = form;
+    if (!branchName?.trim()) {
+      alertErrorMessage('Please enter Branch Name');
+      return;
+    }
     if (!otp || otp.length !== 6) {
       alertErrorMessage('Enter 6-digit OTP');
       return;
@@ -129,7 +133,7 @@ function AddAccount() {
       accountHolderName: accountHolderName?.trim(),
       accountNumber: accountNumber?.trim(),
       bankName: bankName?.trim(),
-      branchName: branchName?.trim() || undefined,
+      branchName: branchName?.trim(),
       ifscCode: ifscCode?.trim(),
       otp,
     });
@@ -237,13 +241,14 @@ function AddAccount() {
                   </div>
                 </div>
                 <div className="enter_amount_deposit">
-                  <label>Branch Name (optional)</label>
+                  <label>Branch Name</label>
                   <div className="enter_filed d-flex">
                     <input
                       type="text"
                       placeholder="Branch Name"
                       value={form.branchName}
                       onChange={(e) => setForm((p) => ({ ...p, branchName: e.target.value }))}
+                      required
                     />
                   </div>
                 </div>

@@ -20,6 +20,14 @@ const TYPE_FILTER_OPTIONS = [
   { value: 'withdrawal', label: 'Withdrawal' },
 ]
 
+const STATUS_FILTER_OPTIONS = [
+  { value: 'all', label: 'All status' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'completed', label: 'Completed' },
+]
+
 function formatTime(dateStr) {
   if (!dateStr) return '—'
   const d = new Date(dateStr)
@@ -55,6 +63,7 @@ function ProfileTransactions() {
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [pagination, setPagination] = useState({ page: 1, limit: PAGE_SIZE, total: 0, totalPages: 1, hasMore: false })
 
   const fetchTransactions = useCallback(
@@ -164,10 +173,20 @@ function ProfileTransactions() {
     setTypeFilter(e.target.value)
   }, [])
 
+  const handleStatusFilterChange = useCallback((e) => {
+    setStatusFilter(e.target.value)
+    setPagination((prev) => ({ ...prev, page: 1 }))
+  }, [])
+
   const list = useMemo(() => {
-    const source = typeFilter === 'all'
-      ? transactions.slice((pagination.page - 1) * PAGE_SIZE, pagination.page * PAGE_SIZE)
-      : transactions
+    const statusFiltered =
+      statusFilter === 'all'
+        ? transactions
+        : transactions.filter((t) => String(t.status || '').toLowerCase() === statusFilter)
+    const source =
+      typeFilter === 'all'
+        ? statusFiltered.slice((pagination.page - 1) * PAGE_SIZE, pagination.page * PAGE_SIZE)
+        : statusFiltered
     return source.map((t) => ({
       id: t._id,
       time: formatTime(t.createdAt),
@@ -178,10 +197,22 @@ function ProfileTransactions() {
       status: formatStatus(t.status),
       statusRaw: t.status,
       notes: t.adminRemarks || t.remarks || '—',
-      paymentMethod: formatPaymentMethod(t.paymentMethod),
+      paymentMethod: formatPaymentMethod(
+        t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod
+      ),
       paymentProofUrl: t.type === 'deposit' ? getPaymentProofFullUrl(t.paymentProofUrl) : null,
     }))
-  }, [transactions, typeFilter, pagination.page])
+  }, [transactions, typeFilter, statusFilter, pagination.page])
+
+  const statusFilteredLength = useMemo(() => {
+    if (statusFilter === 'all') return transactions.length
+    return transactions.filter((t) => String(t.status || '').toLowerCase() === statusFilter).length
+  }, [transactions, statusFilter])
+
+  const effectiveTotalPages =
+    typeFilter === 'all' ? Math.max(1, Math.ceil(statusFilteredLength / PAGE_SIZE)) : 1
+  const effectiveHasMore = typeFilter === 'all' ? pagination.page < effectiveTotalPages : false
+  const effectiveTotal = statusFilteredLength
 
   return (
     <>
@@ -209,6 +240,16 @@ function ProfileTransactions() {
                   onChange={handleFilterChange}
                 >
                   {TYPE_FILTER_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <select
+                  id="txn-status-filter"
+                  className='transactions_filter_select deposit_btn_style'
+                  value={statusFilter}
+                  onChange={handleStatusFilterChange}
+                >
+                  {STATUS_FILTER_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
@@ -321,13 +362,13 @@ function ProfileTransactions() {
                     Previous
                   </button>
                   <span className='pagination_info'>
-                    Page {pagination.page} of {pagination.totalPages || 1} ({pagination.total} total)
+                    Page {pagination.page} of {effectiveTotalPages} ({effectiveTotal} total)
                   </span>
                   <button
                     type="button"
                     className='pagination_btn'
                     onClick={handleNext}
-                    disabled={!pagination.hasMore}
+                    disabled={!effectiveHasMore}
                   >
                     Next
                   </button>

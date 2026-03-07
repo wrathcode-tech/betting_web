@@ -118,6 +118,16 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
+  /** GET /api/v1/user/deposit-accounts/master – auth required. Returns { data: { accounts, source } }. */
+  getMasterDepositAccounts: async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingUser, depositAccountsMaster } = ApiConfig;
+    const url = `${baseBettingUser}/${depositAccountsMaster}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
   bettingGetBalance: async () => {
     const token = sessionStorage.getItem("token");
     const { baseBettingWallet, bettingBalance } = ApiConfig;
@@ -353,10 +363,21 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
+  /** GET /api/v1/games/transactions?page=1&limit=20 – auth required. Returns { data: { transactions, pagination } }. */
+  gamesTransactions: async (page = 1, limit = 20) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingGames, bettingGamesTransactions } = ApiConfig;
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    const url = `${baseBettingGames}${bettingGamesTransactions}?${params.toString()}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
   // ============================================================================
   // END OF BETTING AUTH METHODS
   // ============================================================================
 
-};
+}
 
 export default AuthService;

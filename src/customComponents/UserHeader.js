@@ -240,7 +240,7 @@ export default function UserHeader() {
                   <i className="ri-file-list-3-line"></i>
                   <span>Transaction History</span>
                 </Link>
-                <Link to="/game" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                <Link to="/game-history" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-history-line"></i>
                   <span>Game History</span>
                 </Link>
