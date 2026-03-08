@@ -7,7 +7,7 @@ import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function ProfilePage() {
-  const [user, setUser] = useState(null)
+  const [profileData, setProfileData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editFullName, setEditFullName] = useState('')
@@ -16,6 +16,14 @@ function ProfilePage() {
   const [editProfileImagePreview, setEditProfileImagePreview] = useState(null)
   const [saveLoading, setSaveLoading] = useState(false)
 
+  const data = profileData ?? {}
+  const user = data?.user ?? data
+  const wallet = data?.wallet ?? user?.wallet ?? {}
+  const referral = data?.referral ?? user?.referral ?? {}
+  const session = data?.session ?? user?.session ?? {}
+  const stats = data?.stats ?? user?.stats ?? {}
+  const bettingStats = data?.bettingStats ?? user?.bettingStats ?? {}
+
   const displayName = user?.fullName || user?.username || 'User'
   const baseUrl = (ApiConfig.baseBettingUrl || '').replace(/\/$/, '')
   const profileImageSrc = user?.profileImage
@@ -23,20 +31,46 @@ function ProfilePage() {
     : null
   const safeUser = user ?? {}
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (keepPreviousExtra = false) => {
     const token = sessionStorage.getItem('token')
     if (!token) {
       setLoading(false)
       return
     }
     setLoading(true)
-    const result = await AuthService.bettingGetMe()
-    setLoading(false)
-    if (result?.success) {
-      const profileUser = result?.data?.user ?? result?.user ?? null
-      setUser(profileUser)
-    } else if (result?.message === 'Token is expired' || result?.statusCode === 401) {
-      setUser(null)
+    try {
+      const result = await AuthService.bettingGetMe()
+      if (result?.success) {
+        const raw = result?.data ?? result
+        const merged = {
+          user: raw?.user ?? raw,
+          wallet: raw?.wallet,
+          referral: raw?.referral,
+          session: raw?.session,
+          stats: raw?.stats,
+          bettingStats: raw?.bettingStats,
+          accountStatus: raw?.accountStatus,
+        }
+        if (keepPreviousExtra) {
+          setProfileData((prev) => {
+            if (!prev) return merged
+            return {
+              ...merged,
+              wallet: merged.wallet ?? prev.wallet,
+              referral: merged.referral ?? prev.referral,
+              session: merged.session ?? prev.session,
+              stats: merged.stats ?? prev.stats,
+              bettingStats: merged.bettingStats ?? prev.bettingStats,
+            }
+          })
+        } else {
+          setProfileData(merged)
+        }
+      } else if (result?.message === 'Token is expired' || result?.statusCode === 401) {
+        setProfileData(null)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -92,15 +126,15 @@ function ProfilePage() {
     if (result?.success) {
       alertSuccessMessage(result?.message || 'Profile updated successfully')
       const updatedUser = result?.data?.user ?? result?.user
-      if (updatedUser) setUser((prev) => ({ ...(prev || {}), ...updatedUser }))
-      await fetchProfile()
       closeEditModal()
+      await fetchProfile(true)
+      if (updatedUser) setProfileData((prev) => (prev ? { ...prev, user: { ...(prev.user || {}), ...updatedUser } } : prev))
     } else {
       alertErrorMessage(result?.message || 'Failed to update profile')
     }
   }
 
-  if (!user && !loading) {
+  if (!profileData && !loading) {
     return (
       <>
         <Header />
@@ -124,8 +158,8 @@ function ProfilePage() {
         <div className="container">
           <div className="profile_section">
             <h1>My Profile</h1>
-            <div className="row">
-              <div className="col-md-6">
+            <div className="profile_section_row">
+              <div className="profile_section_left">
                 <div className="profile_bio_info d-flex align-items-center gap-3">
                   <div className="profile_bio_info_img">
                     {profileImageSrc ? (
@@ -137,9 +171,10 @@ function ProfilePage() {
                   </div>
                   <div className="profile_bio_info_cnt">
                     <h3>{displayName}</h3>
-                    <span>{safeUser.email || safeUser.mobile || '—'}</span>
+                    <span>{safeUser.email || (safeUser.countryCode && safeUser.mobile ? `${safeUser.countryCode} ${safeUser.mobile}` : safeUser.mobile) || '—'}</span>
+                    {user?.username && <span className="d-block text-white-50 small">@{user.username}</span>}
                     <div className="d-flex align-items-center gap-2 mt-2">
-                      <p><img src="images/noto_trophy.svg" alt="edit" /> Level 1</p>
+                      {user?.riskLevel && <p><img src="images/noto_trophy.svg" alt="level" /> Risk: {user.riskLevel}</p>}
                       <button type="button" className="btn profilebtn" onClick={openEditModal}>
                         <i className="ri-pencil-line"></i> Edit Profile
                       </button>
@@ -147,47 +182,51 @@ function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="statistics_profile">
-                <h2>Statistics</h2>
-                  <ul>
-                    <li><span>Total deposit</span>₹{Number(safeUser.wallet?.totalDeposited ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
-                    <li><span>Total Wagered</span>860</li>
-                    <li><span>Total Bets</span>0</li>
-                  </ul>
-                </div>
+                <div className="profile_stats_wrap">
+                  <div className="statistics_profile">
+                    <h2>Wallet &amp; Stats</h2>
+                    <ul className="profile_stat_grid">
+                      <li><span>Available Balance</span><strong>₹{Number(wallet?.balance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong></li>
+                      <li><span>Bonus Balance</span><strong>₹{Number(wallet?.bonusBalance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong></li>
+                      <li><span>Total Deposit</span><strong>₹{Number(wallet?.totalDeposited ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong></li>
+                      <li><span>Total Withdrawn</span><strong>₹{Number(wallet?.totalWithdrawn ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong></li>
+                    </ul>
+                  </div>
 
-                <div className="statistics_profile">
-                  <h2></h2>
-                  <ul>
-                    <li><span>Exposure Credited</span>0.00</li>
-                    <li><span>Available Balance</span>0</li>
-                    <li><span>Bonus Rewarded</span>0.00</li>
-                  </ul>
-                </div>
+                  <div className="statistics_profile">
+                    <h2>Betting Stats</h2>
+                    <ul className="profile_stat_grid">
+                      <li><span>Total Wagered</span><strong>₹{Number(stats?.totalWagered ?? bettingStats?.totalStake ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</strong></li>
+                      <li><span>Total Bets</span><strong>{Number(stats?.totalBets ?? bettingStats?.totalBets ?? 0).toLocaleString('en-IN')}</strong></li>
+                      <li><span>Sports Bets</span><strong>{Number(bettingStats?.totalSportsBets ?? 0).toLocaleString('en-IN')}</strong><small>W: {bettingStats?.sportsBetsWon ?? 0} / L: {bettingStats?.sportsBetsLost ?? 0}</small></li>
+                      <li><span>Casino Bets</span><strong>{Number(bettingStats?.totalCasinoBets ?? 0).toLocaleString('en-IN')}</strong></li>
+                      <li><span>Lifetime P&amp;L</span><strong>₹{Number(bettingStats?.lifetimePnl ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></li>
+                      <li><span>Earned (Staking)</span><strong>₹{Number(stats?.earnedStaking ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></li>
+                    </ul>
+                  </div>
 
-                <div className="statistics_profile">
-                  <h2>Activity</h2>
-                  <ul>
-                    <li><span>Total Tips</span>0.00</li>
-                    <li><span>Total Rains</span>0.00</li>
-                    <li><span>Total Coindrops</span>0.00</li>
-                  </ul>
-                </div>
+                  <div className="statistics_profile">
+                    <h2>Account</h2>
+                    <ul className="profile_stat_grid">
+                      <li><span>Referral Code</span><strong>{referral?.referralCode || '—'}</strong></li>
+                      <li><span>Total Referrals</span><strong>{Number(referral?.totalReferrals ?? 0).toLocaleString('en-IN')}</strong></li>
+                      <li><span>Last Login</span><strong className="profile_stat_small">{session?.lastLoginAt ? new Date(session.lastLoginAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}</strong></li>
+                      <li><span>Login Count</span><strong>{Number(session?.loginCount ?? 0).toLocaleString('en-IN')}</strong></li>
+                    </ul>
+                  </div>
 
-                <div className="statistics_profile top_played_games">
-                  <h2>Top Played Games</h2>
-                  <ul>
-                    <li><span><img src="images/cricket_world_img.png" alt="game" /></span>Cricket</li>
-                    <li><span><img src="images/basketball_img.png" alt="game" /></span>Basketball</li>
-                    <li><span><img src="images/aviator_img.png" alt="game" /></span>Aviator</li>
-                  </ul>
+                  <div className="statistics_profile top_played_games">
+                    <h2>Top Played</h2>
+                    <ul className="profile_stat_grid profile_top_played">
+                      <li><span><img src="images/cricket_world_img.png" alt="game" /></span><strong>Cricket</strong>{bettingStats?.totalSportsBets > 0 ? ` (${bettingStats.totalSportsBets})` : ''}</li>
+                      <li><span><img src="images/aviator_img.png" alt="game" /></span><strong>Casino</strong>{bettingStats?.totalCasinoBets > 0 ? ` (${bettingStats.totalCasinoBets})` : ''}</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
 
-              <div className="col-md-6">
-                <div className="profile_right_section">
-                  <img src="images/profile_right_vector.png" alt="casino" />
-                </div>
+              <div className="profile_right_section">
+                <img src="images/profile_right_vector.png" alt="" />
               </div>
             </div>
           </div>

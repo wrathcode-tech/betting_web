@@ -77,11 +77,11 @@ function getDayGroup(isoStr) {
 }
 
 function formatOddsSize(size) {
-    if (size == null || size === '') return '0.00K'
+    if (size == null || size === '') return '0.00'
     const n = Number(size)
     if (!Number.isFinite(n)) return String(size)
     if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 2)}K`
-    return `${n}`
+    return n % 1 === 0 ? String(n) : n.toFixed(2)
 }
 
 const MARKET_ICONS = ['MC', 'BM', 'P', 'D', 'F']
@@ -509,11 +509,23 @@ function SportsGame() {
                                         </div>
                                         <div className='sports_grid_table_wrap'>
                                             <table className='sports_grid_table'>
+                                                <thead>
+                                                    <tr className='sports_grid_header_row'>
+                                                        <th className='sports_grid_match_cell'>MATCH</th>
+                                                        <th className='sports_grid_icons_cell' aria-label="Markets"><span className='sports_grid_header_markets'>Markets</span></th>
+                                                        {Array.from({ length: 6 }, (_, i) => (
+                                                            <React.Fragment key={i}>
+                                                                <th className='sports_grid_odds_cell sports_grid_back'>Back</th>
+                                                                <th className='sports_grid_odds_cell sports_grid_lay'>Lay</th>
+                                                            </React.Fragment>
+                                                        ))}
+                                                    </tr>
+                                                </thead>
                                                 <tbody>
                                                     {cricketMatchesLoading ? (
-                                                        <tr><td colSpan={20} className='sports_grid_loading'>Loading cricket matches...</td></tr>
+                                                        <tr><td colSpan={14} className='sports_grid_loading'>Loading cricket matches...</td></tr>
                                                     ) : matchesByDay.length === 0 ? (
-                                                        <tr><td colSpan={20} className='sports_grid_empty'>No matches at the moment.</td></tr>
+                                                        <tr><td colSpan={14} className='sports_grid_empty'>No matches at the moment.</td></tr>
                                                     ) : (
                                                         matchesByDay.map(({ day, matches }) =>
                                                             matches.map((match, idx) => {
@@ -525,40 +537,43 @@ function SportsGame() {
                                                                         onClick={(e) => !e.target.closest('button') && handleMatchCardClick(e, match)}
                                                                     >
                                                                         <td className='sports_grid_match_cell'>
-                                                                            <div className='sports_grid_day_time'>
-                                                                                {match.dayGroup}{match.timeOnly ? ` ${match.timeOnly}` : ''}
+                                                                            <div className='sports_grid_match_info'>
+                                                                                <span className='sports_grid_day_time'>{match.dayGroup}{match.timeOnly ? ` ${match.timeOnly}` : ''}</span>
+                                                                                {match.inPlay && <span className='sports_grid_live'>LIVE</span>}
+                                                                                <div className='sports_grid_tournament'>{match.tournament}</div>
+                                                                                <div className='sports_grid_teams'>{match.teams}</div>
                                                                             </div>
-                                                                            {match.inPlay && <span className='sports_grid_live'>LIVE</span>}
-                                                                            <div className='sports_grid_tournament'>{match.tournament}</div>
-                                                                            <div className='sports_grid_teams'>{match.teams}</div>
                                                                         </td>
                                                                         <td className='sports_grid_icons_cell'>
-                                                                            {MARKET_ICONS.map((icon) => (
-                                                                                <span key={icon} className='sports_grid_market_icon'>{icon}</span>
-                                                                            ))}
+                                                                            <div className='sports_grid_market_icons'>
+                                                                                {MARKET_ICONS.map((icon) => (
+                                                                                    <span key={icon} className='sports_grid_market_icon'>{icon}</span>
+                                                                                ))}
+                                                                            </div>
                                                                         </td>
                                                                         {Array.from({ length: 6 }).map((_, i) => {
                                                                             const pair = cardOdds[i]
+                                                                            const disabledClass = !pair ? 'sports_grid_odds_disabled' : ''
                                                                             return (
                                                                                 <React.Fragment key={i}>
-                                                                                    <td className='sports_grid_odds_cell sports_grid_back'>
+                                                                                    <td className={`sports_grid_odds_cell sports_grid_back ${disabledClass}`}>
                                                                                         {pair ? (
                                                                                             <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
                                                                                                 <span className='sports_grid_odds_val'>{pair.back}</span>
                                                                                                 <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
                                                                                             </button>
                                                                                         ) : (
-                                                                                            <span className='sports_grid_odds_dash'>−</span>
+                                                                                            <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
                                                                                         )}
                                                                                     </td>
-                                                                                    <td className='sports_grid_odds_cell sports_grid_lay'>
+                                                                                    <td className={`sports_grid_odds_cell sports_grid_lay ${disabledClass}`}>
                                                                                         {pair ? (
                                                                                             <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
                                                                                                 <span className='sports_grid_odds_val'>{pair.lay}</span>
                                                                                                 <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
                                                                                             </button>
                                                                                         ) : (
-                                                                                            <span className='sports_grid_odds_dash'>−</span>
+                                                                                            <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
                                                                                         )}
                                                                                     </td>
                                                                                 </React.Fragment>

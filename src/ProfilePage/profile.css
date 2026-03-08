@@ -130,45 +130,113 @@ button.profilebtn {
     font-weight: 500;
 }
 
+.profile_stats_wrap {
+    width: 100%;
+    margin-top: 24px;
+}
+
 .statistics_profile {
     width: 100%;
-    margin-top: 30px;
+    margin-top: 20px;
     display: block;
 }
 
+.statistics_profile:first-child {
+    margin-top: 0;
+}
+
 .statistics_profile h2 {
-    font-size: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.profile_stat_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.profile_stat_grid li {
+    min-height: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #242a32;
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+}
+
+.profile_stat_grid li span {
+    color: #b6b6b6;
+    font-size: 11px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.profile_stat_grid li strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.profile_stat_grid li strong.profile_stat_small {
+    font-size: 11px;
     font-weight: 600;
 }
 
-.statistics_profile ul {
+.profile_stat_grid li small {
+    display: block;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 2px;
+}
+
+.profile_stat_grid.profile_top_played li {
+    flex-direction: row;
+    gap: 8px;
+}
+
+.profile_stat_grid.profile_top_played li span img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.profile_section_row {
     display: flex;
-    align-items: center;
-    justify-content: start;
+    align-items: flex-start;
     gap: 24px;
+    margin-top: 16px;
 }
 
-.statistics_profile ul li {
-    width: 100%;
-    font-weight: 900;
-    background-color: #242a32;
-    border-radius: 15px;
-    text-align: center;
-    font-size: 18px;
-    display: flex;
-    padding: 15px;
-    flex-direction: column;
-}
-
-.statistics_profile ul li span {
-    color: #b6b6b6;
-    font-size: 12px;
-    font-weight: 500;
+.profile_section_left {
+    flex: 1;
+    min-width: 0;
 }
 
 .profile_right_section {
-    max-width: 450px;
-    margin: 0 auto;
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile_right_section img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: contain;
 }
 
 .profile_section .row {
@@ -177,37 +245,21 @@ button.profilebtn {
 
 /* ========== Tablet ========== */
 @media (max-width: 991px) {
-    .profile_section .row {
+    .profile_section_row {
         flex-direction: column;
     }
 
-    .profile_section .col-md-6 {
-        width: 100%;
-        max-width: 100%;
-    }
-
     .profile_right_section {
-        margin-top: 20px;
+        max-width: 220px;
+        margin: 0 auto;
     }
 
-    .statistics_profile ul li {
-        border-radius: 10px;
-        font-size: 15px;
-        padding: 10px;
+    .profile_right_section img {
+        max-height: 260px;
     }
 
-    .statistics_profile ul li img {
-        width: 65px;
-    }
-
-    .statistics_profile ul {
-        flex-wrap: wrap;
-    }
-
-    .statistics_profile ul li {
-        flex: 1 1 calc(50% - 12px);
-        min-width: 120px;
-        box-sizing: border-box;
+    .profile_stat_grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 }
 
@@ -226,11 +278,6 @@ button.profilebtn {
     .profile_section {
         padding: 0;
         overflow-x: hidden;
-    }
-
-    .profile_section .row {
-        margin-left: 0;
-        margin-right: 0;
     }
 
     .profile_section h1 {
@@ -262,80 +309,49 @@ button.profilebtn {
         font-size: 13px;
     }
 
-    .profile_right_section {
-        margin: 24px auto 0;
-        max-width: 200px;
-    }
-
-    .profile_right_section img {
-        width: 100%;
-        height: auto;
-    }
-
-    .statistics_profile {
+    .profile_stats_wrap {
         margin-top: 20px;
     }
 
-    .statistics_profile h2 {
-        font-size: 16px;
-        margin-bottom: 12px;
-    }
-
-    .statistics_profile ul {
-        flex-wrap: wrap;
-        gap: 10px;
-        justify-content: flex-start;
-    }
-
-    .statistics_profile ul li {
-        flex: 1 1 100%;
-        min-width: 0;
-        font-size: 14px;
-        padding: 12px;
-        border-radius: 12px;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        text-align: left;
-    }
-
-    .statistics_profile ul li span {
-        font-size: 11px;
-    }
-
-    /* Top Played Games: 3 boxes in one line on mobile */
-    .statistics_profile.top_played_games ul {
-        flex-wrap: nowrap;
+    .profile_stat_grid {
+        grid-template-columns: repeat(2, 1fr);
         gap: 8px;
     }
 
-    .statistics_profile.top_played_games ul li {
-        flex: 1 1 0;
-        min-width: 0;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px 6px;
-        font-size: 12px;
+    .profile_stat_grid li {
+        min-height: 56px;
+        padding: 8px 10px;
     }
 
-    .statistics_profile.top_played_games ul li span {
-        margin-bottom: 4px;
+    .profile_stat_grid li strong {
+        font-size: 13px;
     }
 
-    .statistics_profile.top_played_games ul li img {
-        width: 44px;
-        height: 44px;
-        object-fit: contain;
+    .profile_stat_grid li strong.profile_stat_small {
+        font-size: 10px;
     }
 
-    .ranklist ul {
-        flex-wrap: wrap;
-        gap: 10px;
+    .profile_right_section {
+        margin: 16px auto 0;
+        max-width: 160px;
     }
 
-    .ranklist ul li {
-        flex: 1 1 calc(50% - 5px);
-        min-width: 0;
+    .profile_right_section img {
+        max-height: 180px;
+    }
+
+    .statistics_profile h2 {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .statistics_profile.top_played_games .profile_stat_grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profile_stat_grid.profile_top_played li span img {
+        width: 24px;
+        height: 24px;
     }
 
     .dashboard_page h1 {
@@ -364,38 +380,21 @@ button.profilebtn {
         bottom: 8px;
     }
 
-    .statistics_profile ul li {
-        font-size: 13px;
-        padding: 10px;
+    .profile_stat_grid li strong {
+        font-size: 12px;
     }
 
-    .statistics_profile ul li span {
-        font-size: 10px;
+    .profile_stat_grid li strong.profile_stat_small {
+        font-size: 9px;
     }
 
-    .ranklist ul li {
-        min-width: 0;
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    .statistics_profile ul li img {
-        width: 40px;
-        flex-shrink: 0;
-    }
-
-    .statistics_profile.top_played_games ul li {
-        padding: 8px 4px;
-        font-size: 11px;
-    }
-
-    .statistics_profile.top_played_games ul li img {
-        width: 36px;
-        height: 36px;
+    .profile_stat_grid.profile_top_played li span img {
+        width: 22px;
+        height: 22px;
     }
 
     .profile_right_section {
-        max-width: 160px;
+        max-width: 120px;
     }
 }
 

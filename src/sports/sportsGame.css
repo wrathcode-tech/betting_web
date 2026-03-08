@@ -347,9 +347,60 @@ button.btn.betnow {
     width: 100%;
     min-width: 800px;
     border-collapse: separate;
-    border-spacing: 4px 4px;
+    border-spacing: 0 4px;
     font-size: 13px;
     table-layout: fixed;
+}
+
+.sports_grid_table thead tr {
+    vertical-align: middle;
+}
+
+.sports_grid_table tbody tr {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}
+
+.sports_grid_table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.sports_grid_table tbody tr td:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.sports_grid_table tbody tr td:last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+.sports_grid_header_row th {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #111;
+    vertical-align: middle;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+}
+
+.sports_grid_header_row .sports_grid_match_cell {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 12px;
+}
+
+.sports_grid_header_row .sports_grid_icons_cell {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.sports_grid_header_markets {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
 .sports_grid_loading,
@@ -361,83 +412,103 @@ button.btn.betnow {
 
 .sports_grid_row {
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 0.2s, box-shadow 0.2s;
 }
 
 .sports_grid_row:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.sports_grid_row td {
+    vertical-align: middle;
 }
 
 .sports_grid_match_cell {
     padding: 8px 12px;
-    vertical-align: middle;
     min-width: 200px;
-    max-width: 260px;
+    max-width: 300px;
+}
+
+.sports_grid_match_info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .sports_grid_day_time {
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.9);
     font-size: 12px;
-    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.sports_grid_day_time + .sports_grid_live {
+    margin-top: 2px;
 }
 
 .sports_grid_live {
     display: inline-block;
+    align-self: flex-start;
     background: #e53935;
     color: #fff;
     font-size: 10px;
     font-weight: 700;
-    padding: 2px 6px;
+    padding: 3px 8px;
     border-radius: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 4px;
 }
 
 .sports_grid_tournament {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 2px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.3;
 }
 
 .sports_grid_teams {
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: 700;
+    font-size: 14px;
     color: #fff;
+    line-height: 1.35;
 }
 
 .sports_grid_icons_cell {
-    padding: 8px 6px;
-    vertical-align: middle;
+    padding: 6px 8px;
     width: 120px;
     white-space: nowrap;
 }
 
+.sports_grid_market_icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
 .sports_grid_market_icon {
-    display: inline-block;
-    width: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
     height: 24px;
-    line-height: 24px;
+    padding: 0 5px;
     text-align: center;
     font-size: 9px;
     font-weight: 700;
-    background: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.85);
-    border-radius: 4px;
-    margin: 0 1px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
 }
 
 .sports_grid_odds_cell {
     padding: 0;
-    vertical-align: middle;
-    min-width: 60px;
-    width: 60px;
-    height: 60px;
-    min-height: 60px;
+    min-width: 56px;
+    width: 56px;
     text-align: center;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
     box-sizing: border-box;
 }
 
@@ -447,7 +518,7 @@ button.btn.betnow {
 
 .sports_grid_back {
     background: #b3e5fc;
-    border-color: #90caf9;
+    border-color: #81d4fa;
 }
 
 .sports_grid_lay {
@@ -461,8 +532,7 @@ button.btn.betnow {
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 60px;
-    min-height: 60px;
+    min-height: 44px;
     padding: 4px 4px;
     border: none;
     background: transparent;
@@ -470,7 +540,7 @@ button.btn.betnow {
     color: inherit;
     font: inherit;
     text-align: center;
-    border-radius: 5px;
+    border-radius: 6px;
     transition: background 0.15s;
 }
 
@@ -481,7 +551,7 @@ button.btn.betnow {
 .sports_grid_odds_val {
     display: block;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.2;
     color: #111;
 }
@@ -493,22 +563,43 @@ button.btn.betnow {
 
 .sports_grid_odds_size {
     display: block;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 500;
     color: #333;
-    margin-top: 2px;
+    margin-top: 1px;
     line-height: 1.2;
+}
+
+/* Disabled / no-odds cells – grey, lock icon, not clickable */
+.sports_grid_odds_disabled {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    cursor: not-allowed;
+}
+
+.sports_grid_odds_disabled.sports_grid_back {
+    background: rgba(179, 229, 252, 0.25) !important;
+    border-color: rgba(144, 202, 249, 0.35) !important;
+}
+
+.sports_grid_odds_disabled.sports_grid_lay {
+    background: rgba(248, 187, 217, 0.25) !important;
+    border-color: rgba(244, 143, 177, 0.35) !important;
 }
 
 .sports_grid_odds_dash {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 60px;
-    min-height: 60px;
-    color: #666;
+    min-height: 44px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 16px;
+    padding: 4px;
+}
+
+.sports_grid_odds_dash i {
     font-size: 18px;
-    padding: 8px;
+    opacity: 0.7;
 }
 
 .sports_grid_cards_hidden {
