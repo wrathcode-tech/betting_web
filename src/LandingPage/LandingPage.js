@@ -684,7 +684,7 @@ function LandingPage() {
         <h2 className='heading_h2'>Trending Games</h2>
         <div className='game_items_video'>
           {(() => {
-            const trendingCategories = ['Crash Type', 'Dragon Tiger', '000', 'Baccarat', 'Roulette', 'Teen Patti'];
+            const trendingCategories = ['Crash Type', 'Dragon Tiger', 'Chicken Games', 'Baccarat', 'Roulette', 'Teen Pati'];
             return showTrendingVideos
               ? trendingVideos.map((src, i) => {
                   const category = trendingCategories[i] ?? 'lobby';

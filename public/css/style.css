@@ -3761,6 +3761,7 @@ ul.mobile-menu li.active:before {
 
     .top_match_section {
         padding: 20px 0px 0px;
+        order: 6;
     }
 
     .top_match_section.sportsmatch_s {
@@ -3857,7 +3858,7 @@ ul.mobile-menu li.active:before {
     }
 
     .top_match_section.sportsmatch_s {
-        order: 3;
+        order: 6;
     }
 
     p {
@@ -3933,10 +3934,14 @@ ul.mobile-menu li.active:before {
     }
 
     .game_items_inner {
-        min-width: 174px;
-        max-width: 174px;
-        width: 174px;
-        border-radius: 10px;
+        min-width: 130px;
+        max-width: 130px;
+        width: 130px;
+        border-radius: 5px;
+    }
+
+    .game_items_video .game_video_bl_title {
+        font-size: 10px;
     }
 
     .game_items_inner.slider_view_all_card {

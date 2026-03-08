@@ -488,3 +488,11 @@ a.dropdown_menu_item {
 .rank_system_hero_s {
   padding-top: 70px !important;
 }
+
+@media (max-width: 480px) {
+
+.game_items_slider_wrapper .game_items_slider {
+  gap: 10px;
+}
+
+}
