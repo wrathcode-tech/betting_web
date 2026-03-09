@@ -2714,6 +2714,19 @@ ul.mobile-menu li a.mobile-menu__link span {
     z-index: 999;
 }
 
+.game_items_slider_wrapper.lobbyslider {
+    display: block;
+    overflow: hidden;
+}
+
+.lobby_slider_track {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: max-content;
+    min-width: 100%;
+}
+
 .mobile-menu-wrapper {
     position: fixed !important;
     display: none;

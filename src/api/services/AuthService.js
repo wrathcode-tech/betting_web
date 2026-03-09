@@ -339,11 +339,14 @@ const AuthService = {
     return ApiCallPost(url, { gameCode, providerCode, platform }, headers);
   },
 
-  /** GET /api/v1/sportsbook/{sportName}/matches – sportName: cricket, soccer, tennis. Auth: Bearer token. */
-  sportsbookMatches: async (sportName) => {
+  /** GET /api/v1/sportsbook/{sportName}/matches – sportName: cricket | soccer | tennis. Auth optional (public). Query: fresh=1 to bypass cache. */
+  sportsbookMatches: async (sportName, options = {}) => {
     const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
-    const url = `${baseBettingSportsbook}/${encodeURIComponent(sportName)}/matches`;
+    const params = new URLSearchParams();
+    if (options.fresh) params.set("fresh", "1");
+    const q = params.toString();
+    const url = `${baseBettingSportsbook}/${encodeURIComponent(sportName)}/matches${q ? `?${q}` : ""}`;
     const headers = {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -351,15 +354,13 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
-  /** GET /api/v1/sportsbook/{sportName}/odds?gameId={gameId} – Returns matchOdds, bookMakerOdds, fancyOdds, premiumFancy. Auth: Bearer token. */
+  /** GET /api/v1/sportsbook/{sportName}/odds?gameId={gameId} – matchOdds, bookMakerOdds, fancyOdds, premiumFancy. Auth required. */
   sportsbookOdds: async (sportName, gameId) => {
     const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required for odds" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/${encodeURIComponent(sportName)}/odds?gameId=${encodeURIComponent(gameId)}`;
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
     return ApiCallGet(url, headers);
   },
 
@@ -394,12 +395,22 @@ const AuthService = {
     return ApiCallPost(url, {}, headers);
   },
 
-  /** POST /api/v1/sportsbook/bet/{betId}/cashout – Cash out an active bet. */
+  /** POST /api/v1/sportsbook/bet/{betId}/cashout – Execute cashout. Socket: betUpdate (cashed_out) + balance. */
   sportsbookCashout: async (betId) => {
     const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}/cashout`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPost(url, {}, headers);
+  },
+
+  /** POST /api/v1/sportsbook/bet/{betId}/loss-cut – Cashout only when in loss; returns 400 if profit/break-even. */
+  sportsbookLossCut: async (betId) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}/loss-cut`;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
     return ApiCallPost(url, {}, headers);
   },
@@ -435,7 +446,7 @@ const AuthService = {
     return ApiCallPut(url, body, headers);
   },
 
-  /** GET /api/v1/sportsbook/bet/open – Open bets with pagination/filters. Params: page, limit, sport, marketType, gameId. */
+  /** GET /api/v1/sportsbook/bet/open – Open bets. Query: page, limit, gameId, marketType, sport. */
   sportsbookOpenBets: async (params = {}) => {
     const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
@@ -445,7 +456,7 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
-  /** GET /api/v1/sportsbook/bet/history – Bet history. Params: page, limit, sport, result, from, to. */
+  /** GET /api/v1/sportsbook/bet/history – Bet history. Query: page, limit, sport, from, to, result (won | lost | void). */
   sportsbookBetHistory: async (params = {}) => {
     const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
@@ -455,7 +466,17 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
-  /** GET /api/v1/sportsbook/bet/{betId} – Single bet details. */
+  /** GET /api/v1/sportsbook/bet/summary – Dashboard: openBetsCount, totalExposure, todayPnl. Define before /bet/:betId. */
+  sportsbookBetSummary: async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/bet/summary`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/sportsbook/bet/{betId} – Single bet details (betId = 24-char hex). */
   sportsbookBetById: async (betId) => {
     const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
@@ -464,7 +485,17 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
-  /** GET /api/v1/sportsbook/exposure – User exposure (total risk). May return loss_limit, current_loss for Loss Cut. */
+  /** GET /api/v1/sportsbook/realtime-pnl – Real-time P&L (open bets, cashoutValue, realtimePnl). */
+  sportsbookRealtimePnl: async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/realtime-pnl`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/sportsbook/exposure – User exposure (total and per-market risk in INR). */
   sportsbookExposure: async () => {
     const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;

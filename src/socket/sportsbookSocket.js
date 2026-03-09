@@ -1,21 +1,20 @@
 /**
- * Sportsbook Socket – single source of truth per backend doc.
+ * Sportsbook Socket – per backend API doc.
  *
- * Base: Socket URL = API base + /sportsbook (namespace). Auth: JWT access token
- * (auth: { token } or query: { token }). Connection rejected without valid token.
+ * Base: wss://YOUR_API_HOST/sportsbook (namespace). Auth: JWT access token
+ * via auth: { token: accessToken } or query: { token: accessToken }.
  *
  * EMIT (client → server):
- *   subscribe:matches   { sport: 'cricket' | 'soccer' | 'tennis' }  – when user opens sport's match list
- *   unsubscribe:matches { sport }                                   – when leaving that list
- *   subscribe:odds      { gameId: string }                          – when user opens match page
- *   unsubscribe:odds    { gameId }                                 – when leaving match page
+ *   subscribe:matches   { sport: 'cricket' | 'soccer' | 'tennis' }  – open match list
+ *   unsubscribe:matches { sport }                                   – leave list
+ *   subscribe:odds      { gameId: string }                          – open match (live odds)
+ *   unsubscribe:odds    { gameId }                                  – leave match (recommended)
  *
  * LISTEN (server → client):
- *   matches   { sport, data: Array<Match>, timestamp }  – snapshot then ~every 2s
- *   odds      { gameId, data: { matchOdds?, bookMakerOdds?, fancyOdds?, premiumFancy? }, timestamp }  – snapshot then ~500ms
- *   betUpdate { betId, status: 'settled'|'cancelled'|'cashed_out', profitLoss?, balanceAfter?, ... }
- *
- * REST only (no socket): place bet, cancel, cashout preview/execute, betfair result.
+ *   matches   { sport, data: Match[], timestamp }  – snapshot + ~every 2s
+ *   odds      { gameId, data: { matchOdds?, bookMakerOdds?, fancyOdds?, premiumFancy? }, timestamp }  – ~500ms
+ *   betUpdate { betId, status: 'open'|'settled'|'cancelled'|'cashed_out', balanceAfter?, bet?, profitLoss?, cashoutAmount?, ... }
+ *   balance   { balance: number, userId }  – after place/cancel/cashout/settle/void; refresh wallet in UI
  */
 import { io } from 'socket.io-client';
 
@@ -37,6 +36,7 @@ let socket = null;
 const matchesListeners = new Set();
 const oddsListeners = new Set();
 const betUpdateListeners = new Set();
+const balanceListeners = new Set();
 const subscribedSports = new Set();
 const subscribedGameIds = new Set();
 
@@ -56,6 +56,7 @@ function ensureHandlers() {
   socket.off('matches');
   socket.off('odds');
   socket.off('betUpdate');
+  socket.off('balance');
   socket.off('connect');
   socket.off('disconnect');
   socket.off('connect_error');
@@ -87,6 +88,16 @@ function ensureHandlers() {
         fn(payload);
       } catch (e) {
         console.error('sportsbookSocket betUpdate listener error:', e);
+      }
+    });
+  });
+
+  socket.on('balance', (payload) => {
+    balanceListeners.forEach((fn) => {
+      try {
+        fn(payload);
+      } catch (e) {
+        console.error('sportsbookSocket balance listener error:', e);
       }
     });
   });
@@ -153,6 +164,7 @@ export function disconnectSportsbookSocket() {
   matchesListeners.clear();
   oddsListeners.clear();
   betUpdateListeners.clear();
+  balanceListeners.clear();
 }
 
 export function getSportsbookSocket() {
@@ -215,4 +227,12 @@ export function addBetUpdateListener(fn) {
 
 export function removeBetUpdateListener(fn) {
   betUpdateListeners.delete(fn);
+}
+
+export function addBalanceListener(fn) {
+  if (typeof fn === 'function') balanceListeners.add(fn);
+}
+
+export function removeBalanceListener(fn) {
+  balanceListeners.delete(fn);
 }

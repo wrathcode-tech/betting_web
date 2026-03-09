@@ -54,7 +54,7 @@ export const ApiConfig = {
   bettingGamesLanding: "landing",
   bettingGamesTransactions: "transactions",
 
-  // Sportsbook – GET /api/v1/sportsbook/{sportName}/matches (sportName: cricket, soccer, tennis)
+  // Sportsbook & Betting – base https://YOUR_API_HOST/api/v1/sportsbook (auth: Bearer token; socket namespace /sportsbook)
   baseBettingSportsbook: `${bettingUrl}/api/v1/sportsbook`,
 
   // User – master deposit accounts for /deposit page

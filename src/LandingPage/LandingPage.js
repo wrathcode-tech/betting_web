@@ -135,11 +135,13 @@ function LandingPage() {
   const landingTrendingRef = useRef(null);
   const landingRouletteRef = useRef(null);
   const landingCardGamesRef = useRef(null);
+  const lobbySliderRef = useRef(null);
   const [landingLiveCasinoIndex, setLandingLiveCasinoIndex] = useState(0);
   const [landingSlotsIndex, setLandingSlotsIndex] = useState(0);
   const [landingTrendingIndex, setLandingTrendingIndex] = useState(0);
   const [landingRouletteIndex, setLandingRouletteIndex] = useState(0);
   const [landingCardGamesIndex, setLandingCardGamesIndex] = useState(0);
+  const [lobbySliderIndex, setLobbySliderIndex] = useState(0);
 
   const [showMore, setShowMore] = useState(false);
 
@@ -478,6 +480,11 @@ function LandingPage() {
     const el = landingCardGamesRef.current;
     if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingCardGamesIndex * landingItemWidth)}px)`;
   }, [landingCardGamesIndex, landingItemWidth]);
+  const lobbySliderItemsPerSet = 10; /* 9 cards + View All per row */
+  useEffect(() => {
+    const el = lobbySliderRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -lobbySliderIndex * landingItemWidth)}px)`;
+  }, [lobbySliderIndex, landingItemWidth]);
 
   // Sliders scroll only on mouse drag – no auto-slide
 
@@ -900,6 +907,176 @@ function LandingPage() {
             </div>
           </div>
         </div>
+
+        <div className="top_slot_outer top_slot_outer_casino">
+      <div className="container-fluid">
+
+        <div className="top_hd d-flex align-items-center justify-content-between">
+          <h2 className="heading_h2">
+            <img src="/images/live_icon.svg" alt="game" width="24" height="24" /> Casino Lobby
+          </h2>
+
+          {/* <div className="top_hd_right d-flex align-items-center gap-2">
+            <Link to="/casino?provider=all&category=Teen+Patti">
+              <button className="slotbtn">Go to Card Games</button>
+            </Link>
+          </div> */}
+        </div>
+
+        <div
+          className="game_items_slider_wrapper lobbyslider"
+          onMouseDown={(e) => handleSliderMouseDown(e, { sliderRef: lobbySliderRef, getItemWidth: landingItemWidth, itemsPerSet: lobbySliderItemsPerSet, currentIndex: lobbySliderIndex, setIndex: setLobbySliderIndex })}
+          onClickCapture={handleSliderClickCapture}
+          style={{ cursor: 'grab' }}
+        >
+          <div className="lobby_slider_track" ref={lobbySliderRef}>
+          <div className="game_items_slider">
+
+            <Link className="game_items_inner link_plain" to="#">
+              <div className="playbtn">
+                <img src="/images/playbtn.png" alt="play" />
+              </div>
+              <img src="images/casino_lobby_img.webp" alt="game" />
+            </Link>
+
+            <Link className="game_items_inner link_plain" to="#">
+              <div className="playbtn">
+                <img src="/images/playbtn.png" alt="play" />
+              </div>
+              <img src="images/casino_lobby_img2.webp" alt="game" />
+            </Link>
+
+            <Link className="game_items_inner link_plain" to="#">
+              <div className="playbtn">
+                <img src="/images/playbtn.png" alt="play" />
+              </div>
+              <img src="images/casino_lobby_img3.webp" alt="game" />
+            </Link>
+
+            <Link className="game_items_inner link_plain" to="#">
+              <div className="playbtn">
+                <img src="/images/playbtn.png" alt="play" />
+              </div>
+              <img src="images/casino_lobby_img4.webp" alt="game" />
+            </Link>
+
+            <Link className="game_items_inner link_plain" to="#">
+              <div className="playbtn">
+                <img src="/images/playbtn.png" alt="play" />
+              </div>
+              <img src="images/casino_lobby_img5.webp" alt="game" />
+            </Link>
+
+            <Link className="game_items_inner link_plain" to="#">
+              <div className="playbtn">
+                <img src="/images/playbtn.png" alt="play" />
+              </div>
+              <img src="images/casino_lobby_img6.webp" alt="game" />
+            </Link>
+
+            <Link className="game_items_inner link_plain" to="#">
+              <div className="playbtn">
+                <img src="/images/playbtn.png" alt="play" />
+              </div>
+              <img src="images/casino_loddy_img7.webp" alt="game" />
+            </Link>
+
+            <Link className="game_items_inner link_plain" to="#">
+              <div className="playbtn">
+                <img src="/images/playbtn.png" alt="play" />
+              </div>
+              <img src="images/casino_lobby_img.webp" alt="game" />
+            </Link>
+
+            <Link className="game_items_inner link_plain" to="#">
+              <div className="playbtn">
+                <img src="/images/playbtn.png" alt="play" />
+              </div>
+              <img src="images/casino_lobby_img2.webp" alt="game" />
+            </Link>
+
+            <Link className="game_items_inner slider_view_all_card link_plain" to="/casino">
+              <span className="slider_view_all_text">View All</span>
+            </Link>
+
+          </div>
+
+          <div className="game_items_slider">
+
+<Link className="game_items_inner link_plain" to="#">
+  <div className="playbtn">
+    <img src="/images/playbtn.png" alt="play" />
+  </div>
+  <img src="images/casino_lobby_img.webp" alt="game" />
+</Link>
+
+<Link className="game_items_inner link_plain" to="#">
+  <div className="playbtn">
+    <img src="/images/playbtn.png" alt="play" />
+  </div>
+  <img src="images/casino_lobby_img2.webp" alt="game" />
+</Link>
+
+<Link className="game_items_inner link_plain" to="#">
+  <div className="playbtn">
+    <img src="/images/playbtn.png" alt="play" />
+  </div>
+  <img src="images/casino_lobby_img3.webp" alt="game" />
+</Link>
+
+<Link className="game_items_inner link_plain" to="#">
+  <div className="playbtn">
+    <img src="/images/playbtn.png" alt="play" />
+  </div>
+  <img src="images/casino_lobby_img4.webp" alt="game" />
+</Link>
+
+<Link className="game_items_inner link_plain" to="#">
+  <div className="playbtn">
+    <img src="/images/playbtn.png" alt="play" />
+  </div>
+  <img src="images/casino_lobby_img5.webp" alt="game" />
+</Link>
+
+<Link className="game_items_inner link_plain" to="#">
+  <div className="playbtn">
+    <img src="/images/playbtn.png" alt="play" />
+  </div>
+  <img src="images/casino_lobby_img6.webp" alt="game" />
+</Link>
+
+<Link className="game_items_inner link_plain" to="#">
+  <div className="playbtn">
+    <img src="/images/playbtn.png" alt="play" />
+  </div>
+  <img src="images/casino_loddy_img7.webp" alt="game" />
+</Link>
+
+<Link className="game_items_inner link_plain" to="#">
+  <div className="playbtn">
+    <img src="/images/playbtn.png" alt="play" />
+  </div>
+  <img src="images/casino_lobby_img.webp" alt="game" />
+</Link>
+<Link className="game_items_inner link_plain" to="#">
+  <div className="playbtn">
+    <img src="/images/playbtn.png" alt="play" />
+  </div>
+  <img src="images/casino_lobby_img2.webp" alt="game" />
+</Link>
+
+<Link className="game_items_inner slider_view_all_card link_plain" to="/casino">
+  <span className="slider_view_all_text">View All</span>
+</Link>
+
+</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
 
         <div className="top_match_section">
           <div className="container-fluid">

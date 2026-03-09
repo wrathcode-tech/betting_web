@@ -10,7 +10,7 @@ const emptyProviders = { providers: [], loadingProviders: false, refetchProvider
 
 export default function SideBar({ isOpen, onClose }) {
   const { setSidebarOpen } = useSidebar()
-  const casinoState = typeof useCasinoProviders === 'function' ? useCasinoProviders() : emptyProviders
+  const casinoState = useCasinoProviders()
   const { providers = [] } = casinoState && typeof casinoState === 'object' ? casinoState : emptyProviders
   const { pathname } = useLocation()
   const [searchParams] = useSearchParams()
