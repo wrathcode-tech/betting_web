@@ -339,6 +339,17 @@ const AuthService = {
     return ApiCallPost(url, { gameCode, providerCode, platform }, headers);
   },
 
+  /** POST /api/v1/games/launch-sportsbook – Launch BT sportsbook. Body: { platform: "desktop", gameCode: null, providerCode: "BT" }. Returns { status, message, data: { launchURL, sessionId, providerCode, balance } }. */
+  gamesLaunchSportsbook: async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { status: "error", message: "Login required" };
+    const { baseBettingGames, bettingGamesLaunchSportsbook } = ApiConfig;
+    const url = baseBettingGames + bettingGamesLaunchSportsbook;
+    const body = { platform: "desktop", gameCode: null, providerCode: "BT" };
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPost(url, body, headers);
+  },
+
   /** GET /api/v1/sportsbook/{sportName}/matches – sportName: cricket | soccer | tennis. Auth optional (public). Query: fresh=1 to bypass cache. */
   sportsbookMatches: async (sportName, options = {}) => {
     const token = sessionStorage.getItem("token");

@@ -100,6 +100,12 @@ export default function SideBar({ isOpen, onClose }) {
                   <span className="sidebar_collapsed_label">Sports</span>
                 </Link>
               </li>
+              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sportsbook' ? 'active' : ''}`}>
+                <Link to="/sportsbook" onClick={onLinkClick}>
+                  <span><i className="ri-basketball-fill" aria-hidden />SportsBook</span>
+                  <span className="sidebar_collapsed_label">SportsBook</span>
+                </Link>
+              </li>
               {/* <li className={`sidebar_menu_item ${openSubmenu === 'casino' ? 'active' : ''} ${pathname.startsWith('/casino') ? 'current_section' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('casino'); }}>
                   <i className={openSubmenu === 'casino' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>

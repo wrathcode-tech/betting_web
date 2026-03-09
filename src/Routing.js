@@ -20,6 +20,7 @@ const CasinoCategoryPage = lazy(() => import("./Casino/CasinoCategoryPage"));
 const GamePlay = lazy(() => import("./GamePlay/gamePlay"));
 const GameHistory = lazy(() => import("./GameHistory/GameHistory"));
 const SportsGame = lazy(() => import("./sports/SportsGame"));
+const SportsBook = lazy(() => import("./SportsBook/SportsBook"));
 const ProfileTransactions = lazy(() => import("./ProfileTransactions/profileTransactions"));
 const Promotions = lazy(() => import("./promotions/Promotions"));
 const MyBets = lazy(() => import("./StatementPages/MyBets"));
@@ -56,6 +57,7 @@ const Routing = memo(function Routing() {
               <Route path="/casino" element={<CasinoGame />} />
               <Route path="/casino/category/:categoryId" element={<CasinoCategoryPage />} />
               <Route path="/sports" element={<SportsGame />} />
+              <Route path="/sportsbook" element={<SportsBook />} />
               <Route path="/promotions" element={<Promotions />} />
               <Route path="/game-rules" element={<GameRules />} />
               {/* Protected routes – redirect to /login if not logged in */}

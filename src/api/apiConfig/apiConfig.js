@@ -49,6 +49,7 @@ export const ApiConfig = {
   bettingGamesProviders: "providers",
   bettingGamesCategories: "categories",
   bettingGamesLaunch: "launch",
+  bettingGamesLaunchSportsbook: "launch-sportsbook",
   bettingGamesFeatured: "featured",
   bettingGamesPopular: "popular",
   bettingGamesLanding: "landing",
