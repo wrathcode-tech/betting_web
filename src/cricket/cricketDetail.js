@@ -772,14 +772,14 @@ function CricketDetail() {
                             <div className='series_name_row'>
                                 <p>Vodafone Serives</p>
                             </div>
-                            <div className='cricket_info_inner'>
-                                {/* <div className='cricket_vector_icon'>
+                            {/* <div className='cricket_info_inner'>
+                                <div className='cricket_vector_icon'>
                                     <img src="images/t20_vector.svg" alt="cricket" width="48" height="48" decoding="async" fetchPriority="high" />
-                                </div> */}
+                                </div>
 
 
                                 <div className='cricket_detail_title_row'>
-                                    {/* <h2>{eventNameFromState || 'Premier League, Women'}</h2> */}
+                                    <h2>{eventNameFromState || 'Premier League, Women'}</h2>
 
 
 
@@ -799,9 +799,9 @@ function CricketDetail() {
 
 
                                 <div className='cricket_info_content'>
-                                    <div className='vs_vector_icon'>
+                                  <div className='vs_vector_icon'> 
                                         <img src="images/vs_vector.svg" alt="cricket" width="40" height="24" decoding="async" />
-                                    </div>
+                                    </div> 
 
                                     <img className='team_bg_img' src="images/team_bg.svg" alt="cricket" width="400" height="200" decoding="async" fetchPriority="high" />
 
@@ -814,7 +814,8 @@ function CricketDetail() {
                                             return (
                                                 <>
                                                     <div className='team_cricket_bl'>
-                                                        <p>{teamA}</p>
+                                                       
+                                                        
                                                     </div>
                                                     <div className='team_cricket_bl rightreverse'>
                                                         <p>{teamB}</p>
@@ -824,193 +825,114 @@ function CricketDetail() {
                                         })()}
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
 
-                            <div className='cricket_scorecard'>
-                            <div className='cricket_scorecard_header'>
-                                <h4 className='cricket_scorecard_team'>India</h4>
-                                <span className='cricket_scorecard_score'>255-5 (20 Ov)</span>
-                            </div>
+                            <div className='cricket_scorecard cricket_live_scoreboard'>
+                                {(() => {
+                                    const eventName = eventNameFromState || 'Premier League, Women'
+                                    const parts = (eventName || '').split(/\s+v\s+/i)
+                                    const teamA = parts.length >= 2 ? parts[0].trim() : eventName
+                                    const teamB = parts.length >= 2 ? parts[1].trim() : ''
+                                    return (
+                                        <>
+                                <div className='cricket_live_top_panel'>
+                                    <div className='cricket_live_team_left'>
+                                        <div className='cricket_live_team_name'>{teamA}</div>
+                                        <div className='cricket_live_score_row'>
+                                            <span className='cricket_live_score_box'>0/0 (0.0)</span>
+                                            <span className='cricket_live_crr'>CRR: 0</span>
+                                        </div>
+                                        <div className='cricket_live_partnership'>Partnership: 0 (0)</div>
+                                        <div className='cricket_live_over_box'>Over 1</div>
+                                    </div>
+                                    <div className='cricket_live_center'>
+                                        <span className='cricket_live_toss'>KRW opt to bowl</span>
+                                    </div>
+                                    <div className='cricket_live_team_right'>
+                                        <div className='cricket_live_team_name'>{teamB}</div>
+                                        <div className='cricket_live_score_row'>
+                                            <span className='cricket_live_rrr'>RRR: 0</span>
+                                            <span className='cricket_live_crr'>CRR: 0</span>
+                                            <span className='cricket_live_score_box'>0/0 (0.0)</span>
+                                        </div>
+                                        <div className='cricket_live_last_wicket'>Last Wicket:</div>
+                                    </div>
+                                </div>
 
-                            <div className='cricket_scorecard_section'>
-                                <div className='cricket_scorecard_table_wrap'>
-                                    <table className='cricket_scorecard_table'>
+                                <div className='cricket_live_batsmen_section'>
+                                    <table className='cricket_live_table'>
                                         <thead>
                                             <tr>
-                                                <th className='cricket_scorecard_th_left'>Batter</th>
-                                                <th className='cricket_scorecard_th_num'>R</th>
-                                                <th className='cricket_scorecard_th_num'>B</th>
-                                                <th className='cricket_scorecard_th_num'>4s</th>
-                                                <th className='cricket_scorecard_th_num'>6s</th>
-                                                <th className='cricket_scorecard_th_num'>SR</th>
-                                                <th className='cricket_scorecard_th_arrow'></th>
+                                                <th className='cricket_live_th_name'><i className='ri-cricket-line' aria-hidden /> Batsmen</th>
+                                                <th className='cricket_live_th_num'>R</th>
+                                                <th className='cricket_live_th_num'>B</th>
+                                                <th className='cricket_live_th_num'>4s</th>
+                                                <th className='cricket_live_th_num'>6s</th>
+                                                <th className='cricket_live_th_num'>SR</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td className='cricket_scorecard_td_batter'>
-                                                    <a href='#!' className='cricket_scorecard_link'>Sanju Samson (wk)</a>
-                                                    <span className='cricket_scorecard_dismissal'>c (sub)Cole McConchie b James Neesham</span>
+                                                <td className='cricket_live_td_name'>
+                                                    <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
+                                                    Mohammad Akram
+                                                    <span className='cricket_live_striker'>/</span>
                                                 </td>
-                                                <td className='cricket_scorecard_td_num cricket_scorecard_td_r'><strong>89</strong></td>
-                                                <td className='cricket_scorecard_td_num'>46</td>
-                                                <td className='cricket_scorecard_td_num'>5</td>
-                                                <td className='cricket_scorecard_td_num'>8</td>
-                                                <td className='cricket_scorecard_td_num'>193.48</td>
-                                                <td className='cricket_scorecard_td_arrow'><i className='ri-arrow-right-s-line' aria-hidden /></td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
                                             </tr>
                                             <tr>
-                                                <td className='cricket_scorecard_td_batter'>
-                                                    <a href='#!' className='cricket_scorecard_link'>Abhishek Sharma</a>
-                                                    <span className='cricket_scorecard_dismissal'>c Tim Seifert b Rachin Ravindra</span>
+                                                <td className='cricket_live_td_name'>
+                                                    <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
+                                                    Daniyal Hussain Rajput
                                                 </td>
-                                                <td className='cricket_scorecard_td_num cricket_scorecard_td_r'><strong>52</strong></td>
-                                                <td className='cricket_scorecard_td_num'>21</td>
-                                                <td className='cricket_scorecard_td_num'>6</td>
-                                                <td className='cricket_scorecard_td_num'>3</td>
-                                                <td className='cricket_scorecard_td_num'>247.62</td>
-                                                <td className='cricket_scorecard_td_arrow'><i className='ri-arrow-right-s-line' aria-hidden /></td>
-                                            </tr>
-                                            <tr>
-                                                <td className='cricket_scorecard_td_batter'>
-                                                    <a href='#!' className='cricket_scorecard_link'>Ishan Kishan</a>
-                                                    <span className='cricket_scorecard_dismissal'>c Mark Chapman b James Neesham</span>
-                                                </td>
-                                                <td className='cricket_scorecard_td_num cricket_scorecard_td_r'><strong>54</strong></td>
-                                                <td className='cricket_scorecard_td_num'>25</td>
-                                                <td className='cricket_scorecard_td_num'>4</td>
-                                                <td className='cricket_scorecard_td_num'>4</td>
-                                                <td className='cricket_scorecard_td_num'>216.00</td>
-                                                <td className='cricket_scorecard_td_arrow'><i className='ri-arrow-right-s-line' aria-hidden /></td>
-                                            </tr>
-                                            <tr>
-                                                <td className='cricket_scorecard_td_batter'>
-                                                    <a href='#!' className='cricket_scorecard_link'>Hardik Pandya</a>
-                                                    <span className='cricket_scorecard_dismissal'>c Mitchell Santner b Matt Henry</span>
-                                                </td>
-                                                <td className='cricket_scorecard_td_num cricket_scorecard_td_r'><strong>18</strong></td>
-                                                <td className='cricket_scorecard_td_num'>13</td>
-                                                <td className='cricket_scorecard_td_num'>1</td>
-                                                <td className='cricket_scorecard_td_num'>1</td>
-                                                <td className='cricket_scorecard_td_num'>138.46</td>
-                                                <td className='cricket_scorecard_td_arrow'><i className='ri-arrow-right-s-line' aria-hidden /></td>
-                                            </tr>
-                                            <tr>
-                                                <td className='cricket_scorecard_td_batter'>
-                                                    <a href='#!' className='cricket_scorecard_link'>Suryakumar Yadav (c)</a>
-                                                    <span className='cricket_scorecard_dismissal'>c Rachin Ravindra b James Neesham</span>
-                                                </td>
-                                                <td className='cricket_scorecard_td_num cricket_scorecard_td_r'><strong>0</strong></td>
-                                                <td className='cricket_scorecard_td_num'>1</td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>0.00</td>
-                                                <td className='cricket_scorecard_td_arrow'><i className='ri-arrow-right-s-line' aria-hidden /></td>
-                                            </tr>
-                                            <tr>
-                                                <td className='cricket_scorecard_td_batter'>
-                                                    <a href='#!' className='cricket_scorecard_link'>Tilak Varma</a>
-                                                    <span className='cricket_scorecard_dismissal'>not out</span>
-                                                </td>
-                                                <td className='cricket_scorecard_td_num cricket_scorecard_td_r'><strong>8</strong></td>
-                                                <td className='cricket_scorecard_td_num'>6</td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>133.33</td>
-                                                <td className='cricket_scorecard_td_arrow'><i className='ri-arrow-right-s-line' aria-hidden /></td>
-                                            </tr>
-                                            <tr>
-                                                <td className='cricket_scorecard_td_batter'>
-                                                    <a href='#!' className='cricket_scorecard_link'>Shivam Dube</a>
-                                                    <span className='cricket_scorecard_dismissal'>not out</span>
-                                                </td>
-                                                <td className='cricket_scorecard_td_num cricket_scorecard_td_r'><strong>26</strong></td>
-                                                <td className='cricket_scorecard_td_num'>8</td>
-                                                <td className='cricket_scorecard_td_num'>3</td>
-                                                <td className='cricket_scorecard_td_num'>2</td>
-                                                <td className='cricket_scorecard_td_num'>325.00</td>
-                                                <td className='cricket_scorecard_td_arrow'><i className='ri-arrow-right-s-line' aria-hidden /></td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
-                                <div className='cricket_scorecard_extras_row'>
-                                    <span className='cricket_scorecard_label'><strong>Extras</strong></span>
-                                    <span className='cricket_scorecard_value'><strong>8</strong> (b 0, lb 0, w 8, nb 0, p 0)</span>
-                                </div>
-                                <div className='cricket_scorecard_total_row'>
-                                    <span className='cricket_scorecard_label'><strong>Total</strong></span>
-                                    <span className='cricket_scorecard_value'><strong>255-5</strong> (20 Overs, RR: 12.75)</span>
-                                </div>
-                                {/* <div className='cricket_scorecard_dnb_row'>
-                                    <span className='cricket_scorecard_label'><strong>Did not Bat</strong></span>
-                                    <span className='cricket_scorecard_value'>
-                                        <a href='#!' className='cricket_scorecard_link'>Axar Patel</a>, <a href='#!' className='cricket_scorecard_link'>Varun Chakaravarthy</a>, <a href='#!' className='cricket_scorecard_link'>Arshdeep Singh</a>, <a href='#!' className='cricket_scorecard_link'>Jasprit Bumrah</a>
-                                    </span>
-                                </div> */}
-                            </div>
 
-                            <div className='cricket_scorecard_section'>
-                                <div className='cricket_scorecard_table_wrap'>
-                                    <table className='cricket_scorecard_table'>
+                                <div className='cricket_live_bowler_section'>
+                                    <table className='cricket_live_table'>
                                         <thead>
                                             <tr>
-                                                <th className='cricket_scorecard_th_left'>Bowler</th>
-                                                <th className='cricket_scorecard_th_num'>O</th>
-                                                <th className='cricket_scorecard_th_num'>M</th>
-                                                <th className='cricket_scorecard_th_num'>R</th>
-                                                <th className='cricket_scorecard_th_num'>W</th>
-                                                <th className='cricket_scorecard_th_num'>NB</th>
-                                                <th className='cricket_scorecard_th_num'>WD</th>
-                                                <th className='cricket_scorecard_th_num'>ECO</th>
-                                                <th className='cricket_scorecard_th_arrow'></th>
+                                                <th className='cricket_live_th_name'><span className='dsfdsf' /><span>Bowler</span></th>
+                                                <th className='cricket_live_th_num'>O</th>
+                                                <th className='cricket_live_th_num'>R</th>
+                                                <th className='cricket_live_th_num'>M</th>
+                                                <th className='cricket_live_th_num'>W</th>
+                                                <th className='cricket_live_th_num'>Eco</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td className='cricket_scorecard_td_batter'><a href='#!' className='cricket_scorecard_link'>Matt Henry</a></td>
-                                                <td className='cricket_scorecard_td_num'>4</td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>49</td>
-                                                <td className='cricket_scorecard_td_num cricket_scorecard_td_w'><strong>1</strong></td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>4</td>
-                                                <td className='cricket_scorecard_td_num'>12.20</td>
-                                                <td className='cricket_scorecard_td_arrow'><i className='ri-arrow-right-s-line' aria-hidden /></td>
-                                            </tr>
-                                            <tr>
-                                                <td className='cricket_scorecard_td_batter'><a href='#!' className='cricket_scorecard_link'>Glenn Phillips</a></td>
-                                                <td className='cricket_scorecard_td_num'>1</td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>5</td>
-                                                <td className='cricket_scorecard_td_num cricket_scorecard_td_w'><strong>0</strong></td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>5.00</td>
-                                                <td className='cricket_scorecard_td_arrow'><i className='ri-arrow-right-s-line' aria-hidden /></td>
-                                            </tr>
-                                            <tr>
-                                                <td className='cricket_scorecard_td_batter'><a href='#!' className='cricket_scorecard_link'>Jacob Duffy</a></td>
-                                                <td className='cricket_scorecard_td_num'>3</td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>42</td>
-                                                <td className='cricket_scorecard_td_num cricket_scorecard_td_w'><strong>0</strong></td>
-                                                <td className='cricket_scorecard_td_num'>0</td>
-                                                <td className='cricket_scorecard_td_num'>1</td>
-                                                <td className='cricket_scorecard_td_num'>14.00</td>
-                                                <td className='cricket_scorecard_td_arrow'><i className='ri-arrow-right-s-line' aria-hidden /></td>
+                                                <td className='cricket_live_td_name'>
+                                                    <span className='cricket_live_ball_icon cricket_live_ball_active' />
+                                                    Bowler name
+                                                </td>
+                                                <td className='cricket_live_td_num'>0.0</td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>0</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
+                                        </>
+                                    )
+                                })()}
                             </div>
-                        </div>
-
 
                         </div>
-
-                        
 
                         <div className='cricket_summary_details_wrapper' ref={marketsSectionRef}>
                             {showMarketsSection ? (

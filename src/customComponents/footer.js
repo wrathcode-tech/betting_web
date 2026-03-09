@@ -207,12 +207,12 @@ function Footer() {
             </NavLink>
           </li>
 
-          <li className={`mobile-menu__item mobile-menu__item--sports ${!sidebarOpen && (location.pathname === '/profile' || location.pathname.startsWith('/profile/')) ? 'active' : ''}`}>
-            <NavLink to="/profile" className="mobile-menu__link" onClick={() => setSidebarOpen(false)}>
+          <li className={`mobile-menu__item mobile-menu__item--sports ${!sidebarOpen && (location.pathname === '/sportsbook' || location.pathname.startsWith('/sportsbook/')) ? 'active' : ''}`}>
+            <NavLink to="/sportsbook" className="mobile-menu__link" onClick={() => setSidebarOpen(false)}>
               <span className="icon mobile-menu__icon">
                 <i className="ri-user-line"></i>
               </span>
-              <span className="mobile-menu__name">Profile</span>
+              <span className="mobile-menu__name">SportsBook</span>
             </NavLink>
           </li>
 

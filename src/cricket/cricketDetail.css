@@ -141,7 +141,7 @@
 .match_info_section_wrapper {
     width: 100%;
     display: block;
-    padding: 24px;
+    padding: 18px;
     text-align: center;
     margin: 10px 0px;
     background-image: url('../../public/images/cricket_infobg.jpg');
@@ -151,10 +151,10 @@
 }
 
 .cricket_info_inner {
-    max-width: 532px;
+    max-width: 100%;
     color: #fff;
     margin: 0 auto;
-    padding: 0px 0px;
+    padding: 10px 0px;
 }
 
 .cricket_detail_title_row {
@@ -235,11 +235,8 @@ img.team_bg_img {
 .team_dlex {
     justify-content: space-between;
     gap: 10px;
-    position: absolute;
-    bottom: 0px;
-    top: 28px;
     width: 100%;
-    padding: 0px 12px;
+    padding: 0px;
 }
 
 .team_cricket_bl {
@@ -247,18 +244,18 @@ img.team_bg_img {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    width: 170px;
 }
 
 .team_cricket_bl p {
     width: 100%;
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 600;
     margin: 0px;
 }
 
 .series_name_row {
-    text-align: left;
+    text-align: center;
+    padding-bottom: 6px;
 }
 
 .series_name_row p {
@@ -324,7 +321,7 @@ img.team_bg_img {
     -webkit-backdrop-filter: blur(10px);
     border-radius: 10px;
     overflow: hidden;
-    margin: 16px 0;
+    margin: 5px 0;
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
@@ -516,6 +513,187 @@ img.team_bg_img {
 
 .cricket_detail_section .cricket_scorecard_value .cricket_scorecard_link:hover {
     color: #bae6fd;
+}
+
+/* Live scoreboard (screenshot layout): top panel + batsmen + bowler */
+.cricket_detail_section .cricket_live_scoreboard {
+    padding: 12px 16px 16px;
+}
+
+.cricket_detail_section .cricket_live_top_panel {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.cricket_detail_section .cricket_live_team_left,
+.cricket_detail_section .cricket_live_team_right {
+    flex: 1;
+    min-width: 140px;
+}
+
+.cricket_detail_section .cricket_live_team_left {
+    text-align: left;
+}
+
+.cricket_detail_section .cricket_live_team_right {
+    text-align: right;
+}
+
+.cricket_detail_section .cricket_live_team_name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 3px;
+    letter-spacing: 0.02em;
+}
+
+.cricket_detail_section .cricket_live_score_row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.cricket_detail_section .cricket_live_team_right .cricket_live_score_row {
+    justify-content: flex-end;
+}
+
+.cricket_detail_section .cricket_live_score_box {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.cricket_detail_section .cricket_live_crr,
+.cricket_detail_section .cricket_live_rrr {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.cricket_detail_section .cricket_live_partnership,
+.cricket_detail_section .cricket_live_last_wicket {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 4px;
+}
+
+.cricket_detail_section .cricket_live_over_box {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #fff;
+    margin-top: 4px;
+}
+
+.cricket_detail_section .cricket_live_center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    flex-shrink: 0;
+}
+
+.cricket_detail_section .cricket_live_toss {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.95);
+    white-space: nowrap;
+}
+
+/* Batsmen & Bowler tables - green headers, spacing */
+.cricket_detail_section .cricket_live_batsmen_section,
+.cricket_detail_section .cricket_live_bowler_section {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.cricket_detail_section .cricket_live_bowler_section {
+    margin-bottom: 0;
+}
+
+.cricket_detail_section .cricket_live_table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+    font-size: 12px;
+    padding: 8px 8px 8px;
+}
+
+.cricket_detail_section .cricket_live_table thead th {
+    padding: 4px 12px 3px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    color: #4ade80;
+    border-bottom: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.cricket_detail_section .cricket_live_table thead th.cricket_live_th_num {
+    text-align: right;
+}
+
+.cricket_detail_section .cricket_live_table tbody td {
+    padding: 3px 12px;
+    color: rgba(255, 255, 255, 0.95);
+    vertical-align: middle;
+}
+
+.cricket_detail_section .cricket_live_td_name {
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cricket_detail_section .cricket_live_td_num {
+    text-align: right;
+}
+
+.cricket_detail_section .cricket_live_bat_icon {
+    color: #4ade80;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.cricket_detail_section .cricket_live_striker {
+    color: #f87171;
+    margin-left: 4px;
+    font-weight: 600;
+}
+
+.cricket_detail_section .cricket_live_ball_icon {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(248, 113, 113, 0.9);
+    flex-shrink: 0;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.cricket_detail_section .cricket_live_ball_active {
+    background: #f87171;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.cricket_detail_section .cricket_live_th_name,
+.cricket_detail_section .cricket_live_table thead th:first-child {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .cricket_summary_details_wrapper {
@@ -1692,6 +1870,8 @@ span.quicktext {
     background: #1e2a38;
     color: rgba(255, 255, 255, 0.85);
     font-weight: 600;
+    text-align: left;
+    padding: 10px 10px;
 }
 
 .odds_section_table tbody tr:hover {
@@ -1706,7 +1886,8 @@ span.quicktext {
 }
 
 .odds_section_cell {
-    min-width: 62px;
+    min-width: 52px;
+    width: 80px;
 }
 
 .odds_section_btn {
