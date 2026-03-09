@@ -379,20 +379,19 @@ button.btn.betnow {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    color: #111;
+    color: #c0c0c0;
     vertical-align: middle;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
+    /* border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px; */
 }
 
 .sports_grid_header_row .sports_grid_match_cell {
-    background: rgba(255, 255, 255, 0.12);
     color: #fff;
     font-size: 12px;
 }
 
 .sports_grid_header_row .sports_grid_icons_cell {
-    background: rgba(255, 255, 255, 0.08);
+    /* background: rgba(255, 255, 255, 0.08); */
     color: rgba(255, 255, 255, 0.7);
 }
 
@@ -425,20 +424,20 @@ button.btn.betnow {
 
 .sports_grid_match_cell {
     padding: 8px 12px;
-    min-width: 200px;
-    max-width: 300px;
+    min-width: 300px;
+    max-width: auto;
 }
 
 .sports_grid_match_info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
 
 .sports_grid_day_time {
-    font-weight: 600;
+    font-weight: 500;
     color: rgba(255, 255, 255, 0.9);
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.3;
 }
 
@@ -460,21 +459,21 @@ button.btn.betnow {
 }
 
 .sports_grid_tournament {
-    font-size: 11px;
+    font-size: 10px;
     color: rgba(255, 255, 255, 0.65);
     line-height: 1.3;
 }
 
 .sports_grid_teams {
-    font-weight: 700;
-    font-size: 14px;
+    font-weight: 600;
+    font-size: 12px;
     color: #fff;
     line-height: 1.35;
 }
 
 .sports_grid_icons_cell {
     padding: 6px 8px;
-    width: 120px;
+    width: 180px;
     white-space: nowrap;
 }
 

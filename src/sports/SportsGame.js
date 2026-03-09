@@ -150,7 +150,7 @@ function SportsGame() {
                 })
                 return next
             })
-        }).catch(() => {})
+        }).catch(() => { })
         return () => { cancelled = true }
     }, [cricketMatches])
 
@@ -220,7 +220,7 @@ function SportsGame() {
                 try {
                     const d = new Date(eventTime)
                     if (!isNaN(d.getTime())) timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
-                } catch {}
+                } catch { }
             }
             return {
                 tournament: m.seriesName ?? m.series_name ?? 'Cricket',
@@ -515,8 +515,8 @@ function SportsGame() {
                                                         <th className='sports_grid_icons_cell' aria-label="Markets"><span className='sports_grid_header_markets'>Markets</span></th>
                                                         {Array.from({ length: 6 }, (_, i) => (
                                                             <React.Fragment key={i}>
-                                                                <th className='sports_grid_odds_cell sports_grid_back'>Back</th>
-                                                                <th className='sports_grid_odds_cell sports_grid_lay'>Lay</th>
+                                                                <th className='sports_grid_odds_cell'>Back</th>
+                                                                <th className='sports_grid_odds_cell'>Lay</th>
                                                             </React.Fragment>
                                                         ))}
                                                     </tr>
@@ -536,10 +536,15 @@ function SportsGame() {
                                                                         className='sports_grid_row'
                                                                         onClick={(e) => !e.target.closest('button') && handleMatchCardClick(e, match)}
                                                                     >
-                                                                        <td className='sports_grid_match_cell'>
-                                                                            <div className='sports_grid_match_info'>
+                                                                        <td className='sports_grid_match_cell d-flex align-items-center gap-3'>
+
+                                                                            <div className='sports_grid_match_cell_inner'>
                                                                                 <span className='sports_grid_day_time'>{match.dayGroup}{match.timeOnly ? ` ${match.timeOnly}` : ''}</span>
                                                                                 {match.inPlay && <span className='sports_grid_live'>LIVE</span>}
+                                                                            </div>
+
+                                                                            <div className='sports_grid_match_info'>
+
                                                                                 <div className='sports_grid_tournament'>{match.tournament}</div>
                                                                                 <div className='sports_grid_teams'>{match.teams}</div>
                                                                             </div>
