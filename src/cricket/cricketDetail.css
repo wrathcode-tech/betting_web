@@ -154,7 +154,7 @@
     max-width: 532px;
     color: #fff;
     margin: 0 auto;
-    padding: 20px 0px;
+    padding: 0px 0px;
 }
 
 .cricket_detail_title_row {
@@ -193,8 +193,17 @@
 }
 
 @keyframes cricket_ball_pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.85); }
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(0.85);
+    }
 }
 
 .cricket_info_content {
@@ -210,15 +219,25 @@
     top: 0px;
 }
 
-.vs_vector_icon img{ width: auto; height: auto; object-fit: contain; }
+.vs_vector_icon img {
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
 
-img.team_bg_img { margin-top: 30px; width: auto; height: 100%; object-fit: contain; }
+img.team_bg_img {
+    margin-top: 30px;
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+}
 
 .team_dlex {
     justify-content: space-between;
     gap: 10px;
     position: absolute;
-    bottom: 20px;
+    bottom: 0px;
+    top: 28px;
     width: 100%;
     padding: 0px 12px;
 }
@@ -226,14 +245,41 @@ img.team_bg_img { margin-top: 30px; width: auto; height: 100%; object-fit: conta
 .team_cricket_bl {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
+    width: 170px;
 }
 
 .team_cricket_bl p {
-    width: 110px;
-    font-size: 14px;
+    width: 100%;
+    font-size: 13px;
     font-weight: 500;
     margin: 0px;
+}
+
+.series_name_row {
+    text-align: left;
+}
+
+.series_name_row p {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0px;
+}
+
+.match_name_row_team {
+    width: 100%;
+    justify-content: space-between;
+    background-color: #00000070;
+    padding: 8px;
+    font-size: 12px;
+}
+
+.match_name_row_team h4 {
+    font-size: 14px;
+    margin: 0px;
+    font-weight: 700;
 }
 
 .team_cricket_bl.rightreverse {
@@ -248,7 +294,11 @@ img.team_bg_img { margin-top: 30px; width: auto; height: 100%; object-fit: conta
     overflow: hidden;
 }
 
-.team_logo_lft img{ width: 100%; height: 100%; object-fit: contain; }
+.team_logo_lft img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
 
 .cricket_info_inner h2 {
     font-size: 22px;
@@ -260,7 +310,213 @@ img.team_bg_img { margin-top: 30px; width: auto; height: 100%; object-fit: conta
     margin: 0 auto;
 }
 
-.cricket_vector_icon img{ width: 100%; height: 100%; object-fit: contain; }
+.cricket_vector_icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Cricket scorecard - theme for cricket_detail_section (background image visible) */
+.cricket_detail_section .cricket_scorecard {
+    width: 100%;
+    background: rgba(15, 25, 35, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 16px 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.cricket_detail_section .cricket_scorecard_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(44, 122, 78, 0.9);
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cricket_detail_section .cricket_scorecard_team {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.cricket_detail_section .cricket_scorecard_score {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.cricket_detail_section .cricket_scorecard_section {
+    padding: 0 0 12px;
+}
+
+.cricket_detail_section .cricket_scorecard_section_title {
+    padding: 10px 16px;
+    background: transparent;
+    font-weight: 700;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Batting/Bowling: show 2 rows, rest scroll */
+.cricket_detail_section .cricket_scorecard_table_wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 166px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.cricket_detail_section .cricket_scorecard_table_wrap::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.cricket_detail_section .cricket_scorecard_table_wrap::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cricket_detail_section .cricket_scorecard_table_wrap::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.cricket_detail_section .cricket_scorecard_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.cricket_detail_section .cricket_scorecard_table thead tr {
+    background: rgba(15, 25, 35, 0.98);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.cricket_detail_section .cricket_scorecard_table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: rgba(15, 25, 35, 0.98);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cricket_detail_section .cricket_scorecard_th_left,
+.cricket_detail_section .cricket_scorecard_th_num {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cricket_detail_section .cricket_scorecard_th_left {
+    text-align: left;
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.cricket_detail_section .cricket_scorecard_th_num {
+    text-align: right;
+    padding: 10px 10px 10px 0;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.cricket_detail_section .cricket_scorecard_th_arrow {
+    width: 28px;
+    padding: 10px 12px 10px 0;
+}
+
+.cricket_detail_section .cricket_scorecard_table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cricket_detail_section .cricket_scorecard_table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.cricket_detail_section .cricket_scorecard_td_batter {
+    padding: 10px 16px;
+    vertical-align: top;
+    color: rgba(255, 255, 255, 0.95);
+    text-align: left;
+}
+
+.cricket_detail_section .cricket_scorecard_td_batter .cricket_scorecard_link {
+    color: #7dd3fc;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.cricket_detail_section .cricket_scorecard_td_batter .cricket_scorecard_link:hover {
+    color: #bae6fd;
+}
+
+.cricket_detail_section .cricket_scorecard_td_batter .cricket_scorecard_dismissal {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 2px;
+}
+
+.cricket_detail_section .cricket_scorecard_td_num {
+    text-align: right;
+    padding: 10px 10px 10px 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cricket_detail_section .cricket_scorecard_td_r strong,
+.cricket_detail_section .cricket_scorecard_td_w strong {
+    font-weight: 700;
+    color: #fff;
+}
+
+.cricket_detail_section .cricket_scorecard_td_arrow {
+    text-align: right;
+    padding: 10px 12px 10px 0;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 16px;
+}
+
+.cricket_detail_section .cricket_scorecard_extras_row,
+.cricket_detail_section .cricket_scorecard_total_row,
+.cricket_detail_section .cricket_scorecard_dnb_row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cricket_detail_section .cricket_scorecard_dnb_row {
+    border-bottom: none;
+}
+
+.cricket_detail_section .cricket_scorecard_label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cricket_detail_section .cricket_scorecard_value {
+    text-align: right;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cricket_detail_section .cricket_scorecard_value .cricket_scorecard_link {
+    color: #7dd3fc;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.cricket_detail_section .cricket_scorecard_value .cricket_scorecard_link:hover {
+    color: #bae6fd;
+}
 
 .cricket_summary_details_wrapper {
     width: 100%;
@@ -318,10 +574,11 @@ img.team_bg_img { margin-top: 30px; width: auto; height: 100%; object-fit: conta
     font-size: 12px;
     font-weight: 600;
 }
+
 .top_tabs_markets ul li.active button {
     background: linear-gradient(180deg, #66bb6a 0%, #43a047 100%);
     color: #fff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .top_tabs_markets ul {
@@ -335,7 +592,7 @@ img.team_bg_img { margin-top: 30px; width: auto; height: 100%; object-fit: conta
 .top_tabs_markets ul li.open_bets_tab button {
     background: var(--theme-primary, #F97A31);
     color: #fff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .top_tabs_markets ul li.open_bets_tab:hover button {
@@ -470,7 +727,7 @@ img.team_bg_img { margin-top: 30px; width: auto; height: 100%; object-fit: conta
     border-radius: 20px;
     cursor: pointer;
     font-weight: 600;
-    color: #fff;
+    color: #0d0d0d;
     transition: transform 0.1s;
 }
 
@@ -479,7 +736,7 @@ img.team_bg_img { margin-top: 30px; width: auto; height: 100%; object-fit: conta
 }
 
 .market_no_yes_btn .odds_val {
-    font-size: 14px;
+    font-size: 12px;
     line-height: 1.2;
 }
 
@@ -490,23 +747,23 @@ img.team_bg_img { margin-top: 30px; width: auto; height: 100%; object-fit: conta
 
 /* No = pink (image jaisa) */
 .market_no_btn {
-    background: linear-gradient(180deg, #f48fb1 0%, #ec407a 100%);
-    border: 1px solid rgba(236, 64, 122, 0.8);
+    background: #f8bbd9;
+    border: 1px solid #f48fb1;
 }
 
-.market_no_btn:hover {
+/* .market_no_btn:hover {
     background: linear-gradient(180deg, #f06292 0%, #e91e63 100%);
-}
+} */
 
 /* Yes = light blue (image jaisa) */
 .market_yes_btn {
-    background: linear-gradient(180deg, #4fc3f7 0%, #29b6f6 100%);
-    border: 1px solid rgba(41, 182, 246, 0.8);
+    background: #b3e5fc;
+    border: 1px solid #81d4fa;
 }
 
-.market_yes_btn:hover {
+/* .market_yes_btn:hover {
     background: linear-gradient(180deg, #64b5f6 0%, #42a5f5 100%);
-}
+} */
 
 .market_no_yes_btn.locked {
     background: #252d38 !important;
@@ -1298,53 +1555,79 @@ span.quicktext {
         font-size: 12px;
     }
 
-}
-
-
-@media (max-width: 480px) {
-
-    .team_dlex {
-        bottom: 19px;
+    /* odds_section_block: Market name fix left, baaki scroll (sports jaisa) */
+    .odds_section_block .odds_section_table_wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .safe_cnt p {
+    .odds_section_block .odds_section_table thead th:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 3;
+        background: #1e2a38 !important;
+        min-width: 120px;
+        max-width: 160px;
+        width: 160px;
+        box-shadow: 6px 0 12px rgba(0, 0, 0, 0.35);
+    }
+
+    .odds_section_block .odds_section_table td.odds_section_market_name {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: #1a2332 !important;
+        min-width: 148px;
+        max-width: 160px;
+        width: 160px;
+        box-shadow: 6px 0 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .series_name_row p {
         font-size: 12px;
-        max-width: 100%;
     }
 
-    img.team_bg_img {
-        margin-top: 30px;
-        width: 100%;
+    .cricket_detail_section .cricket_scorecard_team {
+        font-size: 13px;
     }
 
-    .vs_vector_icon {
-        width: 65px;
-        top: 15px;
+    .cricket_detail_section .cricket_scorecard_score {
+        font-size: 12px;
     }
 
-    .team_logo_lft {
-        width: 32px;
-        height: 32px;
-        border: 1px solid #fff;
+    .cricket_detail_section .cricket_scorecard_th_left {
+        padding: 8px 12px;
+        font-size: 12px;
     }
 
-    .team_cricket_bl p {
-        width: 34%;
-        font-size: 8px;
-        text-align: center;
+    .cricket_detail_section .cricket_scorecard_th_num {
+        padding: 8px 10px 8px 0;
+        font-size: 12px;
     }
 
-    .team_cricket_bl {
-        top: 5px;
-        position: relative;
+    .cricket_detail_section .cricket_scorecard_table {
+        font-size: 11px;
     }
 
-    .team_cricket_bl_name {
+    .cricket_detail_section .cricket_scorecard_td_batter .cricket_scorecard_dismissal {
         font-size: 10px;
     }
 
+    .cricket_detail_section .cricket_scorecard_extras_row,
+    .cricket_detail_section .cricket_scorecard_total_row,
+    .cricket_detail_section .cricket_scorecard_dnb_row {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+    .cricket_detail_section .cricket_scorecard_td_batter {
+        padding: 8px 12px; }
+
+        .odds_section_title {
+            font-size: 12px; }
 
 }
+
+
 
 /* MATCH ODDS / BOOKMAKER / MINI BOOKMAKER – site theme */
 .odds_section_block {
@@ -1396,9 +1679,13 @@ span.quicktext {
 
 .odds_section_table th,
 .odds_section_table td {
-    padding: 8px 10px;
+    padding: 8px 3px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     text-align: center;
+}
+
+.odds_section_table td.odds_section_market_name {
+    padding: 8px 10px;
 }
 
 .odds_section_table th {
@@ -1419,7 +1706,7 @@ span.quicktext {
 }
 
 .odds_section_cell {
-    min-width: 72px;
+    min-width: 62px;
 }
 
 .odds_section_btn {
@@ -1428,12 +1715,12 @@ span.quicktext {
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 52px;
-    padding: 6px 8px;
+    min-height: 32px;
+    padding: 3px 8px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #fff;
     transition: all 0.2s ease, transform 0.1s;
@@ -1445,7 +1732,7 @@ span.quicktext {
 
 .odds_section_btn .odds_val {
     display: block;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 1.2;
 }
 
@@ -1453,53 +1740,53 @@ span.quicktext {
     display: block;
     font-size: 11px;
     opacity: 0.95;
-    margin-top: 2px;
-    color: rgba(255, 255, 255, 0.9);
+    margin-top: 0px;
+    color: rgba(0, 0, 0, 0.9);
 }
 
 /* Back = light blue (cyan) – image jaisa */
 .odds_section_back {
-    background: linear-gradient(180deg, #4fc3f7 0%, #29b6f6 100%);
-    color: #fff;
-    border: 1px solid rgba(41, 182, 246, 0.8);
+    background: #b3e5fc;
+    color: #0e0e0e;
+    border: 1px solid #81d4fa;
 }
 
-.odds_section_back:hover {
+/* .odds_section_back:hover {
     background: linear-gradient(180deg, #64b5f6 0%, #42a5f5 100%);
     color: #fff;
-}
+} */
 
 .odds_section_back.selected {
-    background: linear-gradient(180deg, #1e88e5 0%, #1565c0 100%) !important;
-    border-color: #fff !important;
-    color: #fff !important;
-    box-shadow: 0 0 0 2px #fff;
+    background: #7fd7ff;
+    border-color: #7fd7ff !important;
+    color: #000000 !important;
+    box-shadow: 0 0 0 2px #56afd7;
 }
 
 /* Lay = light pink (magenta) – image jaisa */
 .odds_section_lay {
-    background: linear-gradient(180deg, #f48fb1 0%, #ec407a 100%);
-    color: #fff;
-    border: 1px solid rgba(236, 64, 122, 0.8);
+    background: #f8bbd9;
+    color: #000000;
+    border: 1px solid #f48fb1;
 }
 
-.odds_section_lay:hover {
+/* .odds_section_lay:hover {
     background: linear-gradient(180deg, #f06292 0%, #e91e63 100%);
     color: #fff;
-}
+} */
 
 .odds_section_lay.selected {
-    background: linear-gradient(180deg, #c2185b 0%, #ad1457 100%) !important;
-    border-color: #fff !important;
-    color: #fff !important;
-    box-shadow: 0 0 0 2px #fff;
+    background: #f48fb1;
+    border-color: #fa7fa9 !important;
+    color: #000000 !important;
+    box-shadow: 0 0 0 2px #f66c9a;
 }
 
 .odds_section_locked {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 52px;
+    min-height: 36px;
     width: 100%;
     background: #252d38;
     color: rgba(255, 255, 255, 0.6);
@@ -1513,6 +1800,86 @@ span.quicktext {
     color: rgba(255, 255, 255, 0.7);
     background: #1e2a38;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+@media (max-width: 480px) {
+
+    .team_dlex {
+        bottom: 9px;
+    }
+
+    .odds_section_table {
+        font-size: 11px;
+    } 
+
+    .safe_cnt p {
+        font-size: 12px;
+        max-width: 100%;
+    }
+
+    img.team_bg_img {
+        margin-top: 30px;
+        width: 100%;
+    }
+
+    .vs_vector_icon {
+        width: 65px;
+        top: 15px;
+    }
+
+    .cricket_detail_section .cricket_scorecard_th_num {
+        font-size: 10px;
+    } 
+
+    .cricket_detail_section .cricket_scorecard_th_left {
+        font-size: 10px;
+    } 
+    .match_info_section_wrapper {
+        padding: 20px 15px; }
+
+        .top_tabs_cricket ul li button {
+            font-size: 10px;
+            padding: 8px 10px;
+        } 
+
+        .top_tabs_cricket ul {
+            gap: 8px;
+            overflow: scroll;
+            flex-wrap: nowrap;
+        }
+
+    .team_logo_lft {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #fff;
+    }
+
+    .team_cricket_bl p {
+        width: 95%;
+        font-size: 9px;
+        text-align: center;
+    }
+
+    .team_cricket_bl {
+        top: 5px;
+        position: relative;
+        width: 90px;
+    }
+
+    .team_cricket_bl_name {
+        font-size: 10px;
+    }
+
+
+.odds_section_footer {
+    padding: 8px 12px;
+    font-size: 10px; }
+
+    .odds_section_btn .odds_size {
+        font-size: 9px; }
+
+
 }
 
 @media (max-width: 375px) {
@@ -1531,7 +1898,7 @@ span.quicktext {
     }
 
     .team_dlex {
-        bottom: 18px;
+        bottom: 12px;
     }
 
     .team_logo_lft {
@@ -1551,6 +1918,7 @@ span.quicktext {
     }
 
     .team_dlex {
-        bottom: 13px; }
+        bottom: 9px;
+    }
 
- }
+}
