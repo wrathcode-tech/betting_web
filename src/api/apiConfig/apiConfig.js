@@ -54,6 +54,8 @@ export const ApiConfig = {
   bettingGamesPopular: "popular",
   bettingGamesLanding: "landing",
   bettingGamesTransactions: "transactions",
+  gamesSportsbookTransactions: "sportsbook/transactions",
+  gamesSportsbookTransactionHistory: "sportsbook/transaction-history",
 
   // Sportsbook & Betting – base https://YOUR_API_HOST/api/v1/sportsbook (auth: Bearer token; socket namespace /sportsbook)
   baseBettingSportsbook: `${bettingUrl}/api/v1/sportsbook`,

@@ -50,7 +50,11 @@ function statusClass(status) {
   return s;
 }
 
+const FILTER_CASINO = 'casino';
+const FILTER_SPORTSBOOK = 'sportsbook';
+
 function GameHistory() {
+  const [filter, setFilter] = useState(FILTER_CASINO);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -69,9 +73,13 @@ function GameHistory() {
       return;
     }
     setLoading(true);
-    const res = await AuthService.gamesTransactions(page, PAGE_SIZE);
+    const res =
+      filter === FILTER_CASINO
+        ? await AuthService.gamesTransactions(page, PAGE_SIZE)
+        : await AuthService.gamesSportsbookTransactions(page, PAGE_SIZE);
     setLoading(false);
-    if (res?.success && res?.data) {
+    const ok = res?.success || res?.status === 'success';
+    if (ok && res?.data) {
       setTransactions(res.data.transactions || []);
       const p = res.data.pagination || {};
       setPagination({
@@ -82,7 +90,7 @@ function GameHistory() {
         hasMore: (p.page ?? page) < (p.totalPages ?? 1),
       });
     }
-  }, []);
+  }, [filter]);
 
   useEffect(() => {
     fetchTransactions(1);
@@ -106,12 +114,30 @@ function GameHistory() {
           <div className="profile_transactions_section">
             <div className="transactions_header">
               <h1>Game History</h1>
+              <div className="game_history_filter_wrapper">
+                <label htmlFor="game-history-type-filter" className="game_history_filter_label">Type</label>
+                <select
+                  id="game-history-type-filter"
+                  className="game_history_filter_select deposit_btn_style"
+                  value={filter}
+                  onChange={(e) => {
+                    setFilter(e.target.value);
+                    setSelectedTransaction(null);
+                  }}
+                  aria-label="Filter by Casino or SportsBook"
+                >
+                  <option value={FILTER_CASINO}>Casino</option>
+                  <option value={FILTER_SPORTSBOOK}>SportsBook</option>
+                </select>
+              </div>
             </div>
 
             {loading ? (
               <p className="text-white-50">Loading game history...</p>
             ) : transactions.length === 0 ? (
-              <p className="text-white-50">No game transactions yet.</p>
+              <p className="text-white-50">
+                {filter === FILTER_CASINO ? 'No casino transactions yet.' : 'No sportsbook transactions yet.'}
+              </p>
             ) : (
               <>
                 <div className="transactions_table_wrapper">
@@ -258,7 +284,7 @@ function GameHistory() {
               {selectedTransaction.gameName || selectedTransaction.gameCode || 'Game'}
             </div>
             <div className="game_history_modal_section">
-              <h3>Casino Transaction Details</h3>
+              <h3>{filter === FILTER_CASINO ? 'Casino' : 'SportsBook'} Transaction Details</h3>
               <div className="game_history_modal_details">
                 <div className="game_history_modal_row">
                   <span className="game_history_modal_label">Round ID</span>

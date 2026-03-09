@@ -386,6 +386,28 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
+  /** GET /api/v1/games/sportsbook/transactions – auth required. Returns { status, data: { transactions, pagination } }. */
+  gamesSportsbookTransactions: async (page = 1, limit = 10) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { status: "error", message: "Login required" };
+    const { baseBettingGames, gamesSportsbookTransactions } = ApiConfig;
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    const url = `${baseBettingGames}${gamesSportsbookTransactions}?${params.toString()}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/games/sportsbook/transaction-history – auth required. Returns { status, data: { transactions, pagination } }. */
+  gamesSportsbookTransactionHistory: async (page = 1, limit = 20) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { status: "error", message: "Login required" };
+    const { baseBettingGames, gamesSportsbookTransactionHistory } = ApiConfig;
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    const url = `${baseBettingGames}${gamesSportsbookTransactionHistory}?${params.toString()}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
   /** POST /api/v1/sportsbook/bet/place – Place a back/lay bet. Body: sport, gameId, eventName, marketType, marketId, selectionId, selectionName, betType, odds, stake, etc. */
   sportsbookPlaceBet: async (body) => {
     const token = sessionStorage.getItem("token");
