@@ -574,21 +574,28 @@ button.btn.betnow {
     line-height: 1.2;
 }
 
-/* Disabled / no-odds cells – grey, lock icon, not clickable */
+/* Disabled / no-odds cells – back/lay color, lock icon, not clickable */
 .sports_grid_odds_disabled {
-    background: rgba(255, 255, 255, 0.06) !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
     cursor: not-allowed;
+    opacity: 0.92;
 }
 
 .sports_grid_odds_disabled.sports_grid_back {
-    background: rgba(179, 229, 252, 0.25) !important;
-    border-color: rgba(144, 202, 249, 0.35) !important;
+    background: #d6f2fc !important;
+    border-color: #b3e5fc !important;
 }
 
 .sports_grid_odds_disabled.sports_grid_lay {
-    background: rgba(248, 187, 217, 0.25) !important;
-    border-color: rgba(244, 143, 177, 0.35) !important;
+    background: #fce4ec !important;
+    border-color: #f8bbd9 !important;
+}
+
+.sports_grid_odds_disabled .sports_grid_odds_dash {
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.sports_grid_odds_disabled .sports_grid_odds_dash i {
+    opacity: 0.85;
 }
 
 .sports_grid_odds_dash {
@@ -904,13 +911,13 @@ ul.match_type_tabs li.active button {
     }
 
     .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_item.sports_grid_odds_disabled.sports_grid_back {
-        background: rgba(179, 229, 252, 0.25);
-        border-color: rgba(144, 202, 249, 0.35);
+        background: #d6f2fc !important;
+        border-color: #b3e5fc !important;
     }
 
     .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_item.sports_grid_odds_disabled.sports_grid_lay {
-        background: rgba(248, 187, 217, 0.25);
-        border-color: rgba(244, 143, 177, 0.35);
+        background: #fce4ec !important;
+        border-color: #f8bbd9 !important;
     }
 
 }

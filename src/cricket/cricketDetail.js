@@ -236,6 +236,16 @@ function CricketDetail() {
         return ((Number(stake) || 0) * oddsVal).toFixed(2)
     }
 
+    /** Profit/loss only (sirf profit dikhana, total return nahi). Back: stake*(odds-1), Lay: stake. */
+    const calculateProfitLoss = () => {
+        if (selectedBets.length === 0) return '0.00'
+        const s = Number(stake) || 0
+        const oddsVal = Number(slipOdds != null ? slipOdds : (selectedBets[0].oddsDisplay ?? selectedBets[0].odds)) || 0
+        const betType = (selectedBets[0].placePayload?.betType ?? selectedBets[0].betType ?? 'back').toLowerCase()
+        const profit = betType === 'lay' ? s : (s * (oddsVal - 1))
+        return profit.toFixed(2)
+    }
+
     const lossLimitAmount = betslipLossLimit != null && Number(betslipLossLimit) >= 0 ? Number(betslipLossLimit) : null
     const currentLossAmount = Number(betslipCurrentLoss) || 0
     const lossLimitReached = lossLimitAmount != null && lossLimitAmount > 0 && currentLossAmount >= lossLimitAmount
@@ -329,6 +339,7 @@ function CricketDetail() {
                                     { odds: odd.l2, size: odd.ls2 },
                                     { odds: odd.l3, size: odd.ls3 },
                                 ]
+                                const stakeNum = Number(stake) || 0
                                 return (
                                     <tr key={odd.sid ?? oIdx}>
                                         <td className="odds_section_market_name">{name}</td>
@@ -337,12 +348,17 @@ function CricketDetail() {
                                             const oddsStr = String(cell.odds ?? '')
                                             const placePayload = hasVal && gameId && eventNameFromState && marketId && (odd.sid != null) ? { sport: sportName, gameId, eventName: eventNameFromState, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(odd.sid), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0 } : null
                                             const elId = `odds-${sectionKey}-${oIdx}-back-${cIdx}`
+                                            const cellOdds = parseFloat(oddsStr) || 0
+                                            const cellPl = hasVal && cellOdds >= 1 && stakeNum > 0 ? stakeNum * (cellOdds - 1) : null
+                                            const cellPlDisplay = cellPl != null ? (cellPl >= 0 ? `+${cellPl.toFixed(2)}` : cellPl.toFixed(2)) : null
+                                            const cellPlGreen = cellPl != null && cellPl >= 0
                                             return (
-                                                <td key={cIdx} className="odds_section_cell">
+                                                <td key={cIdx} className="odds_section_cell odds_section_cell_back">
                                                     {hasVal ? (
                                                         <button type="button" className={`odds_section_btn odds_section_back ${isBetSelected(name, market.market, oddsStr, elId) ? 'selected' : ''}`} onClick={() => handleBetClick(name, market.market, oddsStr, elId, placePayload)}>
                                                             <span className="odds_val">{cell.odds}</span>
                                                             <span className="odds_size">{formatOddsSize(cell.size)}</span>
+                                                            {cellPlDisplay != null && <span className={`odds_section_cell_pl ${cellPlGreen ? 'odds_section_cell_pl_profit' : 'odds_section_cell_pl_loss'}`}>{cellPlDisplay}</span>}
                                                         </button>
                                                     ) : (
                                                         <span className="odds_section_locked"><i className="ri-lock-line" aria-hidden /></span>
@@ -355,12 +371,15 @@ function CricketDetail() {
                                             const oddsStr = String(cell.odds ?? '')
                                             const placePayload = hasVal && gameId && eventNameFromState && marketId && (odd.sid != null) ? { sport: sportName, gameId, eventName: eventNameFromState, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(odd.sid), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0 } : null
                                             const elId = `odds-${sectionKey}-${oIdx}-lay-${cIdx}`
+                                            const cellPlProfit = hasVal && stakeNum > 0 ? stakeNum : null
+                                            const cellPlDisplay = cellPlProfit != null ? `+${cellPlProfit.toFixed(2)}` : null
                                             return (
-                                                <td key={cIdx} className="odds_section_cell">
+                                                <td key={cIdx} className="odds_section_cell odds_section_cell_lay">
                                                     {hasVal ? (
                                                         <button type="button" className={`odds_section_btn odds_section_lay ${isBetSelected(name, market.market, oddsStr, elId) ? 'selected' : ''}`} onClick={() => handleBetClick(name, market.market, oddsStr, elId, placePayload)}>
                                                             <span className="odds_val">{cell.odds}</span>
                                                             <span className="odds_size">{formatOddsSize(cell.size)}</span>
+                                                            {cellPlDisplay != null && <span className="odds_section_cell_pl odds_section_cell_pl_profit">{cellPlDisplay}</span>}
                                                         </button>
                                                     ) : (
                                                         <span className="odds_section_locked"><i className="ri-lock-line" aria-hidden /></span>
@@ -1674,7 +1693,7 @@ function CricketDetail() {
                                     <div className='betslip_summary_new'>
                                         <div className='betslip_summary_line'>
                                             <span>Your profit/loss as per placed bet</span>
-                                            <span className='betslip_summary_val'>{calculatePotentialWin()} ₹</span>
+                                            <span className='betslip_summary_val betslip_summary_profit'>{calculateProfitLoss()} ₹</span>
                                         </div>
                                         <div className='betslip_summary_line'>
                                             <span>Total Amount (in ₹)</span>

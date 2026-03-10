@@ -11,7 +11,7 @@ const FOOTER_MOBILE_MENU = [
         label: 'I-GAMING',
         links: [
             { to: '/casino', label: 'Casino' },
-            { to: '/sports', label: 'Sports' },
+            { to: '/sports', label: 'Inplay' },
             { to: '/casino', label: 'All games' },
             { to: '/game', label: 'Slots' },
             { to: '/casino', label: 'Live casino' },
@@ -129,13 +129,13 @@ function Footer() {
               <span style={{ opacity: 0.5 }}>|</span>
               <Link to="/casino" style={{ color: 'inherit', opacity: 0.9 }}>Casino</Link>
               <span style={{ opacity: 0.5 }}>|</span>
-              <Link to="/sports" style={{ color: 'inherit', opacity: 0.9 }}>Sports</Link>
+              <Link to="/sports" style={{ color: 'inherit', opacity: 0.9 }}>Inplay</Link>
               <span style={{ opacity: 0.5 }}>|</span>
               <Link to="/game" style={{ color: 'inherit', opacity: 0.9 }}>Slots</Link>
               <span style={{ opacity: 0.5 }}>|</span>
               <Link to="/cricket" style={{ color: 'inherit', opacity: 0.9 }}>Cricket</Link>
               <span style={{ opacity: 0.5 }}>|</span>
-              <Link to="/profile" style={{ color: 'inherit', opacity: 0.9 }}>Profile</Link>
+              <Link to="/sportsbook" style={{ color: 'inherit', opacity: 0.9 }}>SportsBook</Link>
               <span style={{ opacity: 0.5 }}>|</span>
               <Link to="/transactions" style={{ color: 'inherit', opacity: 0.9 }}>Transactions</Link>
               <span style={{ opacity: 0.5 }}>|</span>
@@ -201,16 +201,16 @@ function Footer() {
           <li className={`mobile-menu__item mobile-menu__item--sports ${!sidebarOpen && (location.pathname === '/sports' || location.pathname.startsWith('/sports/')) ? 'active' : ''}`}>
             <NavLink to="/sports" className="mobile-menu__link" onClick={() => setSidebarOpen(false)}>
               <span className="icon mobile-menu__icon">
-                <i className="ri-basketball-fill"></i>
+                <i className="ri-live-line"></i>
               </span>
-              <span className="mobile-menu__name">Sports</span>
+              <span className="mobile-menu__name">Inplay</span>
             </NavLink>
           </li>
 
           <li className={`mobile-menu__item mobile-menu__item--sports ${!sidebarOpen && (location.pathname === '/sportsbook' || location.pathname.startsWith('/sportsbook/')) ? 'active' : ''}`}>
             <NavLink to="/sportsbook" className="mobile-menu__link" onClick={() => setSidebarOpen(false)}>
               <span className="icon mobile-menu__icon">
-                <i className="ri-user-line"></i>
+                <i className="ri-basketball-fill"></i>
               </span>
               <span className="mobile-menu__name">SportsBook</span>
             </NavLink>

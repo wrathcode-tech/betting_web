@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import './sportsGame.css'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
@@ -99,7 +99,12 @@ function SportsGame() {
     const [cricketMatchesLoading, setCricketMatchesLoading] = useState(true)
     const [cricketOddsByGameId, setCricketOddsByGameId] = useState({})
     const subscribedOddsRef = useRef(new Set())
-    const [sportsFilter, setSportsFilter] = useState('all') // 'all' | 'live' | 'virtual' | 'premium'
+    const [searchParams] = useSearchParams()
+    const filterFromUrl = searchParams.get('filter') || ''
+    const [sportsFilter, setSportsFilter] = useState(() => (filterFromUrl === 'live' ? 'live' : 'all')) // 'all' | 'live' | 'virtual' | 'premium'
+    useEffect(() => {
+        if (filterFromUrl === 'live') setSportsFilter('live')
+    }, [filterFromUrl])
 
     const parseMatchesFromResponse = (res) => {
         if (!res) return []
@@ -513,7 +518,7 @@ function SportsGame() {
                                                     <tr className='sports_grid_header_row'>
                                                         <th className='sports_grid_match_cell'>MATCH</th>
                                                         <th className='sports_grid_icons_cell' aria-label="Markets"><span className='sports_grid_header_markets'>Markets</span></th>
-                                                        {Array.from({ length: 6 }, (_, i) => (
+                                                        {Array.from({ length: 3 }, (_, i) => (
                                                             <React.Fragment key={i}>
                                                                 <th className='sports_grid_odds_cell'>Back</th>
                                                                 <th className='sports_grid_odds_cell'>Lay</th>
@@ -523,9 +528,9 @@ function SportsGame() {
                                                 </thead>
                                                 <tbody>
                                                     {cricketMatchesLoading ? (
-                                                        <tr><td colSpan={14} className='sports_grid_loading'>Loading cricket matches...</td></tr>
+                                                        <tr><td colSpan={8} className='sports_grid_loading'>Loading cricket matches...</td></tr>
                                                     ) : matchesByDay.length === 0 ? (
-                                                        <tr><td colSpan={14} className='sports_grid_empty'>No matches at the moment.</td></tr>
+                                                        <tr><td colSpan={8} className='sports_grid_empty'>No matches at the moment.</td></tr>
                                                     ) : (
                                                         matchesByDay.map(({ day, matches }) =>
                                                             matches.map((match, idx) => {
@@ -556,7 +561,7 @@ function SportsGame() {
                                                                                 ))}
                                                                             </div>
                                                                         </td>
-                                                                        {Array.from({ length: 6 }).map((_, i) => {
+                                                                        {Array.from({ length: 3 }).map((_, i) => {
                                                                             const pair = cardOdds[i]
                                                                             const disabledClass = !pair ? 'sports_grid_odds_disabled' : ''
                                                                             return (
@@ -612,7 +617,7 @@ function SportsGame() {
                                                         matchesByDay.map(({ day, matches }) =>
                                                             matches.map((match, idx) => {
                                                                 const cardOdds = getCardOdds(match)
-                                                                const padTo6 = (arr) => { const a = [...arr]; while (a.length < 6) a.push(null); return a }
+                                                                const padTo3 = (arr) => { const a = [...arr]; while (a.length < 3) a.push(null); return a.slice(0, 3) }
                                                                 const sortByBack = (a, b) => {
                                                                     const na = a ? parseFloat(a.back) : NaN
                                                                     const nb = b ? parseFloat(b.back) : NaN
@@ -629,8 +634,8 @@ function SportsGame() {
                                                                     if (Number.isNaN(nb)) return -1
                                                                     return na - nb
                                                                 }
-                                                                const backSorted = padTo6([...cardOdds].sort(sortByBack))
-                                                                const laySorted = padTo6([...cardOdds].sort(sortByLay))
+                                                                const backSorted = padTo3([...cardOdds].sort(sortByBack))
+                                                                const laySorted = padTo3([...cardOdds].sort(sortByLay))
                                                                 return (
                                                                     <tr
                                                                         key={match.eventId ?? match.gameId ?? `${day}-${idx}`}

@@ -944,10 +944,18 @@ img.team_bg_img {
 } */
 
 .market_no_yes_btn.locked {
-    background: #252d38 !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
     cursor: default;
-    opacity: 0.85;
+    opacity: 0.92;
+}
+
+.market_no_yes_btn.market_no_btn.locked {
+    background: #fce4ec !important;
+    border-color: #f8bbd9 !important;
+}
+
+.market_no_yes_btn.market_yes_btn.locked {
+    background: #d6f2fc !important;
+    border-color: #b3e5fc !important;
 }
 
 .market_no_yes_locked {
@@ -956,6 +964,16 @@ img.team_bg_img {
     justify-content: center;
     color: rgba(255, 255, 255, 0.6);
     font-size: 18px;
+}
+
+/* Back-only block: lock cell light back color */
+.market_back_only_cell .market_no_yes_locked {
+    min-height: 44px;
+    min-width: 56px;
+    width: 100%;
+    border-radius: 8px;
+    background: #d6f2fc !important;
+    color: rgba(0, 0, 0, 0.45);
 }
 
 .market_no_yes_limits {
@@ -1478,6 +1496,10 @@ button.toggleup_btn {
     font-weight: 600;
 }
 
+.betslip_summary_profit {
+    color: #2e7d32 !important;
+}
+
 .betslip_clear_all {
     margin: 0 0 8px 0;
 }
@@ -1885,6 +1907,57 @@ span.quicktext {
     min-width: 120px;
 }
 
+.odds_section_pl_header {
+    min-width: 72px;
+    width: 72px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+}
+
+.odds_section_pl_cell {
+    padding: 6px 8px;
+    vertical-align: middle;
+    min-width: 72px;
+    width: 72px;
+}
+
+.odds_section_pl_box {
+    display: inline-block;
+    min-width: 56px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #fff;
+    color: #111;
+    font-weight: 700;
+    font-size: 12px;
+    text-align: center;
+}
+
+.odds_section_pl_profit {
+    color: #2e7d32;
+}
+
+.odds_section_pl_loss {
+    color: #c62828;
+}
+
+.odds_section_cell_pl {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 2px;
+    line-height: 1.1;
+}
+
+.odds_section_cell_pl_profit {
+    color: #2e7d32;
+}
+
+.odds_section_cell_pl_loss {
+    color: #c62828;
+}
+
 .odds_section_cell {
     min-width: 52px;
     width: 80px;
@@ -1973,6 +2046,17 @@ span.quicktext {
     color: rgba(255, 255, 255, 0.6);
     border-radius: 8px;
     font-size: 18px;
+}
+
+/* Lock wale cells – light Back/Lay color (sports grid jaisa) */
+.odds_section_cell_back .odds_section_locked {
+    background: #d6f2fc !important;
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.odds_section_cell_lay .odds_section_locked {
+    background: #fce4ec !important;
+    color: rgba(0, 0, 0, 0.45);
 }
 
 .odds_section_footer {

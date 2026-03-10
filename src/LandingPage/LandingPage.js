@@ -48,22 +48,11 @@ const highrollerItems = [
   { id: 7, icon: null, image: 'images/highroller_gallery_img7.png' },
   { id: 8, icon: null, image: 'images/highroller_gallery_img2.png' },
 ]
+// TOP Sports: Cricket first, only sports we have (sportsbook: cricket, tennis, soccer). Click -> /sportsbook
 const topSportsItems = [
-  { id: 1, badge: 'Hot', icon: 'fifa_icon.svg', title: 'Match' },
-  { id: 2, badge: 'Hot', icon: 'tennis_icon.svg', title: 'Tennis' },
-  { id: 3, icon: 'basketball_icon.svg', title: 'Basketball' },
-  { id: 4, icon: 'soccer_icon.svg', title: 'Soccer' },
-  { id: 5, icon: 'horse_icon.svg', title: 'Horse Racing' },
-  { id: 6, icon: 'nba_icon.svg', title: 'NBA 2K' },
-  { id: 7, icon: 'soccer_icon.svg', title: 'Football' },
-  { id: 8, icon: 'tennis_icon.svg', title: 'Table Tennis' },
-  { id: 9, icon: 'fifa_icon.svg', title: 'eSports' },
-  { id: 10, icon: 'horse_icon.svg', title: 'Greyhounds' },
-  { id: 11, icon: 'basketball_icon.svg', title: 'Ice Hockey' },
-  { id: 12, icon: 'soccer_icon.svg', title: 'Cricket' },
-  { id: 13, icon: 'tennis_icon.svg', title: 'Volleyball' },
-  { id: 14, icon: 'nba_icon.svg', title: 'Baseball' },
-  { id: 15, icon: 'fifa_icon.svg', title: 'Boxing' },
+  { id: 1, badge: 'Hot', icon: 'soccer_icon.svg', title: 'Cricket' },
+  { id: 2, icon: 'tennis_icon.svg', title: 'Tennis' },
+  { id: 3, icon: 'soccer_icon.svg', title: 'Soccer' },
 ]
 // Fallback when API has no matches
 const topMatchesItemsFallback = [
@@ -143,6 +132,10 @@ function LandingPage() {
   const [landingCardGamesIndex, setLandingCardGamesIndex] = useState(0);
   const [lobbySliderIndex, setLobbySliderIndex] = useState(0);
 
+  // Casino Lobby: top 50 games from API (providerCode=EZ)
+  const [casinoLobbyGames, setCasinoLobbyGames] = useState([]);
+  const [casinoLobbyLoading, setCasinoLobbyLoading] = useState(true);
+
   const [showMore, setShowMore] = useState(false);
 
   // Document title when on landing page
@@ -183,8 +176,24 @@ function LandingPage() {
           cardGames: data.cardGames || [],
         });
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => { if (!cancelled) setLandingGamesLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fetch Casino Lobby games: GET /api/v1/games?providerCode=EZ&page=1&limit=50
+  useEffect(() => {
+    let cancelled = false;
+    setCasinoLobbyLoading(true);
+    AuthService.bettingGamesList('EZ', 'all', 1, 50)
+      .then((res) => {
+        if (cancelled) return;
+        const raw = res?.data ?? res;
+        const list = Array.isArray(raw?.games) ? raw.games : (Array.isArray(raw) ? raw : []);
+        setCasinoLobbyGames(list.slice(0, 50));
+      })
+      .catch(() => { if (!cancelled) setCasinoLobbyGames([]); })
+      .finally(() => { if (!cancelled) setCasinoLobbyLoading(false); });
     return () => { cancelled = true; };
   }, []);
 
@@ -240,7 +249,7 @@ function LandingPage() {
         });
         return next;
       });
-    }).catch(() => {});
+    }).catch(() => { });
     return () => { cancelled = true; };
   }, [topMatchesFromApi]);
 
@@ -331,7 +340,7 @@ function LandingPage() {
   const betCasinoDisplayItems = useMemo(() => [...betCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
   const liveCasinoDisplayItems = useMemo(() => [...liveCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
   const highrollerDisplayItems = useMemo(() => [...highrollerItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
-  const topSportsDisplayItems = useMemo(() => [...topSportsItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/sports' }], [])
+  const topSportsDisplayItems = useMemo(() => [...topSportsItems, { viewAll: true, to: '/sportsbook' }], [])
 
   // TOP Matches: API data + View All (fallback when no API data)
   const topMatchesDisplayItems = useMemo(() => {
@@ -371,6 +380,17 @@ function LandingPage() {
     const g = landingSectionConfig.cardGames.games;
     return [...g.map((game) => ({ ...game, viewAll: false })), { viewAll: true, to: landingSectionConfig.cardGames.viewAllTo }];
   }, [landingSectionConfig.cardGames]);
+
+  // Casino Lobby: two rows, 9 games + View All per row (same UI as before)
+  const LOBBY_PER_ROW = 9;
+  const lobbyRow1Items = useMemo(() => {
+    const g = (casinoLobbyGames || []).slice(0, LOBBY_PER_ROW);
+    return [...g.map((game) => ({ ...game, viewAll: false })), { viewAll: true, to: '/casino?provider=EZ' }];
+  }, [casinoLobbyGames]);
+  const lobbyRow2Items = useMemo(() => {
+    const g = (casinoLobbyGames || []).slice(LOBBY_PER_ROW, LOBBY_PER_ROW * 2);
+    return [...g.map((game) => ({ ...game, viewAll: false })), { viewAll: true, to: '/casino?provider=EZ' }];
+  }, [casinoLobbyGames]);
 
   const itemsPerSet = topSlotsDisplayItems.length;
   const betCasinoItemsPerSet = betCasinoDisplayItems.length;
@@ -637,7 +657,7 @@ function LandingPage() {
 
             <div className="casino_hero_s_lft">
               <h1><span>Your Ultimate</span> Casino &amp; Sports Gaming Hub</h1>
-              <p>Play Casino. Bet on Sports. Win Big.</p>
+              <span>Instant Deposit <i class="ri-circle-fill"></i> Unlimited Withdrawals.</span>
 
               <div className="d-flex align-items-center gap-3 mt-4">
                 <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
@@ -694,27 +714,27 @@ function LandingPage() {
             const trendingCategories = ['Crash Type', 'Dragon Tiger', 'Chicken Road', 'Baccarat', 'Roulette', 'Teen Pati'];
             return showTrendingVideos
               ? trendingVideos.map((src, i) => {
-                  const category = trendingCategories[i] ?? 'lobby';
-                  const to = `/casino?provider=all&category=${encodeURIComponent(category)}`;
-                  return (
-                    <Link key={i} to={to} className='game_video_bl' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-                      <video width="100%" height="auto" autoPlay muted loop playsInline loading="lazy">
-                        <source src={src} type="video/mp4" />
-                      </video>
-                      <span className='game_video_bl_title'>{category}</span>
-                    </Link>
-                  );
-                })
+                const category = trendingCategories[i] ?? 'lobby';
+                const to = `/casino?provider=all&category=${encodeURIComponent(category)}`;
+                return (
+                  <Link key={i} to={to} className='game_video_bl' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                    <video width="100%" height="auto" autoPlay muted loop playsInline loading="lazy">
+                      <source src={src} type="video/mp4" />
+                    </video>
+                    <span className='game_video_bl_title'>{category}</span>
+                  </Link>
+                );
+              })
               : trendingVideos.map((_, i) => (
-                  <div key={i} className='game_video_bl' aria-hidden="true" />
-                ));
+                <div key={i} className='game_video_bl' aria-hidden="true" />
+              ));
           })()}
         </div>
       </div>
 
 
       <div className="landing_page_content">
-    
+
 
         {/* Static landing sections – always visible, data format remains same */}
         <div className="top_slot_outer top_slot_outer_casino">
@@ -909,186 +929,84 @@ function LandingPage() {
         </div>
 
         <div className="top_slot_outer top_slot_outer_casino">
-      <div className="container-fluid">
-
-        <div className="top_hd d-flex align-items-center justify-content-between">
-          <h2 className="heading_h2">
-            <img src="/images/live_icon.svg" alt="game" width="24" height="24" /> Casino Lobby
-          </h2>
-
-          {/* <div className="top_hd_right d-flex align-items-center gap-2">
-            <Link to="/casino?provider=all&category=Teen+Patti">
-              <button className="slotbtn">Go to Card Games</button>
-            </Link>
-          </div> */}
-        </div>
-
-        <div
-          className="game_items_slider_wrapper lobbyslider"
-          onMouseDown={(e) => handleSliderMouseDown(e, { sliderRef: lobbySliderRef, getItemWidth: landingItemWidth, itemsPerSet: lobbySliderItemsPerSet, currentIndex: lobbySliderIndex, setIndex: setLobbySliderIndex })}
-          onClickCapture={handleSliderClickCapture}
-          style={{ cursor: 'grab' }}
-        >
-          <div className="lobby_slider_track" ref={lobbySliderRef}>
-          <div className="game_items_slider">
-
-            <Link className="game_items_inner link_plain" to="#">
-              <div className="playbtn">
-                <img src="/images/playbtn.png" alt="play" />
+          <div className="container-fluid">
+            <div className="top_hd d-flex align-items-center justify-content-between">
+              <h2 className="heading_h2">
+                <img src="/images/live_icon.svg" alt="game" width="24" height="24" /> Casino Lobby
+              </h2>
+              <div className="top_hd_right d-flex align-items-center gap-2">
+                <Link to="/casino?provider=EZ"><button type="button" className="slotbtn">Go to Casino Lobby</button></Link>
               </div>
-              <img src="images/casino_lobby_img.webp" alt="game" />
-            </Link>
-
-            <Link className="game_items_inner link_plain" to="#">
-              <div className="playbtn">
-                <img src="/images/playbtn.png" alt="play" />
+            </div>
+            <div
+              className="game_items_slider_wrapper lobbyslider"
+              onMouseDown={(e) => handleSliderMouseDown(e, { sliderRef: lobbySliderRef, getItemWidth: landingItemWidth, itemsPerSet: lobbySliderItemsPerSet, currentIndex: lobbySliderIndex, setIndex: setLobbySliderIndex })}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
+            >
+              <div className="lobby_slider_track" ref={lobbySliderRef}>
+                <div className="game_items_slider">
+                  {casinoLobbyLoading ? (
+                    <div className="d-flex align-items-center justify-content-center p-4" style={{ minWidth: '100%' }}><span>Loading games...</span></div>
+                  ) : (
+                    lobbyRow1Items.map((item, index) =>
+                      item.viewAll ? (
+                        <Link key="view-all-lobby-1" to={item.to} className="game_items_inner slider_view_all_card link_plain">
+                          <span className="slider_view_all_text">View All</span>
+                        </Link>
+                      ) : (
+                        <Link
+                          key={`lobby-1-${item.code}-${index}`}
+                          to={`/casino?provider=${encodeURIComponent(item.providerCode || 'EZ')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`}
+                          className="game_items_inner link_plain"
+                        >
+                          <div className="playbtn">
+                            <img src="/images/playbtn.png" alt="play" />
+                          </div>
+                          <img loading="lazy" src={item.thumbnail || item.thumb || item.image} alt={item.name || 'game'} />
+                        </Link>
+                      )
+                    )
+                  )}
+                </div>
+                <div className="game_items_slider">
+                  {!casinoLobbyLoading && lobbyRow2Items.map((item, index) =>
+                    item.viewAll ? (
+                      <Link key="view-all-lobby-2" to={item.to} className="game_items_inner slider_view_all_card link_plain">
+                        <span className="slider_view_all_text">View All</span>
+                      </Link>
+                    ) : (
+                      <Link
+                        key={`lobby-2-${item.code}-${index}`}
+                        to={`/casino?provider=${encodeURIComponent(item.providerCode || 'EZ')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`}
+                        className="game_items_inner link_plain"
+                      >
+                        <div className="playbtn">
+                          <img src="/images/playbtn.png" alt="play" />
+                        </div>
+                        <img loading="lazy" src={item.thumbnail || item.thumb || item.image} alt={item.name || 'game'} />
+                      </Link>
+                    )
+                  )}
+                </div>
               </div>
-              <img src="images/casino_lobby_img2.webp" alt="game" />
-            </Link>
-
-            <Link className="game_items_inner link_plain" to="#">
-              <div className="playbtn">
-                <img src="/images/playbtn.png" alt="play" />
-              </div>
-              <img src="images/casino_lobby_img3.webp" alt="game" />
-            </Link>
-
-            <Link className="game_items_inner link_plain" to="#">
-              <div className="playbtn">
-                <img src="/images/playbtn.png" alt="play" />
-              </div>
-              <img src="images/casino_lobby_img4.webp" alt="game" />
-            </Link>
-
-            <Link className="game_items_inner link_plain" to="#">
-              <div className="playbtn">
-                <img src="/images/playbtn.png" alt="play" />
-              </div>
-              <img src="images/casino_lobby_img5.webp" alt="game" />
-            </Link>
-
-            <Link className="game_items_inner link_plain" to="#">
-              <div className="playbtn">
-                <img src="/images/playbtn.png" alt="play" />
-              </div>
-              <img src="images/casino_lobby_img6.webp" alt="game" />
-            </Link>
-
-            <Link className="game_items_inner link_plain" to="#">
-              <div className="playbtn">
-                <img src="/images/playbtn.png" alt="play" />
-              </div>
-              <img src="images/casino_loddy_img7.webp" alt="game" />
-            </Link>
-
-            <Link className="game_items_inner link_plain" to="#">
-              <div className="playbtn">
-                <img src="/images/playbtn.png" alt="play" />
-              </div>
-              <img src="images/casino_lobby_img.webp" alt="game" />
-            </Link>
-
-            <Link className="game_items_inner link_plain" to="#">
-              <div className="playbtn">
-                <img src="/images/playbtn.png" alt="play" />
-              </div>
-              <img src="images/casino_lobby_img2.webp" alt="game" />
-            </Link>
-
-            <Link className="game_items_inner slider_view_all_card link_plain" to="/casino">
-              <span className="slider_view_all_text">View All</span>
-            </Link>
-
-          </div>
-
-          <div className="game_items_slider">
-
-<Link className="game_items_inner link_plain" to="#">
-  <div className="playbtn">
-    <img src="/images/playbtn.png" alt="play" />
-  </div>
-  <img src="images/casino_lobby_img.webp" alt="game" />
-</Link>
-
-<Link className="game_items_inner link_plain" to="#">
-  <div className="playbtn">
-    <img src="/images/playbtn.png" alt="play" />
-  </div>
-  <img src="images/casino_lobby_img2.webp" alt="game" />
-</Link>
-
-<Link className="game_items_inner link_plain" to="#">
-  <div className="playbtn">
-    <img src="/images/playbtn.png" alt="play" />
-  </div>
-  <img src="images/casino_lobby_img3.webp" alt="game" />
-</Link>
-
-<Link className="game_items_inner link_plain" to="#">
-  <div className="playbtn">
-    <img src="/images/playbtn.png" alt="play" />
-  </div>
-  <img src="images/casino_lobby_img4.webp" alt="game" />
-</Link>
-
-<Link className="game_items_inner link_plain" to="#">
-  <div className="playbtn">
-    <img src="/images/playbtn.png" alt="play" />
-  </div>
-  <img src="images/casino_lobby_img5.webp" alt="game" />
-</Link>
-
-<Link className="game_items_inner link_plain" to="#">
-  <div className="playbtn">
-    <img src="/images/playbtn.png" alt="play" />
-  </div>
-  <img src="images/casino_lobby_img6.webp" alt="game" />
-</Link>
-
-<Link className="game_items_inner link_plain" to="#">
-  <div className="playbtn">
-    <img src="/images/playbtn.png" alt="play" />
-  </div>
-  <img src="images/casino_loddy_img7.webp" alt="game" />
-</Link>
-
-<Link className="game_items_inner link_plain" to="#">
-  <div className="playbtn">
-    <img src="/images/playbtn.png" alt="play" />
-  </div>
-  <img src="images/casino_lobby_img.webp" alt="game" />
-</Link>
-<Link className="game_items_inner link_plain" to="#">
-  <div className="playbtn">
-    <img src="/images/playbtn.png" alt="play" />
-  </div>
-  <img src="images/casino_lobby_img2.webp" alt="game" />
-</Link>
-
-<Link className="game_items_inner slider_view_all_card link_plain" to="/casino">
-  <span className="slider_view_all_text">View All</span>
-</Link>
-
-</div>
+            </div>
           </div>
         </div>
 
-      </div>
-    </div>
 
 
-
-        <div className="top_match_section">
+        <div className="top_match_section top_match_section_fullwidth">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2">TOP Sports</h2>
               <div className="top_hd_right d-flex align-items-center gap-2">
-                <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
+                <Link to="/sportsbook"><button type="button" className="slotbtn">Go to Sportsbook</button></Link>
               </div>
             </div>
-
-            <div
-              className="game_items_slider_wrapper"
+          </div>
+          <div
+            className="game_items_slider_wrapper game_items_slider_wrapper_fullwidth"
               onMouseDown={(e) => handleSliderMouseDown(e, {
                 sliderRef: topSportsSliderRef,
                 getItemWidth: 178 + 8,
@@ -1106,16 +1024,15 @@ function LandingPage() {
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <div key={`topsports-${item.id}-${index}`} className='match_slider_sports_item'>
-                      <div className='spot_value'>{item.badge}</div>
-                      <img loading="lazy" src={`images/${item.icon}`} alt="match" />
+                    <Link key={`topsports-${item.id}-${index}`} to="/sportsbook" className="match_slider_sports_item link_plain" style={{ textDecoration: 'none', color: 'inherit' }}>
+                      {item.badge && <div className='spot_value'>{item.badge}</div>}
+                      <img loading="lazy" src={`images/${item.icon}`} alt={item.title} />
                       <h3>{item.title}</h3>
-                    </div>
+                    </Link>
                   )
                 ))}
               </div>
             </div>
-          </div>
         </div>
 
         <div className="casino_sport_section">
@@ -1143,7 +1060,7 @@ function LandingPage() {
                   </div>
                 </Link>
               </div>
-         
+
             </div>
           </div>
         </div>
@@ -1338,9 +1255,9 @@ function LandingPage() {
           </div>
         </div>
 
-  
 
-   
+
+
 
         <div className='container-fluid support_help_container'>
           <div className='support_help_card'>

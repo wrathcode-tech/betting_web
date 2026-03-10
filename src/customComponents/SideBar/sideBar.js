@@ -6,7 +6,7 @@ import './sidebar.css'
 
 const MOBILE_BREAKPOINT = 991
 
-const emptyProviders = { providers: [], loadingProviders: false, refetchProviders: () => {} }
+const emptyProviders = { providers: [], loadingProviders: false, refetchProviders: () => { } }
 
 export default function SideBar({ isOpen, onClose }) {
   const { setSidebarOpen } = useSidebar()
@@ -87,17 +87,17 @@ export default function SideBar({ isOpen, onClose }) {
                   <span><img src="/images/casino_icon.svg" alt="home" />Home</span>
                 </Link>
               </li> */}
-                <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
+              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
                 <Link to="/casino" onClick={onLinkClick}>
                   <span><i className="ri-poker-spades-fill" aria-hidden />Casino</span>
                   <span className="sidebar_collapsed_label">Casino</span>
                 </Link>
               </li>
 
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
+              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sports' ? 'active' : ''}`}>
                 <Link to="/sports" onClick={onLinkClick}>
-                  <span><i className="ri-basketball-fill" aria-hidden />Sports</span>
-                  <span className="sidebar_collapsed_label">Sports</span>
+                  <span><i className="ri-live-line" aria-hidden />Inplay</span>
+                  <span className="sidebar_collapsed_label">Inplay</span>
                 </Link>
               </li>
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sportsbook' ? 'active' : ''}`}>
@@ -138,10 +138,10 @@ export default function SideBar({ isOpen, onClose }) {
                     <li><Link to="/sports" onClick={onLinkClick} className={isSportsActive ? 'active' : ''}>Horse Racing</Link></li>
                   </ul>
               </li> */}
-              <div className="sh-sub-title">
+              {/* <div className="sh-sub-title">
                 <i className="ri-more-2-line" aria-hidden />
                 <span className="sh-sub-title_text">Other Menu</span>
-              </div>
+              </div> */}
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
                 <Link to="/game-rules" onClick={onLinkClick}>
                   <span><i className="ri-book-2-line" aria-hidden />Game Rules</span>
@@ -215,8 +215,8 @@ export default function SideBar({ isOpen, onClose }) {
                 </Link>
               </li>
               <li className="sidebar_menu_item sidebar_direct_link">
-                <a 
-                  href="#!" 
+                <a
+                  href="#!"
                   onClick={(e) => {
                     e.preventDefault()
                     onClose()
@@ -227,7 +227,7 @@ export default function SideBar({ isOpen, onClose }) {
                   <span className="sidebar_collapsed_label">Live Support</span>
                 </a>
               </li>
-              
+
             </ul>
           </nav>
           <div className="setting_hdr">
@@ -236,10 +236,10 @@ export default function SideBar({ isOpen, onClose }) {
               <i className="ri-settings-3-line" aria-hidden />
             </div>
           </div>
-          
+
         </div>
 
-   
+
       </div>
     </>
   )
