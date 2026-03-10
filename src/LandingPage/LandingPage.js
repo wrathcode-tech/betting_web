@@ -1178,7 +1178,7 @@ function LandingPage() {
 
 
 
-        <div className='playearn_section'>
+        {/* <div className='playearn_section'>
           <div className='container-fluid'>
             <div className='row'>
               <div className='col-md-8'>
@@ -1275,26 +1275,24 @@ function LandingPage() {
 
             </div>
           </div>
-        </div>
+        </div> */}
 
 
         <div className="top_match_section sportsmatch_s">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
-              <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">TOP Matches</h2></Link>
+            <div className="sports_grid_title">
+            <img src="images/menu-icon19.svg" alt="" className="sports_grid_icon" />
+              <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Cricket Matches</h2></Link>
+              </div>
+
               <div className="top_hd_right d-flex align-items-center gap-2">
                 <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
               </div>
             </div>
 
             <div className="sports_grid_section">
-              <div className="sports_grid_header">
-                <div className="sports_grid_title">
-                  <img src="images/menu-icon19.svg" alt="" className="sports_grid_icon" />
-                  <h2 className="sports_grid_heading">Cricket</h2>
-                </div>
-                <Link to="/sports"><button type="button" className="slotbtn">View All</button></Link>
-              </div>
+             
               <div className="sports_grid_table_wrap desktop_view">
                 <table className="sports_grid_table">
                   <thead>
@@ -1497,7 +1495,7 @@ function LandingPage() {
               <p>Your data is protected with encryption. Bet and play with a secure, private connection.</p>
             </div>
           </div>
-          <div className="footer_description_container">
+          {/* <div className="footer_description_container">
             <div
               className={`footer_description_content crownbet_content ${showMore ? 'footer_description_content_expanded' : ''}`}
             >
@@ -1613,7 +1611,7 @@ function LandingPage() {
               {showMore ? 'Show Less' : 'Show More'}
               <i className={showMore ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'} />
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 
