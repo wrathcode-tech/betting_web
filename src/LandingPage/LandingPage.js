@@ -48,11 +48,23 @@ const highrollerItems = [
   { id: 7, icon: null, image: 'images/highroller_gallery_img7.png' },
   { id: 8, icon: null, image: 'images/highroller_gallery_img2.png' },
 ]
-// TOP Sports: Cricket first, only sports we have (sportsbook: cricket, tennis, soccer). Click -> /sportsbook
+// TOP Sports: 15 sports from design. Cricket first; Cricket -> /sports, rest -> /sportsbook. White outline icons.
 const topSportsItems = [
-  { id: 1, badge: 'Hot', icon: 'soccer_icon.svg', title: 'Cricket' },
-  { id: 2, icon: 'tennis_icon.svg', title: 'Tennis' },
-  { id: 3, icon: 'soccer_icon.svg', title: 'Soccer' },
+  { id: 1, title: 'Cricket', iconClass: 'ri-cricket-line', to: '/sports' },
+  { id: 2, title: 'Soccer', iconClass: 'ri-football-line', to: '/sportsbook' },
+  { id: 3, title: 'Basketball', iconClass: 'ri-basketball-line', to: '/sportsbook' },
+  { id: 4, title: 'Baseball', iconClass: 'ri-baseball-line', to: '/sportsbook' },
+  { id: 5, title: 'Ice Hockey', iconClass: 'ri-flashlight-line', to: '/sportsbook' },
+  { id: 6, title: 'Tennis', iconClass: 'ri-circle-line', to: '/sportsbook' },
+  { id: 7, title: 'American Football', iconClass: 'ri-football-line', to: '/sportsbook' },
+  { id: 8, title: 'Aussie Rules', iconClass: 'ri-record-circle-line', to: '/sportsbook' },
+  { id: 9, title: 'Beach Volley', iconClass: 'ri-circle-line', to: '/sportsbook' },
+  { id: 10, title: 'Darts', iconClass: 'ri-focus-3-line', to: '/sportsbook' },
+  { id: 11, title: 'ESport Counter-Strike', iconClass: 'ri-gamepad-line', to: '/sportsbook' },
+  { id: 12, title: 'ESport Dota', iconClass: 'ri-sword-line', to: '/sportsbook' },
+  { id: 13, title: 'ESport League of Legends', iconClass: 'ri-gamepad-line', to: '/sportsbook' },
+  { id: 14, title: 'Futsal', iconClass: 'ri-football-line', to: '/sportsbook' },
+  { id: 15, title: 'Handball', iconClass: 'ri-hand-coin-line', to: '/sportsbook' },
 ]
 // Fallback when API has no matches
 const topMatchesItemsFallback = [
@@ -996,7 +1008,7 @@ function LandingPage() {
 
 
 
-        <div className="top_match_section top_match_section_fullwidth">
+        <div className="top_match_section">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2">TOP Sports</h2>
@@ -1006,7 +1018,7 @@ function LandingPage() {
             </div>
           </div>
           <div
-            className="game_items_slider_wrapper game_items_slider_wrapper_fullwidth"
+            className="game_items_slider_wrapper"
               onMouseDown={(e) => handleSliderMouseDown(e, {
                 sliderRef: topSportsSliderRef,
                 getItemWidth: 178 + 8,
@@ -1024,9 +1036,12 @@ function LandingPage() {
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`topsports-${item.id}-${index}`} to="/sportsbook" className="match_slider_sports_item link_plain" style={{ textDecoration: 'none', color: 'inherit' }}>
-                      {item.badge && <div className='spot_value'>{item.badge}</div>}
-                      <img loading="lazy" src={`images/${item.icon}`} alt={item.title} />
+                    <Link key={`topsports-${item.id}-${index}`} to={item.to} className="match_slider_sports_item link_plain" style={{ textDecoration: 'none', color: 'inherit' }}>
+                      {item.icon ? (
+                        <img loading="lazy" src={`images/${item.icon}`} alt="" className="match_slider_sports_img" />
+                      ) : (
+                        <i className={`${item.iconClass} match_slider_sports_icon`} aria-hidden />
+                      )}
                       <h3>{item.title}</h3>
                     </Link>
                   )
@@ -1035,7 +1050,7 @@ function LandingPage() {
             </div>
         </div>
 
-        <div className="casino_sport_section">
+        {/* <div className="casino_sport_section">
           <div className="container-fluid">
             <div className="row">
               <div className="col-md-6">
@@ -1063,7 +1078,7 @@ function LandingPage() {
 
             </div>
           </div>
-        </div>
+        </div> */}
 
 
 

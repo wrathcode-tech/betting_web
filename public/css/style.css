@@ -1495,8 +1495,18 @@ a.game_items_inner.link_plain img {
     margin: 15px 0px 10px;
 }
 
+/* TOP Sports card: Remix Icon (white outline) same as design */
+.match_slider_sports_item .match_slider_sports_icon {
+    display: block;
+    font-size: 42px;
+    color: #fff;
+    margin: 15px 0 10px;
+    line-height: 1;
+}
+
 .match_slider_sports_item h3 {
     font-size: 16px;
+    color: #fff;
 }
 
 /* TOP Sports – full viewport width */

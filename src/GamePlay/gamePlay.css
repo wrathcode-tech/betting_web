@@ -2,9 +2,11 @@
 .gameplay_page_with_iframe {
     display: flex;
     flex-direction: column;
-    background: #0d131c;
+    justify-content: center;
+    border-radius: 10px;
+    background: #00000000;
     margin-bottom: 24px;
-}
+    min-height: 760px; }
 
 .gameplay_iframe_header {
     flex-shrink: 0;
@@ -602,6 +604,10 @@
 
     .gameplay_iframe_wrap body {
         overflow: hidden !important;
+    }
+
+    .gameplay_page_with_iframe {
+        min-height: 400px;
     }
 
     .gameplay_page_with_iframe {
