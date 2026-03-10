@@ -180,7 +180,19 @@ function NewDeposit() {
               {!optionsLoading && masterAccounts.length === 0 && (
                 <p className="text-white-50 mb-3">Using default options. Add accounts via API to see dynamic list.</p>
               )}
-              <div className="payment_topbr">
+              {/* Desktop: buttons; Mobile: dropdown */}
+              <div className="payment_type_select_mobile">
+                <select
+                  className="payment_type_select deposit_btn_style"
+                  value={selectedPayment}
+                  onChange={(e) => handlePaymentTypeChange(e.target.value)}
+                  aria-label="Select payment method"
+                >
+                  <option value="bank">Bank Transfer</option>
+                  {upiAccounts.length > 0 && <option value="upi">Payment</option>}
+                </select>
+              </div>
+              <div className="payment_topbr payment_topbr_buttons">
                 <button
                   type="button"
                   className={selectedPayment === 'bank' ? 'active' : ''}

@@ -83,6 +83,37 @@ p.bank {
   margin-top: 16px;
 }
 
+/* Mobile: dropdown for Payment / Bank Transfer; Desktop: buttons */
+.payment_type_select_mobile {
+  display: none;
+  width: 100%;
+  margin: 20px 0px;
+}
+
+.payment_type_select_mobile .payment_type_select {
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+  color: #fff;
+  border: none;
+  padding: 10px 40px 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"), linear-gradient(1turn, #AC5422 .8%, #F97A31);
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 12px center, 0 0;
+  box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px rgba(255, 255, 255, 0.3);
+}
+
+.payment_type_select_mobile .payment_type_select option {
+  background: #1a1a1a;
+  color: #fff;
+}
+
 .payment_topbr {
   width: 100%;
   display: flex;
@@ -378,6 +409,15 @@ button.capcha_refresh_btn {
 }
 
 
+@media (max-width: 768px) {
+  .payment_type_select_mobile {
+    display: block;
+  }
+  .payment_topbr.payment_topbr_buttons {
+    display: none !important;
+  }
+}
+
 @media (max-width: 767px) {
 
   .account_detail_payment ul li span {
@@ -385,7 +425,7 @@ button.capcha_refresh_btn {
   }
 
   .account_detail_payment ul li {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .account_detail_payment h3 {
@@ -418,6 +458,17 @@ button.capcha_refresh_btn {
     font-size: 12px;
   }
 
+  .payment_type_select_mobile .payment_type_select {
+    font-size: 12px; }
+    .payment_topbr button {
+      font-size: 11px;
+      padding: 8px 18px; }
+
+      .payment_topbr {
+        margin: 15px 0px;
+        gap: 5px;
+    } 
+
   p.note_text {
     font-size: 12px;
     margin: 12px 18px;
@@ -434,7 +485,7 @@ button.capcha_refresh_btn {
   }
 
   .account_detail_payment h5 {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .upi_details_capcha_img {

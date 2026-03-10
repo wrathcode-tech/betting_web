@@ -49,7 +49,8 @@
 }
 
 .profile_bio_info_img img.user {
-    width: 75px;
+    min-width: 75px;
+    min-height: 75px;
     height: 75px;
     object-fit: cover;
     border-radius: 100%;
@@ -226,7 +227,7 @@ button.profilebtn {
 .profile_right_section {
     flex-shrink: 0;
     width: 100%;
-    max-width: 280px;
+    max-width: 500px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -235,12 +236,19 @@ button.profilebtn {
 .profile_right_section img {
     width: 100%;
     height: auto;
-    max-height: 400px;
+    max-height: 600px;
     object-fit: contain;
 }
 
 .profile_section .row {
     align-items: center;
+}
+
+@media (max-width:1200px) {
+
+.profile_right_section {
+ max-width: 260px; }
+
 }
 
 /* ========== Tablet ========== */
@@ -368,6 +376,8 @@ button.profilebtn {
 
     .profile_bio_info_img img.user {
         width: 64px;
+        min-width: 64px;
+        min-height: 64px;
         height: 64px;
     }
 
@@ -393,9 +403,6 @@ button.profilebtn {
         height: 22px;
     }
 
-    .profile_right_section {
-        max-width: 120px;
-    }
 }
 
 /* Edit profile – image preview */

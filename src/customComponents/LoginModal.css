@@ -503,3 +503,27 @@
   .premium_email_otp_input {
     font-size: 13px; }
 }
+
+.premium_login_inner .text-muted {
+  color: rgb(255 255 255 / 75%) !important;
+}
+
+
+@media (max-width: 767px) {
+
+.premium_login_title {
+  font-size: 15px; }
+
+  .premium_form_input {
+    padding: 10px 14px;
+    font-size: 12px;
+}
+.premium_form_label {
+  font-size: 11px; }
+
+  .premium_submit_btn {
+    padding: 9px 20px;
+    font-size: 12px;
+    border-radius: 8px; }
+
+}

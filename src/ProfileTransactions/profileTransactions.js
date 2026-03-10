@@ -338,14 +338,17 @@ function ProfileTransactions() {
                           <span className='transaction_value'>{tx.notes}</span>
                         </div>
                         {tx.paymentProofUrl && (
-                          <div className='transaction_card_row transaction_card_row_proof'>
-                            <span className='transaction_label'>Payment Proof</span>
-                            <span className='transaction_value'>
+                          <details className='transaction_payment_proof_dropdown'>
+                            <summary className='transaction_payment_proof_summary'>
+                              <span className='transaction_label'>Payment Proof</span>
+                              {/* <span className='transaction_proof_toggle' aria-hidden>View</span> */}
+                            </summary>
+                            <div className='transaction_payment_proof_content'>
                               <a href={tx.paymentProofUrl} target="_blank" rel="noopener noreferrer" className="transaction_payment_proof_link" aria-label="View payment proof">
                                 <img src={tx.paymentProofUrl} alt="Payment proof" className="transaction_payment_proof_thumb" />
                               </a>
-                            </span>
-                          </div>
+                            </div>
+                          </details>
                         )}
                       </div>
                     </div>

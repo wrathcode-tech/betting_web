@@ -213,6 +213,65 @@
     height: 80px;
 }
 
+/* Payment Proof: desktop = normal row; mobile = dropdown */
+.transaction_payment_proof_dropdown {
+    margin-top: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.transaction_payment_proof_summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    cursor: pointer;
+    list-style: none;
+    color: #ffffffab;
+    font-size: 13px;
+    font-weight: 400;
+    background: rgba(255, 255, 255, 0.04);
+    transition: background 0.2s ease;
+}
+
+.transaction_payment_proof_summary::-webkit-details-marker,
+.transaction_payment_proof_summary::marker {
+    display: none;
+}
+
+.transaction_payment_proof_summary::after {
+    content: '▼';
+    font-size: 10px;
+    color: #fff;
+    transition: transform 0.2s ease;
+}
+
+.transaction_payment_proof_dropdown[open] .transaction_payment_proof_summary::after {
+    transform: rotate(180deg);
+}
+
+.transaction_payment_proof_summary .transaction_proof_toggle {
+    color: #F97A31;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.transaction_payment_proof_content {
+    padding: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.transaction_payment_proof_content .transaction_payment_proof_link {
+    display: inline-block;
+}
+
+.transaction_payment_proof_content .transaction_payment_proof_thumb {
+    width: 80px;
+    height: 80px;
+}
+
 .status_badge {
     display: inline-block;
     padding: 5px 12px;
@@ -273,12 +332,21 @@
     }
 }
 
-/* Mobile Card Styles */
+/* Desktop: table visible; mobile cards hidden until @media (max-width: 768px) */
 .transactions_cards_wrapper {
     display: none;
     width: 100%;
     gap: 15px;
     flex-direction: column;
+}
+
+@media (min-width: 769px) {
+    .transactions_table_wrapper {
+        display: block;
+    }
+    .transactions_cards_wrapper {
+        display: none !important;
+    }
 }
 
 .transaction_card {
@@ -387,13 +455,17 @@
     font-size: 14px;
 }
 
-@media (max-width:767px) {
+/* Mobile: hide table, show cards with same table data */
+@media (max-width: 768px) {
     .transactions_table_wrapper {
-        display: none;
+        display: none !important;
     }
 
     .transactions_cards_wrapper {
-        display: flex;
+        display: flex !important;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
     }
 
     .transaction_card {

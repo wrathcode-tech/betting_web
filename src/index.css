@@ -130,8 +130,8 @@ a.dropdown_menu_item {
   font-size: 26px;
 }
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link .mobile-menu__icon .mobile_menu_inplay_icon {
-  width: 26px;
-  height: 26px;
+  width: 21px;
+  height: 19px;
   object-fit: contain;
 }
 .mobile-menu-wrapper .mobile-menu li .mobile-menu__link .mobile-menu__name {

@@ -241,12 +241,13 @@ header {
 
 .casino_hero_s span.instant_text {
     color: #E46F2C;
-    font-weight: 600; }
+    font-weight: 600;
+}
 
-    .casino_hero_s span i {
-        font-size: 12px;
-        margin: 0px 5px;
-    }
+.casino_hero_s span i {
+    font-size: 12px;
+    margin: 0px 5px;
+}
 
 .casino_hero_s {
     width: 100%;
@@ -1526,11 +1527,13 @@ a.game_items_inner.link_plain img {
     margin-left: calc(-50vw + 50%);
     overflow: visible;
 }
+
 .top_match_section_fullwidth .container-fluid {
     padding-left: 24px;
     padding-right: 24px;
     max-width: 100%;
 }
+
 .game_items_slider_wrapper_fullwidth {
     width: 100%;
     padding-left: 24px;
@@ -2990,6 +2993,7 @@ footer .container-fluid {
         transform: scale(1.25);
         opacity: 0.85;
     }
+
     100% {
         transform: scale(1);
         opacity: 1;
@@ -3437,6 +3441,12 @@ ul.mobile-menu li.active:before {
         opacity: 1 !important;
     }
 
+
+    body .profile_section_left {
+        flex: 1;
+        min-width: 100%;
+    }
+
     .login_modal_bonus {
         font-size: 24px;
         width: 100%;
@@ -3671,6 +3681,11 @@ ul.mobile-menu li.active:before {
         /* box-shadow: none; */
         padding: 5px 10px;
         font-size: 10px;
+    }
+
+    body .mybets_cashout_btn_sm {
+        padding: 6px 12px;
+        font-size: 12px;
     }
 
     .depositheader .deposit_btn_text {
@@ -3939,7 +3954,10 @@ ul.mobile-menu li.active:before {
         order: 6;
     }
 
-    .p_space_footer.landing_footer_section.desktopview { display: none !important; }
+    .p_space_footer.landing_footer_section.desktopview {
+        display: none !important;
+    }
+
     .container-fluid.support_help_container {
         display: none;
     }
@@ -3955,6 +3973,25 @@ ul.mobile-menu li.active:before {
 
     .support_help_container {
         order: 9;
+    }
+
+    body .transaction_label,
+    body .transaction_value {
+        font-size: 11px;
+    }
+
+    body .transaction_value.amount_value {
+        font-size: 11px;
+    }
+
+    .casino_hero_s span.instant_text {
+        font-size: 12px;
+    }
+
+
+    .casino_hero_s span i {
+        font-size: 10px;
+        margin: 0px 2px;
     }
 
     .game_items_slider_wrapper {
@@ -4025,6 +4062,13 @@ ul.mobile-menu li.active:before {
 
     .top_slot_outer.top_slot_outer_casino {
         padding-bottom: 0px;
+    }
+
+    h2.heading_h2 {
+        font-size: 14px;
+    }
+    h2.heading_h2 img {
+        width: 18px;
     }
 
 }
@@ -4126,4 +4170,17 @@ ul.mobile-menu li.active:before {
     .game_items_video .game_video_bl_title {
         font-size: 12px;
     }
+
+    body .mybets_cashout_btn_sm {
+        padding: 4px 12px;
+        font-size: 11px;
+    }
+
+    body .mybets_cancel_btn {
+        padding: 3px 14px;
+        margin: 0px;
+        font-size: 11px;
+    }
+
+
 }
