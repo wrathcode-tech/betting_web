@@ -239,7 +239,7 @@ header {
     border-radius: 8px;
 }
 
-.casino_hero_s span {
+.casino_hero_s span.instant_text {
     color: #E46F2C;
     font-weight: 600; }
 

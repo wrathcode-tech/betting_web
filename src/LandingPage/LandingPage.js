@@ -669,7 +669,7 @@ function LandingPage() {
 
             <div className="casino_hero_s_lft">
               <h1><span>Your Ultimate</span> Casino &amp; Sports Gaming Hub</h1>
-              <span>Instant Deposit <i class="ri-circle-fill"></i> Unlimited Withdrawals.</span>
+              <span className='instant_text'><i class="ri-circle-fill"></i> Instant Deposit <i class="ri-circle-fill"></i> Instant Withdrawal.</span>
 
               <div className="d-flex align-items-center gap-3 mt-4">
                 <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
