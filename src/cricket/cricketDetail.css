@@ -549,6 +549,20 @@ img.team_bg_img {
     color: #fff;
     margin-bottom: 3px;
     letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cricket_detail_section .cricket_live_team_right .cricket_live_team_name {
+    justify-content: flex-end;
+}
+
+.cricket_detail_section .cricket_live_team_flag {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    border-radius: 4px;
 }
 
 .cricket_detail_section .cricket_live_score_row {
@@ -1862,9 +1876,175 @@ span.quicktext {
     color: rgba(255, 255, 255, 0.8);
 }
 
+.odds_section_header_right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 .odds_section_limits {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.7);
+}
+
+.odds_section_cashout_btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: #8b4512;
+    border: 1px solid #a0522d;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.odds_section_cashout_btn:hover {
+    background: #a0522d;
+    border-color: #8b4512;
+}
+
+.odds_section_loss_cut_btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: #2e5c3e;
+    border: 1px solid #3d7a4d;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.odds_section_loss_cut_btn:hover {
+    background: #3d7a4d;
+    border-color: #2e5c3e;
+}
+
+.odds_section_cashout_wrap {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.odds_section_cashout_wrap .odds_section_cashout_btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.odds_section_cashout_inline {
+    margin-top: 6px;
+    min-width: 240px;
+    max-width: 320px;
+    max-height: 280px;
+    overflow: auto;
+    background: #2a2e33;
+    border: 1px solid #3d4349;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.odds_section_cashout_inline .odds_section_popover_list {
+    padding: 6px 0;
+}
+
+.odds_section_loss_cut_wrap {
+    position: relative;
+}
+
+.odds_section_popover {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 6px;
+    min-width: 240px;
+    max-width: 320px;
+    max-height: 320px;
+    overflow: auto;
+    background: #2a2e33;
+    border: 1px solid #3d4349;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+}
+
+.odds_section_cashout_popover .odds_section_popover_list {
+    padding: 8px 0;
+}
+
+.odds_section_popover_loading,
+.odds_section_popover_empty {
+    padding: 12px 14px;
+    margin: 0;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.odds_section_popover_item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #3d4349;
+}
+
+.odds_section_popover_item:last-child {
+    border-bottom: none;
+}
+
+.odds_section_popover_item_info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.odds_section_popover_item_selection {
+    font-size: 13px;
+    color: #e0e0e0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.odds_section_popover_item_val {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.odds_section_popover_suspended {
+    font-size: 12px;
+    color: #888;
+    flex-shrink: 0;
+}
+
+.odds_section_popover_cashout_btn {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: #8b4512;
+    border: 1px solid #a0522d;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.odds_section_popover_cashout_btn:hover:not(:disabled) {
+    background: #a0522d;
+}
+
+.odds_section_popover_cashout_btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.odds_section_loss_cut_popover {
+    padding: 12px 14px;
 }
 
 .odds_section_table_wrap {
@@ -1922,6 +2102,26 @@ span.quicktext {
     width: 72px;
 }
 
+.odds_section_indicator_th {
+    width: 72px;
+    min-width: 72px;
+    padding: 6px 8px;
+    vertical-align: middle;
+}
+
+.odds_section_indicator_cell {
+    padding: 6px 8px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.odds_section_pl_dual {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
 .odds_section_pl_box {
     display: inline-block;
     min-width: 56px;
@@ -1932,6 +2132,17 @@ span.quicktext {
     font-weight: 700;
     font-size: 12px;
     text-align: center;
+    border: 2px solid rgba(0, 0, 0, 0.12);
+}
+
+.odds_section_pl_box_positive {
+    color: #2e7d32;
+    border-color: #66bb6a;
+}
+
+.odds_section_pl_box_negative {
+    color: #c62828;
+    border-color: #ef5350;
 }
 
 .odds_section_pl_profit {

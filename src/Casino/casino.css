@@ -59,6 +59,9 @@
     margin: 15px 0px 24px;
 }
 
+.spinner{
+    color:#ea732e
+}
 /* Gallery slider: arrows + dots, no loop at end */
 .casinobnr_gallery_wrapper {
     width: 100%;

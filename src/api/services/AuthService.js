@@ -350,7 +350,7 @@ const AuthService = {
     return ApiCallPost(url, body, headers);
   },
 
-  /** GET /api/v1/sportsbook/{sportName}/matches – sportName: cricket | soccer | tennis. Auth optional (public). Query: fresh=1 to bypass cache. */
+  /** GET /api/v1/sportsbook/{sportName}/matches – Public. sportName: cricket | soccer | tennis. Query: fresh=1. Response: { success, data: { data: [...], count }, message }. */
   sportsbookMatches: async (sportName, options = {}) => {
     const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
@@ -365,14 +365,27 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
-  /** GET /api/v1/sportsbook/{sportName}/odds?gameId={gameId} – matchOdds, bookMakerOdds, fancyOdds, premiumFancy. Auth required. */
+  /** GET /api/v1/sportsbook/{sportName}/odds?gameId={gameId} – Public; no auth. Returns { success, data: { matchOdds, bookMakerOdds, fancyOdds, otherMarketOdds, premiumFancy, liveScore } }. */
   sportsbookOdds: async (sportName, gameId) => {
     const token = sessionStorage.getItem("token");
-    if (!token) return { success: false, message: "Login required for odds" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/${encodeURIComponent(sportName)}/odds?gameId=${encodeURIComponent(gameId)}`;
-    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
     return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/sportsbook/score?eventId={eventId} – public; returns { liveScore } (same shape as socket) for guests. */
+  sportsbookScore: async (eventId) => {
+    if (!eventId) return { liveScore: null };
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/score?eventId=${encodeURIComponent(eventId)}`;
+    const headers = { "Content-Type": "application/json" };
+    const res = await ApiCallGet(url, headers);
+    const liveScore = res?.liveScore ?? res?.data?.liveScore ?? null;
+    return { liveScore };
   },
 
   /** GET /api/v1/games/transactions?page=1&limit=20 – auth required. Returns { data: { transactions, pagination } }. */
@@ -468,7 +481,7 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
-  /** PUT /api/v1/sportsbook/loss-limit – Set/update daily loss limit. Body: { dailyLossLimit } (0–500000 or null to remove). */
+  /** PUT /api/v1/sportsbook/loss-limit – Set daily loss limit. Body: { dailyLossLimit: number | null }. */
   sportsbookSetLossLimit: async (dailyLossLimit) => {
     const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
@@ -479,7 +492,7 @@ const AuthService = {
     return ApiCallPut(url, body, headers);
   },
 
-  /** GET /api/v1/sportsbook/bet/open – Open bets. Query: page, limit, gameId, marketType, sport. */
+  /** GET /api/v1/sportsbook/bet/open – Open bets. Query: gameId, marketType, sport, page, limit. Auth: Bearer. Response: { data: { bets: [...] } } or similar. */
   sportsbookOpenBets: async (params = {}) => {
     const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;

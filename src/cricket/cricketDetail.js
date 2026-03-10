@@ -36,15 +36,43 @@ function CricketDetail() {
     const [betslipCurrentLoss, setBetslipCurrentLoss] = useState(null)
     const [betslipLossLimit, setBetslipLossLimit] = useState(null)
     const [cashoutId, setCashoutId] = useState(null)
+    const [openCashoutSection, setOpenCashoutSection] = useState(null)
+    const [openLossCutSection, setOpenLossCutSection] = useState(null)
     const openBetsCount = openBetsList.length
+
+    useEffect(() => {
+        if (!openCashoutSection && !openLossCutSection) return
+        const close = (e) => {
+            if (e.target.closest('.odds_section_cashout_wrap') || e.target.closest('.odds_section_loss_cut_wrap')) return
+            setOpenCashoutSection(null)
+            setOpenLossCutSection(null)
+        }
+        document.addEventListener('click', close)
+        return () => document.removeEventListener('click', close)
+    }, [openCashoutSection, openLossCutSection])
+
+    // Refetch open bets when Cashout popover opens so list is fresh
+    useEffect(() => {
+        if (!openCashoutSection) return
+        setOpenBetsLoading(true)
+        AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
+            .then((res) => {
+                const data = res?.data ?? res
+                setOpenBetsList(data?.bets ?? [])
+            })
+            .catch(() => {})
+            .finally(() => setOpenBetsLoading(false))
+    }, [openCashoutSection])
 
     const [defaultMatch, setDefaultMatch] = useState(null)
     const gameIdFromState = location.state?.gameId
     const eventNameFromState = location.state?.eventName ?? defaultMatch?.eventName
     const sportName = location.state?.sportName || 'cricket'
     const gameId = gameIdFromState ?? defaultMatch?.gameId
+    const eventId = location.state?.eventId ?? defaultMatch?.eventId ?? gameId
     const [oddsData, setOddsData] = useState(null)
     const [oddsLoading, setOddsLoading] = useState(false)
+    const [liveScore, setLiveScore] = useState(null)
 
     // Socket (doc): subscribe:matches { sport } when need default match; on('matches') { sport, data, timestamp }. Leave → unsubscribe:matches.
     useEffect(() => {
@@ -92,7 +120,7 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [gameId, sportName])
 
-    // 2) Phir socket – live updates (token ho to)
+    // 2) Phir socket – live updates (token ho to). On odds event, use payload.data.liveScore only for live score.
     useEffect(() => {
         if (!gameId) return
         const token = sessionStorage.getItem('token')
@@ -103,6 +131,7 @@ function CricketDetail() {
             if (payload?.gameId !== currentGameId || payload?.data === undefined) return
             setOddsData(normalizeOdds(payload.data))
             setOddsLoading(false)
+            setLiveScore(payload.data.liveScore ?? null)
         }
         addOddsListener(onOdds)
         subscribeOdds(gameId)
@@ -111,6 +140,26 @@ function CricketDetail() {
             unsubscribeOdds(gameId)
         }
     }, [gameId, sportName])
+
+    // Guests: fetch live score via REST (no Socket)
+    useEffect(() => {
+        if (!eventId && !gameId) return
+        const token = sessionStorage.getItem('token')
+        if (token) return
+        let cancelled = false
+        AuthService.sportsbookScore(eventId || gameId)
+            .then((res) => {
+                if (!cancelled && res?.liveScore != null) setLiveScore(res.liveScore)
+            })
+            .catch(() => { if (!cancelled) setLiveScore(null) })
+        const t = setInterval(() => {
+            if (cancelled) return
+            AuthService.sportsbookScore(eventId || gameId)
+                .then((res) => { if (!cancelled && res?.liveScore != null) setLiveScore(res.liveScore) })
+                .catch(() => {})
+        }, 15000)
+        return () => { cancelled = true; clearInterval(t) }
+    }, [eventId, gameId])
 
     const toggleBlock = (blockId) => {
         setClosedBlocks(prev => {
@@ -311,17 +360,88 @@ function CricketDetail() {
         const oddList = toOddDatasArray(market.oddDatas)
         if (!oddList.length) return null
         const isOpen = market.status === 'OPEN'
+        const sectionCashoutTotal = (openBetsList || [])
+            .filter((b) => b.gameId === gameId || b.game_id === gameId)
+            .reduce((sum, b) => sum + (Number(b.cashout_value) || 0), 0)
+        const gameBets = (openBetsList || []).filter((b) => (b.gameId === gameId || b.game_id === gameId) && (b.status || 'open').toLowerCase() === 'open')
+        const hasOneBet = gameBets.length === 1
+        const hasMultipleBets = gameBets.length > 1
+        const handleCashoutClick = (e) => {
+            e.stopPropagation()
+            setOpenLossCutSection(null)
+            if (gameBets.length === 0) return
+            if (hasOneBet) {
+                const bid = gameBets[0]._id ?? gameBets[0].id
+                if (bid) handleCashoutBetslip(bid)
+                return
+            }
+            if (hasMultipleBets) setOpenCashoutSection((prev) => (prev === sectionKey ? null : sectionKey))
+        }
         return (
             <div key={sectionKey} className="odds_section_block">
                 <div className="odds_section_header">
                     <span className="odds_section_title"><i className={icon} aria-hidden /> {title}</span>
-                    <span className="odds_section_limits">{minMax}</span>
+                    <div className="odds_section_header_right d-flex align-items-center gap-2 flex-wrap">
+                        <span className="odds_section_limits">{minMax}</span>
+                        <div className="odds_section_cashout_wrap">
+                            <button
+                                type="button"
+                                className="odds_section_cashout_btn"
+                                onClick={handleCashoutClick}
+                                disabled={gameBets.length === 0}
+                            >
+                                ₹{sectionCashoutTotal.toLocaleString()} Cashout
+                            </button>
+                            {openCashoutSection === sectionKey && hasMultipleBets && (
+                                <div className="odds_section_cashout_inline">
+                                    {openBetsLoading ? (
+                                        <p className="odds_section_popover_loading">Loading...</p>
+                                    ) : (
+                                        <div className="odds_section_popover_list">
+                                            {gameBets.map((b) => {
+                                                const bid = b._id ?? b.id
+                                                const cashoutVal = b.cashout_value != null ? Number(b.cashout_value) : null
+                                                const suspended = b.cashout_suspended === true || b.cashoutSuspended === true
+                                                const isCashingOut = cashoutId === bid
+                                                return (
+                                                    <div key={bid} className="odds_section_popover_item">
+                                                        <div className="odds_section_popover_item_info">
+                                                            <span className="odds_section_popover_item_selection">{b.selectionName || b.marketName || '—'}</span>
+                                                            {cashoutVal != null && <span className="odds_section_popover_item_val">₹{cashoutVal.toLocaleString()}</span>}
+                                                        </div>
+                                                        {suspended ? (
+                                                            <span className="odds_section_popover_suspended">Not available</span>
+                                                        ) : (
+                                                            <button type="button" className="odds_section_popover_cashout_btn" onClick={() => handleCashoutBetslip(bid)} disabled={isCashingOut}>
+                                                                {isCashingOut ? '...' : (cashoutVal != null && cashoutVal > 0 ? `Cashout ₹${cashoutVal.toLocaleString()}` : 'Cashout')}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <div className="odds_section_loss_cut_wrap" style={{ position: 'relative' }}>
+                            <button type="button" className="odds_section_loss_cut_btn" onClick={(e) => { e.stopPropagation(); setOpenCashoutSection(null); setOpenLossCutSection((prev) => (prev === sectionKey ? null : sectionKey)); }}>
+                                Loss Cut
+                            </button>
+                            {openLossCutSection === sectionKey && (
+                                <div className="odds_section_popover odds_section_loss_cut_popover">
+                                    <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
                 <div className="odds_section_table_wrap">
                     <table className="odds_section_table">
                         <thead>
                             <tr>
                                 <th>Market</th>
+                                <th className="odds_section_indicator_th" aria-label="Spread / Value" />
                                 <th colSpan={3}>Back</th>
                                 <th colSpan={3}>Lay</th>
                             </tr>
@@ -329,36 +449,68 @@ function CricketDetail() {
                         <tbody>
                             {oddList.map((odd, oIdx) => {
                                 const name = odd.rname ?? odd.selectionName ?? ''
-                                const backCells = [
+                                const backCellsRaw = [
                                     { odds: odd.b1, size: odd.bs1 },
                                     { odds: odd.b2, size: odd.bs2 },
                                     { odds: odd.b3, size: odd.bs3 },
                                 ]
-                                const layCells = [
+                                const layCellsRaw = [
                                     { odds: odd.l1, size: odd.ls1 },
                                     { odds: odd.l2, size: odd.ls2 },
                                     { odds: odd.l3, size: odd.ls3 },
                                 ]
+                                const sortByOddsAsc = (a, b) => {
+                                    const na = parseFloat(a.odds)
+                                    const nb = parseFloat(b.odds)
+                                    if (Number.isNaN(na) && Number.isNaN(nb)) return 0
+                                    if (Number.isNaN(na)) return 1
+                                    if (Number.isNaN(nb)) return -1
+                                    return na - nb
+                                }
+                                const backCells = [...backCellsRaw].sort(sortByOddsAsc)
+                                const layCells = [...layCellsRaw].sort(sortByOddsAsc)
+                                const isMatchOdds = sectionKey === 'match_odds' && oddList.length >= 2
+                                const matchOddsBet = isMatchOdds ? selectedBets.find((b) => b.market === market.market) : null
                                 const stakeNum = Number(stake) || 0
+                                const oddsVal = matchOddsBet ? (Number(matchOddsBet.oddsDisplay ?? matchOddsBet.odds) || 0) : 0
+                                const betType = matchOddsBet?.placePayload?.betType ?? matchOddsBet?.betType ?? 'back'
+                                const isBack = String(betType).toLowerCase() === 'back'
+                                const selectedTeam = matchOddsBet ? (matchOddsBet.betName ?? matchOddsBet.placePayload?.selectionName ?? '') : ''
+                                const isThisRowSelectedTeam = name === selectedTeam
+                                const profitAmount = (stakeNum > 0 && oddsVal >= 1) ? (isBack ? stakeNum * (oddsVal - 1) : stakeNum) : null
+                                const lossAmount = (stakeNum > 0 && oddsVal >= 1) ? (isBack ? stakeNum : stakeNum * (oddsVal - 1)) : null
+                                const showProfitOnThisRow = isMatchOdds && matchOddsBet && (isThisRowSelectedTeam ? isBack : !isBack)
+                                const showLossOnThisRow = isMatchOdds && matchOddsBet && (isThisRowSelectedTeam ? !isBack : isBack)
                                 return (
                                     <tr key={odd.sid ?? oIdx}>
                                         <td className="odds_section_market_name">{name}</td>
+                                        <td className="odds_section_indicator_cell">
+                                            {isMatchOdds && matchOddsBet && stakeNum > 0 && (
+                                                <>
+                                                    {showProfitOnThisRow && profitAmount != null && (
+                                                        <span className="odds_section_pl_box odds_section_pl_box_positive" title="Jit gaya to itna profit">
+                                                            +{profitAmount.toFixed(2)}
+                                                        </span>
+                                                    )}
+                                                    {showLossOnThisRow && lossAmount != null && (
+                                                        <span className="odds_section_pl_box odds_section_pl_box_negative" title="Harega to itna loss">
+                                                            -{lossAmount.toFixed(2)}
+                                                        </span>
+                                                    )}
+                                                </>
+                                            )}
+                                        </td>
                                         {backCells.map((cell, cIdx) => {
                                             const hasVal = isOpen && !isOddsLocked(cell.odds)
                                             const oddsStr = String(cell.odds ?? '')
                                             const placePayload = hasVal && gameId && eventNameFromState && marketId && (odd.sid != null) ? { sport: sportName, gameId, eventName: eventNameFromState, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(odd.sid), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0 } : null
                                             const elId = `odds-${sectionKey}-${oIdx}-back-${cIdx}`
-                                            const cellOdds = parseFloat(oddsStr) || 0
-                                            const cellPl = hasVal && cellOdds >= 1 && stakeNum > 0 ? stakeNum * (cellOdds - 1) : null
-                                            const cellPlDisplay = cellPl != null ? (cellPl >= 0 ? `+${cellPl.toFixed(2)}` : cellPl.toFixed(2)) : null
-                                            const cellPlGreen = cellPl != null && cellPl >= 0
                                             return (
                                                 <td key={cIdx} className="odds_section_cell odds_section_cell_back">
                                                     {hasVal ? (
                                                         <button type="button" className={`odds_section_btn odds_section_back ${isBetSelected(name, market.market, oddsStr, elId) ? 'selected' : ''}`} onClick={() => handleBetClick(name, market.market, oddsStr, elId, placePayload)}>
                                                             <span className="odds_val">{cell.odds}</span>
                                                             <span className="odds_size">{formatOddsSize(cell.size)}</span>
-                                                            {cellPlDisplay != null && <span className={`odds_section_cell_pl ${cellPlGreen ? 'odds_section_cell_pl_profit' : 'odds_section_cell_pl_loss'}`}>{cellPlDisplay}</span>}
                                                         </button>
                                                     ) : (
                                                         <span className="odds_section_locked"><i className="ri-lock-line" aria-hidden /></span>
@@ -371,15 +523,12 @@ function CricketDetail() {
                                             const oddsStr = String(cell.odds ?? '')
                                             const placePayload = hasVal && gameId && eventNameFromState && marketId && (odd.sid != null) ? { sport: sportName, gameId, eventName: eventNameFromState, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(odd.sid), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0 } : null
                                             const elId = `odds-${sectionKey}-${oIdx}-lay-${cIdx}`
-                                            const cellPlProfit = hasVal && stakeNum > 0 ? stakeNum : null
-                                            const cellPlDisplay = cellPlProfit != null ? `+${cellPlProfit.toFixed(2)}` : null
                                             return (
                                                 <td key={cIdx} className="odds_section_cell odds_section_cell_lay">
                                                     {hasVal ? (
                                                         <button type="button" className={`odds_section_btn odds_section_lay ${isBetSelected(name, market.market, oddsStr, elId) ? 'selected' : ''}`} onClick={() => handleBetClick(name, market.market, oddsStr, elId, placePayload)}>
                                                             <span className="odds_val">{cell.odds}</span>
                                                             <span className="odds_size">{formatOddsSize(cell.size)}</span>
-                                                            {cellPlDisplay != null && <span className="odds_section_cell_pl odds_section_cell_pl_profit">{cellPlDisplay}</span>}
                                                         </button>
                                                     ) : (
                                                         <span className="odds_section_locked"><i className="ri-lock-line" aria-hidden /></span>
@@ -849,33 +998,76 @@ function CricketDetail() {
 
                             <div className='cricket_scorecard cricket_live_scoreboard'>
                                 {(() => {
+                                    const hasLiveScore = liveScore && !liveScore.error && liveScore.ScoreData?.Score?.[0]
+                                    const s = hasLiveScore ? liveScore.ScoreData.Score[0] : null
                                     const eventName = eventNameFromState || 'Premier League, Women'
                                     const parts = (eventName || '').split(/\s+v\s+/i)
-                                    const teamA = parts.length >= 2 ? parts[0].trim() : eventName
-                                    const teamB = parts.length >= 2 ? parts[1].trim() : ''
+                                    const teamA = s?.Team1Name ?? (parts.length >= 2 ? parts[0].trim() : eventName)
+                                    const teamB = s?.Team2Name ?? (parts.length >= 2 ? parts[1].trim() : '')
+                                    if (liveScore?.error === true || (liveScore !== null && !hasLiveScore)) {
+                                        return (
+                                            <div className='cricket_live_unavailable' style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary, #888)' }}>
+                                                Live score unavailable
+                                            </div>
+                                        )
+                                    }
+                                    if (!hasLiveScore) {
+                                        return (
+                                            <>
+                                                <div className='cricket_live_top_panel'>
+                                                    <div className='cricket_live_team_left'>
+                                                        <div className='cricket_live_team_name'>{teamA}</div>
+                                                        <div className='cricket_live_score_row'>
+                                                            <span className='cricket_live_score_box'>—</span>
+                                                            <span className='cricket_live_crr'>CRR: —</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className='cricket_live_center'><span className='cricket_live_toss'>—</span></div>
+                                                    <div className='cricket_live_team_right'>
+                                                        <div className='cricket_live_team_name'>{teamB}</div>
+                                                        <div className='cricket_live_score_row'>
+                                                            <span className='cricket_live_rrr'>RRR: —</span>
+                                                            <span className='cricket_live_score_box'>—</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className='cricket_live_unavailable' style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-secondary, #888)', fontSize: '13px' }}>Live score will appear when available</div>
+                                            </>
+                                        )
+                                    }
+                                    const crr = s.CRR ?? '—'
+                                    const rrr = s.RRR ?? '—'
+                                    const overBalls = [s.CurrentOverBalls1, s.CurrentOverBalls2, s.CurrentOverBalls3, s.CurrentOverBalls4, s.CurrentOverBalls5, s.CurrentOverBalls6].filter(Boolean)
+                                    const overStr = overBalls.length > 0 ? overBalls.join(' ') : '—'
+                                    const team1Flag = s.Team1Flag || s.team1Flag
+                                    const team2Flag = s.Team2Flag || s.team2Flag
+                                    const statusText = [s.ScoreStatus, s.LiveCommentary, s.Message].filter(Boolean).join(' · ') || '—'
                                     return (
                                         <>
                                 <div className='cricket_live_top_panel'>
                                     <div className='cricket_live_team_left'>
-                                        <div className='cricket_live_team_name'>{teamA}</div>
-                                        <div className='cricket_live_score_row'>
-                                            <span className='cricket_live_score_box'>0/0 (0.0)</span>
-                                            <span className='cricket_live_crr'>CRR: 0</span>
+                                        <div className='cricket_live_team_name'>
+                                            {team1Flag ? <img src={team1Flag} alt="" className="cricket_live_team_flag" /> : null}
+                                            {teamA}
                                         </div>
-                                        <div className='cricket_live_partnership'>Partnership: 0 (0)</div>
-                                        <div className='cricket_live_over_box'>Over 1</div>
+                                        <div className='cricket_live_score_row'>
+                                            <span className='cricket_live_score_box'>{s.Team1OnlyScore || s.Team1Score || '—'}</span>
+                                            <span className='cricket_live_crr'>CRR: {crr}</span>
+                                        </div>
+                                        <div className='cricket_live_over_box'>{overStr}</div>
                                     </div>
                                     <div className='cricket_live_center'>
-                                        <span className='cricket_live_toss'>KRW opt to bowl</span>
+                                        <span className='cricket_live_toss'>{statusText}</span>
                                     </div>
                                     <div className='cricket_live_team_right'>
-                                        <div className='cricket_live_team_name'>{teamB}</div>
-                                        <div className='cricket_live_score_row'>
-                                            <span className='cricket_live_rrr'>RRR: 0</span>
-                                            <span className='cricket_live_crr'>CRR: 0</span>
-                                            <span className='cricket_live_score_box'>0/0 (0.0)</span>
+                                        <div className='cricket_live_team_name'>
+                                            {team2Flag ? <img src={team2Flag} alt="" className="cricket_live_team_flag" /> : null}
+                                            {teamB}
                                         </div>
-                                        <div className='cricket_live_last_wicket'>Last Wicket:</div>
+                                        <div className='cricket_live_score_row'>
+                                            <span className='cricket_live_rrr'>RRR: {rrr}</span>
+                                            <span className='cricket_live_score_box'>{s.Team2OnlyScore || s.Team2Score || '—'}</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -895,25 +1087,24 @@ function CricketDetail() {
                                             <tr>
                                                 <td className='cricket_live_td_name'>
                                                     <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
-                                                    Mohammad Akram
-                                                    <span className='cricket_live_striker'>/</span>
+                                                    {s.Player1 || '—'}
                                                 </td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>{s.Player1Run ?? '—'}</td>
+                                                <td className='cricket_live_td_num'>{s.Player1Balls ?? '—'}</td>
+                                                <td className='cricket_live_td_num'>{s.Player1Fours ?? '—'}</td>
+                                                <td className='cricket_live_td_num'>{s.Player1Sixes ?? '—'}</td>
+                                                <td className='cricket_live_td_num'>{s.Player1StrikeRate ?? '—'}</td>
                                             </tr>
                                             <tr>
                                                 <td className='cricket_live_td_name'>
                                                     <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
-                                                    Daniyal Hussain Rajput
+                                                    {s.Player2 || '—'}
                                                 </td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>{s.Player2Run ?? '—'}</td>
+                                                <td className='cricket_live_td_num'>{s.Player2Balls ?? '—'}</td>
+                                                <td className='cricket_live_td_num'>{s.Player2Fours ?? '—'}</td>
+                                                <td className='cricket_live_td_num'>{s.Player2Sixes ?? '—'}</td>
+                                                <td className='cricket_live_td_num'>{s.Player2StrikeRate ?? '—'}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -935,13 +1126,13 @@ function CricketDetail() {
                                             <tr>
                                                 <td className='cricket_live_td_name'>
                                                     <span className='cricket_live_ball_icon cricket_live_ball_active' />
-                                                    Bowler name
+                                                    {s.Bowler && s.Bowler !== '-' ? s.Bowler : '—'}
                                                 </td>
-                                                <td className='cricket_live_td_num'>0.0</td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
-                                                <td className='cricket_live_td_num'>0</td>
+                                                <td className='cricket_live_td_num'>—</td>
+                                                <td className='cricket_live_td_num'>—</td>
+                                                <td className='cricket_live_td_num'>—</td>
+                                                <td className='cricket_live_td_num'>—</td>
+                                                <td className='cricket_live_td_num'>—</td>
                                             </tr>
                                         </tbody>
                                     </table>

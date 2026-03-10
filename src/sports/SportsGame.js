@@ -118,7 +118,7 @@ function SportsGame() {
         return []
     }
 
-    // REST: pehle matches load – taaki matches hamesha dikhen (bina login / socket fail bhi)
+    // REST: pehle matches load
     useEffect(() => {
         let cancelled = false
         setCricketMatchesLoading(true)
@@ -159,7 +159,7 @@ function SportsGame() {
         return () => { cancelled = true }
     }, [cricketMatches])
 
-    // Socket (doc): sport screen → subscribe:matches { sport: 'cricket' }, on('matches') { sport, data, timestamp }. Leave → unsubscribe:matches.
+    // Socket (doc): sport screen → subscribe:matches { sport: 'cricket' }
     useEffect(() => {
         const token = sessionStorage.getItem('token')
         const oddsSubs = subscribedOddsRef.current

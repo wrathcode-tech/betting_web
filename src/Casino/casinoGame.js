@@ -431,6 +431,13 @@ function CasinoGame() {
                                                     );
                                                 })}
                                             </div>
+                                            {loadingMore && (
+                                                <div className="text-center py-4">
+                                                    <div className="spinner-border  spinner" role="status">
+                                                        <span className="visually-hidden">Loading...</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                             <div ref={loadMoreSentinelRef} style={{ height: 1 }} aria-hidden />
                                         </div>
                                     ) : selectedProviderCode && !loadingProviderCategory ? (
@@ -445,7 +452,15 @@ function CasinoGame() {
                                                     )}
                                                 </h2>
                                             </div>
-                                            <div className="game_items_grid" />
+                                            {loadingProviderCategory ? (
+                                                <div className="text-center py-5">
+                                                    <div className="spinner-border  spinner" role="status">
+                                                        <span className="visually-hidden">Loading...</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="game_items_grid" />
+                                            )}
                                         </div>
                                     )}
                                 </div>

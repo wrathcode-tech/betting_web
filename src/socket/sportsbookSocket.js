@@ -12,7 +12,7 @@
  *
  * LISTEN (server → client):
  *   matches   { sport, data: Match[], timestamp }  – snapshot + ~every 2s
- *   odds      { gameId, data: { matchOdds?, bookMakerOdds?, fancyOdds?, premiumFancy? }, timestamp }  – ~500ms
+ *   odds      { gameId, data: { matchOdds?, bookMakerOdds?, fancyOdds?, ..., liveScore }, timestamp }  – ~500ms. Use payload.data.liveScore only for live score.
  *   betUpdate { betId, status: 'open'|'settled'|'cancelled'|'cashed_out', balanceAfter?, bet?, profitLoss?, cashoutAmount?, ... }
  *   balance   { balance: number, userId }  – after place/cancel/cashout/settle/void; refresh wallet in UI
  */
