@@ -50,7 +50,7 @@ const highrollerItems = [
 ]
 // TOP Sports: 15 sports from design. Cricket first; Cricket -> /sports, rest -> /sportsbook. White outline icons.
 const topSportsItems = [
-  { id: 1, title: 'Cricket', iconClass: 'ri-cricket-line', to: '/sports' },
+  { id: 1, title: 'Cricket', icon: 'menu-icon19.svg', to: '/sports' },
   { id: 2, title: 'Soccer', iconClass: 'ri-football-line', to: '/sportsbook' },
   { id: 3, title: 'Basketball', iconClass: 'ri-basketball-line', to: '/sportsbook' },
   { id: 4, title: 'Baseball', iconClass: 'ri-baseball-line', to: '/sportsbook' },
@@ -1038,7 +1038,7 @@ function LandingPage() {
                   ) : (
                     <Link key={`topsports-${item.id}-${index}`} to={item.to} className="match_slider_sports_item link_plain" style={{ textDecoration: 'none', color: 'inherit' }}>
                       {item.icon ? (
-                        <img loading="lazy" src={`images/${item.icon}`} alt="" className="match_slider_sports_img" />
+                        <img loading="lazy" src={`images/${item.icon}`} alt="" className="match_slider_sports_img sports_grid_icon" />
                       ) : (
                         <i className={`${item.iconClass} match_slider_sports_icon`} aria-hidden />
                       )}

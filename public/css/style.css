@@ -1495,17 +1495,27 @@ a.game_items_inner.link_plain img {
     margin: 15px 0px 10px;
 }
 
+/* TOP Sports: icon image – white */
+.match_slider_sports_item .match_slider_sports_img {
+    height: 28px;
+    width: auto;
+    max-width: 36px;
+    object-fit: contain;
+    object-position: center;
+    filter: brightness(1);
+}
+
 /* TOP Sports card: Remix Icon (white outline) same as design */
 .match_slider_sports_item .match_slider_sports_icon {
     display: block;
-    font-size: 42px;
-    color: #fff;
-    margin: 15px 0 10px;
+    font-size: 28px;
+    color: #c4c4c4;
+    margin: 10px 0 10px;
     line-height: 1;
 }
 
 .match_slider_sports_item h3 {
-    font-size: 16px;
+    font-size: 15px;
     color: #fff;
 }
 
