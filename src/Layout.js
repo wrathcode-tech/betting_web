@@ -33,7 +33,7 @@ function Layout() {
             <SideBar isOpen={sidebarOpen} onClose={onCloseSidebar} />
           </Suspense>
         </aside>
-        <div className="right_content_side">
+        <div className={`right_content_side ${pathname === '/cricket' ? 'cricketDetail_block' : ''}`}>
           <Outlet />
         </div>
       </div>

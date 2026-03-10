@@ -841,7 +841,7 @@ function CricketDetail() {
     return (
         <React.Fragment>
             <div className='dashboard_page removebgsports'>
-                <div className='container'>
+                <div className='container-fluid'>
                     <div className='cricket_detail_section'>
                         {/* <div className='sports_top_tabs'>
                             <ul>
