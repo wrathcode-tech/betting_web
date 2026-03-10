@@ -5,6 +5,7 @@ import './Footer.css'
 
 const Chat = lazy(() => import('../cricket/Chat'))
 
+/* Footer links – only available routes; update as you add more pages */
 const FOOTER_MOBILE_MENU = [
     {
         id: 'i-gaming',
@@ -12,11 +13,9 @@ const FOOTER_MOBILE_MENU = [
         links: [
             { to: '/casino', label: 'Casino' },
             { to: '/sports', label: 'Inplay' },
-            { to: '/casino', label: 'All games' },
-            { to: '/game', label: 'Slots' },
+            { to: '/sportsbook', label: 'SportsBook' },
             { to: '/casino', label: 'Live casino' },
-            { to: '/casino', label: 'Dice' },
-            { to: '/casino', label: 'Plinko' },
+            { to: '/game', label: 'Slots' },
             { to: '/rank', label: 'Rank system' },
         ],
     },
@@ -27,41 +26,23 @@ const FOOTER_MOBILE_MENU = [
             { to: '/rank', label: 'Rank system' },
             { to: '/referral', label: 'Referral' },
             { to: '/transactions', label: 'Transactions' },
+            { to: '/my-bets', label: 'My Bets' },
+            { to: '/bet-history', label: 'Bet History' },
         ],
     },
     {
         id: 'promo',
         label: 'PROMO',
         links: [
-            { to: '/', label: 'Bonuses' },
-            { to: '/', label: 'Tournaments' },
+            { to: '/promotions', label: 'Promotions' },
         ],
     },
     {
         id: 'about',
         label: 'ABOUT US',
         links: [
-            { to: '/', label: 'About Us' },
-            { to: '/', label: 'Terms & Conditions' },
-            { to: '/', label: 'Privacy Policy' },
-            { to: '/', label: 'Responsible gaming' },
-        ],
-    },
-    {
-        id: 'contact',
-        label: 'CONTACT US',
-        links: [
-            { to: '/', label: 'Contact Us' },
-            { to: '/', label: 'Support' },
-            { to: '/', label: 'FAQ' },
-        ],
-    },
-    {
-        id: 'help',
-        label: 'HELP',
-        links: [
-            { to: '/', label: 'Help Center' },
-            { to: '/', label: 'Contact Support' },
+            { to: '/terms-and-conditions', label: 'Terms & Conditions' },
+            { to: '/game-rules', label: 'Game Rules' },
         ],
     },
 ];

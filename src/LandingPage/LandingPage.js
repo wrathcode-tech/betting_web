@@ -669,7 +669,7 @@ function LandingPage() {
 
             <div className="casino_hero_s_lft">
               <h1><span>Your Ultimate</span> Casino &amp; Sports Gaming Hub</h1>
-              <span className='instant_text'><i class="ri-circle-fill"></i> Instant Deposit <i class="ri-circle-fill"></i> Instant Withdrawal.</span>
+              <span className='instant_text'><i class="ri-circle-fill"></i> Instant Deposit <i class="ri-circle-fill"></i> Instant Withdrawal</span>
 
               <div className="d-flex align-items-center gap-3 mt-4">
                 <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
@@ -723,7 +723,7 @@ function LandingPage() {
         <h2 className='heading_h2'>Trending Games</h2>
         <div className='game_items_video'>
           {(() => {
-            const trendingCategories = ['Crash Type', 'Dragon Tiger', 'Chicken Road', 'Baccarat', 'Roulette', 'Teen Pati'];
+            const trendingCategories = ['Aviator', 'Dragon Tiger', 'Chicken Road', 'Baccarat', 'Roulette', 'Teen Patti'];
             return showTrendingVideos
               ? trendingVideos.map((src, i) => {
                 const category = trendingCategories[i] ?? 'lobby';
@@ -1019,35 +1019,35 @@ function LandingPage() {
           </div>
           <div
             className="game_items_slider_wrapper"
-              onMouseDown={(e) => handleSliderMouseDown(e, {
-                sliderRef: topSportsSliderRef,
-                getItemWidth: 178 + 8,
-                itemsPerSet: topSportsItemsPerSet,
-                currentIndex: topSportsIndex,
-                setIndex: setTopSportsIndex,
-              })}
-              onClickCapture={handleSliderClickCapture}
-              style={{ cursor: 'grab' }}
-            >
-              <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
-                {topSportsDisplayItems.map((item, index) => (
-                  item.viewAll ? (
-                    <Link key="view-all-sports" to={item.to} className="match_slider_sports_item slider_view_all_card sports_view_all link_plain">
-                      <span className="slider_view_all_text">View All</span>
-                    </Link>
-                  ) : (
-                    <Link key={`topsports-${item.id}-${index}`} to={item.to} className="match_slider_sports_item link_plain" style={{ textDecoration: 'none', color: 'inherit' }}>
-                      {item.icon ? (
-                        <img loading="lazy" src={`images/${item.icon}`} alt="" className="match_slider_sports_img sports_grid_icon" />
-                      ) : (
-                        <i className={`${item.iconClass} match_slider_sports_icon`} aria-hidden />
-                      )}
-                      <h3>{item.title}</h3>
-                    </Link>
-                  )
-                ))}
-              </div>
+            onMouseDown={(e) => handleSliderMouseDown(e, {
+              sliderRef: topSportsSliderRef,
+              getItemWidth: 178 + 8,
+              itemsPerSet: topSportsItemsPerSet,
+              currentIndex: topSportsIndex,
+              setIndex: setTopSportsIndex,
+            })}
+            onClickCapture={handleSliderClickCapture}
+            style={{ cursor: 'grab' }}
+          >
+            <div className='match_slider_sports d-flex align-items-center gap-2' ref={topSportsSliderRef}>
+              {topSportsDisplayItems.map((item, index) => (
+                item.viewAll ? (
+                  <Link key="view-all-sports" to={item.to} className="match_slider_sports_item slider_view_all_card sports_view_all link_plain">
+                    <span className="slider_view_all_text">View All</span>
+                  </Link>
+                ) : (
+                  <Link key={`topsports-${item.id}-${index}`} to={item.to} className="match_slider_sports_item link_plain" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    {item.icon ? (
+                      <img loading="lazy" src={`images/${item.icon}`} alt="" className="match_slider_sports_img sports_grid_icon" />
+                    ) : (
+                      <i className={`${item.iconClass} match_slider_sports_icon`} aria-hidden />
+                    )}
+                    <h3>{item.title}</h3>
+                  </Link>
+                )
+              ))}
             </div>
+          </div>
         </div>
 
         {/* <div className="casino_sport_section">

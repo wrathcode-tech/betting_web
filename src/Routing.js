@@ -32,6 +32,7 @@ const AccountStatement = lazy(() => import("./StatementPages/AccountStatement"))
 const BonusStatement = lazy(() => import("./StatementPages/BonusStatement"));
 const DepositTurnover = lazy(() => import("./StatementPages/DepositTurnover"));
 const GameRules = lazy(() => import("./GameRule/gameRules"));
+const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
 const CricketDetail = lazy(() => import("./cricket/cricketDetail"));
 const ReferralProgram = lazy(() => import("./ReferralProgram/referralProgram"));
 const RankSystem = lazy(() => import("./RankSystem/rankSystem"));
@@ -60,6 +61,7 @@ const Routing = memo(function Routing() {
               <Route path="/sportsbook" element={<SportsBook />} />
               <Route path="/promotions" element={<Promotions />} />
               <Route path="/game-rules" element={<GameRules />} />
+              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
               {/* Protected routes – redirect to /login if not logged in */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/profile" element={<ProfilePage />} />

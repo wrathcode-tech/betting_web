@@ -1354,7 +1354,11 @@ function CricketDetail() {
                                                                                 onClick={() => handleCashoutBetslip(bid)}
                                                                                 disabled={isCashingOut}
                                                                             >
-                                                                                {isCashingOut ? 'CASHING OUT...' : (cashoutVal != null && cashoutVal > 0 ? `CASH OUT ₹${cashoutVal.toLocaleString()}` : 'CASH OUT')}
+                                                                                {isCashingOut
+                                                                                    ? 'CASHING OUT...'
+                                                                                    : (cashoutVal != null && cashoutVal > 0
+                                                                                        ? `CASH OUT (₹${cashoutVal.toLocaleString()})`
+                                                                                        : 'CASH OUT')}
                                                                             </button>
                                                                         )}
                                                                     </div>
@@ -1610,7 +1614,11 @@ function CricketDetail() {
                                                                     onClick={() => handleCashoutBetslip(bid)}
                                                                     disabled={isCashingOut}
                                                                 >
-                                                                    {isCashingOut ? 'CASHING OUT...' : (cashoutVal != null && cashoutVal > 0 ? `CASH OUT ₹${cashoutVal.toLocaleString()}` : 'CASH OUT')}
+                                                                    {isCashingOut
+                                                                        ? 'CASHING OUT...'
+                                                                        : (cashoutVal != null && cashoutVal > 0
+                                                                            ? `CASH OUT (₹${cashoutVal.toLocaleString()})`
+                                                                            : 'CASH OUT')}
                                                                 </button>
                                                             )}
                                                         </div>

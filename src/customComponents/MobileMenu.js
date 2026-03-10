@@ -40,7 +40,7 @@ function MobileMenu() {
                     <li className={`mobile-menu__item ${!sidebarOpen && (location.pathname === '/sports' || location.pathname.startsWith('/sports/')) ? 'active' : ''}`}>
                         <NavLink to="/sports" className="mobile-menu__link" onClick={() => setSidebarOpen(false)}>
                             <span className="icon mobile-menu__icon">
-                                <i className="ri-live-line"></i>
+                                <img src={`${process.env.PUBLIC_URL || ''}/images/menu-icon19.svg`} alt="" className="mobile_menu_inplay_icon" />
                             </span>
                             <span className="mobile-menu__name">Inplay</span>
                         </NavLink>

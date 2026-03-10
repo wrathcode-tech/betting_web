@@ -96,7 +96,7 @@ export default function SideBar({ isOpen, onClose }) {
 
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sports' ? 'active' : ''}`}>
                 <Link to="/sports" onClick={onLinkClick}>
-                  <span><i className="ri-live-line" aria-hidden />Inplay</span>
+                  <span><img src={`${process.env.PUBLIC_URL || ''}/images/menu-icon19.svg`} alt="" className="sidebar_inplay_icon" aria-hidden />Inplay</span>
                   <span className="sidebar_collapsed_label">Inplay</span>
                 </Link>
               </li>

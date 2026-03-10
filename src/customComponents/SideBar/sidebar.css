@@ -487,6 +487,17 @@
 .sidebar_menu_item.sidebar_direct_link a span:first-of-type i {
     color: #ffffff99;
 }
+.sidebar_inplay_icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: block;
+}
+.sidebar_menu_item.sidebar_direct_link a:hover span:first-of-type .sidebar_inplay_icon,
+.sidebar_menu_item.sidebar_direct_link.active a span:first-of-type .sidebar_inplay_icon {
+    filter: brightness(0) saturate(100%) invert(58%) sepia(72%) saturate(1200%) hue-rotate(350deg);
+}
 .sidebar_menu_item.sidebar_direct_link a:hover span:first-of-type i,
 .sidebar_menu_item.sidebar_direct_link.active a span:first-of-type i {
     color: #f97a31;

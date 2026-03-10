@@ -2180,7 +2180,7 @@ footer p {
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: rgba(255, 255, 255, 0.5);
+        color: #a7b5ca;
         border: none;
         background: transparent;
     }
@@ -2207,7 +2207,8 @@ footer p {
     .footer_mobile_menu_link {
         display: block;
         padding: 5px 0 !important;
-        color: #55657e;
+        color: #e2e8f0;
+        font-size: 13px;
         text-decoration: none;
         transition: color 0.2s;
     }
