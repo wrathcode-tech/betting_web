@@ -3295,6 +3295,23 @@ ul.mobile-menu li.active:before {
         right: -10px;
         min-width: 260px;
     }
+
+    .sidebar_overlay.active {
+        display: none !important;
+    }
+
+    .sidebar.sidebar_open {
+        display: none !important;
+    }
+
+    .main_content_wrapper.sidebar_open {
+        display: block !important;
+    }
+
+    .main_content_wrapper.sidebar_open .sidebar.sidebar_open {
+        display: block !important;
+    }
+
 }
 
 @media (max-width: 1200px) {
@@ -4049,7 +4066,7 @@ ul.mobile-menu li.active:before {
         align-self: stretch;
     }
 
-
+    .right_content_side .container{ padding: 0px; }
 
 
     .playbtn {
@@ -4067,6 +4084,7 @@ ul.mobile-menu li.active:before {
     h2.heading_h2 {
         font-size: 14px;
     }
+
     h2.heading_h2 img {
         width: 18px;
     }

@@ -25,18 +25,31 @@ const TABS = [
     // { id: 'hockey', label: 'Hockey', icon: 'images/menu-icon10.svg' },
     // { id: 'counter-strike', label: 'Counter-Strike', icon: 'images/menu-icon11.svg' },
 ]
-// Dummy data – commented out; cricket uses API (sportsbookMatches). Other tabs show empty until API is added.
-// const MATCH_DATA = {
-//     cricket: [
-//         { tournament: 'ICC U19 World Cup', teams: 'India vs Australia', time: 'Today 01:00 PM', icon: 'images/cricket_world.png' },
-//         ...
-//     ],
-//     tennis: [ ... ],
-//     basketball: [ ... ],
-//     'table-tennis': [ ... ],
-//     hockey: [ ... ],
-//     'counter-strike': [ ... ],
-// }
+
+// Static fallback matches – used when API fails so mobile layout can be tested/styled
+const STATIC_CRICKET_MATCHES = [
+    {
+        seriesName: 'T20 World Cup',
+        eventName: 'India v Pakistan',
+        eventTime: new Date().toISOString(),
+        gameId: 'static-1',
+        inPlay: true,
+    },
+    {
+        seriesName: 'T20 World Cup',
+        eventName: 'Australia v England',
+        eventTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+        gameId: 'static-2',
+        inPlay: false,
+    },
+    {
+        seriesName: 'ODI Series',
+        eventName: 'South Africa v New Zealand',
+        eventTime: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(),
+        gameId: 'static-3',
+        inPlay: false,
+    },
+]
 
 function toOddDatasArray(oddDatas) {
     if (!oddDatas) return []
@@ -218,7 +231,11 @@ function SportsGame() {
 
     const totalSlides = GALLERY_SLIDES.length
     const cricketDisplayMatches = useMemo(() => {
-        const list = cricketMatches.map((m) => {
+        const sourceMatches = (cricketMatches && cricketMatches.length > 0)
+            ? cricketMatches
+            : STATIC_CRICKET_MATCHES
+
+        const list = sourceMatches.map((m) => {
             const eventTime = m.eventTime ?? m.event_time ?? m.startTime
             let timeOnly = ''
             if (eventTime) {
@@ -479,11 +496,11 @@ function SportsGame() {
 
                     <div className='sports_game_section'>
                         <div className='sports_top_match_section'>
-                            <div className="top_match_section">
+                            <div className="top_match_section pt-0">
                                 {/* <div className="top_hd d-flex align-items-center justify-content-between">
                                     <h2 className="heading_h2">TOP SLOTS</h2>
                                 </div> */}
-
+{/* 
                                 <ul className='match_type_tabs'>
                                     {TABS.map((tab) => (
                                         <li
@@ -496,7 +513,7 @@ function SportsGame() {
                                             </button>
                                         </li>
                                     ))}
-                                </ul>
+                                </ul> */}
 
                                 {activeTab === 'cricket' && (
                                     <div className='sports_grid_section'>

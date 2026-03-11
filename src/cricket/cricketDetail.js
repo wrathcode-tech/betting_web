@@ -17,6 +17,8 @@ import {
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import LossCutIndicator from '../customComponents/LossCutIndicator'
 
+const CASHOUT_COMMISSION = 0.05 // 5% of total bet (stake)
+
 function CricketDetail() {
     const location = useLocation()
     const scrollContainerRef = useRef(null)
@@ -36,9 +38,11 @@ function CricketDetail() {
     const [betslipCurrentLoss, setBetslipCurrentLoss] = useState(null)
     const [betslipLossLimit, setBetslipLossLimit] = useState(null)
     const [cashoutId, setCashoutId] = useState(null)
+    const [cashoutValuesMap, setCashoutValuesMap] = useState({}) // { betId: { value, suspended } } from GET /bet/:betId/cashout-value
     const [openCashoutSection, setOpenCashoutSection] = useState(null)
     const [openLossCutSection, setOpenLossCutSection] = useState(null)
     const openBetsCount = openBetsList.length
+    const [isMobileBetslipOpen, setIsMobileBetslipOpen] = useState(false)
 
     useEffect(() => {
         if (!openCashoutSection && !openLossCutSection) return
@@ -60,9 +64,41 @@ function CricketDetail() {
                 const data = res?.data ?? res
                 setOpenBetsList(data?.bets ?? [])
             })
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => setOpenBetsLoading(false))
     }, [openCashoutSection])
+
+    // Fetch cashout-value from GET /bet/:betId/cashout-value for each open bet
+    useEffect(() => {
+        const openBets = (openBetsList || []).filter((b) => (b.status || 'open').toLowerCase() === 'open')
+        if (openBets.length === 0) {
+            setCashoutValuesMap({})
+            return
+        }
+        let cancelled = false
+        const fetchAll = async () => {
+            const next = {}
+            await Promise.all(
+                openBets.map(async (b) => {
+                    const bid = b._id ?? b.id
+                    if (!bid) return
+                    try {
+                        const res = await AuthService.sportsbookCashoutValue(bid)
+                        if (cancelled) return
+                        const data = res?.data ?? res
+                        const val = data?.cashoutValue ?? data?.value ?? data?.cashout_value
+                        const suspended = data?.cashoutSuspended ?? data?.suspended ?? false
+                        next[bid] = { value: val != null ? Number(val) : null, suspended }
+                    } catch {
+                        if (!cancelled) next[bid] = { value: null, suspended: true }
+                    }
+                })
+            )
+            if (!cancelled) setCashoutValuesMap(next)
+        }
+        fetchAll()
+        return () => { cancelled = true }
+    }, [openBetsList])
 
     const [defaultMatch, setDefaultMatch] = useState(null)
     const gameIdFromState = location.state?.gameId
@@ -156,10 +192,21 @@ function CricketDetail() {
             if (cancelled) return
             AuthService.sportsbookScore(eventId || gameId)
                 .then((res) => { if (!cancelled && res?.liveScore != null) setLiveScore(res.liveScore) })
-                .catch(() => {})
+                .catch(() => { })
         }, 15000)
         return () => { cancelled = true; clearInterval(t) }
     }, [eventId, gameId])
+
+    // Fetch open bets when gameId available so header Cashout button shows API value (same as popup)
+    useEffect(() => {
+        if (!gameId) return
+        AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
+            .then((res) => {
+                const data = res?.data ?? res
+                setOpenBetsList(data?.bets ?? [])
+            })
+            .catch(() => { })
+    }, [gameId])
 
     const toggleBlock = (blockId) => {
         setClosedBlocks(prev => {
@@ -174,24 +221,39 @@ function CricketDetail() {
     }
 
     const handleBetClick = (betName, market, odds, elementId, placePayload = null) => {
-        setIsBetslipOpen(true)
         const betId = `${market}-${betName}-${odds}-${elementId || ''}`
-        const uniqueId = elementId || `${betId}-${Date.now()}`
-        const existingBet = selectedBets.find(bet => bet.elementId === uniqueId)
+        const uniqueId = elementId || betId
+        const oddsNum = parseFloat(odds)
+        const isMobileViewport = typeof window !== 'undefined' && window.innerWidth <= 1024
+
+        const existingBet = selectedBets.find((bet) => bet.elementId === uniqueId)
         if (existingBet) {
+            // Same selection again → clear bet and close mobile slip
             setSelectedBets([])
+            setSlipOdds(null)
+            if (isMobileViewport) setIsMobileBetslipOpen(false)
+            return
+        }
+
+        const newBet = {
+            id: betId,
+            betName,
+            market,
+            odds: Number.isNaN(oddsNum) ? 0 : oddsNum,
+            oddsDisplay: (oddsNum && !Number.isNaN(oddsNum)) ? String(oddsNum) : (odds || '0'),
+            elementId: uniqueId,
+            placePayload: placePayload || undefined,
+        }
+
+        setSelectedBets([newBet])
+        setSlipOdds(Number.isNaN(oddsNum) ? null : oddsNum)
+
+        if (isMobileViewport) {
+            setIsMobileBetslipOpen(true)
+            setIsBetslipOpen(false)
         } else {
-            const oddsNum = parseFloat(odds)
-            const newBet = {
-                id: betId,
-                betName,
-                market,
-                odds: Number.isNaN(oddsNum) ? 0 : oddsNum,
-                oddsDisplay: (oddsNum && !Number.isNaN(oddsNum)) ? String(oddsNum) : (odds || '0'),
-                elementId: uniqueId,
-                placePayload: placePayload || undefined,
-            }
-            setSelectedBets([newBet])
+            setIsBetslipOpen(true)
+            setIsMobileBetslipOpen(false)
         }
     }
 
@@ -211,6 +273,8 @@ function CricketDetail() {
 
     const clearAllBets = () => {
         setSelectedBets([])
+        setSlipOdds(null)
+        setIsMobileBetslipOpen(false)
     }
 
     const [placeBetLoading, setPlaceBetLoading] = useState(false)
@@ -268,8 +332,17 @@ function CricketDetail() {
             }
             setSelectedBets([])
             setStake(100)
+            setBetslipView('openbets')
             const successMsg = lastRes?.data?.message ?? lastRes?.message
             if (successMsg) alertSuccessMessage(successMsg)
+            // Refetch open bets and show Back/Lay layout
+            AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
+                .then((res) => {
+                    const data = res?.data ?? res
+                    const list = data?.bets ?? (Array.isArray(data) ? data : [])
+                    setOpenBetsList(list)
+                })
+                .catch(() => { })
         } catch (err) {
             const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.response?.data?.msg ?? err?.message
             if (msg) setPlaceBetError(msg)
@@ -322,6 +395,81 @@ function CricketDetail() {
         }
     }
 
+    const getBetType = (b) => String(b.betType ?? b.bet_type ?? b.type ?? 'back').toLowerCase()
+    const renderOpenBetsContent = () => {
+        const list = openBetsList || []
+        const backBets = list.filter((b) => getBetType(b) === 'back')
+        const layBets = list.filter((b) => getBetType(b) === 'lay')
+        const displayBack = backBets.length > 0 ? backBets : (list.length > 0 && layBets.length === 0 ? list : [])
+        const displayLay = layBets
+        const renderBetCard = (b, isBack) => {
+            const bid = b._id ?? b.id
+            const statusRaw = (b.status || 'open').toLowerCase()
+            const apiEntry = cashoutValuesMap[bid]
+            const rawVal = apiEntry?.value ?? b.cashout_value
+            const cashoutVal = rawVal != null ? Number(rawVal) : null
+            const stakeVal = Number(b.stake) || 0
+            const netCashout = cashoutVal != null ? Math.max(0, cashoutVal - stakeVal * CASHOUT_COMMISSION) : null
+            const suspended = apiEntry?.suspended === true || b.cashout_suspended === true || b.cashoutSuspended === true
+            const isCashingOut = cashoutId === bid
+            return (
+                <div key={bid} className={`betslip_open_bet_card betslip_open_bet_${isBack ? 'back' : 'lay'}`}>
+                    <div className='betslip_open_bet_row_main'>
+                        <span className={`betslip_bet_type_badge ${isBack ? 'back' : 'lay'}`}>{isBack ? 'BACK' : 'LAY'}</span>
+                        <div className='betslip_open_bet_info'>
+                            <span className='betslip_open_bet_selection'>{b.selectionName || '—'}</span>
+                            <span className='betslip_open_bet_market'>{b.marketName || b.marketType || '—'}</span>
+                        </div>
+                        <div className='betslip_open_bet_values'>
+                            <span className='betslip_open_bet_odds'>{b.odds != null ? Number(b.odds) : '—'}</span>
+                            <span className='betslip_open_bet_stake'>{(Number(b.stake || 0)).toFixed(2)}</span>
+                        </div>
+                    </div>
+                    {netCashout != null && <div className='betslip_open_bet_row'><span>Cash Out Value</span><span>₹{netCashout.toLocaleString()}</span></div>}
+                    <div className='betslip_open_bet_actions'>
+                        {statusRaw !== 'open' ? (
+                            <span className='betslip_open_bet_closed'>BET CLOSED</span>
+                        ) : suspended ? (
+                            <span className='betslip_cashout_suspended'>CASH OUT NOT AVAILABLE</span>
+                        ) : (
+                            <button type='button' className='betslip_cashout_btn' onClick={() => handleCashoutBetslip(bid)} disabled={isCashingOut}>
+                                {isCashingOut ? 'CASHING OUT...' : (netCashout != null && netCashout > 0 ? `CASH OUT (₹${netCashout.toLocaleString()})` : 'CASH OUT')}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )
+        }
+        return (
+            <>
+                {displayBack.length > 0 && (
+                    <div className='betslip_open_bets_section'>
+                        <h6 className='betslip_open_bets_section_title'>Back (Bet for)</h6>
+                        <div className='betslip_open_bets_cols'>
+                            <span>Odds</span>
+                            <span>Stake</span>
+                        </div>
+                        <div className='betslip_open_bets_list'>
+                            {displayBack.map((b) => renderBetCard(b, true))}
+                        </div>
+                    </div>
+                )}
+                {displayLay.length > 0 && (
+                    <div className='betslip_open_bets_section'>
+                        <h6 className='betslip_open_bets_section_title'>Lay (Bet against)</h6>
+                        <div className='betslip_open_bets_cols'>
+                            <span>Odds</span>
+                            <span>Stake</span>
+                        </div>
+                        <div className='betslip_open_bets_list'>
+                            {displayLay.map((b) => renderBetCard(b, false))}
+                        </div>
+                    </div>
+                )}
+            </>
+        )
+    }
+
     const handleSetLossLimit = useCallback(async (dailyLossLimit) => {
         const res = await AuthService.sportsbookSetLossLimit(dailyLossLimit)
         const ok = res?.success === true || (res && res.success !== false && !res?.message)
@@ -362,7 +510,14 @@ function CricketDetail() {
         const isOpen = market.status === 'OPEN'
         const sectionCashoutTotal = (openBetsList || [])
             .filter((b) => b.gameId === gameId || b.game_id === gameId)
-            .reduce((sum, b) => sum + (Number(b.cashout_value) || 0), 0)
+            .reduce((sum, b) => {
+                const bid = b._id ?? b.id
+                const cvRaw = cashoutValuesMap[bid]?.value ?? b.cashout_value
+                const cv = Number(cvRaw) || 0
+                const stakeVal = Number(b.stake) || 0
+                const net = Math.max(0, cv - stakeVal * CASHOUT_COMMISSION)
+                return sum + net
+            }, 0)
         const gameBets = (openBetsList || []).filter((b) => (b.gameId === gameId || b.game_id === gameId) && (b.status || 'open').toLowerCase() === 'open')
         const hasOneBet = gameBets.length === 1
         const hasMultipleBets = gameBets.length > 1
@@ -377,63 +532,84 @@ function CricketDetail() {
             }
             if (hasMultipleBets) setOpenCashoutSection((prev) => (prev === sectionKey ? null : sectionKey))
         }
+        // Mobile betslip should appear only in the block whose marketType matches the selected bet
+        const currentMarketType = selectedBets[0]?.placePayload?.marketType
+        const isSlipForMatchOdds = sectionKey === 'match_odds' && currentMarketType === 'match_odds'
+        const isSlipForMiniBookmaker = sectionKey === 'mini_bookmaker' && currentMarketType === 'fancy'
+        const showMobileSlipHere = isMobileBetslipOpen && selectedBets.length > 0 && (isSlipForMatchOdds || isSlipForMiniBookmaker)
+
         return (
             <div key={sectionKey} className="odds_section_block">
                 <div className="odds_section_header">
                     <span className="odds_section_title"><i className={icon} aria-hidden /> {title}</span>
                     <div className="odds_section_header_right d-flex align-items-center gap-2 flex-wrap">
+
                         <span className="odds_section_limits">{minMax}</span>
-                        <div className="odds_section_cashout_wrap">
-                            <button
-                                type="button"
-                                className="odds_section_cashout_btn"
-                                onClick={handleCashoutClick}
-                                disabled={gameBets.length === 0}
-                            >
-                                ₹{sectionCashoutTotal.toLocaleString()} Cashout
-                            </button>
-                            {openCashoutSection === sectionKey && hasMultipleBets && (
-                                <div className="odds_section_cashout_inline">
-                                    {openBetsLoading ? (
-                                        <p className="odds_section_popover_loading">Loading...</p>
-                                    ) : (
-                                        <div className="odds_section_popover_list">
-                                            {gameBets.map((b) => {
-                                                const bid = b._id ?? b.id
-                                                const cashoutVal = b.cashout_value != null ? Number(b.cashout_value) : null
-                                                const suspended = b.cashout_suspended === true || b.cashoutSuspended === true
-                                                const isCashingOut = cashoutId === bid
-                                                return (
-                                                    <div key={bid} className="odds_section_popover_item">
-                                                        <div className="odds_section_popover_item_info">
-                                                            <span className="odds_section_popover_item_selection">{b.selectionName || b.marketName || '—'}</span>
-                                                            {cashoutVal != null && <span className="odds_section_popover_item_val">₹{cashoutVal.toLocaleString()}</span>}
+
+                        {gameBets.length > 0 && (() => {
+                            const totalStake = gameBets.reduce((s, b) => s + (Number(b.stake) || 0), 0)
+                            const types = [...new Set(gameBets.map((b) => ((b.betType || b.bet_type || 'back').toLowerCase())))]
+                            const typeLabel = types.length === 1 ? (types[0] === 'lay' ? 'Lay' : 'Back') : 'Back + Lay'
+                            return <span className="odds_section_bet_info">₹{totalStake.toLocaleString()} {typeLabel}</span>
+                        })()}
+
+                        <div className='d-flex gap-2'>
+                            <div className="odds_section_cashout_wrap">
+                                <button
+                                    type="button"
+                                    className="odds_section_cashout_btn"
+                                    onClick={handleCashoutClick}
+                                >
+                                    {`Cashout (₹${sectionCashoutTotal.toLocaleString()})`}
+                                </button>
+                                {openCashoutSection === sectionKey && hasMultipleBets && (
+                                    <div className="odds_section_cashout_inline">
+                                        {openBetsLoading ? (
+                                            <p className="odds_section_popover_loading">Loading...</p>
+                                        ) : (
+                                            <div className="odds_section_popover_list">
+                                                {gameBets.map((b) => {
+                                                    const bid = b._id ?? b.id
+                                                    const apiEntry = cashoutValuesMap[bid]
+                                                    const rawVal = apiEntry?.value ?? b.cashout_value
+                                                    const cashoutVal = rawVal != null ? Number(rawVal) : null
+                                                    const stakeVal = Number(b.stake) || 0
+                                                    const netCashout = cashoutVal != null ? Math.max(0, cashoutVal - stakeVal * CASHOUT_COMMISSION) : null
+                                                    const suspended = apiEntry?.suspended === true || b.cashout_suspended === true || b.cashoutSuspended === true
+                                                    const isCashingOut = cashoutId === bid
+                                                    return (
+                                                        <div key={bid} className="odds_section_popover_item">
+                                                            <div className="odds_section_popover_item_info">
+                                                                <span className="odds_section_popover_item_selection">{b.selectionName || b.marketName || '—'}</span>
+                                                                {netCashout != null && <span className="odds_section_popover_item_val">₹{netCashout.toLocaleString()}</span>}
+                                                            </div>
+                                                            {suspended ? (
+                                                                <span className="odds_section_popover_suspended">Not available</span>
+                                                            ) : (
+                                                                <button type="button" className="odds_section_popover_cashout_btn" onClick={() => handleCashoutBetslip(bid)} disabled={isCashingOut}>
+                                                                    {isCashingOut ? '...' : (netCashout != null && netCashout > 0 ? `Cashout ₹${netCashout.toLocaleString()}` : 'Cashout')}
+                                                                </button>
+                                                            )}
                                                         </div>
-                                                        {suspended ? (
-                                                            <span className="odds_section_popover_suspended">Not available</span>
-                                                        ) : (
-                                                            <button type="button" className="odds_section_popover_cashout_btn" onClick={() => handleCashoutBetslip(bid)} disabled={isCashingOut}>
-                                                                {isCashingOut ? '...' : (cashoutVal != null && cashoutVal > 0 ? `Cashout ₹${cashoutVal.toLocaleString()}` : 'Cashout')}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="odds_section_loss_cut_wrap" style={{ position: 'relative' }}>
+                                <button type="button" className="odds_section_loss_cut_btn" onClick={(e) => { e.stopPropagation(); setOpenCashoutSection(null); setOpenLossCutSection((prev) => (prev === sectionKey ? null : sectionKey)); }}>
+                                    {`Loss Cut (₹${Number(betslipCurrentLoss ?? betslipExposure ?? 0).toLocaleString()})`}
+                                </button>
+                                {openLossCutSection === sectionKey && (
+                                    <div className="odds_section_popover odds_section_loss_cut_popover">
+                                        <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                        <div className="odds_section_loss_cut_wrap" style={{ position: 'relative' }}>
-                            <button type="button" className="odds_section_loss_cut_btn" onClick={(e) => { e.stopPropagation(); setOpenCashoutSection(null); setOpenLossCutSection((prev) => (prev === sectionKey ? null : sectionKey)); }}>
-                                Loss Cut
-                            </button>
-                            {openLossCutSection === sectionKey && (
-                                <div className="odds_section_popover odds_section_loss_cut_popover">
-                                    <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
-                                </div>
-                            )}
-                        </div>
+
                     </div>
                 </div>
                 <div className="odds_section_table_wrap">
@@ -481,67 +657,302 @@ function CricketDetail() {
                                 const lossAmount = (stakeNum > 0 && oddsVal >= 1) ? (isBack ? stakeNum : stakeNum * (oddsVal - 1)) : null
                                 const showProfitOnThisRow = isMatchOdds && matchOddsBet && (isThisRowSelectedTeam ? isBack : !isBack)
                                 const showLossOnThisRow = isMatchOdds && matchOddsBet && (isThisRowSelectedTeam ? !isBack : isBack)
+
+                                const totalCols = 2 + backCells.length + layCells.length
+                                const isMiniBookRowSelected =
+                                    showMobileSlipHere &&
+                                    sectionKey === 'mini_bookmaker' &&
+                                    selectedBets[0]?.betName === name &&
+                                    selectedBets[0]?.market === market.market
+
                                 return (
-                                    <tr key={odd.sid ?? oIdx}>
-                                        <td className="odds_section_market_name">{name}</td>
-                                        <td className="odds_section_indicator_cell">
-                                            {isMatchOdds && matchOddsBet && stakeNum > 0 && (
-                                                <>
-                                                    {showProfitOnThisRow && profitAmount != null && (
-                                                        <span className="odds_section_pl_box odds_section_pl_box_positive" title="Jit gaya to itna profit">
-                                                            +{profitAmount.toFixed(2)}
-                                                        </span>
-                                                    )}
-                                                    {showLossOnThisRow && lossAmount != null && (
-                                                        <span className="odds_section_pl_box odds_section_pl_box_negative" title="Harega to itna loss">
-                                                            -{lossAmount.toFixed(2)}
-                                                        </span>
-                                                    )}
-                                                </>
-                                            )}
-                                        </td>
-                                        {backCells.map((cell, cIdx) => {
-                                            const hasVal = isOpen && !isOddsLocked(cell.odds)
-                                            const oddsStr = String(cell.odds ?? '')
-                                            const placePayload = hasVal && gameId && eventNameFromState && marketId && (odd.sid != null) ? { sport: sportName, gameId, eventName: eventNameFromState, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(odd.sid), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0 } : null
-                                            const elId = `odds-${sectionKey}-${oIdx}-back-${cIdx}`
-                                            return (
-                                                <td key={cIdx} className="odds_section_cell odds_section_cell_back">
-                                                    {hasVal ? (
-                                                        <button type="button" className={`odds_section_btn odds_section_back ${isBetSelected(name, market.market, oddsStr, elId) ? 'selected' : ''}`} onClick={() => handleBetClick(name, market.market, oddsStr, elId, placePayload)}>
-                                                            <span className="odds_val">{cell.odds}</span>
-                                                            <span className="odds_size">{formatOddsSize(cell.size)}</span>
-                                                        </button>
-                                                    ) : (
-                                                        <span className="odds_section_locked"><i className="ri-lock-line" aria-hidden /></span>
+                                    <React.Fragment key={odd.sid ?? oIdx}>
+                                        <tr>
+                                            <td className="odds_section_market_name">{name}</td>
+                                            <td className="odds_section_indicator_cell">
+                                                {isMatchOdds && matchOddsBet && stakeNum > 0 && (
+                                                    <>
+                                                        {showProfitOnThisRow && profitAmount != null && (
+                                                            <span className="odds_section_pl_box odds_section_pl_box_positive" title="Jit gaya to itna profit">
+                                                                +{profitAmount.toFixed(2)}
+                                                            </span>
+                                                        )}
+                                                        {showLossOnThisRow && lossAmount != null && (
+                                                            <span className="odds_section_pl_box odds_section_pl_box_negative" title="Harega to itna loss">
+                                                                -{lossAmount.toFixed(2)}
+                                                            </span>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </td>
+                                            {backCells.map((cell, cIdx) => {
+                                                const hasVal = isOpen && !isOddsLocked(cell.odds)
+                                                const oddsStr = String(cell.odds ?? '')
+                                                const placePayload = hasVal && gameId && eventNameFromState && marketId && (odd.sid != null) ? { sport: sportName, gameId, eventName: eventNameFromState, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(odd.sid), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0 } : null
+                                                const elId = `odds-${sectionKey}-${oIdx}-back-${cIdx}`
+                                                return (
+                                                    <td key={cIdx} className="odds_section_cell odds_section_cell_back">
+                                                        {hasVal ? (
+                                                            <button type="button" className={`odds_section_btn odds_section_back ${isBetSelected(name, market.market, oddsStr, elId) ? 'selected' : ''}`} onClick={() => handleBetClick(name, market.market, oddsStr, elId, placePayload)}>
+                                                                <span className="odds_val">{cell.odds}</span>
+                                                                <span className="odds_size">{formatOddsSize(cell.size)}</span>
+                                                            </button>
+                                                        ) : (
+                                                            <span className="odds_section_locked"><i className="ri-lock-line" aria-hidden /></span>
+                                                        )}
+                                                    </td>
+                                                )
+                                            })}
+                                            {layCells.map((cell, cIdx) => {
+                                                const hasVal = isOpen && !isOddsLocked(cell.odds)
+                                                const oddsStr = String(cell.odds ?? '')
+                                                const placePayload = hasVal && gameId && eventNameFromState && marketId && (odd.sid != null) ? { sport: sportName, gameId, eventName: eventNameFromState, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(odd.sid), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0 } : null
+                                                const elId = `odds-${sectionKey}-${oIdx}-lay-${cIdx}`
+                                                return (
+                                                    <td key={cIdx} className="odds_section_cell odds_section_cell_lay">
+                                                        {hasVal ? (
+                                                            <button type="button" className={`odds_section_btn odds_section_lay ${isBetSelected(name, market.market, oddsStr, elId) ? 'selected' : ''}`} onClick={() => handleBetClick(name, market.market, oddsStr, elId, placePayload)}>
+                                                                <span className="odds_val">{cell.odds}</span>
+                                                                <span className="odds_size">{formatOddsSize(cell.size)}</span>
+                                                            </button>
+                                                        ) : (
+                                                            <span className="odds_section_locked"><i className="ri-lock-line" aria-hidden /></span>
+                                                        )}
+                                                    </td>
+                                                )
+                                            })}
+                                        </tr>
+
+                                        {isMiniBookRowSelected && (
+                                            <tr className="cricketbet_mobile_row">
+                                                <td colSpan={totalCols}>
+                                                    {showMobileSlipHere && (
+                                                        <div className="cricketbet_mobile">
+                                                            <div className="betslip_panel">
+                                                                <div className="betslip_content">
+                                                                    <div className='d-flex value_amount gap-2'>
+                                                                        <div className="betslip_odd_section">
+                                                                            <label className="betslip_label">Odd Value</label>
+                                                                            <div className="betslip_odd_stepper">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    className="betslip_odd_btn"
+                                                                                    onClick={() => {
+                                                                                        const curr = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
+                                                                                        if (curr > 1.01) setSlipOdds(Number((curr - 0.01).toFixed(2)))
+                                                                                    }}
+                                                                                >−</button>
+                                                                                <input
+                                                                                    className="betslip_odd_input"
+                                                                                    type="text"
+                                                                                    value={selectedBets.length > 0 ? (Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0).toFixed(2) : '0.00'}
+                                                                                    readOnly
+                                                                                />
+                                                                                <button
+                                                                                    type="button"
+                                                                                    className="betslip_odd_btn"
+                                                                                    onClick={() => {
+                                                                                        const base = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
+                                                                                        const next = base + 0.01
+                                                                                        setSlipOdds(Number(next.toFixed(2)))
+                                                                                    }}
+                                                                                >+</button>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="betslip_amount_section">
+                                                                            <label className="betslip_label">Amount</label>
+                                                                            <input
+                                                                                className="betslip_amount_input"
+                                                                                type="number"
+                                                                                placeholder="0"
+                                                                                min="100"
+                                                                                max="10000"
+                                                                                value={stake}
+                                                                                onChange={(e) => {
+                                                                                    const v = e.target.value
+                                                                                    if (v === '' || v === '-') { setStake(''); return }
+                                                                                    const n = parseFloat(v)
+                                                                                    if (!Number.isNaN(n)) setStake(n)
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="betslip_quick_stakes">
+                                                                        {[100, 200, 500, 1000, 2000, 5000, 10000, 25000].map((amt) => (
+                                                                            <button
+                                                                                key={amt}
+                                                                                type="button"
+                                                                                className="betslip_quick_btn"
+                                                                                onClick={() => setStake(prev => Math.min(10000, (Number(prev) || 0) + amt))}
+                                                                            >
+                                                                                +{amt >= 1000 ? (amt / 1000).toFixed(0) + ',' + (amt % 1000 ? String(amt).slice(-3) : '000') : amt}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+
+                                                                    <div className="betslip_actions">
+                                                                        <button type="button" className="betslip_act_min" onClick={() => setStake(100)}>MIN STAKE</button>
+                                                                        <button type="button" className="betslip_act_max" onClick={() => setStake(10000)}>MAX STAKE</button>
+                                                                        <button
+                                                                            type="button"
+                                                                            className="betslip_act_edit"
+                                                                            onClick={() => document.querySelector('.cricketbet_mobile .betslip_amount_input')?.focus()}
+                                                                        >
+                                                                            EDIT STAKE
+                                                                        </button>
+                                                                        <button type="button" className="betslip_act_clear" onClick={clearAllBets}>CLEAR</button>
+                                                                    </div>
+
+                                                                    <div className="betslip_summary_new">
+                                                                        <div className="betslip_summary_line">
+                                                                            <span>Your profit/loss as per placed bet</span>
+                                                                            <span className="betslip_summary_val betslip_summary_profit">
+                                                                                {calculateProfitLoss()} ₹
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <div className="betslip_summary_line">
+                                                                            <span>Total Amount (in ₹)</span>
+                                                                            <span className="betslip_summary_val">
+                                                                                {stake === '' ? '0.00' : (Number(stake) || 0).toFixed(2)} ₹
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {placeBetError && <p className='betslip_error'>{placeBetError}</p>}
+                                                                    <button
+                                                                        className="betslip_place_bet_btn"
+                                                                        onClick={handlePlaceBet}
+                                                                        disabled={placeBetLoading || lossLimitReached}
+                                                                    >
+                                                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     )}
                                                 </td>
-                                            )
-                                        })}
-                                        {layCells.map((cell, cIdx) => {
-                                            const hasVal = isOpen && !isOddsLocked(cell.odds)
-                                            const oddsStr = String(cell.odds ?? '')
-                                            const placePayload = hasVal && gameId && eventNameFromState && marketId && (odd.sid != null) ? { sport: sportName, gameId, eventName: eventNameFromState, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(odd.sid), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0 } : null
-                                            const elId = `odds-${sectionKey}-${oIdx}-lay-${cIdx}`
-                                            return (
-                                                <td key={cIdx} className="odds_section_cell odds_section_cell_lay">
-                                                    {hasVal ? (
-                                                        <button type="button" className={`odds_section_btn odds_section_lay ${isBetSelected(name, market.market, oddsStr, elId) ? 'selected' : ''}`} onClick={() => handleBetClick(name, market.market, oddsStr, elId, placePayload)}>
-                                                            <span className="odds_val">{cell.odds}</span>
-                                                            <span className="odds_size">{formatOddsSize(cell.size)}</span>
-                                                        </button>
-                                                    ) : (
-                                                        <span className="odds_section_locked"><i className="ri-lock-line" aria-hidden /></span>
-                                                    )}
-                                                </td>
-                                            )
-                                        })}
-                                    </tr>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
                                 )
                             })}
                         </tbody>
                     </table>
                 </div>
+
+
+                {showMobileSlipHere && sectionKey === 'match_odds' && (
+                    <div className="cricketbet_mobile">
+                        <div className="betslip_panel">
+                            <div className="betslip_content">
+                                <div className='d-flex value_amount gap-2'>
+                                    <div className="betslip_odd_section">
+                                        <label className="betslip_label">Odd Value</label>
+                                        <div className="betslip_odd_stepper">
+                                            <button
+                                                type="button"
+                                                className="betslip_odd_btn"
+                                                onClick={() => {
+                                                    const curr = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
+                                                    if (curr > 1.01) setSlipOdds(Number((curr - 0.01).toFixed(2)))
+                                                }}
+                                            >−</button>
+                                            <input
+                                                className="betslip_odd_input"
+                                                type="text"
+                                                value={selectedBets.length > 0 ? (Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0).toFixed(2) : '0.00'}
+                                                readOnly
+                                            />
+                                            <button
+                                                type="button"
+                                                className="betslip_odd_btn"
+                                                onClick={() => {
+                                                    const base = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
+                                                    const next = base + 0.01
+                                                    setSlipOdds(Number(next.toFixed(2)))
+                                                }}
+                                            >+</button>
+                                        </div>
+                                    </div>
+
+                                    <div className="betslip_amount_section">
+                                        <label className="betslip_label">Amount</label>
+                                        <input
+                                            className="betslip_amount_input"
+                                            type="number"
+                                            placeholder="0"
+                                            min="100"
+                                            max="10000"
+                                            value={stake}
+                                            onChange={(e) => {
+                                                const v = e.target.value
+                                                if (v === '' || v === '-') { setStake(''); return }
+                                                const n = parseFloat(v)
+                                                if (!Number.isNaN(n)) setStake(n)
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="betslip_quick_stakes">
+                                    {[100, 200, 500, 1000, 2000, 5000, 10000, 25000].map((amt) => (
+                                        <button
+                                            key={amt}
+                                            type="button"
+                                            className="betslip_quick_btn"
+                                            onClick={() => setStake(prev => Math.min(10000, (Number(prev) || 0) + amt))}
+                                        >
+                                            +{amt >= 1000 ? (amt / 1000).toFixed(0) + ',' + (amt % 1000 ? String(amt).slice(-3) : '000') : amt}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="betslip_actions">
+                                    <button type="button" className="betslip_act_min" onClick={() => setStake(100)}>MIN STAKE</button>
+                                    <button type="button" className="betslip_act_max" onClick={() => setStake(10000)}>MAX STAKE</button>
+                                    <button
+                                        type="button"
+                                        className="betslip_act_edit"
+                                        onClick={() => document.querySelector('.cricketbet_mobile .betslip_amount_input')?.focus()}
+                                    >
+                                        EDIT STAKE
+                                    </button>
+                                    <button type="button" className="betslip_act_clear" onClick={clearAllBets}>CLEAR</button>
+                                </div>
+
+                                <div className="betslip_summary_new">
+                                    <div className="betslip_summary_line">
+                                        <span>Your profit/loss as per placed bet</span>
+                                        <span className="betslip_summary_val betslip_summary_profit">
+                                            {calculateProfitLoss()} ₹
+                                        </span>
+                                    </div>
+
+                                    <div className="betslip_summary_line">
+                                        <span>Total Amount (in ₹)</span>
+                                        <span className="betslip_summary_val">
+                                            {stake === '' ? '0.00' : (Number(stake) || 0).toFixed(2)} ₹
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {placeBetError && <p className='betslip_error'>{placeBetError}</p>}
+                                <button
+                                    className="betslip_place_bet_btn"
+                                    onClick={handlePlaceBet}
+                                    disabled={placeBetLoading || lossLimitReached}
+                                >
+                                    {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+
                 <div className="odds_section_footer">THE ULTIMATE ADVENTURE 🏏 CRICKET BATTLE ⚡ IS LIVE NOW : (CREATE YOUR OWN TEAM & PLAY LIKE A PRO) 🏆</div>
             </div>
         )
@@ -952,12 +1363,19 @@ function CricketDetail() {
 
 
 
-                                    {(location.state?.inPlay ?? defaultMatch?.inPlay) && (
-                                        <span className='cricket_ball_running_badge'>
-                                            <span className='cricket_ball_running_dot' />
-                                            Ball Running
-                                        </span>
-                                    )}
+                                    {(() => {
+                                        const hasLiveScore = liveScore && !liveScore.error && liveScore.ScoreData?.Score?.[0]
+                                        const s = hasLiveScore ? liveScore.ScoreData.Score[0] : null
+                                        const rawBalls = s ? [s.CurrentOverBalls1, s.CurrentOverBalls2, s.CurrentOverBalls3, s.CurrentOverBalls4, s.CurrentOverBalls5, s.CurrentOverBalls6].filter(Boolean) : []
+                                        const isPlaceholder = rawBalls.length === 1 && /^\d{5,6}$/.test(String(rawBalls[0]).trim())
+                                        const hasRealBallData = rawBalls.length > 0 && !isPlaceholder
+                                        return (location.state?.inPlay ?? defaultMatch?.inPlay) && hasRealBallData ? (
+                                            <span className='cricket_ball_running_badge'>
+                                                <span className='cricket_ball_running_dot' />
+                                                Ball Running
+                                            </span>
+                                        ) : null
+                                    })()}
                                 </div>
 
 
@@ -1037,80 +1455,85 @@ function CricketDetail() {
                                     }
                                     const crr = s.CRR ?? '—'
                                     const rrr = s.RRR ?? '—'
-                                    const overBalls = [s.CurrentOverBalls1, s.CurrentOverBalls2, s.CurrentOverBalls3, s.CurrentOverBalls4, s.CurrentOverBalls5, s.CurrentOverBalls6].filter(Boolean)
+                                    const rawBalls = [s.CurrentOverBalls1, s.CurrentOverBalls2, s.CurrentOverBalls3, s.CurrentOverBalls4, s.CurrentOverBalls5, s.CurrentOverBalls6].filter(Boolean)
+                                    const isPlaceholder = rawBalls.length === 1 && /^\d{5,6}$/.test(String(rawBalls[0]).trim())
+                                    const overBalls = isPlaceholder ? [] : rawBalls
                                     const overStr = overBalls.length > 0 ? overBalls.join(' ') : '—'
                                     const team1Flag = s.Team1Flag || s.team1Flag
                                     const team2Flag = s.Team2Flag || s.team2Flag
                                     const statusText = [s.ScoreStatus, s.LiveCommentary, s.Message].filter(Boolean).join(' · ') || '—'
                                     return (
                                         <>
-                                <div className='cricket_live_top_panel'>
-                                    <div className='cricket_live_team_left'>
-                                        <div className='cricket_live_team_name'>
-                                            {team1Flag ? <img src={team1Flag} alt="" className="cricket_live_team_flag" /> : null}
-                                            {teamA}
-                                        </div>
-                                        <div className='cricket_live_score_row'>
-                                            <span className='cricket_live_score_box'>{s.Team1OnlyScore || s.Team1Score || '—'}</span>
-                                            <span className='cricket_live_crr'>CRR: {crr}</span>
-                                        </div>
-                                        <div className='cricket_live_over_box'>{overStr}</div>
-                                    </div>
-                                    <div className='cricket_live_center'>
-                                        <span className='cricket_live_toss'>{statusText}</span>
-                                    </div>
-                                    <div className='cricket_live_team_right'>
-                                        <div className='cricket_live_team_name'>
-                                            {team2Flag ? <img src={team2Flag} alt="" className="cricket_live_team_flag" /> : null}
-                                            {teamB}
-                                        </div>
-                                        <div className='cricket_live_score_row'>
-                                            <span className='cricket_live_rrr'>RRR: {rrr}</span>
-                                            <span className='cricket_live_score_box'>{s.Team2OnlyScore || s.Team2Score || '—'}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                            <div className='cricket_live_center'>
+                                                <span className='cricket_live_toss'>{statusText}</span>
+                                            </div>
+                                            <div className='cricket_live_top_panel'>
+                                                <div className='cricket_live_team_left'>
+                                                    <div className='cricket_live_team_name'>
+                                                        {team1Flag ? <img src={team1Flag} alt="" className="cricket_live_team_flag" /> : null}
+                                                        {teamA}
+                                                    </div>
+                                                    <div className='cricket_live_score_row'>
+                                                        <span className='cricket_live_score_box'>{s.Team1OnlyScore || s.Team1Score || '—'}</span>
+                                                        <span className='cricket_live_crr'>CRR: {crr}</span>
+                                                    </div>
+                                                    <div className='cricket_live_over_box desktop_view'>{overStr}</div>
+                                                </div>
 
-                                <div className='cricket_live_batsmen_section'>
-                                    <table className='cricket_live_table'>
-                                        <thead>
-                                            <tr>
-                                                <th className='cricket_live_th_name'><i className='ri-cricket-line' aria-hidden /> Batsmen</th>
-                                                <th className='cricket_live_th_num'>R</th>
-                                                <th className='cricket_live_th_num'>B</th>
-                                                <th className='cricket_live_th_num'>4s</th>
-                                                <th className='cricket_live_th_num'>6s</th>
-                                                <th className='cricket_live_th_num'>SR</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td className='cricket_live_td_name'>
-                                                    <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
-                                                    {s.Player1 || '—'}
-                                                </td>
-                                                <td className='cricket_live_td_num'>{s.Player1Run ?? '—'}</td>
-                                                <td className='cricket_live_td_num'>{s.Player1Balls ?? '—'}</td>
-                                                <td className='cricket_live_td_num'>{s.Player1Fours ?? '—'}</td>
-                                                <td className='cricket_live_td_num'>{s.Player1Sixes ?? '—'}</td>
-                                                <td className='cricket_live_td_num'>{s.Player1StrikeRate ?? '—'}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className='cricket_live_td_name'>
-                                                    <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
-                                                    {s.Player2 || '—'}
-                                                </td>
-                                                <td className='cricket_live_td_num'>{s.Player2Run ?? '—'}</td>
-                                                <td className='cricket_live_td_num'>{s.Player2Balls ?? '—'}</td>
-                                                <td className='cricket_live_td_num'>{s.Player2Fours ?? '—'}</td>
-                                                <td className='cricket_live_td_num'>{s.Player2Sixes ?? '—'}</td>
-                                                <td className='cricket_live_td_num'>{s.Player2StrikeRate ?? '—'}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                <div className='cricket_live_team_right'>
+                                                    <div className='cricket_live_team_name'>
+                                                        {team2Flag ? <img src={team2Flag} alt="" className="cricket_live_team_flag" /> : null}
+                                                        {teamB}
+                                                    </div>
+                                                    <div className='cricket_live_score_row'>
+                                                        <span className='cricket_live_rrr'>RRR: {rrr}</span>
+                                                        <span className='cricket_live_score_box'>{s.Team2OnlyScore || s.Team2Score || '—'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                <div className='cricket_live_bowler_section'>
+                                            <div className='cricket_live_batsmen_section'>
+                                                <table className='cricket_live_table'>
+                                                    <thead>
+                                                        <tr>
+                                                            <th className='cricket_live_th_name'><i className='ri-cricket-line' aria-hidden /> Batsmen</th>
+                                                            <th className='cricket_live_th_num'>R</th>
+                                                            <th className='cricket_live_th_num'>B</th>
+                                                            <th className='cricket_live_th_num'>4s</th>
+                                                            <th className='cricket_live_th_num'>6s</th>
+                                                            <th className='cricket_live_th_num'>SR</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td className='cricket_live_td_name'>
+                                                                <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
+                                                                {s.Player1 || '—'}
+                                                            </td>
+                                                            <td className='cricket_live_td_num'>{s.Player1Run ?? '—'}</td>
+                                                            <td className='cricket_live_td_num'>{s.Player1Balls ?? '—'}</td>
+                                                            <td className='cricket_live_td_num'>{s.Player1Fours ?? '—'}</td>
+                                                            <td className='cricket_live_td_num'>{s.Player1Sixes ?? '—'}</td>
+                                                            <td className='cricket_live_td_num'>{s.Player1StrikeRate ?? '—'}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className='cricket_live_td_name'>
+                                                                <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
+                                                                {s.Player2 || '—'}
+                                                            </td>
+                                                            <td className='cricket_live_td_num'>{s.Player2Run ?? '—'}</td>
+                                                            <td className='cricket_live_td_num'>{s.Player2Balls ?? '—'}</td>
+                                                            <td className='cricket_live_td_num'>{s.Player2Fours ?? '—'}</td>
+                                                            <td className='cricket_live_td_num'>{s.Player2Sixes ?? '—'}</td>
+                                                            <td className='cricket_live_td_num'>{s.Player2StrikeRate ?? '—'}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div className='cricket_live_over_box mobile_view'>{overStr}</div>
+
+                                            {/* <div className='cricket_live_bowler_section'>
                                     <table className='cricket_live_table'>
                                         <thead>
                                             <tr>
@@ -1136,7 +1559,7 @@ function CricketDetail() {
                                             </tr>
                                         </tbody>
                                     </table>
-                                </div>
+                                </div> */}
                                         </>
                                     )
                                 })()}
@@ -1165,7 +1588,7 @@ function CricketDetail() {
                                                 <button onClick={() => setActiveTab('odd-even')}>ODD/EVEN</button>
                                             </li>
                                             <li className={`open_bets_tab ${activeTab === 'open-bets' ? 'active' : ''}`}>
-                                                <button onClick={() => setActiveTab('open-bets')}>OPEN BETS</button>
+                                                <button onClick={() => setActiveTab('open-bets')}>(OPEN BETS) ({openBetsCount})</button>
                                             </li>
                                         </ul>
                                     </div>
@@ -1517,46 +1940,7 @@ function CricketDetail() {
                                                 ) : openBetsList.length === 0 ? (
                                                     <div className='betslip_empty'><p>No open bets.</p></div>
                                                 ) : (
-                                                    <div className='betslip_open_bets'>
-                                                        {openBetsList.map((b) => {
-                                                            const bid = b._id ?? b.id
-                                                            const statusRaw = (b.status || 'open').toLowerCase()
-                                                            const cashoutVal = b.cashout_value != null ? Number(b.cashout_value) : null
-                                                            const suspended = b.cashout_suspended === true || b.cashoutSuspended === true
-                                                            const isCashingOut = cashoutId === bid
-                                                            return (
-                                                                <div key={bid} className='betslip_open_bet_card'>
-                                                                    <div className='betslip_open_bet_title'>{b.eventName || '—'}</div>
-                                                                    <div className='betslip_open_bet_row'><span>Market</span><span>{b.marketName || b.marketType || '—'}</span></div>
-                                                                    <div className='betslip_open_bet_row'><span>Selection</span><span>{b.selectionName || '—'}</span></div>
-                                                                    <div className='betslip_open_bet_row'><span>Stake</span><span>₹{Number(b.stake || 0).toLocaleString()}</span></div>
-                                                                    <div className='betslip_open_bet_row'><span>Odds</span><span>{b.odds != null ? Number(b.odds) : '—'}</span></div>
-                                                                    <div className='betslip_open_bet_row'><span>Potential Win</span><span>₹{Number(b.potentialProfit || 0).toLocaleString()}</span></div>
-                                                                    {cashoutVal != null && <div className='betslip_open_bet_row'><span>Cash Out Value</span><span>₹{cashoutVal.toLocaleString()}</span></div>}
-                                                                    <div className='betslip_open_bet_actions'>
-                                                                        {statusRaw !== 'open' ? (
-                                                                            <span className='betslip_open_bet_closed'>BET CLOSED</span>
-                                                                        ) : suspended ? (
-                                                                            <span className='betslip_cashout_suspended'>CASH OUT NOT AVAILABLE</span>
-                                                                        ) : (
-                                                                            <button
-                                                                                type='button'
-                                                                                className='betslip_cashout_btn'
-                                                                                onClick={() => handleCashoutBetslip(bid)}
-                                                                                disabled={isCashingOut}
-                                                                            >
-                                                                                {isCashingOut
-                                                                                    ? 'CASHING OUT...'
-                                                                                    : (cashoutVal != null && cashoutVal > 0
-                                                                                        ? `CASH OUT (₹${cashoutVal.toLocaleString()})`
-                                                                                        : 'CASH OUT')}
-                                                                            </button>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            )
-                                                        })}
-                                                    </div>
+                                                    <div className='betslip_open_bets'>{renderOpenBetsContent()}</div>
                                                 )}
                                             </div>
                                         )}
@@ -1777,46 +2161,7 @@ function CricketDetail() {
                                     ) : openBetsList.length === 0 ? (
                                         <div className='betslip_empty'><p>No open bets.</p></div>
                                     ) : (
-                                        <div className='betslip_open_bets'>
-                                            {openBetsList.map((b) => {
-                                                const bid = b._id ?? b.id
-                                                const statusRaw = (b.status || 'open').toLowerCase()
-                                                const cashoutVal = b.cashout_value != null ? Number(b.cashout_value) : null
-                                                const suspended = b.cashout_suspended === true || b.cashoutSuspended === true
-                                                const isCashingOut = cashoutId === bid
-                                                return (
-                                                    <div key={bid} className='betslip_open_bet_card'>
-                                                        <div className='betslip_open_bet_title'>{b.eventName || '—'}</div>
-                                                        <div className='betslip_open_bet_row'><span>Market</span><span>{b.marketName || b.marketType || '—'}</span></div>
-                                                        <div className='betslip_open_bet_row'><span>Selection</span><span>{b.selectionName || '—'}</span></div>
-                                                        <div className='betslip_open_bet_row'><span>Stake</span><span>₹{Number(b.stake || 0).toLocaleString()}</span></div>
-                                                        <div className='betslip_open_bet_row'><span>Odds</span><span>{b.odds != null ? Number(b.odds) : '—'}</span></div>
-                                                        <div className='betslip_open_bet_row'><span>Potential Win</span><span>₹{Number(b.potentialProfit || 0).toLocaleString()}</span></div>
-                                                        {cashoutVal != null && <div className='betslip_open_bet_row'><span>Cash Out Value</span><span>₹{cashoutVal.toLocaleString()}</span></div>}
-                                                        <div className='betslip_open_bet_actions'>
-                                                            {statusRaw !== 'open' ? (
-                                                                <span className='betslip_open_bet_closed'>BET CLOSED</span>
-                                                            ) : suspended ? (
-                                                                <span className='betslip_cashout_suspended'>CASH OUT NOT AVAILABLE</span>
-                                                            ) : (
-                                                                <button
-                                                                    type='button'
-                                                                    className='betslip_cashout_btn'
-                                                                    onClick={() => handleCashoutBetslip(bid)}
-                                                                    disabled={isCashingOut}
-                                                                >
-                                                                    {isCashingOut
-                                                                        ? 'CASHING OUT...'
-                                                                        : (cashoutVal != null && cashoutVal > 0
-                                                                            ? `CASH OUT (₹${cashoutVal.toLocaleString()})`
-                                                                            : 'CASH OUT')}
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
+                                        <div className='betslip_open_bets betslip_open_bets_panel'>{renderOpenBetsContent()}</div>
                                     )}
                                 </>
                             ) : selectedBets.length > 0 ? (
@@ -1900,9 +2245,9 @@ function CricketDetail() {
                                         </div>
                                     </div>
 
-                                    <p className='betslip_clear_all'>
+                                    {/* <p className='betslip_clear_all'>
                                         <button type='button' className='betslip_clear_all_btn' onClick={clearAllBets}>Clear all bets</button>
-                                    </p>
+                                    </p> */}
                                     {placeBetError && <p className='betslip_error'>{placeBetError}</p>}
                                     <button className='betslip_place_bet_btn' onClick={handlePlaceBet} disabled={placeBetLoading || lossLimitReached}>
                                         {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}

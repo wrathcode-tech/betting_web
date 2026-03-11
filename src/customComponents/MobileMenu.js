@@ -42,7 +42,7 @@ function MobileMenu() {
                             <span className="icon mobile-menu__icon">
                                 <img src={`${process.env.PUBLIC_URL || ''}/images/menu-icon19.svg`} alt="" className="mobile_menu_inplay_icon" />
                             </span>
-                            <span className="mobile-menu__name">Inplay</span>
+                            <span className="mobile-menu__name">Cricket</span>
                         </NavLink>
                     </li>
 

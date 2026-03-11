@@ -16,6 +16,7 @@ import '../customComponents/Footer.css'
 import '../sports/sportsGame.css'
 
 const Footer = lazy(() => import('../customComponents/footer'));
+const MobileMenu = lazy(() => import('../customComponents/MobileMenu'));
 
 const MAX_SLIDER_ITEMS = 15
 const MAX_CONTENT_BEFORE_VIEW_ALL = MAX_SLIDER_ITEMS - 1
@@ -1617,6 +1618,7 @@ function LandingPage() {
 
       <Suspense fallback={null}>
         <Footer />
+        <MobileMenu />
       </Suspense>
     </>
   )
