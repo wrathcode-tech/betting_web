@@ -19,37 +19,11 @@ const GALLERY_SLIDES = ['images/sports_slider_img2.png', 'images/sports_slider_i
 const GALLERY_SLIDES_MOBILE = ['images/sports_bnr_mobile2.jpg', 'images/sports_bnr_mobile.jpg', 'images/sports_bnr_mobile3.jpg']
 const TABS = [
     { id: 'cricket', label: 'Cricket', icon: 'images/menu-icon19.svg' },
-    // { id: 'tennis', label: 'Tennis', icon: 'images/menu-icon20.svg' },
-    // { id: 'basketball', label: 'Basketball', icon: 'images/menu-icon6.svg' },
-    // { id: 'table-tennis', label: 'Table Tennis', icon: 'images/menu-icon7.svg' },
-    // { id: 'hockey', label: 'Hockey', icon: 'images/menu-icon10.svg' },
-    // { id: 'counter-strike', label: 'Counter-Strike', icon: 'images/menu-icon11.svg' },
+    { id: 'tennis', label: 'Tennis', icon: 'images/menu-icon20.svg' },
+    { id: 'soccer', label: 'Soccer', icon: 'ri-football-line' },
 ]
 
-// Static fallback matches – used when API fails so mobile layout can be tested/styled
-const STATIC_CRICKET_MATCHES = [
-    {
-        seriesName: 'T20 World Cup',
-        eventName: 'India v Pakistan',
-        eventTime: new Date().toISOString(),
-        gameId: 'static-1',
-        inPlay: true,
-    },
-    {
-        seriesName: 'T20 World Cup',
-        eventName: 'Australia v England',
-        eventTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-        gameId: 'static-2',
-        inPlay: false,
-    },
-    {
-        seriesName: 'ODI Series',
-        eventName: 'South Africa v New Zealand',
-        eventTime: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(),
-        gameId: 'static-3',
-        inPlay: false,
-    },
-]
+const NO_MATCHES_MSG = (sport) => `No ${sport} matches available. Data comes from the server — try again later.`
 
 function toOddDatasArray(oddDatas) {
     if (!oddDatas) return []
@@ -109,8 +83,12 @@ function SportsGame() {
     const touchHideTimerRef = useRef(null)
 
     const [cricketMatches, setCricketMatches] = useState([])
+    const [tennisMatches, setTennisMatches] = useState([])
+    const [soccerMatches, setSoccerMatches] = useState([])
     const [cricketMatchesLoading, setCricketMatchesLoading] = useState(true)
-    const [cricketOddsByGameId, setCricketOddsByGameId] = useState({})
+    const [tennisMatchesLoading, setTennisMatchesLoading] = useState(true)
+    const [soccerMatchesLoading, setSoccerMatchesLoading] = useState(true)
+    const [oddsByGameId, setOddsByGameId] = useState({})
     const subscribedOddsRef = useRef(new Set())
     const [searchParams] = useSearchParams()
     const filterFromUrl = searchParams.get('filter') || ''
@@ -127,50 +105,83 @@ function SportsGame() {
         if (Array.isArray(d)) return d
         if (Array.isArray(d?.data)) return d.data
         if (Array.isArray(d?.matches)) return d.matches
+        if (Array.isArray(d?.list)) return d.list
         if (Array.isArray(raw?.matches)) return raw.matches
         return []
     }
 
-    // REST: pehle matches load
-    useEffect(() => {
-        let cancelled = false
-        setCricketMatchesLoading(true)
-        AuthService.sportsbookMatches('cricket')
+    const getMatchGameId = (m) => m?.gameId ?? m?.game_id
+    const getMatchEventId = (m) => m?.eventId ?? m?.event_id
+
+    const fetchMatchesForSport = useCallback((sport) => {
+        setCricketMatchesLoading((p) => (sport === 'cricket' ? true : p))
+        setTennisMatchesLoading((p) => (sport === 'tennis' ? true : p))
+        setSoccerMatchesLoading((p) => (sport === 'soccer' ? true : p))
+        AuthService.sportsbookMatches(sport)
             .then((res) => {
-                if (cancelled) return
-                setCricketMatches(parseMatchesFromResponse(res))
+                const list = parseMatchesFromResponse(res)
+                if (sport === 'cricket') setCricketMatches(list)
+                else if (sport === 'tennis') setTennisMatches(list)
+                else if (sport === 'soccer') setSoccerMatches(list)
             })
-            .catch(() => { if (!cancelled) setCricketMatches([]) })
-            .finally(() => { if (!cancelled) setCricketMatchesLoading(false) })
-        return () => { cancelled = true }
+            .catch(() => {
+                if (sport === 'cricket') setCricketMatches([])
+                else if (sport === 'tennis') setTennisMatches([])
+                else if (sport === 'soccer') setSoccerMatches([])
+            })
+            .finally(() => {
+                setCricketMatchesLoading((p) => (sport === 'cricket' ? false : p))
+                setTennisMatchesLoading((p) => (sport === 'tennis' ? false : p))
+                setSoccerMatchesLoading((p) => (sport === 'soccer' ? false : p))
+            })
     }, [])
 
-    // REST: pehle odds API – first 15 games ke liye initial odds
     useEffect(() => {
-        const gameIds = cricketMatches.filter((m) => m.gameId).map((m) => m.gameId).slice(0, 15)
-        if (gameIds.length === 0) return
+        fetchMatchesForSport('cricket')
+    }, [fetchMatchesForSport])
+    useEffect(() => {
+        fetchMatchesForSport('tennis')
+    }, [fetchMatchesForSport])
+    useEffect(() => {
+        fetchMatchesForSport('soccer')
+    }, [fetchMatchesForSport])
+
+    // Stable key: only re-fetch odds when the set of ids actually changes. Tennis uses eventId.
+    const oddsFetchKey = useMemo(() => {
+        const c = (cricketMatches || []).map(getMatchGameId).filter(Boolean).slice(0, 10).sort().join(',')
+        const t = (tennisMatches || []).map(getMatchEventId).filter(Boolean).slice(0, 5).sort().join(',')
+        const s = (soccerMatches || []).map(getMatchGameId).filter(Boolean).slice(0, 5).sort().join(',')
+        return `${c}|${t}|${s}`
+    }, [cricketMatches, tennisMatches, soccerMatches])
+
+    useEffect(() => {
+        const cricket = (cricketMatches || []).map((m) => ({ id: getMatchGameId(m), sport: 'cricket' })).filter((x) => x.id).slice(0, 10)
+        const tennis = (tennisMatches || []).map((m) => ({ id: getMatchEventId(m), sport: 'tennis' })).filter((x) => x.id).slice(0, 5)
+        const soccer = (soccerMatches || []).map((m) => ({ id: getMatchGameId(m), sport: 'soccer' })).filter((x) => x.id).slice(0, 5)
+        const list = [...cricket, ...tennis, ...soccer]
+        if (list.length === 0) return
         let cancelled = false
-        const sportName = 'cricket'
         Promise.all(
-            gameIds.map((gameId) =>
-                AuthService.sportsbookOdds(sportName, gameId).then((res) => ({ gameId, res }))
+            list.map(({ id, sport }) =>
+                AuthService.sportsbookOdds(sport, id).then((res) => ({ id, res }))
             )
         ).then((results) => {
             if (cancelled) return
-            setCricketOddsByGameId((prev) => {
+            setOddsByGameId((prev) => {
                 const next = { ...prev }
-                results.forEach(({ gameId, res }) => {
+                results.forEach(({ id, res }) => {
                     if (!res) return
                     const raw = res.data ?? res
                     const d = raw?.data ?? raw
-                    const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds : []
-                    next[gameId] = { ...(next[gameId] || {}), matchOdds }
+                    const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds : (Array.isArray(d?.match_odds) ? d.match_odds : [])
+                    next[id] = { ...(next[id] || {}), matchOdds }
                 })
                 return next
             })
         }).catch(() => { })
         return () => { cancelled = true }
-    }, [cricketMatches])
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-fetch when id set changes (oddsFetchKey), not when match array ref changes
+    }, [oddsFetchKey])
 
     // Socket (doc): sport screen → subscribe:matches { sport: 'cricket' }
     useEffect(() => {
@@ -180,97 +191,119 @@ function SportsGame() {
 
         connectSportsbookSocket(token)
         const onMatches = (payload) => {
-            if (payload?.sport !== 'cricket') return
+            const sport = payload?.sport
             const raw = payload.data ?? payload.matches
-            if (raw === undefined) return
+            if (raw === undefined || !sport) return
             const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : [])
-            setCricketMatches((prev) => {
-                if (list.length === 0 && prev.length > 0) return prev
-                return list
-            })
-            setCricketMatchesLoading(false)
+            if (sport === 'cricket') {
+                setCricketMatches((prev) => (list.length === 0 && prev.length > 0 ? prev : list))
+                setCricketMatchesLoading(false)
+            } else if (sport === 'tennis') {
+                setTennisMatches((prev) => (list.length === 0 && prev.length > 0 ? prev : list))
+                setTennisMatchesLoading(false)
+            } else if (sport === 'soccer') {
+                setSoccerMatches((prev) => (list.length === 0 && prev.length > 0 ? prev : list))
+                setSoccerMatchesLoading(false)
+            }
         }
         addMatchesListener(onMatches)
         subscribeMatches('cricket')
+        subscribeMatches('tennis')
+        subscribeMatches('soccer')
 
         return () => {
             removeMatchesListener(onMatches)
             unsubscribeMatches('cricket')
+            unsubscribeMatches('tennis')
+            unsubscribeMatches('soccer')
             oddsSubs.forEach((gid) => unsubscribeOdds(gid))
             oddsSubs.clear()
         }
     }, [])
 
-    // Socket (doc): on('odds') { gameId, data: { matchOdds?, bookMakerOdds?, ... }, timestamp } – snapshot then ~500ms.
+    // Socket (doc): on('odds') { gameId or eventId (tennis), data: { matchOdds?, ... }, timestamp }
     useEffect(() => {
         const onOdds = (payload) => {
-            if (!payload?.gameId || payload?.data === undefined) return
+            const oddsKey = payload?.eventId ?? payload?.gameId
+            if (!oddsKey || payload?.data === undefined) return
             const matchOdds = Array.isArray(payload.data?.matchOdds) ? payload.data.matchOdds : []
-            setCricketOddsByGameId((prev) => ({ ...prev, [payload.gameId]: { matchOdds } }))
+            setOddsByGameId((prev) => ({ ...prev, [oddsKey]: { matchOdds } }))
         }
         addOddsListener(onOdds)
         return () => removeOddsListener(onOdds)
     }, [])
 
     useEffect(() => {
-        const gameIds = cricketMatches.filter((m) => m.gameId).map((m) => m.gameId).slice(0, 15)
+        const cricketEntries = (cricketMatches || []).map(getMatchGameId).filter(Boolean).slice(0, 15).map((id) => ({ id, sport: 'cricket' }))
+        const tennisEntries = (tennisMatches || []).map(getMatchEventId).filter(Boolean).slice(0, 10).map((id) => ({ id, sport: 'tennis' }))
+        const soccerEntries = (soccerMatches || []).map(getMatchGameId).filter(Boolean).slice(0, 10).map((id) => ({ id, sport: 'soccer' }))
+        const entries = [...cricketEntries, ...tennisEntries, ...soccerEntries]
         const prev = subscribedOddsRef.current
-        gameIds.forEach((gameId) => {
-            if (!prev.has(gameId)) {
-                subscribeOdds(gameId)
-                prev.add(gameId)
+        const idToSport = new Map(entries.map((e) => [e.id, e.sport]))
+        entries.forEach(({ id, sport }) => {
+            if (!prev.has(id)) {
+                subscribeOdds(id, sport)
+                prev.add(id)
             }
         })
-        prev.forEach((gameId) => {
-            if (!gameIds.includes(gameId)) {
-                unsubscribeOdds(gameId)
-                prev.delete(gameId)
+        const currentIds = new Set(entries.map((e) => e.id))
+        prev.forEach((id) => {
+            if (!currentIds.has(id)) {
+                unsubscribeOdds(id, idToSport.get(id) || 'cricket')
+                prev.delete(id)
             }
         })
-    }, [cricketMatches])
+    }, [cricketMatches, tennisMatches, soccerMatches])
 
     const totalSlides = GALLERY_SLIDES.length
-    const cricketDisplayMatches = useMemo(() => {
-        const sourceMatches = (cricketMatches && cricketMatches.length > 0)
-            ? cricketMatches
-            : STATIC_CRICKET_MATCHES
+    const mapToDisplayMatch = useCallback((m, defaultTournament, defaultIcon) => {
+        const eventTime = m.eventTime ?? m.event_time ?? m.startTime
+        let timeOnly = ''
+        if (eventTime) {
+            try {
+                const d = new Date(eventTime)
+                if (!isNaN(d.getTime())) timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+            } catch { }
+        }
+        return {
+            tournament: m.seriesName ?? m.series_name ?? defaultTournament,
+            teams: m.eventName ?? m.event_name ?? m.name ?? '',
+            time: formatMatchTime(eventTime),
+            timeOnly,
+            dayGroup: getDayGroup(eventTime),
+            icon: defaultIcon,
+            eventId: m.eventId ?? m.event_id,
+            gameId: m.gameId ?? m.game_id,
+            marketId: m.marketId ?? m.market_id,
+            inPlay: m.inPlay ?? m.in_play ?? false,
+            seriesId: m.seriesId ?? m.series_id,
+        }
+    }, [])
 
-        const list = sourceMatches.map((m) => {
-            const eventTime = m.eventTime ?? m.event_time ?? m.startTime
-            let timeOnly = ''
-            if (eventTime) {
-                try {
-                    const d = new Date(eventTime)
-                    if (!isNaN(d.getTime())) timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
-                } catch { }
-            }
-            return {
-                tournament: m.seriesName ?? m.series_name ?? 'Cricket',
-                teams: m.eventName ?? m.event_name ?? m.name ?? '',
-                time: formatMatchTime(eventTime),
-                timeOnly,
-                dayGroup: getDayGroup(eventTime),
-                icon: 'images/cricket_world.png',
-                eventId: m.eventId ?? m.event_id,
-                gameId: m.gameId ?? m.game_id,
-                marketId: m.marketId ?? m.market_id,
-                inPlay: m.inPlay ?? m.in_play ?? false,
-                seriesId: m.seriesId ?? m.series_id,
-            }
-        })
+    const cricketDisplayMatches = useMemo(() => {
+        const list = (cricketMatches || []).map((m) => mapToDisplayMatch(m, 'Cricket', 'images/cricket_world.png'))
         return list.sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
-    }, [cricketMatches])
+    }, [cricketMatches, mapToDisplayMatch])
+    const tennisDisplayMatches = useMemo(() => {
+        const list = (tennisMatches || []).map((m) => mapToDisplayMatch(m, 'Tennis', 'images/menu-icon20.svg'))
+        return list.sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
+    }, [tennisMatches, mapToDisplayMatch])
+    const soccerDisplayMatches = useMemo(() => {
+        const list = (soccerMatches || []).map((m) => mapToDisplayMatch(m, 'Soccer', 'images/menu-icon19.svg'))
+        return list.sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
+    }, [soccerMatches, mapToDisplayMatch])
+
     const activeMatches = useMemo(() => {
         if (activeTab === 'cricket') return cricketDisplayMatches
-        return [] // Other tabs: no dummy data; add API (e.g. sportsbookMatches('soccer')) when ready
-    }, [activeTab, cricketDisplayMatches])
+        if (activeTab === 'tennis') return tennisDisplayMatches
+        if (activeTab === 'soccer') return soccerDisplayMatches
+        return []
+    }, [activeTab, cricketDisplayMatches, tennisDisplayMatches, soccerDisplayMatches])
 
     const gridMatches = useMemo(() => {
-        if (activeTab !== 'cricket') return []
         if (sportsFilter === 'live') return activeMatches.filter((m) => m.inPlay)
-        // all / virtual / premium: show all, with live matches at top
         return [...activeMatches].sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
-    }, [activeTab, sportsFilter, activeMatches])
+    }, [sportsFilter, activeMatches])
 
     const matchesByDay = useMemo(() => {
         const liveMatches = gridMatches.filter((m) => m.inPlay)
@@ -339,13 +372,16 @@ function SportsGame() {
             e.stopPropagation()
             return
         }
-        const state = match?.gameId ? { gameId: match.gameId, eventName: match.teams, sportName: 'cricket' } : undefined
-        navigate('/cricket', { state })
-    }, [navigate])
+        const sportName = activeTab
+        const path = sportName === 'tennis' ? '/tennis' : sportName === 'soccer' ? '/soccer' : '/cricket'
+        const state = (match?.gameId || match?.eventId) ? { gameId: match.gameId, eventId: match.eventId, eventName: match.teams, sportName } : undefined
+        navigate(path, { state })
+    }, [navigate, activeTab])
 
     const getCardOdds = useCallback((match) => {
-        if (!match.gameId) return []
-        const oddsPayload = cricketOddsByGameId[match.gameId]
+        const oddsKey = activeTab === 'tennis' ? match?.eventId : match?.gameId
+        if (!oddsKey) return []
+        const oddsPayload = oddsByGameId[oddsKey]
         if (!oddsPayload?.matchOdds?.length) return []
         const market = oddsPayload.matchOdds[0]
         const arr = toOddDatasArray(market.oddDatas).slice(0, 6)
@@ -355,7 +391,7 @@ function SportsGame() {
             size: o.bs1 ?? o.ls1 ?? o.size,
             sizeFormatted: formatOddsSize(o.bs1 ?? o.ls1 ?? o.size),
         }))
-    }, [cricketOddsByGameId])
+    }, [oddsByGameId, activeTab])
 
     const renderMatchCard = useCallback((match, index) => {
         const cardOdds = getCardOdds(match)
@@ -497,30 +533,30 @@ function SportsGame() {
                     <div className='sports_game_section'>
                         <div className='sports_top_match_section'>
                             <div className="top_match_section pt-0">
-                                {/* <div className="top_hd d-flex align-items-center justify-content-between">
-                                    <h2 className="heading_h2">TOP SLOTS</h2>
-                                </div> */}
-{/* 
                                 <ul className='match_type_tabs'>
                                     {TABS.map((tab) => (
                                         <li
                                             key={tab.id}
                                             className={activeTab === tab.id ? 'active' : ''}
                                         >
-                                            <button onClick={() => setActiveTab(tab.id)}>
-                                                <img alt={tab.label} src={tab.icon} loading="lazy" decoding="async" />
+                                            <button type='button' onClick={() => setActiveTab(tab.id)}>
+                                                {tab.icon.startsWith('ri-') ? (
+                                                    <i className={tab.icon} aria-hidden />
+                                                ) : (
+                                                    <img alt={tab.label} src={tab.icon} loading="lazy" decoding="async" />
+                                                )}
                                                 <span>{tab.label}</span>
                                             </button>
                                         </li>
                                     ))}
-                                </ul> */}
+                                </ul>
 
-                                {activeTab === 'cricket' && (
+                                {(activeTab === 'cricket' || activeTab === 'tennis' || activeTab === 'soccer') && (
                                     <div className='sports_grid_section'>
                                         <div className='sports_grid_header'>
                                             <div className='sports_grid_title'>
-                                                <img src='images/menu-icon19.svg' alt='' className='sports_grid_icon' />
-                                                <h2 className='sports_grid_heading'>Cricket</h2>
+                                                <img src={activeTab === 'tennis' ? 'images/menu-icon20.svg' : activeTab === 'soccer' ? 'images/menu-icon19.svg' : 'images/menu-icon19.svg'} alt='' className='sports_grid_icon' />
+                                                <h2 className='sports_grid_heading'>{activeTab === 'cricket' ? 'Cricket' : activeTab === 'tennis' ? 'Tennis' : 'Soccer'}</h2>
                                             </div>
                                             <div className='sports_grid_filters'>
                                                 <button type='button' className={`sports_filter_btn ${sportsFilter === 'all' ? 'active' : ''}`} onClick={() => setSportsFilter('all')}>All</button>
@@ -544,10 +580,10 @@ function SportsGame() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {cricketMatchesLoading ? (
-                                                        <tr><td colSpan={8} className='sports_grid_loading'>Loading cricket matches...</td></tr>
+                                                    {(activeTab === 'cricket' ? cricketMatchesLoading : activeTab === 'tennis' ? tennisMatchesLoading : soccerMatchesLoading) ? (
+                                                        <tr><td colSpan={8} className='sports_grid_loading'>Loading {activeTab} matches...</td></tr>
                                                     ) : matchesByDay.length === 0 ? (
-                                                        <tr><td colSpan={8} className='sports_grid_empty'>No matches at the moment.</td></tr>
+                                                        <tr><td colSpan={8} className='sports_grid_empty'>{NO_MATCHES_MSG(TABS.find(t => t.id === activeTab)?.label ?? '')}</td></tr>
                                                     ) : (
                                                         matchesByDay.map(({ day, matches }) =>
                                                             matches.map((match, idx) => {
@@ -626,10 +662,10 @@ function SportsGame() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {cricketMatchesLoading ? (
-                                                        <tr><td colSpan={3} className='sports_grid_loading'>Loading cricket matches...</td></tr>
+                                                    {(activeTab === 'cricket' ? cricketMatchesLoading : activeTab === 'tennis' ? tennisMatchesLoading : soccerMatchesLoading) ? (
+                                                        <tr><td colSpan={3} className='sports_grid_loading'>Loading {activeTab} matches...</td></tr>
                                                     ) : matchesByDay.length === 0 ? (
-                                                        <tr><td colSpan={3} className='sports_grid_empty'>No matches at the moment.</td></tr>
+                                                        <tr><td colSpan={3} className='sports_grid_empty'>{NO_MATCHES_MSG(TABS.find(t => t.id === activeTab)?.label ?? '')}</td></tr>
                                                     ) : (
                                                         matchesByDay.map(({ day, matches }) =>
                                                             matches.map((match, idx) => {
@@ -663,9 +699,9 @@ function SportsGame() {
                                                                             <div className='sports_grid_match_cell_inner'>
                                                                                 {/* <span className='sports_grid_day_time'>{match.dayGroup}{match.timeOnly ? <span className='sports_grid_time_only'>` ${match.timeOnly}`</span> : ''}</span> */}
                                                                                 <span className="sports_grid_day_time">
-  {match.dayGroup}
-  {match.timeOnly && <span className='sports_grid_time_only'> {match.timeOnly}</span>}
-</span>
+                                                                                    {match.dayGroup}
+                                                                                    {match.timeOnly && <span className='sports_grid_time_only'> {match.timeOnly}</span>}
+                                                                                </span>
                                                                                 {match.inPlay && <span className='sports_grid_live'>LIVE</span>}
                                                                             </div>
                                                                             <div className='sports_grid_match_info'>
@@ -724,14 +760,14 @@ function SportsGame() {
                                     </div>
                                 )}
 
-                                <div className={`match_slider_wrapper ${activeTab === 'cricket' ? 'sports_grid_cards_hidden' : ''}`}>
-                                    {activeTab === 'cricket' && cricketMatchesLoading ? (
+                                <div className={`match_slider_wrapper ${(activeTab === 'cricket' || activeTab === 'tennis' || activeTab === 'soccer') ? 'sports_grid_cards_hidden' : ''}`}>
+                                    {(activeTab === 'cricket' ? cricketMatchesLoading : activeTab === 'tennis' ? tennisMatchesLoading : activeTab === 'soccer' ? soccerMatchesLoading : false) ? (
                                         <div className="match_slider_loading" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #888)' }}>
-                                            Loading cricket matches...
+                                            Loading {activeTab} matches...
                                         </div>
                                     ) : activeMatches.length === 0 ? (
                                         <div className="match_slider_empty" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #888)' }}>
-                                            No matches at the moment.
+                                            {NO_MATCHES_MSG(TABS.find(t => t.id === activeTab)?.label ?? '')}
                                         </div>
                                     ) : (
                                         activeMatches.map((match, index) => renderMatchCard(match, index))

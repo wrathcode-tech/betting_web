@@ -21,26 +21,6 @@ const MobileMenu = lazy(() => import('../customComponents/MobileMenu'));
 const MAX_SLIDER_ITEMS = 15
 const MAX_CONTENT_BEFORE_VIEW_ALL = MAX_SLIDER_ITEMS - 1
 
-const gameItems = [
-  { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
-  { id: 2, badge: null, image: 'images/game_itemslider2.png' },
-  { id: 3, badge: 'Top', image: 'images/game_itemslider3.png' },
-  { id: 4, badge: null, image: 'images/game_itemslider4.png' },
-  { id: 5, badge: 'Hot', image: 'images/game_itemslider5.png' },
-  { id: 6, badge: null, image: 'images/game_itemslider6.png' },
-  { id: 7, badge: null, image: 'images/game_itemslider7.png' },
-  { id: 8, badge: null, image: 'images/game_itemslider4.png' },
-]
-const betCasinoItems = [
-  { id: 1, badge: 'Top', image: 'images/betcasino_img.png' },
-  { id: 2, badge: null, image: 'images/betcasino_img2.png' },
-  { id: 3, badge: 'Top', image: 'images/betcasino_img3.png' },
-  { id: 4, badge: null, image: 'images/betcasino_img4.png' },
-  { id: 5, badge: 'Hot', image: 'images/betcasino_img5.png' },
-  { id: 6, badge: null, image: 'images/betcasino_img6.png' },
-  { id: 7, badge: null, image: 'images/betcasino_img7.png' },
-  { id: 8, badge: null, image: 'images/betcasino_img3.png' },
-]
 const liveCasinoItems = [
   { id: 1, icon: 'worldicon', image: 'images/casino_gallery_img.png' },
   { id: 2, icon: null, image: 'images/casino_gallery_img2.png' },
@@ -140,6 +120,14 @@ function formatOddsSize(size) {
 }
 
 function LandingPage() {
+  // Auth token – sync with sessionStorage so button updates instantly after login (no refresh)
+  const [token, setToken] = useState(() => sessionStorage.getItem('token'));
+  useEffect(() => {
+    const onLoginChange = () => setToken(sessionStorage.getItem('token'));
+    window.addEventListener('loginStateChange', onLoginChange);
+    return () => window.removeEventListener('loginStateChange', onLoginChange);
+  }, []);
+
   // TOP SLOTS slider state
   const [currentIndex, setCurrentIndex] = useState(0);
   const sliderRef = useRef(null);
@@ -343,6 +331,12 @@ function LandingPage() {
     });
   }, [topMatchesFromApi]);
 
+  // Stable key: only re-fetch odds when the set of gameIds actually changes (avoids repeated calls on socket updates)
+  const topMatchesOddsFetchKey = useMemo(
+    () => topMatchesFromApi.slice(0, 8).map((m) => m.gameId).filter(Boolean).sort().join(','),
+    [topMatchesFromApi]
+  );
+
   // Fetch odds for first 8 TOP Matches (for back/lay display) – REST fallback when no socket
   useEffect(() => {
     const gameIds = topMatchesFromApi.slice(0, 8).map((m) => m.gameId).filter(Boolean);
@@ -367,36 +361,46 @@ function LandingPage() {
       });
     }).catch(() => { });
     return () => { cancelled = true; };
-  }, [topMatchesFromApi]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-fetch when gameId set changes (topMatchesOddsFetchKey), not on every topMatchesFromApi ref change
+  }, [topMatchesOddsFetchKey]);
 
   // Hero 3D slider – 7 items, 5 visible at a time, infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);
   const hero3dSlides = [
-    { id: 1, src: 'images/home_bnr.png', alt: 'game', heading: 'All Mini Games', subContent: 'Play More. Win Faster. Endless Fun Awaits.' },
-    { id: 2, src: 'images/home_bnr2.png', alt: 'game', heading: 'Sports & Betting', subContent: 'Play Smart. Bet Big. Win with the Best Odds.' },
-    { id: 3, src: 'images/home_bnr3.png', alt: 'game', heading: 'Casino', subContent: 'Play Live. Bet Bold. Win Real Rewards.' },
-    { id: 4, src: 'images/home_bnr4.png', alt: 'game', heading: 'Dragon Tiger', subContent: 'Choose Your Side. Bet Fast. Win Instantly.' },
-    { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Aviator', subContent: 'Take Off Early. Cash Out Big. Win Smart.' },
-    { id: 6, src: 'images/home_bnr6.png', alt: 'game', heading: 'Cricket', subContent: 'Level up and unlock exclusive perks.' },
-    { id: 7, src: 'images/home_bnr7.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Bet Every Ball. Play Every Moment. Win Bigger.' },
+    { id: 1, src: 'images/home_bnr.png', alt: 'game', heading: 'All Mini Games', subContent: 'Play More. Win Faster. Endless Fun Awaits.', to: '/casino' },
+    { id: 2, src: 'images/home_bnr2.png', alt: 'game', heading: 'Sports & Betting', subContent: 'Play Smart. Bet Big. Win with the Best Odds.', to: '/sportsbook' },
+    { id: 3, src: 'images/home_bnr3.png', alt: 'game', heading: 'Casino', subContent: 'Play Live. Bet Bold. Win Real Rewards.', to: '/casino' },
+    { id: 4, src: 'images/home_bnr4.png', alt: 'game', heading: 'Dragon Tiger', subContent: 'Choose Your Side. Bet Fast. Win Instantly.', to: '/casino?category=Dragon+Tiger' },
+    { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Aviator', subContent: 'Take Off Early. Cash Out Big. Win Smart.', to: '/casino?gameName=Aviator' },
+    { id: 6, src: 'images/home_bnr6.png', alt: 'game', heading: 'Cricket', subContent: 'Level up and unlock exclusive perks.', to: '/sports' },
+    { id: 7, src: 'images/home_bnr7.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Bet Every Ball. Play Every Moment. Win Bigger.', to: '/casino' },
   ];
   const hero3dTotal = hero3dSlides.length;
   const hero3dOffsets = [-2, -1, 0, 1, 2];
   const getHero3dIndex = (offset) => (hero3dIndex + offset + hero3dTotal * 10) % hero3dTotal;
 
-  const hero3dSwipeRef = useRef({ startX: 0 });
+  const hero3dSwipeRef = useRef({ startX: 0, didSwipe: false });
   const handleHero3dPointerDown = (e) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
-    const el = e.currentTarget;
-    if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
-    hero3dSwipeRef.current.startX = e.clientX;
+    hero3dSwipeRef.current = { startX: e.clientX, didSwipe: false };
   };
   const handleHero3dPointerUp = (e) => {
-    const startX = hero3dSwipeRef.current.startX;
+    const { startX } = hero3dSwipeRef.current;
     const deltaX = e.clientX - startX;
     const THRESHOLD = 50;
-    if (deltaX < -THRESHOLD) setHero3dIndex((prev) => (prev + 1) % hero3dTotal);
-    else if (deltaX > THRESHOLD) setHero3dIndex((prev) => (prev === 0 ? hero3dTotal - 1 : prev - 1));
+    if (deltaX < -THRESHOLD) {
+      setHero3dIndex((prev) => (prev + 1) % hero3dTotal);
+      hero3dSwipeRef.current.didSwipe = true;
+    } else if (deltaX > THRESHOLD) {
+      setHero3dIndex((prev) => (prev === 0 ? hero3dTotal - 1 : prev - 1));
+      hero3dSwipeRef.current.didSwipe = true;
+    }
+  };
+  const handleHero3dCardClick = (e, slide) => {
+    if (hero3dSwipeRef.current.didSwipe) return;
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(slide.to || '/casino');
   };
 
   useEffect(() => {
@@ -466,7 +470,7 @@ function LandingPage() {
         try {
           const d = new Date(m.eventTime);
           if (!isNaN(d.getTime())) timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-        } catch {}
+        } catch { }
       }
       return { ...m, dayGroup: getDayGroup(m.eventTime), timeOnly };
     });
@@ -683,6 +687,8 @@ function LandingPage() {
     };
   }, []);
 
+  const isLoggedIn = !!token;
+
   return (
     <>
       <div className='casino_hero_s'>
@@ -714,8 +720,13 @@ function LandingPage() {
                   <div
                     key={slideIndex}
                     className={`slider3d ${positionClass} ${isCenter ? 'slider3d_active' : ''} ${isCenter ? 'slider3d_has_overlay' : ''}`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => handleHero3dCardClick(e, slide)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(slide.to || '/casino'); } }}
+                    style={{ cursor: 'pointer' }}
                   >
-                    <Link to="/casino" className="slider3d_slide_link link_plain" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                    <div className="slider3d_slide_link link_plain" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                       <img
                         src={slide.src}
                         alt={slide.alt}
@@ -728,7 +739,7 @@ function LandingPage() {
                           <span className="slider3d_card_overlay_subtitle">{slide.subContent}</span>
                         </div>
                       )}
-                    </Link>
+                    </div>
                   </div>
                 );
               })}
@@ -769,7 +780,27 @@ function LandingPage() {
               <span className='instant_text'><i class="ri-circle-fill"></i> Instant Deposit <i class="ri-circle-fill"></i> Instant Withdrawal</span>
 
               <div className="d-flex align-items-center gap-3 mt-4">
-                <button type="button" className="btnbnr" onClick={() => window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'signup' }))}>Sign Up and Play</button>
+                {!isLoggedIn ? (
+                  <button
+                    type="button"
+                    className="btnbnr"
+                    onClick={() =>
+                      window.dispatchEvent(
+                        new CustomEvent("openLoginModal", { detail: "signup" })
+                      )
+                    }
+                  >
+                    Sign Up and Play
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btnbnr"
+                    onClick={() => navigate('/deposit')}
+                  >
+                    Deposit Now
+                  </button>
+                )}
                 <ul className="social_icons d-flex align-items-center gap-2 hero_activity_icons">
                   <li><Link to="/casino" className="social_icon_btn" title="Casino" aria-label="Casino"><i className="ri-poker-spades-fill" /></Link></li>
                   <li><Link to="/sports" className="social_icon_btn" title="Sports" aria-label="Sports"><i className="ri-basketball-fill" /></Link></li>
@@ -1282,9 +1313,9 @@ function LandingPage() {
         <div className="top_match_section sportsmatch_s">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
-            <div className="sports_grid_title">
-            <img src="images/menu-icon19.svg" alt="" className="sports_grid_icon" />
-              <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Cricket Matches</h2></Link>
+              <div className="sports_grid_title">
+                <img src="images/menu-icon19.svg" alt="" className="sports_grid_icon" />
+                <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Cricket Matches</h2></Link>
               </div>
 
               <div className="top_hd_right d-flex align-items-center gap-2">
@@ -1293,7 +1324,7 @@ function LandingPage() {
             </div>
 
             <div className="sports_grid_section">
-             
+
               <div className="sports_grid_table_wrap desktop_view">
                 <table className="sports_grid_table">
                   <thead>

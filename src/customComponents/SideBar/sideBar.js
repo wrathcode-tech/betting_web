@@ -214,18 +214,11 @@ export default function SideBar({ isOpen, onClose }) {
                   <span className="sidebar_collapsed_label">Deposit Turnover</span>
                 </Link>
               </li>
-              <li className="sidebar_menu_item sidebar_direct_link">
-                <a
-                  href="#!"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    onClose()
-                    window.dispatchEvent(new CustomEvent('openChat'))
-                  }}
-                >
+              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/support' ? 'active' : ''}`}>
+                <Link to="/support" onClick={onLinkClick}>
                   <span><i className="ri-customer-service-2-line" aria-hidden />Live Support</span>
                   <span className="sidebar_collapsed_label">Live Support</span>
-                </a>
+                </Link>
               </li>
 
             </ul>

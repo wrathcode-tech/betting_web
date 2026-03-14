@@ -16,6 +16,9 @@ const DUMMY_DATA = [
   { id: '3', time: '10/06/2025, 09:15 AM', txnId: 'WLT20250610003', type: 'Bet Placed', amount: '₹500.00', balanceAfter: '₹12,750.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Bet Placed' },
   { id: '4', time: '09/06/2025, 06:45 PM', txnId: 'WLT20250609004', type: 'Bonus', amount: '₹1,000.00', balanceAfter: '₹13,250.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Bonus' },
   { id: '5', time: '08/06/2025, 11:20 AM', txnId: 'WLT20250608005', type: 'Withdrawal', amount: '₹3,000.00', balanceAfter: '₹12,250.00', status: 'Pending', statusRaw: 'pending', cardTitle: 'Withdrawal' },
+  { id: '6', time: '10/03/2026, 09:00 AM', txnId: 'WLT20260310001', type: 'Deposit', amount: '₹1,000.00', balanceAfter: '₹13,250.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Deposit' },
+  { id: '7', time: '11/03/2026, 02:30 PM', txnId: 'WLT20260311002', type: 'Withdrawal', amount: '₹500.00', balanceAfter: '₹12,750.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Withdrawal' },
+  { id: '8', time: '12/03/2026, 11:15 AM', txnId: 'WLT20260312003', type: 'Bet Placed', amount: '₹200.00', balanceAfter: '₹12,550.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Bet Placed' },
 ]
 
 export default function MyWallet() {
@@ -25,6 +28,8 @@ export default function MyWallet() {
       columns={COLUMNS}
       data={DUMMY_DATA}
       emptyMessage="No wallet transactions yet."
+      filterColumnKey="type"
+      dateColumnKey="time"
     />
   )
 }

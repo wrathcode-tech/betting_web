@@ -103,7 +103,8 @@ function CricketDetail() {
     const [defaultMatch, setDefaultMatch] = useState(null)
     const gameIdFromState = location.state?.gameId
     const eventNameFromState = location.state?.eventName ?? defaultMatch?.eventName
-    const sportName = location.state?.sportName || 'cricket'
+    const sportFromPath = location.pathname?.includes('/tennis') ? 'tennis' : location.pathname?.includes('/soccer') ? 'soccer' : null
+    const sportName = location.state?.sportName || sportFromPath || 'cricket'
     const gameId = gameIdFromState ?? defaultMatch?.gameId
     const eventId = location.state?.eventId ?? defaultMatch?.eventId ?? gameId
     const [oddsData, setOddsData] = useState(null)
@@ -119,8 +120,12 @@ function CricketDetail() {
         const onMatches = (payload) => {
             if (payload?.sport !== sportName || payload.data === undefined) return
             const list = Array.isArray(payload.data) ? payload.data : []
-            const first = list.find((m) => m.gameId)
-            if (first) setDefaultMatch({ gameId: first.gameId, eventName: first.eventName })
+            const first = list.find((m) => m.gameId || m.game_id)
+            if (first) setDefaultMatch({
+                gameId: first.gameId ?? first.game_id,
+                eventName: first.eventName ?? first.event_name,
+                eventId: first.eventId ?? first.event_id,
+            })
         }
         addMatchesListener(onMatches)
         subscribeMatches(sportName)
@@ -131,20 +136,21 @@ function CricketDetail() {
     }, [gameIdFromState, sportName])
 
     const normalizeOdds = (d) => ({
-        matchOdds: Array.isArray(d?.matchOdds) ? d.matchOdds : [],
-        fancyOdds: Array.isArray(d?.fancyOdds) ? d.fancyOdds : [],
-        otherMarketOdds: Array.isArray(d?.otherMarketOdds) ? d.otherMarketOdds : [],
-        bookMakerOdds: Array.isArray(d?.bookMakerOdds) ? d.bookMakerOdds : [],
-        premiumFancy: Array.isArray(d?.premiumFancy) ? d.premiumFancy : [],
-        oddEvenOdds: Array.isArray(d?.oddEvenOdds) ? d.oddEvenOdds : [],
+        matchOdds: Array.isArray(d?.matchOdds) ? d.matchOdds : (Array.isArray(d?.match_odds) ? d.match_odds : []),
+        fancyOdds: Array.isArray(d?.fancyOdds) ? d.fancyOdds : (Array.isArray(d?.fancy_odds) ? d.fancy_odds : []),
+        otherMarketOdds: Array.isArray(d?.otherMarketOdds) ? d.otherMarketOdds : (Array.isArray(d?.other_market_odds) ? d.other_market_odds : []),
+        bookMakerOdds: Array.isArray(d?.bookMakerOdds) ? d.bookMakerOdds : (Array.isArray(d?.book_maker_odds) ? d.book_maker_odds : []),
+        premiumFancy: Array.isArray(d?.premiumFancy) ? d.premiumFancy : (Array.isArray(d?.premium_fancy) ? d.premium_fancy : []),
+        oddEvenOdds: Array.isArray(d?.oddEvenOdds) ? d.oddEvenOdds : (Array.isArray(d?.odd_even_odds) ? d.odd_even_odds : []),
     })
 
-    // 1) Pehle odds REST API chalao – initial data
+    // 1) Pehle odds REST API chalao – initial data. Tennis uses eventId in payload.
+    const oddsId = sportName === 'tennis' ? (eventId || gameId) : gameId
     useEffect(() => {
-        if (!gameId) return
+        if (!oddsId) return
         let cancelled = false
         setOddsLoading(true)
-        AuthService.sportsbookOdds(sportName, gameId)
+        AuthService.sportsbookOdds(sportName, oddsId)
             .then((res) => {
                 if (cancelled || !res) return
                 const raw = res.data ?? res
@@ -154,28 +160,29 @@ function CricketDetail() {
             .catch(() => { if (!cancelled) setOddsData(null) })
             .finally(() => { if (!cancelled) setOddsLoading(false) })
         return () => { cancelled = true }
-    }, [gameId, sportName])
+    }, [oddsId, sportName])
 
-    // 2) Phir socket – live updates (token ho to). On odds event, use payload.data.liveScore only for live score.
+    // 2) Phir socket – live updates (token ho to). Tennis uses eventId in payload.
     useEffect(() => {
-        if (!gameId) return
+        if (!oddsId) return
         const token = sessionStorage.getItem('token')
         if (!token) return
-        const currentGameId = gameId
+        const currentOddsKey = oddsId
         connectSportsbookSocket(token)
         const onOdds = (payload) => {
-            if (payload?.gameId !== currentGameId || payload?.data === undefined) return
+            const payloadKey = payload?.eventId ?? payload?.gameId
+            if (payloadKey !== currentOddsKey || payload?.data === undefined) return
             setOddsData(normalizeOdds(payload.data))
             setOddsLoading(false)
             setLiveScore(payload.data.liveScore ?? null)
         }
         addOddsListener(onOdds)
-        subscribeOdds(gameId)
+        subscribeOdds(oddsId, sportName)
         return () => {
             removeOddsListener(onOdds)
-            unsubscribeOdds(gameId)
+            unsubscribeOdds(oddsId, sportName)
         }
-    }, [gameId, sportName])
+    }, [oddsId, sportName])
 
     // Guests: fetch live score via REST (no Socket)
     useEffect(() => {
@@ -228,10 +235,18 @@ function CricketDetail() {
 
         const existingBet = selectedBets.find((bet) => bet.elementId === uniqueId)
         if (existingBet) {
-            // Same selection again → clear bet and close mobile slip
-            setSelectedBets([])
-            setSlipOdds(null)
-            if (isMobileViewport) setIsMobileBetslipOpen(false)
+            // Same selection again → update odds to current price, do not remove bet
+            const updatedOdds = Number.isNaN(oddsNum) ? existingBet.odds : oddsNum
+            const updatedOddsDisplay = (oddsNum && !Number.isNaN(oddsNum)) ? String(oddsNum) : (existingBet.oddsDisplay ?? String(existingBet.odds))
+            setSelectedBets((prev) =>
+                prev.map((b) =>
+                    b.elementId === uniqueId
+                        ? { ...b, odds: updatedOdds, oddsDisplay: updatedOddsDisplay }
+                        : b
+                )
+            )
+            setSlipOdds(Number.isNaN(oddsNum) ? slipOdds : oddsNum)
+            if (isMobileViewport) setIsMobileBetslipOpen(true)
             return
         }
 

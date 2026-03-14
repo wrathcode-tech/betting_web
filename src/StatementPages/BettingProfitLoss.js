@@ -1,68 +1,63 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
 import '../ProfileTransactions/profileTransactions.css'
 import './BettingProfitLoss.css'
 
-function getDefaultFromDate() {
-  const d = new Date()
-  d.setDate(d.getDate() - 30)
-  return d.toISOString().slice(0, 10)
-}
-
-function getDefaultToDate() {
-  return new Date().toISOString().slice(0, 10)
-}
-
-/** Normalize API response: res.data or res, snake_case -> camelCase */
-function normalizePnLData(res) {
-  if (!res) return null
-  const raw = res.data ?? res
-  const d = typeof raw === 'object' ? raw : null
-  if (!d) return null
-  return {
-    totalProfitLoss: d.totalProfitLoss ?? d.total_profit_loss ?? d.netPnl ?? d.net_pnl ?? null,
-    totalBets: d.totalBets ?? d.total_bets ?? null,
-    totalStake: d.totalStake ?? d.total_stake ?? null,
-    totalWon: d.totalWon ?? d.total_won ?? null,
-    totalLost: d.totalLost ?? d.total_lost ?? null,
-    grossProfit: d.grossProfit ?? d.gross_profit ?? null,
-    grossLoss: d.grossLoss ?? d.gross_loss ?? null,
-    currency: d.currency ?? 'INR',
-  }
-}
-
 function BettingProfitLoss() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [sport, setSport] = useState('')
-  const [from, setFrom] = useState(() => getDefaultFromDate())
-  const [to, setTo] = useState(() => getDefaultToDate())
+  const [search, setSearch] = useState('')
 
   const fetchPnL = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const params = {}
-      if (sport) params.sport = sport
-      if (from) params.from = from
-      if (to) params.to = to
+      const sportVal = (search || '').trim().toLowerCase()
+      if (sportVal) params.sport = sportVal
       const res = await AuthService.sportsbookProfitLoss(params)
-      const normalized = normalizePnLData(res)
+      if (res == null) {
+        setError('Could not load P&L. Please try again.')
+        setData(null)
+        return
+      }
+      if (res.success === false) {
+        setError(res.message || 'Failed to load P&L data.')
+        setData(null)
+        return
+      }
+      // API: { success, message, data: { currency, totalBets, totalStake, totalProfitLoss, ... } }
+      let raw = res.data ?? res.result ?? res
+      if (raw && typeof raw === 'object' && raw.data && typeof raw.data === 'object') raw = raw.data
+      const normalized = raw && typeof raw === 'object' && !Array.isArray(raw)
+        ? {
+            totalProfitLoss: raw.totalProfitLoss ?? raw.total_profit_loss ?? null,
+            totalBets: raw.totalBets ?? raw.total_bets ?? null,
+            totalStake: raw.totalStake ?? raw.total_stake ?? null,
+            totalWon: raw.totalWon ?? raw.total_won ?? null,
+            totalLost: raw.totalLost ?? raw.total_lost ?? null,
+            grossProfit: raw.grossProfit ?? raw.gross_profit ?? null,
+            grossLoss: raw.grossLoss ?? raw.gross_loss ?? null,
+            currency: raw.currency ?? 'INR',
+          }
+        : null
       setData(normalized)
+      setError(normalized ? null : 'No P&L data in response.')
     } catch (err) {
       setError(err?.message || 'Failed to load P&L data.')
       setData(null)
     } finally {
       setLoading(false)
     }
-  }, [sport, from, to])
+  }, [search])
 
   useEffect(() => {
     fetchPnL()
-  }, [fetchPnL])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const formatAmount = (n) => {
     if (n == null || n === '') return '—'
@@ -87,35 +82,17 @@ function BettingProfitLoss() {
             <div className="transactions_header">
               <h1>Betting Profit &amp; Loss</h1>
               <div className="transactions_header_right betting_pl_filters">
-                <div className="date_range_picker">
-                  <input
-                    type="date"
-                    className="date_input"
-                    value={from}
-                    onChange={(e) => setFrom(e.target.value)}
-                    max={to || undefined}
-                  />
-                  <span className="date_separator">to</span>
-                  <input
-                    type="date"
-                    className="date_input"
-                    value={to}
-                    onChange={(e) => setTo(e.target.value)}
-                    min={from || undefined}
-                  />
-                </div>
-                <select
-                  className="transactions_filter_select deposit_btn_style"
-                  value={sport}
-                  onChange={(e) => setSport(e.target.value)}
-                >
-                  <option value="">All Sports</option>
-                  <option value="cricket">Cricket</option>
-                  <option value="soccer">Soccer</option>
-                  <option value="tennis">Tennis</option>
-                </select>
+                <input
+                  type="text"
+                  placeholder="Search by sport (e.g. cricket, soccer)..."
+                  className="transactions_search_input"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && fetchPnL()}
+                  aria-label="Search by sport"
+                />
                 <button type="button" className="deposit_btn_style btn_apply" onClick={fetchPnL} disabled={loading}>
-                  {loading ? 'Loading...' : 'Apply'}
+                  {loading ? 'Loading...' : 'Search'}
                 </button>
               </div>
             </div>
@@ -127,17 +104,21 @@ function BettingProfitLoss() {
               </div>
             )}
 
-            {loading && !data ? (
+            {loading && !data && (
               <div className="betting_pl_loading">
                 <p>Loading P&L...</p>
               </div>
-            ) : !data && !error ? (
+            )}
+
+            {!loading && !error && !data && (
               <div className="betting_pl_empty">
                 <p>No P&L data for the selected period.</p>
                 <p className="betting_pl_empty_hint">Place some bets and settle them to see profit &amp; loss here.</p>
               </div>
-            ) : data ? (
-              <div className="transactions_cards_wrapper betting_pl_cards">
+            )}
+
+            {!loading && data != null && (
+              <div className="betting_pl_cards" key="pnl-cards">
                 <div className="transaction_card betting_pl_card_main">
                   <div className="transaction_card_header">
                     <h3>Total P&L</h3>
@@ -183,7 +164,7 @@ function BettingProfitLoss() {
                   </div>
                 </div>
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </div>

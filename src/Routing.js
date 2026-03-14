@@ -41,6 +41,7 @@ const NewWithdrawal = lazy(() => import("./newWithdrawal/newWithdrawal"));
 const AddAccount = lazy(() => import("./BankDetails/addAccount"));
 const AddBank = lazy(() => import("./BankDetails/addBank"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const SupportPage = lazy(() => import("./pages/SupportPage"));
 
 const Routing = memo(function Routing() {
   return (
@@ -77,12 +78,15 @@ const Routing = memo(function Routing() {
                 <Route path="/bonus-statement" element={<BonusStatement />} />
                 <Route path="/deposit-turnover" element={<DepositTurnover />} />
                 <Route path="/cricket" element={<CricketDetail />} />
+                <Route path="/tennis" element={<CricketDetail />} />
+                <Route path="/soccer" element={<CricketDetail />} />
                 <Route path="/referral" element={<ReferralProgram />} />
                 <Route path="/rank" element={<RankSystem />} />
                 <Route path="/deposit" element={<NewDeposit />} />
                 <Route path="/withdrawal" element={<NewWithdrawal />} />
                 <Route path="/add-account" element={<AddAccount />} />
                 <Route path="/add-bank" element={<AddBank />} />
+                <Route path="/support" element={<SupportPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

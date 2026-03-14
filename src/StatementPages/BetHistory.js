@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
+import DateFilter from '../customComponents/DateFilter'
 import '../ProfileTransactions/profileTransactions.css'
 
 const COLUMNS = [
@@ -36,6 +37,7 @@ function mapBetToRow(b) {
     id: b._id,
     betId: b._id?.slice(-8) || '—',
     time: formatDate(b.createdAt),
+    createdAt: b.createdAt,
     event: b.eventName || '—',
     market: b.marketType || '—',
     selection: b.selectionName || '—',
@@ -50,23 +52,44 @@ function mapBetToRow(b) {
   }
 }
 
+/** ISO/date string se YYYY-MM-DD (UTC) – API dates ke saath compare ke liye */
+function toDateOnlyStr(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ''
+  const y = d.getUTCFullYear()
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(d.getUTCDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 export default function BetHistory() {
   const [bets, setBets] = useState([])
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 })
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
   const [sport, setSport] = useState('')
   const [result, setResult] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [appliedFrom, setAppliedFrom] = useState('')
+  const [appliedTo, setAppliedTo] = useState('')
 
-  const fetchHistory = useCallback(async (page = 1) => {
+  const appliedRef = useRef({ from: '', to: '' })
+  useEffect(() => {
+    appliedRef.current = { from: appliedFrom, to: appliedTo }
+  }, [appliedFrom, appliedTo])
+
+  const fetchHistory = useCallback(async (page = 1, dateOverrides) => {
     setLoading(true)
     try {
+      const useFrom = dateOverrides?.from ?? appliedRef.current.from
+      const useTo = dateOverrides?.to ?? appliedRef.current.to
       const params = { page, limit: 20 }
       if (sport) params.sport = sport
       if (result) params.result = result
-      if (from) params.from = from
-      if (to) params.to = to
+      if (useFrom) params.from = useFrom
+      if (useTo) params.to = useTo
       const res = await AuthService.sportsbookBetHistory(params)
       const data = res?.data ?? res
       const list = data?.bets ?? []
@@ -77,13 +100,32 @@ export default function BetHistory() {
     } finally {
       setLoading(false)
     }
-  }, [sport, result, from, to])
+  }, [sport, result])
 
   useEffect(() => {
     fetchHistory(1)
   }, [fetchHistory])
 
-  const data = bets
+  const searchLower = (search || '').trim().toLowerCase()
+  const dateFilteredBets =
+    appliedFrom || appliedTo
+      ? bets.filter((row) => {
+          const rowDate = toDateOnlyStr(row.createdAt)
+          if (!rowDate) return false
+          if (appliedFrom && rowDate < appliedFrom) return false
+          if (appliedTo && rowDate > appliedTo) return false
+          return true
+        })
+      : bets
+  const data = searchLower
+    ? dateFilteredBets.filter((row) => {
+        const event = (row.event || '').toLowerCase()
+        const betId = (row.betId || '').toLowerCase()
+        const market = (row.market || '').toLowerCase()
+        const selection = (row.selection || '').toLowerCase()
+        return event.includes(searchLower) || betId.includes(searchLower) || market.includes(searchLower) || selection.includes(searchLower)
+      })
+    : dateFilteredBets
 
   return (
     <>
@@ -94,20 +136,28 @@ export default function BetHistory() {
             <div className="transactions_header">
               <h1>Bet History</h1>
               <div className="transactions_header_right">
-                <div className="date_range_picker">
-                  <input
-                    type="date"
-                    className="date_input"
-                    value={from}
-                    onChange={(e) => setFrom(e.target.value)}
-                  />
-                  <input
-                    type="date"
-                    className="date_input"
-                    value={to}
-                    onChange={(e) => setTo(e.target.value)}
-                  />
-                </div>
+                <input
+                  type="text"
+                  placeholder="Search event, bet ID, market..."
+                  className="transactions_search_input"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  aria-label="Search"
+                />
+                <DateFilter
+                  fromDate={from}
+                  toDate={to}
+                  onFromDateChange={setFrom}
+                  onToDateChange={setTo}
+                  onApply={(fromVal, toVal) => {
+                    setAppliedFrom(fromVal ?? '')
+                    setAppliedTo(toVal ?? '')
+                    appliedRef.current = { from: fromVal ?? '', to: toVal ?? '' }
+                    fetchHistory(1, { from: fromVal ?? '', to: toVal ?? '' })
+                  }}
+                  loading={loading}
+                  showWrapper={false}
+                />
                 <select
                   className="transactions_filter_select deposit_btn_style"
                   value={sport}

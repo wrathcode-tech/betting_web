@@ -1,6 +1,7 @@
 import React from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
+import './MobileMenu.css'
 
 function MobileMenu() {
     const location = useLocation()

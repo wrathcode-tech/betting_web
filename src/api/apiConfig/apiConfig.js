@@ -1,8 +1,7 @@
 
 
-// Betting backend base URL (set REACT_APP_BETTING_API_URL in production)
-const bettingUrl = process.env.REACT_APP_BETTING_API_URL || "https://gamingbackend.wrathcode.com";
-console.log("🚀 ~ bettingUrl:", bettingUrl)
+// Betting backend base URL. Use REACT_APP_BETTING_API_URL (or VITE_API_URL in Vite). Doc: BASE_URL/api/v1.
+const bettingUrl = process.env.REACT_APP_BETTING_API_URL || process.env.VITE_API_URL || "https://gamingbackend.wrathcode.com";
 
 
 
@@ -16,7 +15,7 @@ export const ApiConfig = {
   bettingLogin: "login",
   bettingRefreshToken: "refresh-token",
   bettingForgotPasswordSendOtp: "forgot-password/send-otp",
-  bettingForgotPasswordReset: "forgot-password/reset",
+  bettingForgotPasswordReset: "forgot-password/reset", // body: mobile, otp, newPassword, confirmNewPassword
   bettingLogout: "logout",
   bettingLogoutAll: "logout-all",
   bettingChangePassword: "change-password",
@@ -39,6 +38,8 @@ export const ApiConfig = {
   bettingWithdrawalTransactions: "withdrawal-transactions",
   bettingWithdrawal: "withdrawal",
   bettingSendWithdrawalOtp: "send-withdrawal-otp",
+  /** GET /wallet/transactions/:id – single transaction (Section 2). */
+  bettingWalletTransactions: "transactions",
 
   // Bank accounts (base + paths must match backend: POST /api/v1/bank-accounts/send-otp etc.)
   baseBettingBankAccounts: `${bettingUrl}/api/v1/bank-accounts`,
@@ -63,6 +64,16 @@ export const ApiConfig = {
   // User – master deposit accounts for /deposit page
   baseBettingUser: `${bettingUrl}/api/v1/user`,
   depositAccountsMaster: "deposit-accounts/master",
+
+  // Support / Tickets (Section 7)
+  baseBettingSupport: `${bettingUrl}/api/v1/support`,
+  supportTickets: "tickets", // POST create, GET list. List: ?search=&status=&page=&limit=
+  // GET tickets/:ticketId, POST tickets/:ticketId/messages, PATCH tickets/:ticketId/close
+
+  // Referral (Section 5) – dashboard, balance, claim, referrals, referrals/export, profit, rewards/history, rewards/live, apply
+  baseBettingReferral: `${bettingUrl}/api/v1/referral`,
+  // Search (Section 6) – public; GET /search/trending?limit, GET /search?q= or ?query= & limit
+  baseBettingSearch: `${bettingUrl}/api/v1/search`,
 
   // ============webSocketUrl================
 

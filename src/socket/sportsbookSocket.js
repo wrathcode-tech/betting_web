@@ -5,16 +5,19 @@
  * via auth: { token: accessToken } or query: { token: accessToken }.
  *
  * EMIT (client → server):
- *   subscribe:matches   { sport: 'cricket' | 'soccer' | 'tennis' }  – open match list
- *   unsubscribe:matches { sport }                                   – leave list
- *   subscribe:odds      { gameId: string }                          – open match (live odds)
- *   unsubscribe:odds    { gameId }                                  – leave match (recommended)
+ *   subscribe:matches     { sport: 'cricket' | 'soccer' | 'tennis' }
+ *   unsubscribe:matches   { sport }
+ *   subscribe:odds        { gameId: string, sport?: string }  – pass sport for soccer/tennis so live score uses correct API
+ *   unsubscribe:odds      { gameId }
+ *   subscribe:scoreboard  { gameId: string, sport?: string }
+ *   unsubscribe:scoreboard { gameId }
  *
  * LISTEN (server → client):
- *   matches   { sport, data: Match[], timestamp }  – snapshot + ~every 2s
- *   odds      { gameId, data: { matchOdds?, bookMakerOdds?, fancyOdds?, ..., liveScore }, timestamp }  – ~500ms. Use payload.data.liveScore only for live score.
- *   betUpdate { betId, status: 'open'|'settled'|'cancelled'|'cashed_out', balanceAfter?, bet?, profitLoss?, cashoutAmount?, ... }
- *   balance   { balance: number, userId }  – after place/cancel/cashout/settle/void; refresh wallet in UI
+ *   matches    { sport, data: Match[], timestamp }
+ *   odds       { gameId, data: { ...odds, liveScore? }, timestamp }
+ *   scoreboard { gameId, data: { inPlay, ... }, timestamp }  – data.inPlay === false when not in-play
+ *   betUpdate  { betId, status: 'open'|'settled'|'cancelled'|'cashed_out', balanceAfter?, bet?, ... }
+ *   balance    { balance: number, userId }
  */
 import { io } from 'socket.io-client';
 
@@ -35,18 +38,34 @@ const SOCKET_CONFIG = {
 let socket = null;
 const matchesListeners = new Set();
 const oddsListeners = new Set();
+const scoreboardListeners = new Set();
 const betUpdateListeners = new Set();
 const balanceListeners = new Set();
 const subscribedSports = new Set();
-const subscribedGameIds = new Set();
+/** gameId -> sport (cricket|tennis|soccer) for reemit and correct score API */
+const subscribedOddsMap = new Map();
+const subscribedScoreboardMap = new Map();
 
 function reemitSubscriptions() {
   if (!socket?.connected) return;
   subscribedSports.forEach((sport) => {
     socket.emit('subscribe:matches', { sport });
   });
-  subscribedGameIds.forEach((gameId) => {
-    socket.emit('subscribe:odds', { gameId: String(gameId) });
+  subscribedOddsMap.forEach((sport, id) => {
+    const s = sport || 'cricket';
+    if (s === 'tennis') {
+      socket.emit('subscribe:odds', { eventId: String(id), sport: s });
+    } else {
+      socket.emit('subscribe:odds', { gameId: String(id), sport: s });
+    }
+  });
+  subscribedScoreboardMap.forEach((sport, id) => {
+    const s = sport || 'cricket';
+    if (s === 'tennis') {
+      socket.emit('subscribe:scoreboard', { eventId: String(id), sport: s });
+    } else {
+      socket.emit('subscribe:scoreboard', { gameId: String(id), sport: s });
+    }
   });
 }
 
@@ -55,6 +74,7 @@ function ensureHandlers() {
 
   socket.off('matches');
   socket.off('odds');
+  socket.off('scoreboard');
   socket.off('betUpdate');
   socket.off('balance');
   socket.off('connect');
@@ -78,6 +98,16 @@ function ensureHandlers() {
         fn(payload);
       } catch (e) {
         console.error('sportsbookSocket odds listener error:', e);
+      }
+    });
+  });
+
+  socket.on('scoreboard', (payload) => {
+    scoreboardListeners.forEach((fn) => {
+      try {
+        fn(payload);
+      } catch (e) {
+        console.error('sportsbookSocket scoreboard listener error:', e);
       }
     });
   });
@@ -160,9 +190,11 @@ export function disconnectSportsbookSocket() {
     socket = null;
   }
   subscribedSports.clear();
-  subscribedGameIds.clear();
+  subscribedOddsMap.clear();
+  subscribedScoreboardMap.clear();
   matchesListeners.clear();
   oddsListeners.clear();
+  scoreboardListeners.clear();
   betUpdateListeners.clear();
   balanceListeners.clear();
 }
@@ -187,21 +219,59 @@ export function unsubscribeMatches(sport) {
   }
 }
 
-export function subscribeOdds(gameId) {
-  if (!gameId) return;
-  const id = String(gameId);
-  subscribedGameIds.add(id);
+export function subscribeOdds(gameIdOrEventId, sport) {
+  if (!gameIdOrEventId) return;
+  const id = String(gameIdOrEventId);
+  const s = sport || 'cricket';
+  subscribedOddsMap.set(id, s);
   if (socket?.connected) {
-    socket.emit('subscribe:odds', { gameId: id });
+    if (s === 'tennis') {
+      socket.emit('subscribe:odds', { eventId: id, sport: s });
+    } else {
+      socket.emit('subscribe:odds', { gameId: id, sport: s });
+    }
   }
 }
 
-export function unsubscribeOdds(gameId) {
-  if (!gameId) return;
-  const id = String(gameId);
-  subscribedGameIds.delete(id);
+export function unsubscribeOdds(gameIdOrEventId, sport) {
+  if (!gameIdOrEventId) return;
+  const id = String(gameIdOrEventId);
+  const s = sport || 'cricket';
+  subscribedOddsMap.delete(id);
   if (socket?.connected) {
-    socket.emit('unsubscribe:odds', { gameId: id });
+    if (s === 'tennis') {
+      socket.emit('unsubscribe:odds', { eventId: id });
+    } else {
+      socket.emit('unsubscribe:odds', { gameId: id });
+    }
+  }
+}
+
+export function subscribeScoreboard(gameIdOrEventId, sport) {
+  if (!gameIdOrEventId) return;
+  const id = String(gameIdOrEventId);
+  const s = sport || 'cricket';
+  subscribedScoreboardMap.set(id, s);
+  if (socket?.connected) {
+    if (s === 'tennis') {
+      socket.emit('subscribe:scoreboard', { eventId: id, sport: s });
+    } else {
+      socket.emit('subscribe:scoreboard', { gameId: id, sport: s });
+    }
+  }
+}
+
+export function unsubscribeScoreboard(gameIdOrEventId, sport) {
+  if (!gameIdOrEventId) return;
+  const id = String(gameIdOrEventId);
+  const s = sport || 'cricket';
+  subscribedScoreboardMap.delete(id);
+  if (socket?.connected) {
+    if (s === 'tennis') {
+      socket.emit('unsubscribe:scoreboard', { eventId: id });
+    } else {
+      socket.emit('unsubscribe:scoreboard', { gameId: id });
+    }
   }
 }
 
@@ -219,6 +289,14 @@ export function addOddsListener(fn) {
 
 export function removeOddsListener(fn) {
   oddsListeners.delete(fn);
+}
+
+export function addScoreboardListener(fn) {
+  if (typeof fn === 'function') scoreboardListeners.add(fn);
+}
+
+export function removeScoreboardListener(fn) {
+  scoreboardListeners.delete(fn);
 }
 
 export function addBetUpdateListener(fn) {

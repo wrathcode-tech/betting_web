@@ -3,6 +3,7 @@ import AuthService from '../api/services/AuthService'
 import { ApiConfig } from '../api/apiConfig/apiConfig'
 import MobileMenu from '../customComponents/MobileMenu'
 import Header from '../customComponents/Header'
+import DateFilter from '../customComponents/DateFilter'
 import './profileTransactions.css'
 
 function getPaymentProofFullUrl(url) {
@@ -62,6 +63,11 @@ function formatStatus(s) {
 function ProfileTransactions() {
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
+  const [appliedFromDate, setAppliedFromDate] = useState('')
+  const [appliedToDate, setAppliedToDate] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [pagination, setPagination] = useState({ page: 1, limit: PAGE_SIZE, total: 0, totalPages: 1, hasMore: false })
@@ -178,15 +184,47 @@ function ProfileTransactions() {
     setPagination((prev) => ({ ...prev, page: 1 }))
   }, [])
 
+  const handleApplyDateFilter = useCallback((fromVal, toVal) => {
+    setAppliedFromDate(fromVal || '')
+    setAppliedToDate(toVal || '')
+    setPagination((prev) => ({ ...prev, page: 1 }))
+  }, [])
+
   const list = useMemo(() => {
     const statusFiltered =
       statusFilter === 'all'
         ? transactions
         : transactions.filter((t) => String(t.status || '').toLowerCase() === statusFilter)
+    const searchLower = (search || '').trim().toLowerCase()
+    const searchFiltered = searchLower
+      ? statusFiltered.filter((t) => {
+          const time = formatTime(t.createdAt) || ''
+          const id = (t.transactionId || t._id || '') + ''
+          const type = (t.type || '') + ''
+          const amount = formatAmount(t.amount, t.currency) || ''
+          const status = formatStatus(t.status) || ''
+          const method = formatPaymentMethod(t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod) || ''
+          return [time, id, type, amount, status, method].some((s) => String(s).toLowerCase().includes(searchLower))
+        })
+      : statusFiltered
+    const dateFiltered =
+      appliedFromDate || appliedToDate
+        ? searchFiltered.filter((t) => {
+            const created = t.createdAt ? new Date(t.createdAt) : null
+            if (!created || isNaN(created.getTime())) return false
+            const y = created.getFullYear()
+            const m = String(created.getMonth() + 1).padStart(2, '0')
+            const d = String(created.getDate()).padStart(2, '0')
+            const tDateStr = `${y}-${m}-${d}`
+            if (appliedFromDate && tDateStr < appliedFromDate) return false
+            if (appliedToDate && tDateStr > appliedToDate) return false
+            return true
+          })
+        : searchFiltered
     const source =
       typeFilter === 'all'
-        ? statusFiltered.slice((pagination.page - 1) * PAGE_SIZE, pagination.page * PAGE_SIZE)
-        : statusFiltered
+        ? dateFiltered.slice((pagination.page - 1) * PAGE_SIZE, pagination.page * PAGE_SIZE)
+        : dateFiltered
     return source.map((t) => ({
       id: t._id,
       time: formatTime(t.createdAt),
@@ -202,12 +240,38 @@ function ProfileTransactions() {
       ),
       paymentProofUrl: t.type === 'deposit' ? getPaymentProofFullUrl(t.paymentProofUrl) : null,
     }))
-  }, [transactions, typeFilter, statusFilter, pagination.page])
+  }, [transactions, typeFilter, statusFilter, search, appliedFromDate, appliedToDate, pagination.page])
 
   const statusFilteredLength = useMemo(() => {
-    if (statusFilter === 'all') return transactions.length
-    return transactions.filter((t) => String(t.status || '').toLowerCase() === statusFilter).length
-  }, [transactions, statusFilter])
+    let base = transactions
+    if (statusFilter !== 'all') base = base.filter((t) => String(t.status || '').toLowerCase() === statusFilter)
+    const searchLower = (search || '').trim().toLowerCase()
+    if (searchLower) {
+      base = base.filter((t) => {
+        const time = formatTime(t.createdAt) || ''
+        const id = (t.transactionId || t._id || '') + ''
+        const type = (t.type || '') + ''
+        const amount = formatAmount(t.amount, t.currency) || ''
+        const status = formatStatus(t.status) || ''
+        const method = formatPaymentMethod(t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod) || ''
+        return [time, id, type, amount, status, method].some((s) => String(s).toLowerCase().includes(searchLower))
+      })
+    }
+    if (appliedFromDate || appliedToDate) {
+      base = base.filter((t) => {
+        const created = t.createdAt ? new Date(t.createdAt) : null
+        if (!created || isNaN(created.getTime())) return false
+        const y = created.getFullYear()
+        const m = String(created.getMonth() + 1).padStart(2, '0')
+        const d = String(created.getDate()).padStart(2, '0')
+        const tDateStr = `${y}-${m}-${d}`
+        if (appliedFromDate && tDateStr < appliedFromDate) return false
+        if (appliedToDate && tDateStr > appliedToDate) return false
+        return true
+      })
+    }
+    return base.length
+  }, [transactions, statusFilter, search, appliedFromDate, appliedToDate])
 
   const effectiveTotalPages =
     typeFilter === 'all' ? Math.max(1, Math.ceil(statusFilteredLength / PAGE_SIZE)) : 1
@@ -223,16 +287,25 @@ function ProfileTransactions() {
             <div className='transactions_header'>
               <h1>My Transactions</h1>
               <div className='transactions_header_right'>
-                <div className='date_range_picker'>
-                  <div className='date_input_wrapper'>
-                    <input type="date" className='date_input' defaultValue="2025-05-30" />
-                    <i className="ri-arrow-down-s-line date_arrow"></i>
-                  </div>
-                  <div className='date_input_wrapper'>
-                    <input type="date" className='date_input' defaultValue="2025-06-13" />
-                    <i className="ri-arrow-down-s-line date_arrow"></i>
-                  </div>
-                </div>
+                <input
+                  type="text"
+                  placeholder="Search ID, type, amount..."
+                  className="transactions_search_input"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value)
+                    setPagination((prev) => ({ ...prev, page: 1 }))
+                  }}
+                  aria-label="Search"
+                />
+                <DateFilter
+                  fromDate={fromDate}
+                  toDate={toDate}
+                  onFromDateChange={setFromDate}
+                  onToDateChange={setToDate}
+                  onApply={handleApplyDateFilter}
+                  showWrapper={true}
+                />
                 <select
                   id="txn-type-filter"
                   className='transactions_filter_select deposit_btn_style'

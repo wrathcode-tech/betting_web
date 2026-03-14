@@ -23,6 +23,24 @@
     gap: 15px;
 }
 
+.transactions_search_input {
+    min-width: 180px;
+    max-width: 260px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+}
+.transactions_search_input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+.transactions_search_input:focus {
+    border-color: rgba(249, 122, 49, 0.5);
+}
+
 .transactions_filter_select {
     cursor: pointer;
     outline: none;
@@ -59,6 +77,98 @@
     color: #fff;
 }
 
+/* Apply button – same look as filter dropdowns (orange gradient) */
+.transactions_header_right button.deposit_btn_style.btn_apply {
+    color: #fff;
+    border: none;
+    padding: 6px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px rgba(255, 255, 255, 0.3);
+}
+
+.transactions_header_right button.deposit_btn_style.btn_apply:hover,
+.transactions_header_right button.deposit_btn_style.btn_apply:focus-visible {
+    background: linear-gradient(1turn, #b85d26 .8%, #f88540);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px rgba(255, 255, 255, 0.35);
+    outline: none;
+}
+
+.transactions_header_right button.deposit_btn_style.btn_export {
+    color: #fff;
+    border: none;
+    padding: 6px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    background: linear-gradient(1turn, #b85d26 .8%, #f88540);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px rgba(255, 255, 255, 0.35);
+}
+.transactions_header_right button.deposit_btn_style.btn_export:hover:not(:disabled),
+.transactions_header_right button.deposit_btn_style.btn_export:focus-visible:not(:disabled) {
+    background: linear-gradient(1turn, #b85d26 .8%, #f88540);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px rgba(255, 255, 255, 0.35);
+    outline: none;
+}
+.transactions_header_right button.deposit_btn_style.btn_export:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.export_dropdown_wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.export_dropdown_wrapper .btn_export {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.export_dropdown_arrow {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.export_dropdown_menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    min-width: 160px;
+    background: #343c45;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    padding: 6px 0;
+    z-index: 100;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.export_dropdown_item {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    text-align: left;
+    border: none;
+    background: none;
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.export_dropdown_item:hover {
+    background: rgba(248, 133, 64, 0.25);
+}
+
 .date_range_picker {
     display: flex;
     align-items: center;
@@ -80,6 +190,7 @@
 }
 
 .date_input {
+    position: relative;
     background-color: transparent;
     border: none;
     color: #fff;
@@ -88,14 +199,23 @@
     outline: none;
     cursor: pointer;
     width: 140px;
+    min-width: 120px;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
+/* Calendar indicator sirf is input ke andar – overflow se Apply/Sports/Results par click na khule */
 .date_input::-webkit-calendar-picker-indicator {
     opacity: 0;
     position: absolute;
+    left: 0;
     right: 0;
+    top: 0;
+    bottom: 0;
     width: 100%;
     height: 100%;
+    margin: 0;
+    padding: 0;
     cursor: pointer;
 }
 

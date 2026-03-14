@@ -1,15 +1,18 @@
 /**
- * Balance Socket (Socket.IO) – single connection, real-time wallet balance after login.
- * Connect after login; receive balance on connect and on every Debit/Credit webhook.
- * Reconnects automatically when connection is lost.
+ * Default namespace socket – wallet balance updates (per backend doc).
+ *
+ * URL: io(BASE_URL, { auth: { token: 'Bearer '+accessToken } }).
+ * Listen: 'balance' → { balance: number, userId }.
+ *
+ * This is a separate connection from /sportsbook; use both when logged in.
  */
 import { io } from 'socket.io-client';
 
-const getBackendUrl = () =>
-  // process.env.REACT_APP_BETTING_API_URL || 'http://localhost:5008';
-  // 'http://localhost:5008';
-  'https://gamingbackend.wrathcode.com';
-/** Socket.IO client options (rejectUnauthorized is Node-only; no effect in browser) */
+const getBaseUrl = () => {
+  const url = process.env.REACT_APP_BETTING_API_URL || process.env.VITE_API_URL || 'https://gamingbackend.wrathcode.com';
+  return url.replace(/\/$/, '');
+};
+
 const SOCKET_CONFIG = {
   path: '/socket.io',
   transports: ['websocket'],
@@ -23,30 +26,28 @@ const SOCKET_CONFIG = {
 
 let socket = null;
 let lastBalance = null;
-/** Single callback – updated on each connectBalanceSocket(token, onBalance) call */
-let balanceCallback = null;
+const balanceListeners = new Set();
 
 function ensureHandlers() {
   if (!socket) return;
-
-  socket.off('connect');
   socket.off('balance');
+  socket.off('connect');
   socket.off('disconnect');
   socket.off('connect_error');
-  socket.off('reconnect');
+
+  socket.on('balance', (payload) => {
+    if (payload?.balance != null) lastBalance = payload.balance;
+    balanceListeners.forEach((fn) => {
+      try {
+        fn(payload);
+      } catch (e) {
+        console.error('balanceSocket balance listener error:', e);
+      }
+    });
+  });
 
   socket.on('connect', () => {
     console.log('Balance socket connected');
-  });
-
-  socket.on('balance', (payload) => {
-    const balance = payload?.balance ?? payload?.balanceAfter;
-    if (typeof balance === 'number') {
-      lastBalance = balance;
-      if (typeof balanceCallback === 'function') {
-        balanceCallback(balance, payload?.userId);
-      }
-    }
   });
 
   socket.on('disconnect', (reason) => {
@@ -56,30 +57,21 @@ function ensureHandlers() {
   socket.on('connect_error', (err) => {
     console.error('Balance socket error:', err?.message);
   });
-
-  socket.on('reconnect', () => {
-    console.log('Balance socket reconnected');
-  });
 }
 
-export function connectBalanceSocket(token, onBalance) {
+export function connectBalanceSocket(token) {
   if (!token) {
     disconnectBalanceSocket();
     return null;
   }
 
-  balanceCallback = typeof onBalance === 'function' ? onBalance : null;
   const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+  const baseUrl = getBaseUrl();
 
-  // Reuse existing connected socket – only update callback
   if (socket?.connected) {
-    if (balanceCallback != null && lastBalance != null) {
-      balanceCallback(lastBalance, null);
-    }
     return socket;
   }
 
-  // Reuse existing socket instance but reconnect (e.g. after network drop)
   if (socket) {
     socket.auth = { token: authToken };
     socket.connect();
@@ -87,8 +79,7 @@ export function connectBalanceSocket(token, onBalance) {
     return socket;
   }
 
-  // Create single new connection
-  socket = io(getBackendUrl(), {
+  socket = io(baseUrl, {
     ...SOCKET_CONFIG,
     auth: { token: authToken },
   });
@@ -103,15 +94,21 @@ export function disconnectBalanceSocket() {
     socket.removeAllListeners();
     socket = null;
   }
-  balanceCallback = null;
-  lastBalance = null;
+  balanceListeners.clear();
+}
+
+export function getLastBalance() {
+  return lastBalance;
 }
 
 export function getBalanceSocket() {
   return socket;
 }
 
-/** Last balance received from socket (for initial display on Game page etc.) */
-export function getLastBalance() {
-  return lastBalance;
+export function addBalanceListener(fn) {
+  if (typeof fn === 'function') balanceListeners.add(fn);
+}
+
+export function removeBalanceListener(fn) {
+  balanceListeners.delete(fn);
 }

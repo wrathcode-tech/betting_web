@@ -60,6 +60,7 @@ export default function MyBets() {
   const [bets, setBets] = useState([])
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 })
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
   const [exposure, setExposure] = useState(null)
   const [currentLoss, setCurrentLoss] = useState(null)
   const [lossLimit, setLossLimit] = useState(null)
@@ -134,7 +135,25 @@ export default function MyBets() {
     }
   }
 
-  const data = bets.map((row) => ({
+  const searchLower = (search || '').trim().toLowerCase()
+  const filteredBets = searchLower
+    ? bets.filter((row) => {
+        const event = String(row.event || '').toLowerCase()
+        const betId = String(row.betId || '').toLowerCase()
+        const market = String(row.market || '').toLowerCase()
+        const selection = String(row.selection || '').toLowerCase()
+        const betType = String(row.betType || '').toLowerCase()
+        return (
+          event.includes(searchLower) ||
+          betId.includes(searchLower) ||
+          market.includes(searchLower) ||
+          selection.includes(searchLower) ||
+          betType.includes(searchLower)
+        )
+      })
+    : bets
+
+  const data = filteredBets.map((row) => ({
     ...row,
     actions: row.statusRaw === 'open' && row.id ? (
       <button
@@ -157,6 +176,14 @@ export default function MyBets() {
             <div className="transactions_header">
               <h1>My Bets (Open)</h1>
               <div className="transactions_header_right">
+                <input
+                  type="text"
+                  placeholder="Search event, bet ID, market..."
+                  className="transactions_search_input"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  aria-label="Search"
+                />
                 {exposure != null && (
                   <span className="transaction_value amount_value" style={{ marginRight: 12 }}>
                     Exposure: ₹{Number(exposure).toLocaleString()}
@@ -189,8 +216,10 @@ export default function MyBets() {
 
             {loading ? (
               <p className="text-white-50">Loading...</p>
-            ) : data.length === 0 ? (
+            ) : bets.length === 0 ? (
               <p className="text-white-50">No open bets.</p>
+            ) : data.length === 0 ? (
+              <p className="text-white-50">No matches for your search.</p>
             ) : (
               <>
                 <div className="transactions_table_wrapper">
@@ -300,7 +329,7 @@ export default function MyBets() {
                     Previous
                   </button>
                   <span className="pagination_info">
-                    Page {pagination.page} of {pagination.totalPages || 1} ({pagination.total ?? data.length} total)
+                    Page {pagination.page} of {pagination.totalPages || 1} ({search ? `${data.length} of ${bets.length}` : (pagination.total ?? bets.length)} total)
                   </span>
                   <button
                     type="button"

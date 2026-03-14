@@ -23,6 +23,7 @@ export default function TurnoverHistory() {
       columns={COLUMNS}
       data={DUMMY_DATA}
       emptyMessage="No turnover history yet."
+      filterColumnKey="product"
     />
   )
 }

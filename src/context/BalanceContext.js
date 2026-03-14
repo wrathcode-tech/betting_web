@@ -2,7 +2,13 @@
  * Global balance state – socket updates flow here so every page gets instant balance.
  */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { connectBalanceSocket, disconnectBalanceSocket, getLastBalance } from '../socket/balanceSocket'
+import {
+  connectBalanceSocket,
+  disconnectBalanceSocket,
+  getLastBalance,
+  addBalanceListener,
+  removeBalanceListener,
+} from '../socket/balanceSocket'
 import {
   connectSportsbookSocket,
   disconnectSportsbookSocket,
@@ -37,10 +43,15 @@ export function BalanceProvider({ children }) {
       return
     }
 
-    connectBalanceSocket(token, (newBalance) => {
-      setBalanceState(newBalance)
-      window.dispatchEvent(new CustomEvent('walletBalanceUpdate', { detail: { balance: newBalance } }))
-    })
+    connectBalanceSocket(token)
+    const onBalance = (payload) => {
+      const newBalance = payload?.balance
+      if (newBalance != null) {
+        setBalanceState(newBalance)
+        window.dispatchEvent(new CustomEvent('walletBalanceUpdate', { detail: { balance: newBalance } }))
+      }
+    }
+    addBalanceListener(onBalance)
 
     connectSportsbookSocket(token)
     const onBetUpdate = (payload) => {
@@ -53,6 +64,7 @@ export function BalanceProvider({ children }) {
     addBetUpdateListener(onBetUpdate)
 
     return () => {
+      removeBalanceListener(onBalance)
       removeBetUpdateListener(onBetUpdate)
       disconnectBalanceSocket()
       disconnectSportsbookSocket()

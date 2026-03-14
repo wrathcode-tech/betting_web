@@ -51,23 +51,25 @@ const AuthService = {
     return ApiCallPost(url, params, headers);
   },
 
-  bettingForgotPasswordReset: async (mobile, otp, newPassword, confirmPassword) => {
+  bettingForgotPasswordReset: async (mobile, otp, newPassword, confirmNewPassword) => {
     const { baseBettingAuth, bettingForgotPasswordReset } = ApiConfig;
     const url = baseBettingAuth + bettingForgotPasswordReset;
-    const params = { mobile, otp, newPassword, confirmPassword };
+    const params = { mobile, otp, newPassword, confirmNewPassword };
     const headers = { "Content-Type": "application/json" };
     return ApiCallPost(url, params, headers);
   },
 
+  /** POST /auth/logout – body: { refreshToken } (per API doc). */
   bettingLogout: async () => {
     const token = sessionStorage.getItem("token");
+    const refreshToken = sessionStorage.getItem("refreshToken");
     const { baseBettingAuth, bettingLogout } = ApiConfig;
     const url = baseBettingAuth + bettingLogout;
     const headers = {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     };
-    return ApiCallPost(url, {}, headers);
+    return ApiCallPost(url, { refreshToken: refreshToken || "" }, headers);
   },
 
   bettingGetMe: async () => {
@@ -95,11 +97,12 @@ const AuthService = {
     return ApiCallPutFormData(url, formData, authHeader);
   },
 
-  bettingChangePassword: async (currentPassword, newPassword, confirmPassword) => {
+  /** POST /auth/change-password – body: currentPassword, newPassword, confirmNewPassword (per API doc). */
+  bettingChangePassword: async (currentPassword, newPassword, confirmNewPassword) => {
     const token = sessionStorage.getItem("token");
     const { baseBettingAuth, bettingChangePassword } = ApiConfig;
     const url = baseBettingAuth + bettingChangePassword;
-    const params = { currentPassword, newPassword, confirmPassword };
+    const params = { currentPassword, newPassword, confirmNewPassword };
     const headers = {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -146,6 +149,16 @@ const AuthService = {
     const { baseBettingWallet, bettingDepositTransactions } = ApiConfig;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     const url = `${baseBettingWallet}${bettingDepositTransactions}?${params.toString()}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/wallet/transactions/:id – single transaction by ID (Section 2). */
+  walletTransactionById: async (transactionId) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingWallet, bettingWalletTransactions } = ApiConfig;
+    const url = `${baseBettingWallet}${bettingWalletTransactions}/${encodeURIComponent(transactionId)}`;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
     return ApiCallGet(url, headers);
   },
@@ -365,11 +378,13 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
-  /** GET /api/v1/sportsbook/{sportName}/odds?gameId={gameId} – Public; no auth. Returns { success, data: { matchOdds, bookMakerOdds, fancyOdds, otherMarketOdds, premiumFancy, liveScore } }. */
-  sportsbookOdds: async (sportName, gameId) => {
+  /** GET /api/v1/sportsbook/{sportName}/odds?gameId={gameId} or ?eventId={eventId} for tennis. Public; no auth. */
+  sportsbookOdds: async (sportName, gameIdOrEventId) => {
     const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
-    const url = `${baseBettingSportsbook}/${encodeURIComponent(sportName)}/odds?gameId=${encodeURIComponent(gameId)}`;
+    const isTennis = String(sportName).toLowerCase() === "tennis";
+    const param = isTennis ? "eventId" : "gameId";
+    const url = `${baseBettingSportsbook}/${encodeURIComponent(sportName)}/odds?${param}=${encodeURIComponent(gameIdOrEventId)}`;
     const headers = {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -566,6 +581,173 @@ const AuthService = {
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/betfair-result/${encodeURIComponent(type)}?marketId=${encodeURIComponent(marketId)}`;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    return ApiCallGet(url, headers);
+  },
+
+  // ============================================================================
+  // SUPPORT / TICKETS
+  // ============================================================================
+
+  /** GET /api/v1/support/tickets – List tickets. Query: search?, status? (open|in_progress|resolved|closed), page, limit. */
+  getUserTickets: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSupport, supportTickets } = ApiConfig;
+    const q = new URLSearchParams();
+    if (params.search != null) q.set("search", params.search);
+    if (params.status != null) q.set("status", params.status);
+    if (params.page != null) q.set("page", String(params.page));
+    if (params.limit != null) q.set("limit", String(params.limit));
+    const url = `${baseBettingSupport}/${supportTickets}${q.toString() ? `?${q}` : ""}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/support/tickets/:ticketId – Ticket detail + messages (chat). */
+  getTicketDetail: async (ticketId) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSupport, supportTickets } = ApiConfig;
+    const url = `${baseBettingSupport}/${supportTickets}/${encodeURIComponent(ticketId)}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  /** POST /api/v1/support/tickets – Create ticket. Body: { subject, category, priority?, description, attachmentUrl?, attachmentName? }. category: deposit|withdrawal|betting|casino|launchpad|account|other. priority: low|medium|high. */
+  submitTicket: async (body) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSupport, supportTickets } = ApiConfig;
+    const url = `${baseBettingSupport}/${supportTickets}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    const payload = typeof body === "object" && body != null ? body : {};
+    return ApiCallPost(url, payload, headers);
+  },
+
+  /** POST /api/v1/support/tickets/:ticketId/messages – Send message. Body: { message, attachmentUrl?, attachmentName? }. */
+  replyTicket: async (ticketId, body) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSupport, supportTickets } = ApiConfig;
+    const url = `${baseBettingSupport}/${supportTickets}/${encodeURIComponent(ticketId)}/messages`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    const payload = typeof body === "object" && body != null ? body : {};
+    return ApiCallPost(url, payload, headers);
+  },
+
+  /** PATCH /api/v1/support/tickets/:ticketId/close – Close ticket. */
+  closeTicket: async (ticketId) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingSupport, supportTickets } = ApiConfig;
+    const url = `${baseBettingSupport}/${supportTickets}/${encodeURIComponent(ticketId)}/close`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPatch(url, {}, headers);
+  },
+
+  // ============================================================================
+  // REFERRAL (Section 5) – protected
+  // ============================================================================
+  referralDashboard: async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingReferral } = ApiConfig;
+    const url = `${baseBettingReferral}/dashboard`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+  referralBalance: async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingReferral } = ApiConfig;
+    const url = `${baseBettingReferral}/balance`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+  referralClaim: async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingReferral } = ApiConfig;
+    const url = `${baseBettingReferral}/balance/claim`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPost(url, {}, headers);
+  },
+  referralList: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingReferral } = ApiConfig;
+    const q = new URLSearchParams(params).toString();
+    const url = `${baseBettingReferral}/referrals${q ? `?${q}` : ""}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+  referralApply: async (referralCode) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingReferral } = ApiConfig;
+    const url = `${baseBettingReferral}/apply`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPost(url, { referralCode: String(referralCode || "").trim() }, headers);
+  },
+  /** GET /api/v1/referral/referrals/export?from&to – CSV export (Section 5). */
+  referralExport: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingReferral } = ApiConfig;
+    const q = new URLSearchParams(params).toString();
+    const url = `${baseBettingReferral}/referrals/export${q ? `?${q}` : ""}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+  /** GET /api/v1/referral/profit?page&limit – profit per referred user. */
+  referralProfit: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingReferral } = ApiConfig;
+    const q = new URLSearchParams(params).toString();
+    const url = `${baseBettingReferral}/profit${q ? `?${q}` : ""}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+  /** GET /api/v1/referral/rewards/history?page&limit&from&to. */
+  referralRewardsHistory: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingReferral } = ApiConfig;
+    const q = new URLSearchParams(params).toString();
+    const url = `${baseBettingReferral}/rewards/history${q ? `?${q}` : ""}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+  /** GET /api/v1/referral/rewards/live?limit – live rewards feed. */
+  referralRewardsLive: async (limit) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingReferral } = ApiConfig;
+    const url = `${baseBettingReferral}/rewards/live${limit != null ? `?limit=${limit}` : ""}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  // ============================================================================
+  // SEARCH (Section 6) – public, rate limited. Doc: ?q= or ?query= & limit
+  // ============================================================================
+  searchTrending: async (limit = 20) => {
+    const { baseBettingSearch } = ApiConfig;
+    const url = `${baseBettingSearch}/trending?limit=${Math.min(limit, 50)}`;
+    const headers = { "Content-Type": "application/json" };
+    return ApiCallGet(url, headers);
+  },
+  search: async (query, limit = 15) => {
+    const { baseBettingSearch } = ApiConfig;
+    const q = new URLSearchParams({ limit: Math.min(limit, 50) });
+    const term = query != null ? String(query).trim() : "";
+    if (term) {
+      q.set("q", term);
+      q.set("query", term);
+    }
+    const url = `${baseBettingSearch}${q.toString() ? `?${q}` : "?"}`;
+    const headers = { "Content-Type": "application/json" };
     return ApiCallGet(url, headers);
   },
 

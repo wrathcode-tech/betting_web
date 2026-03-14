@@ -1,972 +1,583 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import './referralProgram.css'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import AuthService from '../api/services/AuthService'
+import { ApiConfig } from '../api/apiConfig/apiConfig'
+import LoaderHelper from '../customComponents/Loading/LoaderHelper'
+import { alertErrorMessage, alertSuccessMessage } from '../customComponents/CustomAlertMessage'
+import { useBalance } from '../context/BalanceContext'
 import MobileMenu from '../customComponents/MobileMenu'
+import './referralProgram.css'
+
+const REFERRALS_PAGE_SIZE = 20
+const REWARDS_PAGE_SIZE = 20
+const PROFIT_PAGE_SIZE = 20
 
 function ReferralProgram() {
-    const navigate = useNavigate()
+    const { setBalance } = useBalance()
+
+    const [referralCode, setReferralCode] = useState('')
+    const [referralLink, setReferralLink] = useState('')
+    const [dashboard, setDashboard] = useState(null)
+    const [balanceInfo, setBalanceInfo] = useState(null)
+    const [referralList, setReferralList] = useState([])
+    const [referralPagination, setReferralPagination] = useState({ page: 1, total: 0, totalPages: 0 })
+    const [rewardsHistory, setRewardsHistory] = useState([])
+    const [rewardsPagination, setRewardsPagination] = useState({ page: 1, totalPages: 0 })
+    const [profitList, setProfitList] = useState([])
+    const [profitPagination, setProfitPagination] = useState({ page: 1, totalPages: 0 })
+    const [rewardsLive, setRewardsLive] = useState([])
+    const [isClaiming, setIsClaiming] = useState(false)
     const [activeTab, setActiveTab] = useState('dashboard')
-    const belowFoldRef = useRef(null)
-    const [showBelowFold, setShowBelowFold] = useState(false)
+
+    const [referralSearchQuery, setReferralSearchQuery] = useState('')
+    const [rewardSearchQuery, setRewardSearchQuery] = useState('')
+    const [profitSearchQuery, setProfitSearchQuery] = useState('')
+    const [referralFrom, setReferralFrom] = useState('')
+    const [referralTo, setReferralTo] = useState('')
+    const [rewardsFrom, setRewardsFrom] = useState('')
+    const [rewardsTo, setRewardsTo] = useState('')
+
+    const [applyCodeInput, setApplyCodeInput] = useState('')
+    const [isApplying, setIsApplying] = useState(false)
+    const [isExporting, setIsExporting] = useState(false)
+
     useEffect(() => {
-        const el = belowFoldRef.current
-        if (!el) return
-        const io = new IntersectionObserver(
-            (entries) => { if (entries[0].isIntersecting) setShowBelowFold(true) },
-            { rootMargin: '200px', threshold: 0 }
-        )
-        io.observe(el)
-        return () => io.disconnect()
+        loadDashboard()
+        loadBalance()
     }, [])
+
+    useEffect(() => {
+        if (activeTab === 'dashboard') {
+            loadRewardsHistory(1)
+            loadProfit(1)
+            loadRewardsLive()
+        }
+    }, [activeTab])
+
+    useEffect(() => {
+        if (activeTab === 'referrals') loadReferralList(1)
+    }, [activeTab])
+
+    const loadDashboard = async () => {
+        try {
+            LoaderHelper.show()
+            const res = await AuthService.referralDashboard()
+            const data = res?.data ?? res
+            if (data && typeof data === 'object') {
+                setDashboard(data)
+                const code = data.referralCode ?? data.referral_code ?? data.code ?? data.user_code ?? (balanceInfo?.referralCode ?? balanceInfo?.referral_code ?? '')
+                setReferralCode(String(code || ''))
+                const base = (typeof window !== 'undefined' && window.location?.origin) || ApiConfig.deployedUrl || ''
+                setReferralLink(base ? `${base.replace(/\/$/, '')}/signup?r=${encodeURIComponent(code || '')}` : '')
+            }
+        } catch (e) {
+            alertErrorMessage('Failed to load referral dashboard.')
+        } finally {
+            LoaderHelper.hide()
+        }
+    }
+
+    const loadBalance = useCallback(async () => {
+        try {
+            const res = await AuthService.referralBalance()
+            const data = res?.data ?? res
+            if (data && typeof data === 'object') {
+                setBalanceInfo(data)
+                if (!referralCode && (data.referralCode ?? data.referral_code ?? data.code)) {
+                    const code = data.referralCode ?? data.referral_code ?? data.code ?? ''
+                    setReferralCode(String(code))
+                    const base = (typeof window !== 'undefined' && window.location?.origin) || ApiConfig.deployedUrl || ''
+                    setReferralLink(base ? `${base.replace(/\/$/, '')}/signup?r=${encodeURIComponent(code)}` : '')
+                }
+            }
+        } catch {
+            setBalanceInfo(null)
+        }
+    }, [referralCode])
+
+    const loadReferralList = async (page = 1) => {
+        try {
+            LoaderHelper.show()
+            const params = { page, limit: REFERRALS_PAGE_SIZE }
+            if (referralFrom) params.from = referralFrom
+            if (referralTo) params.to = referralTo
+            const res = await AuthService.referralList(params)
+            const data = res?.data ?? res
+            const list = Array.isArray(data?.referrals) ? data.referrals : Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []
+            setReferralList(list)
+            const total = data?.total ?? data?.totalCount ?? list.length
+            setReferralPagination({ page, total, totalPages: Math.max(1, Math.ceil(total / REFERRALS_PAGE_SIZE)) })
+        } catch {
+            setReferralList([])
+            setReferralPagination({ page: 1, total: 0, totalPages: 0 })
+        } finally {
+            LoaderHelper.hide()
+        }
+    }
+
+    const loadRewardsHistory = async (page = 1) => {
+        try {
+            if (page === 1) LoaderHelper.show()
+            const params = { page, limit: REWARDS_PAGE_SIZE }
+            if (rewardsFrom) params.from = rewardsFrom
+            if (rewardsTo) params.to = rewardsTo
+            const res = await AuthService.referralRewardsHistory(params)
+            const data = res?.data ?? res
+            const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.rewards) ? data.rewards : Array.isArray(data) ? data : []
+            setRewardsHistory(list)
+            const total = data?.total ?? data?.totalCount ?? list.length
+            setRewardsPagination({ page, totalPages: Math.max(1, Math.ceil(total / REWARDS_PAGE_SIZE)) })
+        } catch {
+            setRewardsHistory([])
+            setRewardsPagination({ page: 1, totalPages: 0 })
+        } finally {
+            LoaderHelper.hide()
+        }
+    }
+
+    const loadProfit = async (page = 1) => {
+        try {
+            if (page === 1) LoaderHelper.show()
+            const res = await AuthService.referralProfit({ page, limit: PROFIT_PAGE_SIZE })
+            const data = res?.data ?? res
+            const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.profit) ? data.profit : Array.isArray(data) ? data : []
+            setProfitList(list)
+            const total = data?.total ?? data?.totalCount ?? list.length
+            setProfitPagination({ page, totalPages: Math.max(1, Math.ceil(total / PROFIT_PAGE_SIZE)) })
+        } catch {
+            setProfitList([])
+            setProfitPagination({ page: 1, totalPages: 0 })
+        } finally {
+            LoaderHelper.hide()
+        }
+    }
+
+    const loadRewardsLive = async () => {
+        try {
+            const res = await AuthService.referralRewardsLive(10)
+            const data = res?.data ?? res
+            const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.rewards) ? data.rewards : Array.isArray(data) ? data : []
+            setRewardsLive(list)
+        } catch {
+            setRewardsLive([])
+        }
+    }
+
+    const handleClaim = async () => {
+        try {
+            setIsClaiming(true)
+            LoaderHelper.show()
+            const res = await AuthService.referralClaim()
+            if (res?.success !== false && !res?.message?.toLowerCase().includes('fail')) {
+                alertSuccessMessage(res?.message || 'Amount claimed successfully.')
+                const walletRes = await AuthService.bettingGetBalance()
+                const bal = walletRes?.data?.balance ?? walletRes?.balance
+                if (bal != null) setBalance(bal)
+                await loadBalance()
+                loadDashboard()
+            } else {
+                alertErrorMessage(res?.message || 'Unable to claim.')
+            }
+        } catch (e) {
+            alertErrorMessage(e?.message || 'Something went wrong while claiming.')
+        } finally {
+            setIsClaiming(false)
+            LoaderHelper.hide()
+        }
+    }
+
+    const handleExport = async () => {
+        try {
+            setIsExporting(true)
+            LoaderHelper.show()
+            const params = {}
+            if (referralFrom) params.from = referralFrom
+            if (referralTo) params.to = referralTo
+            const res = await AuthService.referralExport(params)
+            const raw = res?.data ?? res
+            const blob = raw?.data ?? raw?.csv ?? raw
+            if (blob instanceof Blob) {
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `referrals_export_${new Date().toISOString().slice(0, 10)}.csv`
+                a.click()
+                URL.revokeObjectURL(url)
+                alertSuccessMessage('Export downloaded.')
+            } else if (typeof blob === 'string' && blob.length > 0) {
+                const a = document.createElement('a')
+                a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(blob)
+                a.download = `referrals_export_${new Date().toISOString().slice(0, 10)}.csv`
+                a.click()
+                alertSuccessMessage('Export downloaded.')
+            } else {
+                alertErrorMessage('Export format not supported.')
+            }
+        } catch (e) {
+            alertErrorMessage(e?.message || 'Failed to export.')
+        } finally {
+            setIsExporting(false)
+            LoaderHelper.hide()
+        }
+    }
+
+    const handleApplyCode = async () => {
+        const code = String(applyCodeInput || '').trim()
+        if (!code) {
+            alertErrorMessage('Please enter a referral code.')
+            return
+        }
+        try {
+            setIsApplying(true)
+            LoaderHelper.show()
+            const res = await AuthService.referralApply(code)
+            if (res?.success !== false && !res?.message?.toLowerCase().includes('fail')) {
+                alertSuccessMessage(res?.message || 'Referral code applied successfully.')
+                setApplyCodeInput('')
+                loadDashboard()
+                loadBalance()
+            } else {
+                alertErrorMessage(res?.message || 'Could not apply referral code.')
+            }
+        } catch (e) {
+            alertErrorMessage(e?.message || 'Something went wrong.')
+        } finally {
+            setIsApplying(false)
+            LoaderHelper.hide()
+        }
+    }
+
+    const copyToClipboard = async (text, successMsg, errorMsg) => {
+        try {
+            if (!text) return
+            if (window?.navigator?.clipboard?.writeText) {
+                await window.navigator.clipboard.writeText(text)
+            } else {
+                const ta = document.createElement('textarea')
+                ta.value = text
+                ta.setAttribute('readonly', '')
+                ta.style.position = 'fixed'
+                ta.style.opacity = '0'
+                document.body.appendChild(ta)
+                ta.select()
+                document.execCommand('copy')
+                document.body.removeChild(ta)
+            }
+            alertSuccessMessage(successMsg)
+        } catch {
+            alertErrorMessage(errorMsg)
+        }
+    }
+
+    const availableBalance = balanceInfo?.available ?? balanceInfo?.availableBalance ?? dashboard?.balance?.available ?? 0
+    const lockedBalance = balanceInfo?.locked ?? balanceInfo?.lockedBalance ?? dashboard?.balance?.locked ?? 0
+    const totalClaimed = balanceInfo?.totalClaimed ?? balanceInfo?.total_claimed ?? 0
+    const minClaim = balanceInfo?.minClaim ?? balanceInfo?.min_claim ?? 0
+    const totalProfit = dashboard?.totalProfit ?? dashboard?.total_profit ?? 0
+    const totalReferrals = dashboard?.totalReferrals ?? dashboard?.total_referrals ?? referralPagination?.total ?? (referralList?.length ?? 0)
+
+    const filteredReferralList = useMemo(() => {
+        if (!referralSearchQuery.trim()) return referralList
+        const q = referralSearchQuery.toLowerCase().trim()
+        return referralList.filter((item) => {
+            const user = item?.user ?? item
+            const name = (user?.fullName ?? user?.full_name ?? '').toLowerCase()
+            const mobile = (user?.mobile ?? user?.mobileNumber ?? '').toLowerCase()
+            const id = (item?.userId ?? user?.id ?? user?._id ?? '').toString().toLowerCase()
+            return name.includes(q) || mobile.includes(q) || id.includes(q)
+        })
+    }, [referralList, referralSearchQuery])
+
+    const filteredRewardsHistory = useMemo(() => {
+        if (!rewardSearchQuery.trim()) return rewardsHistory
+        const q = rewardSearchQuery.toLowerCase().trim()
+        return rewardsHistory.filter((item) => {
+            const name = (item?.userId?.fullName ?? item?.userName ?? '').toLowerCase()
+            const id = (item?.userId ?? item?.userId?._id ?? '').toString().toLowerCase()
+            return name.includes(q) || id.includes(q)
+        })
+    }, [rewardsHistory, rewardSearchQuery])
+
+    const filteredProfitList = useMemo(() => {
+        if (!profitSearchQuery.trim()) return profitList
+        const q = profitSearchQuery.toLowerCase().trim()
+        return profitList.filter((item) => {
+            const name = (item?.userId?.fullName ?? item?.fullName ?? '').toLowerCase()
+            const id = (item?.userId ?? item?.userId?._id ?? '').toString().toLowerCase()
+            return name.includes(q) || id.includes(q)
+        })
+    }, [profitList, profitSearchQuery])
+
+    const formatDate = (val) => {
+        if (!val) return '—'
+        try {
+            const d = new Date(val)
+            return Number.isNaN(d.getTime()) ? String(val) : d.toLocaleString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        } catch {
+            return String(val)
+        }
+    }
 
     return (
         <>
-            <div className='dashboard_page removebgsports'>
-                <div className='container'>
-                    <div className='referral_program_section'>
-                        <h2>Referral Program</h2>
-
-                        <div className='d-flex align-items-center justify-content-between referral_program_tabs'>
-                            <button 
-                                className={activeTab === 'dashboard' ? 'active' : ''}
-                                onClick={() => setActiveTab('dashboard')}
-                            >
-                                Dashboard
-                            </button>
-                            <button 
-                                className={activeTab === 'referrals' ? 'active' : ''}
-                                onClick={() => setActiveTab('referrals')}
-                            >
-                                Refferrals
-                            </button>
+            <div className="dashboard_page removebgsports">
+                <div className="container-fluid">
+                    <div className="profile_transactions_section referral_program_section">
+                        <div className="transactions_header referral_header">
+                            <h1>Referral Program</h1>
+                            <div className="referral_program_tabs">
+                                <button
+                                    type="button"
+                                    className={activeTab === 'dashboard' ? 'active' : ''}
+                                    onClick={() => setActiveTab('dashboard')}
+                                >
+                                    Dashboard
+                                </button>
+                                <button
+                                    type="button"
+                                    className={activeTab === 'referrals' ? 'active' : ''}
+                                    onClick={() => setActiveTab('referrals')}
+                                >
+                                    Referrals
+                                </button>
+                            </div>
                         </div>
 
                         {activeTab === 'dashboard' && (
-                            <div>
-                            <div className='referral_program_content'>
-
-                            <div className='d-flex align-items-center justify-content-between gap-4 programflex_bl'>
-                                <div className='referral_profit_tl'>
-                                    <ul>
-                                        <li>
-                                            <div className='referral_profit_tl_item'>
-                                                <img src="images/total_profit.svg" alt="profit" width="48" height="48" decoding="async" fetchPriority="high" />
-                                            </div>
-                                            <div className='referral_profit_tl_item_cnt'>
-                                                <h5>My total profit: <span><i className="ri-error-warning-line"></i></span></h5>
-                                                <span className='pricevalue'>$0.00</span>
-                                            </div>
-                                        </li>
-                                        <li><img src="images/gradientborder.svg" alt="arrow" /></li>
-
-                                        <li>
-                                            <div className='referral_profit_tl_item'>
-                                                <img src="images/total_referrals.svg" alt="profit" width="48" height="48" decoding="async" fetchPriority="high" />
-                                            </div>
-                                            <div className='referral_profit_tl_item_cnt'>
-                                                <h5>Total referrals  <span><i className="ri-error-warning-line"></i></span></h5>
-                                                <span className='pricevalue'>$0.00</span>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div className='invite_users_bl'>
-                                    <h5>INVITE NEW USERS TO GET:</h5>
-                                    <ul>
-                                        <li><i className="ri-star-fill"></i> $1500 bonus per referral</li>
-                                        <li><i className="ri-star-fill"></i> Up to 30% commissions from users activity</li>
-                                    </ul>
-
-                                    <div className='notification_icon'>
-                                        <img src="images/notification_icon.png" alt="notification" width="24" height="24" decoding="async" />
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div ref={belowFoldRef} className="referral_sentinel" aria-hidden="true" />
-                            {showBelowFold ? (
-                            <>
-                            <div className='referral_campaign_section'>
-                                <h4>My referral campaign <span>DEFAULT</span></h4>
-
-                                <div className='d-flex align-items-center justify-content-between gap-4'>
-                                    <div className='referral_linkcopy'>
-                                        <i className="ri-link"></i>
-                                        <div className='referral_input_group'>
-                                            <div className='referral_input_group_label'>
-                                                <label>Web Referral link</label>
-                                                <input type="text" value="https://betfury.com/?r=User2459219" className='referral_input' />
-                                            </div>
-                                            <button className='referral_copy_btn'>Copy</button>
+                            <div className="referral_dashboard_content">
+                                <div className="referral_stats_row">
+                                    <div className="referral_stat_card">
+                                        <div className="referral_stat_icon">
+                                            <img src="/images/total_profit.svg" loading="lazy" alt="" />
+                                        </div>
+                                        <div className="referral_stat_body">
+                                            <span className="referral_stat_label">Total Profit</span>
+                                            <span className="referral_stat_value">₹ {Number(totalProfit) > 0 ? Number(totalProfit).toFixed(2) : '0.00'}</span>
                                         </div>
                                     </div>
+                                    <div className="referral_stat_card">
+                                        <div className="referral_stat_icon">
+                                            <img src="/images/total_referrals.svg" loading="lazy" alt="" />
+                                        </div>
+                                        <div className="referral_stat_body">
+                                            <span className="referral_stat_label">Total Referrals</span>
+                                            <span className="referral_stat_value">{totalReferrals}</span>
+                                        </div>
+                                    </div>
+                                    <div className="referral_invite_card">
+                                        <h3>Invite & Earn</h3>
+                                        <ul>
+                                            <li><i class="ri-star-fill"></i> Your friend gets a bonus when they join</li>
+                                            <li><i class="ri-star-fill"></i> Earn commission on every game your friends play</li>
+                                        </ul>
+                                        <div class="notification_icon"><img alt="notification" width="24" height="24" decoding="async" src="images/notification_icon.png" /></div>
+                                    </div>
 
-                                    <div className='referral_linkcopy'>
-                                        <i className="ri-terminal-window-line"></i>
-                                        <div className='referral_input_group'>
-                                            <div className='referral_input_group_label'>
-                                                <label>Your referral code</label>
-                                                <input type="text" value="User23755" className='referral_input' />
+                                </div>
+
+                                <div className="referral_link_section">
+                                    <h4>My Referral Code</h4>
+                                    <div className="referral_link_grid">
+                                        <div className="referral_link_item">
+                                            <label>Web Referral link</label>
+                                            <div className="referral_link_input_wrap">
+                                                <input type="text" value={referralLink} readOnly />
+                                                <button type="button" className="referral_btn_copy" onClick={() => copyToClipboard(referralLink, 'Link copied', 'Failed to copy')}>Copy</button>
                                             </div>
-                                            <button className='referral_copy_btn'>Copy</button>
+                                        </div>
+                                        <div className="referral_link_item">
+                                            <label>Your referral code</label>
+                                            <div className="referral_link_input_wrap">
+                                                <input type="text" value={referralCode} readOnly />
+                                                <button type="button" className="referral_btn_copy" onClick={() => copyToClipboard(referralCode, 'Code copied', 'Failed to copy')}>Copy</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className='d-flex align-items-center justify-content-between gap-4 mt-4'>
-                                    <div className='referral_share_cnt'>
-                                        <p>Your commissions: <span>100%</span></p>
-                                        <p>Shares for referrals: <span>0%</span></p>
+                                <div className="referral_balance_card">
+                                    <div className="referral_balance_info">
+                                        <span className="referral_balance_label">Available Commission</span>
+                                        <span className="referral_balance_value">₹ {Number(availableBalance) > 0 ? Number(availableBalance).toFixed(2) : '0.00'}</span>
+                                        {(lockedBalance > 0 || totalClaimed > 0) && (
+                                            <div className="referral_balance_extra">
+                                                {Number(lockedBalance) > 0 && <span>Locked: ₹ {Number(lockedBalance).toFixed(2)}</span>}
+                                                {Number(totalClaimed) > 0 && <span>Total Claimed: ₹ {Number(totalClaimed).toFixed(2)}</span>}
+                                            </div>
+                                        )}
+                                        {Number(minClaim) > 0 && <span className="referral_min_claim">Min claim: ₹ {Number(minClaim).toFixed(2)}</span>}
                                     </div>
-                                    <div className='referral_share_btn'>
-                                        <button className='referral_share_btn'>Share my offer</button>
-                                        <button className='referral_share_btn campaignbtn'>Create new campaign</button>
+                                    <button
+                                        type="button"
+                                        className="referral_btn_claim"
+                                        onClick={handleClaim}
+                                        disabled={Number(availableBalance) <= 0 || (Number(minClaim) > 0 && Number(availableBalance) < Number(minClaim)) || isClaiming}
+                                    >
+                                        {isClaiming ? 'Claiming...' : 'Claim Now'}
+                                    </button>
+                                </div>
+
+                                <div className="referral_apply_section">
+                                    <h4>Apply Referral Code</h4>
+                                    <div className="referral_apply_row">
+                                        <input
+                                            type="text"
+                                            placeholder="Enter referral code"
+                                            value={applyCodeInput}
+                                            onChange={(e) => setApplyCodeInput(e.target.value)}
+                                            className="referral_apply_input"
+                                        />
+                                        <button type="button" className="referral_btn_apply" onClick={handleApplyCode} disabled={isApplying}>
+                                            {isApplying ? 'Applying...' : 'Apply'}
+                                        </button>
                                     </div>
                                 </div>
 
-
-                            </div>
-
-                        <div className='balance_section'>
-                            <h5>My balance</h5>
-
-                            <div className='d-flex align-items-center justify-content-between gap-4 mt-3'>
-                                <div className='balance_list'>
-                                    <div className='d-flex align-items-center justify-content-between gap-2'>
-                                        <h6>Referral bonus</h6>
-                                        <button>Details <i className="ri-arrow-right-s-line"></i></button>
+                                {rewardsLive.length > 0 && (
+                                    <div className="referral_table_block referral_live_block">
+                                        <h3>Live Rewards</h3>
+                                        <div className="referral_live_list">
+                                            {rewardsLive.slice(0, 10).map((row, idx) => (
+                                                <div key={row?.id ?? row?._id ?? idx} className="referral_live_item">
+                                                    <span>{row?.userId?.fullName ?? row?.userName ?? '—'}</span>
+                                                    <span>₹ {row?.amount ?? row?.commissionAmount ?? '0'}</span>
+                                                    <span>{formatDate(row?.createdAt ?? row?.created_at)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
+                                )}
 
-                                    <ul>
-                                        <li>
-                                            <div className='balance_list_cnt_lft'>
-                                                <img src="images/dollar_icon.svg" alt="referral_bonus" />
-                                                <p>Available <span>$0.00</span></p>
-                                            </div>
-                                            <div className='balance_list_cnt_rgt'>
-                                                $ <span>15.00</span>
-                                            </div>
-                                        </li>
-                                        <li><img src="images/linebr.svg" alt="arrow" /></li>
-                                        <li>
-                                            <div className='balance_list_cnt_lft'>
-                                                <img src="images/lock_sing.svg" alt="referral_bonus" />
-                                                <p>Locked balance <span>$0.00</span></p>
-                                            </div>
-                                            <div className='balance_list_cnt_rgt'>
-                                                $ <span>15.00</span>
-                                            </div>
-                                        </li>
-                                    </ul>
-
-                                    <button className='balance_list_btn'>Minimal claim: $1.5</button>
-
-                                </div>
-
-                                <div className='balance_list'>
-                                    <div className='d-flex align-items-center justify-content-between gap-2'>
-                                        <h6>Referral bonus</h6>
-                                        <button>Details <i className="ri-arrow-right-s-line"></i></button>
+                                <div className="referral_table_block">
+                                    <div className="transactions_header">
+                                        <h3>Recent Commission / Profit</h3>
+                                        <input
+                                            type="text"
+                                            className="transactions_search_input"
+                                            placeholder="Search..."
+                                            value={profitSearchQuery}
+                                            onChange={(e) => setProfitSearchQuery(e.target.value)}
+                                        />
                                     </div>
-
-                                    <ul>
-                                        <li>
-                                            <div className='balance_list_cnt_lft'>
-                                                <img src="images/dollar_icon.svg" alt="referral_bonus" />
-                                                <p>Available <span>$0.00</span></p>
-                                            </div>
-                                            <div className='balance_list_cnt_rgt'>
-                                                $ <span>15.00</span>
-                                            </div>
-                                        </li>
-                                        <li><img src="images/linebr.svg" alt="arrow" /></li>
-                                        <li>
-                                            <div className='balance_list_cnt_lft'>
-                                                <img src="images/lock_sing.svg" alt="referral_bonus" />
-                                                <p>Locked balance <span>$0.00</span></p>
-                                            </div>
-                                            <div className='balance_list_cnt_rgt'>
-                                                $ <span>15.00</span>
-                                            </div>
-                                        </li>
-                                    </ul>
-
-                                    <button className='balance_list_btn'>Minimal claim: $1.5</button>
-
-                                </div>
-
-                            </div>
-
-
-                        </div>
-
-
-                        <div className='referrals_profit_data'>
-                            <div className='d-flex align-items-center justify-content-between gap-4'>
-                                <div className='referrals_profit_data_left'>
-                                    <h5>My referrals</h5>
-
-                                    <div className='table-responsive'>
-                                        <table>
+                                    <div className="referral_table_wrap">
+                                        <table className="referral_table">
                                             <thead>
-                                                <tr>
-                                                    <th>User</th>
-                                                    <th>Price</th>
-                                                </tr>
+                                                <tr><th>#</th><th>Name</th><th>Amount</th></tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
+                                                {filteredProfitList.length === 0 && <tr><td colSpan={3}>No data</td></tr>}
+                                                {filteredProfitList.map((row, idx) => (
+                                                    <tr key={row?.id ?? row?._id ?? idx}>
+                                                        <td>{(profitPagination.page - 1) * PROFIT_PAGE_SIZE + idx + 1}</td>
+                                                        <td>{row?.userId?.fullName ?? row?.fullName ?? row?.userId ?? '—'}</td>
+                                                        <td>₹ {row?.profit ?? row?.commissionAmount ?? row?.amount ?? '0'}</td>
+                                                    </tr>
+                                                ))}
                                             </tbody>
                                         </table>
                                     </div>
-
-                                    {/* Mobile Card View - My Referrals */}
-                                    <div className='referral_cards_wrapper'>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
+                                    {profitPagination.totalPages > 1 && (
+                                        <div className="referral_pagination">
+                                            <button type="button" disabled={profitPagination.page <= 1} onClick={() => loadProfit(profitPagination.page - 1)}>Prev</button>
+                                            <span>Page {profitPagination.page} of {profitPagination.totalPages}</span>
+                                            <button type="button" disabled={profitPagination.page >= profitPagination.totalPages} onClick={() => loadProfit(profitPagination.page + 1)}>Next</button>
                                         </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
+                                    )}
                                 </div>
 
-                                <div className='referrals_profit_data_left profitbg_data'>
-                                    <h5>My Profit</h5>
-
-                                    <div className='table-responsive'>
-                                        <table>
+                                <div className="referral_table_block">
+                                    <div className="transactions_header">
+                                        <h3>Rewards History</h3>
+                                        <div className="referral_filters_row">
+                                            <input type="date" value={rewardsFrom} onChange={(e) => setRewardsFrom(e.target.value)} className="referral_date_input" placeholder="From" />
+                                            <input type="date" value={rewardsTo} onChange={(e) => setRewardsTo(e.target.value)} className="referral_date_input" placeholder="To" />
+                                            <button type="button" className="referral_btn_filter" onClick={() => loadRewardsHistory(1)}>Apply</button>
+                                            <input
+                                                type="text"
+                                                className="transactions_search_input"
+                                                placeholder="Search..."
+                                                value={rewardSearchQuery}
+                                                onChange={(e) => setRewardSearchQuery(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="referral_table_wrap">
+                                        <table className="referral_table">
                                             <thead>
-                                                <tr>
-                                                    <th>User</th>
-                                                    <th>Price</th>
-                                                </tr>
+                                                <tr><th>#</th><th>Date</th><th>User</th><th>Amount</th><th>Status</th></tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                    <td className='pricevalue'>$0.00</td>
-                                                </tr>
+                                                {filteredRewardsHistory.length === 0 && <tr><td colSpan={5}>No data</td></tr>}
+                                                {filteredRewardsHistory.map((row, idx) => (
+                                                    <tr key={row?.id ?? row?._id ?? idx}>
+                                                        <td>{(rewardsPagination.page - 1) * REWARDS_PAGE_SIZE + idx + 1}</td>
+                                                        <td>{formatDate(row?.createdAt ?? row?.created_at)}</td>
+                                                        <td>{row?.userId?.fullName ?? row?.userName ?? '—'}</td>
+                                                        <td>₹ {row?.amount ?? row?.bonusAmount ?? row?.commissionAmount ?? '0'}</td>
+                                                        <td>{row?.status ?? '—'}</td>
+                                                    </tr>
+                                                ))}
                                             </tbody>
                                         </table>
                                     </div>
-
-                                    {/* Mobile Card View - My Profit */}
-                                    <div className='referral_cards_wrapper'>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
+                                    {rewardsPagination.totalPages > 1 && (
+                                        <div className="referral_pagination">
+                                            <button type="button" disabled={rewardsPagination.page <= 1} onClick={() => loadRewardsHistory(rewardsPagination.page - 1)}>Prev</button>
+                                            <span>Page {rewardsPagination.page} of {rewardsPagination.totalPages}</span>
+                                            <button type="button" disabled={rewardsPagination.page >= rewardsPagination.totalPages} onClick={() => loadRewardsHistory(rewardsPagination.page + 1)}>Next</button>
                                         </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='referral_card'>
-                                            <div className='referral_card_body'>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>User</span>
-                                                    <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                                </div>
-                                                <div className='referral_card_row'>
-                                                    <span className='referral_label'>Price</span>
-                                                    <span className='referral_value pricevalue'>$0.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
+                                    )}
                                 </div>
-
-                            </div>
-                        </div>
-
-
-                        <div className='rewards_history_section d-flex justify-content-between gap-4'>
-                            <div className='rewards_history_data_left'>
-                                <h5>Rewards history</h5>
-                                <div className='table-responsive'>
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>Time</th>
-                                                <th>User</th>
-                                                <th>Price</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-                                            <tr>
-                                                <td>03:27:40 AM</td>
-                                                <td>User8736113</td>
-                                                <td className='pricevalue'>$1.19</td>
-                                            </tr>
-
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {/* Mobile Card View - Rewards History */}
-                                <div className='referral_cards_wrapper'>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Time</span>
-                                                <span className='referral_value'>03:27:40 AM</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'>User8736113</span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$1.19</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className='live_rewards_right'>
-                                <h5>Live rewards</h5>
-
-                                <div className='totalrewards_bl'>
-                                    <img className='rewards_iconleft' src="images/rewards_icon.png" alt="rewards" />
-                                    <span>Total Rewards Sent To-Date</span>
-                                    <h6>$5,710,545.5</h6>
-                                    <img className='rewards_iconright' src="images/rewards_icon.png" alt="rewards" />
-                                </div>
-
-                                <div className='table-responsive'>
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>User</th>
-                                                <th>Price</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                <td className='pricevalue'>$0.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                <td className='pricevalue'>$0.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                <td className='pricevalue'>$0.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                <td className='pricevalue'>$0.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                <td className='pricevalue'>$0.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                <td className='pricevalue'>$0.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></td>
-                                                <td className='pricevalue'>$0.00</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {/* Mobile Card View - Live Rewards */}
-                                <div className='referral_cards_wrapper'>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$0.00</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$0.00</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$0.00</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$0.00</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$0.00</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$0.00</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='referral_card'>
-                                        <div className='referral_card_body'>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>User</span>
-                                                <span className='referral_value'><img src="images/User_icon.svg" alt="user" /> John Doe <span>Clamed</span></span>
-                                            </div>
-                                            <div className='referral_card_row'>
-                                                <span className='referral_label'>Price</span>
-                                                <span className='referral_value pricevalue'>$0.00</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="live_rewards_right_bottom">
-                                    <h5>Live rewards</h5>
-                                    <div className="commingsoon">
-                                        <img src="images/comming_img.png" alt="commingsoon" />
-                                        <button>Coming soon</button>
-                                    </div>
-                                    <button type="button" className="leaderboard_btn" onClick={() => navigate('/rank')}>Go to leaderboard</button>
-                                </div>
-                            </div>
-                        </div>
-                            </>
-                            ) : (
-                                <div className="referral_below_fold_placeholder" aria-hidden="true" />
-                            )}
-                            </div>
                             </div>
                         )}
 
                         {activeTab === 'referrals' && (
-                            <div className='referral_program_content tabcontent_referrals2'>
-
-                                <div className='d-flex align-items-center justify-content-between gap-4'>
-                                <h5 className='my_referrals_title'>My referrals</h5>
-                                
-                                <div className='referrals_filter_bar d-flex align-items-center justify-content-between gap-3'>
-                                    <div className='referrals_filter_dropdown'>
-                                        <select className='referrals_select'>
-                                            <option>All campaigns</option>
-                                        </select>
-                                        <i className="ri-arrow-down-s-line"></i>
+                            <div className="referral_referrals_content">
+                                <div className="transactions_header">
+                                    <h3>Referrals History</h3>
+                                    <div className="referral_filters_row">
+                                        <input type="date" value={referralFrom} onChange={(e) => setReferralFrom(e.target.value)} className="referral_date_input" placeholder="From" />
+                                        <input type="date" value={referralTo} onChange={(e) => setReferralTo(e.target.value)} className="referral_date_input" placeholder="To" />
+                                        <button type="button" className="referral_btn_filter" onClick={() => loadReferralList(1)}>Apply</button>
+                                        <button type="button" className="referral_btn_export" onClick={handleExport} disabled={isExporting}>
+                                            {isExporting ? 'Exporting...' : 'Export CSV'}
+                                        </button>
+                                        <input
+                                            type="text"
+                                            className="transactions_search_input"
+                                            placeholder="Search by name, mobile..."
+                                            value={referralSearchQuery}
+                                            onChange={(e) => setReferralSearchQuery(e.target.value)}
+                                        />
                                     </div>
-                                    
-                                    <div className='referrals_filter_dropdown'>
-                                        <select className='referrals_select'>
-                                            <option>30/05/2025-13/06/2025</option>
-                                        </select>
-                                        <i className="ri-arrow-down-s-line"></i>
-                                    </div>
-                                    
-                                    <div className='referrals_filter_dropdown'>
-                                        <select className='referrals_select'>
-                                            <option>10</option>
-                                        </select>
-                                        <i className="ri-arrow-down-s-line"></i>
-                                    </div>
-                                    
-                                    <button className='download_csv_btn'>Download as CSV file</button>
                                 </div>
+                                <div className="referral_table_wrap">
+                                    <table className="referral_table">
+                                        <thead>
+                                            <tr><th>#</th><th>Date & Time</th><th>User Name</th><th>Mobile</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredReferralList.length === 0 && <tr><td colSpan={4}>No referrals yet</td></tr>}
+                                            {filteredReferralList.map((row, idx) => {
+                                                const user = row?.user ?? row
+                                                return (
+                                                    <tr key={row?.id ?? row?._id ?? idx}>
+                                                        <td>{(referralPagination.page - 1) * REFERRALS_PAGE_SIZE + idx + 1}</td>
+                                                        <td>{formatDate(user?.createdAt ?? user?.created_at ?? row?.createdAt)}</td>
+                                                        <td>{user?.fullName ?? user?.full_name ?? '—'}</td>
+                                                        <td>{user?.mobile ?? user?.mobileNumber ?? '—'}</td>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                    </table>
                                 </div>
-                                
-                                <div className='referrals_no_data'>
-                                    <div className='no_data_icon'>
-                                        {/* <img src="images/no_found.svg" alt="no data" /> */}
+                                {referralPagination.totalPages > 1 && (
+                                    <div className="referral_pagination">
+                                        <button type="button" disabled={referralPagination.page <= 1} onClick={() => loadReferralList(referralPagination.page - 1)}>Prev</button>
+                                        <span>Page {referralPagination.page} of {referralPagination.totalPages}</span>
+                                        <button type="button" disabled={referralPagination.page >= referralPagination.totalPages} onClick={() => loadReferralList(referralPagination.page + 1)}>Next</button>
                                     </div>
-                                    <p className='no_data_message'>OOps! You don't have data to display</p>
-                                </div>
+                                )}
                             </div>
                         )}
                     </div>

@@ -55,6 +55,7 @@ const FILTER_SPORTSBOOK = 'sportsbook';
 
 function GameHistory() {
   const [filter, setFilter] = useState(FILTER_CASINO);
+  const [search, setSearch] = useState('');
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -106,6 +107,16 @@ function GameHistory() {
     fetchTransactions(pagination.page + 1);
   }, [fetchTransactions, pagination.hasMore, pagination.page]);
 
+  const searchLower = (search || '').trim().toLowerCase();
+  const filteredTransactions = searchLower
+    ? transactions.filter((tx) => {
+        const game = (tx.gameName || tx.gameCode || '').toLowerCase();
+        const roundId = (tx.providerRoundId || tx.sessionId || '').toLowerCase();
+        const provider = (tx.providerCode || '').toLowerCase();
+        return game.includes(searchLower) || roundId.includes(searchLower) || provider.includes(searchLower);
+      })
+    : transactions;
+
   return (
     <>
       <Header />
@@ -114,9 +125,18 @@ function GameHistory() {
           <div className="profile_transactions_section">
             <div className="transactions_header">
               <h1>Game History</h1>
-              <div className="game_history_filter_wrapper">
-                <label htmlFor="game-history-type-filter" className="game_history_filter_label">Type</label>
-                <select
+              <div className="transactions_header_right" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                <input
+                  type="text"
+                  placeholder="Search game, round ID..."
+                  className="transactions_search_input"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  aria-label="Search"
+                />
+                <div className="game_history_filter_wrapper">
+                  <label htmlFor="game-history-type-filter" className="game_history_filter_label">Type</label>
+                  <select
                   id="game-history-type-filter"
                   className="game_history_filter_select deposit_btn_style"
                   value={filter}
@@ -131,12 +151,13 @@ function GameHistory() {
                 </select>
               </div>
             </div>
+            </div>
 
             {loading ? (
               <p className="text-white-50">Loading game history...</p>
-            ) : transactions.length === 0 ? (
+            ) : filteredTransactions.length === 0 ? (
               <p className="text-white-50">
-                {filter === FILTER_CASINO ? 'No casino transactions yet.' : 'No sportsbook transactions yet.'}
+                {search ? 'No matches for your search.' : (filter === FILTER_CASINO ? 'No casino transactions yet.' : 'No sportsbook transactions yet.')}
               </p>
             ) : (
               <>
@@ -155,7 +176,7 @@ function GameHistory() {
                       </tr>
                     </thead>
                     <tbody>
-                      {transactions.map((tx, idx) => (
+                      {filteredTransactions.map((tx, idx) => (
                         <tr
                           key={tx.providerRoundId || tx.sessionId || idx}
                           className="game_history_row_clickable"
@@ -185,7 +206,7 @@ function GameHistory() {
                 </div>
 
                 <div className="game_history_cards_wrapper">
-                  {transactions.map((tx, idx) => (
+                  {filteredTransactions.map((tx, idx) => (
                     <div
                       key={tx.providerRoundId || tx.sessionId || idx}
                       className="transaction_card game_history_card game_history_card_clickable"

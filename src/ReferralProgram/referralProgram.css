@@ -21,6 +21,8 @@
 }
 
 .referral_program_tabs {
+    display: flex;
+    gap: 8px;
     width: 100%;
     background-color: #161f2c;
     padding: 10px;
@@ -28,20 +30,27 @@
 }
 
 .referral_program_tabs button {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     background-color: transparent;
     border: none;
-    color: #6A3E25;
-    font-size: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 15px;
     font-weight: 600;
-    padding: 10px;
-    border-radius: 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
     cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.referral_program_tabs button:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .referral_program_tabs button.active {
     background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
-    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px rgba(255, 255, 255, 0.3);
     color: #fff;
 }
 
@@ -197,7 +206,7 @@
 }
 
 .referral_linkcopy {
-    WIDTH: 100%;
+    width: 100%;
     background-color: #16202c;
     border: 1px solid #313131;
     padding: 8px;
@@ -850,6 +859,8 @@ table {
         min-width: 100%;
         width: 100%;
     }
+
+   
 }
 
 /* Tablet (768px to 991px) */
@@ -1499,4 +1510,611 @@ html {
     }
 }
 
-/* Add your referral program styles here */
+/* ========== Referral Program – Clean UI (dashboard style) ========== */
+.referral_program_section.profile_transactions_section {
+    margin: 15px 0;
+    padding: 0;
+}
+
+.referral_program_section .transactions_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.referral_header {
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.referral_header h1 {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.referral_header .referral_program_tabs {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.referral_header .referral_program_tabs button {
+    flex: none;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.referral_header .referral_program_tabs button:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.referral_header .referral_program_tabs button.active {
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 2px 0 #5A2304, inset 0 2px 2px rgba(255, 255, 255, 0.25);
+    color: #fff;
+}
+
+.referral_dashboard_content,
+.referral_referrals_content {
+    background: #161f2c;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.referral_stats_row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.referral_stat_card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.referral_stat_icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+.referral_stat_icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.referral_stat_body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.referral_stat_label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.referral_stat_value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.referral_invite_card {
+    padding: 18px;
+    position: relative;
+    background: linear-gradient(135deg, rgba(15, 69, 88, 0.4) 0%, rgba(29, 87, 166, 0.3) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+}
+.referral_invite_card .notification_icon {
+    max-width: 120px;
+    right: -20px; }
+
+.referral_invite_card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 10px 0;
+}
+
+.referral_invite_card ul {
+    margin: 0;
+    padding-left:0px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.6;
+}
+
+.referral_link_section {
+    margin-bottom: 24px;
+}
+
+.referral_link_section h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 12px 0;
+}
+
+.referral_link_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.referral_link_item label {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 6px;
+}
+
+.referral_link_input_wrap {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 4px 4px 4px 14px;
+}
+
+.referral_link_input_wrap input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+}
+
+.referral_link_input_wrap input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.referral_btn_copy {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.referral_btn_copy:hover:not(:disabled) {
+    opacity: 0.95;
+    transform: translateY(-1px);
+}
+
+.referral_btn_copy:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.referral_balance_card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.referral_balance_info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.referral_balance_label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.referral_balance_value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.referral_btn_claim {
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 3px 0 #5A2304, inset 0 2px 2px rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.referral_btn_claim:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 #5A2304, inset 0 2px 2px rgba(255, 255, 255, 0.3);
+}
+
+.referral_btn_claim:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.referral_balance_extra {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 6px;
+}
+
+.referral_min_claim {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 2px;
+}
+
+.referral_apply_section {
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.referral_apply_section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 12px 0;
+}
+
+.referral_apply_row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.referral_apply_input {
+    flex: 1;
+    min-width: 180px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+}
+
+.referral_btn_apply {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.referral_btn_apply:hover:not(:disabled) {
+    opacity: 0.95;
+    transform: translateY(-1px);
+}
+
+.referral_btn_apply:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.referral_live_block h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 12px 0;
+}
+
+.referral_live_list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.referral_live_item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.referral_filters_row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.referral_date_input {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+}
+
+.referral_btn_filter {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(249, 122, 49, 0.8);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.referral_btn_filter:hover {
+    background: rgba(249, 122, 49, 1);
+}
+
+.referral_btn_export {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.referral_btn_export:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.referral_btn_export:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.referral_pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 16px;
+    padding: 12px 0;
+}
+
+.referral_pagination button {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(249, 122, 49, 0.8);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.referral_pagination button:hover:not(:disabled) {
+    background: rgba(249, 122, 49, 1);
+}
+
+.referral_pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.referral_pagination span {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.referral_table_block {
+    margin-bottom: 28px;
+}
+
+.referral_table_block:last-child {
+    margin-bottom: 0;
+}
+
+.referral_table_block .transactions_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.referral_table_block .transactions_header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+.referral_table_block .transactions_search_input {
+    min-width: 180px;
+    max-width: 260px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+}
+
+.referral_table_block .transactions_search_input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.referral_table_block .transactions_search_input:focus {
+    border-color: rgba(249, 122, 49, 0.5);
+}
+
+.referral_table_wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.referral_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.referral_table thead {
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.referral_table th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.referral_table td {
+    padding: 12px 14px;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.referral_table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.referral_table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.referral_table td:first-child {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.referral_referrals_content .transactions_header {
+    margin-bottom: 16px;
+}
+
+.referral_referrals_content .transactions_search_input {
+    min-width: 180px;
+    max-width: 280px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+}
+
+.referral_referrals_content .transactions_search_input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+@media (max-width:1600px) {
+    .referral_invite_card .notification_icon {
+        max-width: 100px;
+    }
+}
+
+
+@media (max-width: 1600px) {
+    .referral_invite_card .notification_icon {
+        max-width: 80px;
+    }
+}
+
+
+@media (max-width:1024px) {
+    .referral_stats_row {
+        grid-template-columns: repeat(1, 1fr);
+    }
+    .referral_invite_card .notification_icon {
+        max-width: 90px; }
+}
+
+@media (max-width: 768px) {
+    .referral_header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .referral_header .referral_program_tabs {
+        margin-left: 0;
+    }
+    .referral_stats_row {
+        grid-template-columns: 1fr;
+    }
+    .referral_link_grid {
+        grid-template-columns: 1fr;
+    }
+    .referral_balance_card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .referral_btn_claim {
+        width: 100%;
+    }
+}
+
+@media (max-width:480px) {
+
+.referral_invite_card .notification_icon {
+    max-width: 70px; }
+
+}

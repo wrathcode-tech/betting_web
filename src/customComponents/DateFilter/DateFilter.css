@@ -1,0 +1,18 @@
+.date_filter_root {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.date_filter_root .date_range_picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.date_filter_validation {
+  color: #f88540;
+  font-size: 12px;
+  font-weight: 500;
+}

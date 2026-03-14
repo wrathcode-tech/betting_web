@@ -24,6 +24,8 @@ export default function AccountStatement() {
       columns={COLUMNS}
       data={DUMMY_DATA}
       emptyMessage="No account statement entries yet."
+      enableExport
+      exportFileName="account-statement"
     />
   )
 }

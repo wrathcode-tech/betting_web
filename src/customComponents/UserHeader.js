@@ -11,6 +11,7 @@ import {
   connectSportsbookSocket,
   disconnectSportsbookSocket,
 } from '../socket/sportsbookSocket'
+import { disconnectBalanceSocket } from '../socket/balanceSocket'
 
 const CURRENCY_LIST = [
   { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹', icon: 'images/digital_currency.svg' },
@@ -254,7 +255,10 @@ export default function UserHeader() {
                 type="button"
                 className="dropdown_logout_btn"
                 onClick={() => {
+                  disconnectBalanceSocket();
+                  disconnectSportsbookSocket();
                   sessionStorage.removeItem('token');
+                  sessionStorage.removeItem('refreshToken');
                   window.dispatchEvent(new CustomEvent('loginStateChange'));
                   setIsProfileDropdownOpen(false);
                   navigate('/', { replace: true });
