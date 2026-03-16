@@ -5,7 +5,7 @@ import LoaderHelper from '../customComponents/Loading/LoaderHelper'
 import { alertErrorMessage, alertSuccessMessage } from '../customComponents/CustomAlertMessage'
 import { useBalance } from '../context/BalanceContext'
 import MobileMenu from '../customComponents/MobileMenu'
-import './referralProgram.css'
+import './ReferralProgram.css'
 
 const REFERRALS_PAGE_SIZE = 20
 const REWARDS_PAGE_SIZE = 20

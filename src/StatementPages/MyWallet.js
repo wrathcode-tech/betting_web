@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import StatementPage from './StatementPage'
+import { getAccountStatement } from '../api/historyApi'
 
 const COLUMNS = [
   { key: 'time', label: 'Time' },
@@ -10,23 +11,104 @@ const COLUMNS = [
   { key: 'status', label: 'Status', type: 'status' },
 ]
 
-const DUMMY_DATA = [
-  { id: '1', time: '12/06/2025, 10:30 AM', txnId: 'WLT20250612001', type: 'Deposit', amount: '₹5,000.00', balanceAfter: '₹15,250.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Deposit' },
-  { id: '2', time: '11/06/2025, 02:00 PM', txnId: 'WLT20250611002', type: 'Withdrawal', amount: '₹2,500.00', balanceAfter: '₹10,250.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Withdrawal' },
-  { id: '3', time: '10/06/2025, 09:15 AM', txnId: 'WLT20250610003', type: 'Bet Placed', amount: '₹500.00', balanceAfter: '₹12,750.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Bet Placed' },
-  { id: '4', time: '09/06/2025, 06:45 PM', txnId: 'WLT20250609004', type: 'Bonus', amount: '₹1,000.00', balanceAfter: '₹13,250.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Bonus' },
-  { id: '5', time: '08/06/2025, 11:20 AM', txnId: 'WLT20250608005', type: 'Withdrawal', amount: '₹3,000.00', balanceAfter: '₹12,250.00', status: 'Pending', statusRaw: 'pending', cardTitle: 'Withdrawal' },
-  { id: '6', time: '10/03/2026, 09:00 AM', txnId: 'WLT20260310001', type: 'Deposit', amount: '₹1,000.00', balanceAfter: '₹13,250.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Deposit' },
-  { id: '7', time: '11/03/2026, 02:30 PM', txnId: 'WLT20260311002', type: 'Withdrawal', amount: '₹500.00', balanceAfter: '₹12,750.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Withdrawal' },
-  { id: '8', time: '12/03/2026, 11:15 AM', txnId: 'WLT20260312003', type: 'Bet Placed', amount: '₹200.00', balanceAfter: '₹12,550.00', status: 'Completed', statusRaw: 'completed', cardTitle: 'Bet Placed' },
-]
+function formatTime(dateStr) {
+  if (!dateStr) return '—'
+  try {
+    const d = new Date(dateStr)
+    return d.toLocaleString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
+  } catch {
+    return '—'
+  }
+}
+
+function formatAmount(amount, currency = 'INR') {
+  if (amount == null) return '—'
+  const n = Number(amount)
+  return `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+function formatStatus(s) {
+  if (!s) return '—'
+  return String(s).charAt(0).toUpperCase() + String(s).slice(1).toLowerCase()
+}
+
+function mapStatementToRow(item, index) {
+  const id = item._id ?? item.id ?? index
+  const statusRaw = (item.status || '').toLowerCase()
+  const type = item.type ?? item.transactionType ?? '—'
+  const amount = item.amount != null ? formatAmount(item.amount, item.currency) : '—'
+  const balanceAfter = item.balanceAfter != null ? formatAmount(item.balanceAfter, item.currency) : '—'
+  return {
+    id: String(id),
+    time: formatTime(item.createdAt ?? item.date ?? item.transactionDate),
+    txnId: item.transactionId ?? item._id ?? item.id ?? '—',
+    type: String(type).charAt(0).toUpperCase() + String(type).slice(1).toLowerCase(),
+    amount,
+    balanceAfter,
+    status: formatStatus(item.status),
+    statusRaw,
+    cardTitle: item.transactionId ?? item._id ?? String(id),
+  }
+}
 
 export default function MyWallet() {
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchStatement = useCallback(async (page = 1, limit = 100, from, to, type, sort) => {
+    const token = sessionStorage.getItem('token')
+    if (!token) {
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    try {
+      const res = await getAccountStatement({ page, limit, from, to, type, sort })
+      const raw = res?.data
+      const list = Array.isArray(raw) ? raw : (raw?.statement ?? raw?.transactions ?? raw?.data ?? [])
+      if (!Array.isArray(list)) {
+        setData([])
+        return
+      }
+      setData(list.map(mapStatementToRow))
+    } catch {
+      setData([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchStatement(1, 100)
+  }, [fetchStatement])
+
+  if (loading) {
+    return (
+      <>
+        <StatementPage
+          title="My Wallet"
+          columns={COLUMNS}
+          data={[]}
+          emptyMessage="Loading..."
+          filterColumnKey="type"
+          dateColumnKey="time"
+        />
+      </>
+    )
+  }
+
   return (
     <StatementPage
       title="My Wallet"
       columns={COLUMNS}
-      data={DUMMY_DATA}
+      data={data}
       emptyMessage="No wallet transactions yet."
       filterColumnKey="type"
       dateColumnKey="time"

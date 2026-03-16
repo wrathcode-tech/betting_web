@@ -5,7 +5,7 @@ import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
 import '../customComponents/Deposit.css';
-import './newDeposit.css';
+import './NewDeposit.css';
 
 /** Build UPI payment URI so QR scan opens app with backend UPI ID (and optional amount). */
 function buildUpiUri(upiId, upiName = '', amount = '') {

@@ -41,6 +41,7 @@ const oddsListeners = new Set();
 const scoreboardListeners = new Set();
 const betUpdateListeners = new Set();
 const balanceListeners = new Set();
+const errorListeners = new Set();
 const subscribedSports = new Set();
 /** gameId -> sport (cricket|tennis|soccer) for reemit and correct score API */
 const subscribedOddsMap = new Map();
@@ -81,6 +82,17 @@ function ensureHandlers() {
   socket.off('disconnect');
   socket.off('connect_error');
   socket.off('reconnect');
+  socket.off('error');
+
+  socket.on('error', (err) => {
+    errorListeners.forEach((fn) => {
+      try {
+        fn(err);
+      } catch (e) {
+        console.error('sportsbookSocket error listener error:', e);
+      }
+    });
+  });
 
   socket.on('matches', (payload) => {
     matchesListeners.forEach((fn) => {
@@ -142,7 +154,14 @@ function ensureHandlers() {
   });
 
   socket.on('connect_error', (err) => {
-    console.error('Sportsbook socket error:', err?.message);
+    console.error('Sportsbook socket connect_error:', err?.message);
+    errorListeners.forEach((fn) => {
+      try {
+        fn(err);
+      } catch (e) {
+        console.error('sportsbookSocket error listener error:', e);
+      }
+    });
   });
 
   socket.on('reconnect', () => {
@@ -197,6 +216,15 @@ export function disconnectSportsbookSocket() {
   scoreboardListeners.clear();
   betUpdateListeners.clear();
   balanceListeners.clear();
+  errorListeners.clear();
+}
+
+export function addErrorListener(fn) {
+  if (typeof fn === 'function') errorListeners.add(fn);
+}
+
+export function removeErrorListener(fn) {
+  errorListeners.delete(fn);
 }
 
 export function getSportsbookSocket() {

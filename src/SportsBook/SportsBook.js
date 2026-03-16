@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthService from '../api/services/AuthService';
 import { useBalance } from '../context/BalanceContext';
 import MobileMenu from '../customComponents/MobileMenu';
-import '../GamePlay/gamePlay.css';
+import '../GamePlay/GamePlay.css';
 
 function SportsBook() {
   const navigate = useNavigate();

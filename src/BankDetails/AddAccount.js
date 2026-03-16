@@ -3,8 +3,8 @@ import Swal from 'sweetalert2';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
-import '../newDeposit/newDeposit.css';
-import './addAccount.css';
+import '../newDeposit/NewDeposit.css';
+import './AddAccount.css';
 
 const MAX_ACCOUNTS = 3;
 

@@ -1,0 +1,35 @@
+/**
+ * Import this where odds are rendered. Apply class to the odds cell/button:
+ * - .odds_flash_up for price increase (green highlight)
+ * - .odds_flash_down for price decrease (red highlight)
+ * Flash lasts ~1s (cleared by SportsbookStore).
+ */
+.odds_flash_up {
+  animation: odds_flash_up 1s ease-out;
+}
+
+.odds_flash_down {
+  animation: odds_flash_down 1s ease-out;
+}
+
+@keyframes odds_flash_up {
+  0% {
+    background-color: rgba(76, 175, 80, 0.5);
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+@keyframes odds_flash_down {
+  0% {
+    background-color: rgba(244, 67, 54, 0.5);
+    box-shadow: 0 0 8px rgba(244, 67, 54, 0.6);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}

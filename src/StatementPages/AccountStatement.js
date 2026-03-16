@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import StatementPage from './StatementPage'
+import { getAccountStatementFromAccount } from '../api/historyApi'
 
 const COLUMNS = [
   { key: 'date', label: 'Date' },
@@ -9,20 +10,80 @@ const COLUMNS = [
   { key: 'balance', label: 'Balance', type: 'amount' },
 ]
 
-const DUMMY_DATA = [
-  { id: '1', date: '12/06/2025', description: 'Deposit - UPI', credit: '₹5,000.00', debit: '—', balance: '₹15,250.00', cardTitle: 'Deposit - UPI' },
-  { id: '2', date: '11/06/2025', description: 'Withdrawal - Bank', credit: '—', debit: '₹2,500.00', balance: '₹10,250.00', cardTitle: 'Withdrawal - Bank' },
-  { id: '3', date: '10/06/2025', description: 'Bet settlement - Won', credit: '₹875.00', debit: '—', balance: '₹12,750.00', cardTitle: 'Bet settlement' },
-  { id: '4', date: '09/06/2025', description: 'Bonus credit', credit: '₹1,000.00', debit: '—', balance: '₹11,875.00', cardTitle: 'Bonus credit' },
-  { id: '5', date: '08/06/2025', description: 'Bet placement', credit: '—', debit: '₹500.00', balance: '₹10,875.00', cardTitle: 'Bet placement' },
-]
+function formatDate(val) {
+  if (!val) return '—'
+  try {
+    const d = new Date(val)
+    return d.toLocaleString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
+  } catch {
+    return String(val)
+  }
+}
+
+function formatAmount(amount) {
+  if (amount == null) return '—'
+  const n = Number(amount)
+  return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+function mapStatementToRow(item, index) {
+  const id = item._id ?? item.id ?? index
+  const date = formatDate(item.date ?? item.createdAt ?? item.transactionDate)
+  const description = item.description ?? item.remarks ?? item.reference ?? item.type ?? '—'
+  const credit = item.credit != null ? formatAmount(item.credit) : (item.type === 'credit' && item.amount != null ? formatAmount(item.amount) : '—')
+  const debit = item.debit != null ? formatAmount(item.debit) : (item.type === 'debit' && item.amount != null ? formatAmount(item.amount) : '—')
+  const balance = item.balance != null ? formatAmount(item.balance) : (item.balanceAfter != null ? formatAmount(item.balanceAfter) : '—')
+  return {
+    id: String(id),
+    date,
+    description,
+    credit,
+    debit,
+    balance,
+    cardTitle: description,
+  }
+}
 
 export default function AccountStatement() {
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchStatement = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await getAccountStatementFromAccount({ page: 1, limit: 100 })
+      const raw = res?.data ?? res
+      const list = Array.isArray(raw) ? raw : (raw?.statement ?? raw?.transactions ?? raw?.data ?? raw?.records ?? [])
+      setData(Array.isArray(list) ? list.map(mapStatementToRow) : [])
+    } catch {
+      setData([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchStatement()
+  }, [fetchStatement])
+
+  if (loading && data.length === 0) {
+    return (
+      <StatementPage
+        title="Account Statement"
+        columns={COLUMNS}
+        data={[]}
+        emptyMessage="Loading..."
+        enableExport
+        exportFileName="account-statement"
+      />
+    )
+  }
+
   return (
     <StatementPage
       title="Account Statement"
       columns={COLUMNS}
-      data={DUMMY_DATA}
+      data={data}
       emptyMessage="No account statement entries yet."
       enableExport
       exportFileName="account-statement"

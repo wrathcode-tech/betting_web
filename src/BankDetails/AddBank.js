@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import MobileMenu from '../customComponents/MobileMenu';
-import '../newDeposit/newDeposit.css';
-import './addAccount.css';
+import '../newDeposit/NewDeposit.css';
+import './AddAccount.css';
 
 const HAS_BANK_ACCOUNT_KEY = 'user_has_bank_account';
 const SAVED_BANK_DETAILS_KEY = 'saved_bank_details';

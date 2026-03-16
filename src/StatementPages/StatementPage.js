@@ -3,8 +3,7 @@ import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
-import DateFilter from '../customComponents/DateFilter'
-import '../ProfileTransactions/profileTransactions.css'
+import '../ProfileTransactions/ProfileTransactions.css'
 
 const PAGE_SIZE = 10
 
@@ -46,44 +45,9 @@ function exportToPDF(columns, data, title, filename = 'export') {
   doc.save(`${filename}.pdf`)
 }
 
-/** Row ke date cell se YYYY-MM-DD nikalo; parse fail ho to null */
-function parseDateToYYYYMMDD(cell) {
-  if (cell == null || String(cell).trim() === '') return null
-  const str = String(cell).trim()
-  const ddmmyy = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/)
-  const ddmmyyDash = str.match(/(\d{1,2})-(\d{1,2})-(\d{4})/)
-  const yymmdd = str.match(/(\d{4})-(\d{2})-(\d{2})/)
-  let y, m, day
-  if (ddmmyy) {
-    y = parseInt(ddmmyy[3], 10)
-    m = parseInt(ddmmyy[2], 10)
-    day = parseInt(ddmmyy[1], 10)
-  } else if (ddmmyyDash) {
-    y = parseInt(ddmmyyDash[3], 10)
-    m = parseInt(ddmmyyDash[2], 10)
-    day = parseInt(ddmmyyDash[1], 10)
-  } else if (yymmdd) {
-    y = parseInt(yymmdd[1], 10)
-    m = parseInt(yymmdd[2], 10)
-    day = parseInt(yymmdd[3], 10)
-  } else {
-    const d = new Date(str)
-    if (Number.isNaN(d.getTime())) return null
-    y = d.getFullYear()
-    m = d.getMonth() + 1
-    day = d.getDate()
-  }
-  if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(day) || m < 1 || m > 12 || day < 1 || day > 31) return null
-  return `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-}
-
-function StatementPage({ title, columns, data, emptyMessage = 'No data to display.', filterColumnKey, dateColumnKey, enableExport = false, exportFileName = 'statement' }) {
+function StatementPage({ title, columns, data, emptyMessage = 'No data to display.', filterColumnKey, enableExport = false, exportFileName = 'statement' }) {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-  const [appliedFromDate, setAppliedFromDate] = useState('')
-  const [appliedToDate, setAppliedToDate] = useState('')
   const [filterValue, setFilterValue] = useState('all')
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false)
   const exportDropdownRef = useRef(null)
@@ -99,8 +63,6 @@ function StatementPage({ title, columns, data, emptyMessage = 'No data to displa
 
   const searchLower = (search || '').trim().toLowerCase()
 
-  const resolvedDateColumnKey = dateColumnKey || columns.find((c) => c.key === 'date' || c.key === 'dateTime' || c.key === 'time')?.key || 'date'
-
   const uniqueFilterOptions = useMemo(() => {
     if (!filterColumnKey || !data.length) return []
     const set = new Set()
@@ -110,12 +72,6 @@ function StatementPage({ title, columns, data, emptyMessage = 'No data to displa
     })
     return Array.from(set).sort()
   }, [data, filterColumnKey])
-
-  const handleApplyDate = useCallback((from, to) => {
-    setAppliedFromDate(from || '')
-    setAppliedToDate(to || '')
-    setPage(1)
-  }, [])
 
   const filtered = useMemo(() => {
     let list = data
@@ -131,19 +87,8 @@ function StatementPage({ title, columns, data, emptyMessage = 'No data to displa
     if (filterColumnKey && filterValue !== 'all') {
       list = list.filter((row) => String(row[filterColumnKey] || '').trim() === filterValue)
     }
-    if (appliedFromDate || appliedToDate) {
-      const dateKey = resolvedDateColumnKey
-      list = list.filter((row) => {
-        const cell = row[dateKey]
-        const rowDateOnly = parseDateToYYYYMMDD(cell)
-        if (rowDateOnly == null) return false
-        if (appliedFromDate && rowDateOnly < appliedFromDate) return false
-        if (appliedToDate && rowDateOnly > appliedToDate) return false
-        return true
-      })
-    }
     return list
-  }, [data, columns, searchLower, filterColumnKey, filterValue, appliedFromDate, appliedToDate, resolvedDateColumnKey])
+  }, [data, columns, searchLower, filterColumnKey, filterValue])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(Math.max(1, page), totalPages)
@@ -179,14 +124,6 @@ function StatementPage({ title, columns, data, emptyMessage = 'No data to displa
                     setPage(1)
                   }}
                   aria-label="Search"
-                />
-                <DateFilter
-                  fromDate={fromDate}
-                  toDate={toDate}
-                  onFromDateChange={setFromDate}
-                  onToDateChange={setToDate}
-                  onApply={handleApplyDate}
-                  showWrapper={true}
                 />
                 {filterColumnKey && (
                   <select
@@ -238,9 +175,7 @@ function StatementPage({ title, columns, data, emptyMessage = 'No data to displa
             {data.length === 0 ? (
               <p className="text-white-50">{emptyMessage}</p>
             ) : pageData.length === 0 ? (
-              <p className="text-white-50">
-                {(appliedFromDate || appliedToDate) ? 'No data in selected date range. Try different dates or clear From/To and Apply.' : 'No matches for your search.'}
-              </p>
+              <p className="text-white-50">No matches for your search.</p>
             ) : (
               <>
                 <div className="transactions_table_wrapper">

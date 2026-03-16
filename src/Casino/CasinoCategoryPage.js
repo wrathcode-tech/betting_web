@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
-import Footer from '../customComponents/footer'
+import Footer from '../customComponents/Footer'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
 import { CASINO_CATEGORIES } from './casinoCategoryConfig'

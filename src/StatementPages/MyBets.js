@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
-import LossCutIndicator from '../customComponents/LossCutIndicator'
-import '../ProfileTransactions/profileTransactions.css'
+import '../ProfileTransactions/ProfileTransactions.css'
 import './MyBets.css'
-import { alertErrorMessage, alertSuccessMessage } from '../customComponents/CustomAlertMessage'
 
 const COLUMNS = [
   { key: 'time', label: 'Time' },
@@ -61,10 +60,7 @@ export default function MyBets() {
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 })
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [exposure, setExposure] = useState(null)
-  const [currentLoss, setCurrentLoss] = useState(null)
-  const [lossLimit, setLossLimit] = useState(null)
-  const [cancelId, setCancelId] = useState(null)
+  const [cancellingId, setCancellingId] = useState(null)
 
   const goToOpenBets = () => navigate('/cricket', { state: { activeTab: 'open-bets' } })
 
@@ -72,10 +68,15 @@ export default function MyBets() {
     setLoading(true)
     try {
       const res = await AuthService.sportsbookOpenBets({ page, limit: 20 })
-      const data = res?.data ?? res
-      const list = data?.bets ?? []
+      const list = Array.isArray(res?.data) ? res.data : (res?.data?.bets ?? [])
+      const pag = res?.pagination ?? res?.data?.pagination
       setBets(list.map(mapBetToRow))
-      setPagination(data?.pagination ?? { page: 1, limit: 20, total: list.length, totalPages: 1 })
+      setPagination({
+        page: pag?.page ?? 1,
+        limit: pag?.limit ?? 20,
+        total: pag?.total ?? pag?.totalRecords ?? list.length,
+        totalPages: pag?.totalPages ?? 1,
+      })
     } catch {
       setBets([])
     } finally {
@@ -83,57 +84,27 @@ export default function MyBets() {
     }
   }, [])
 
-  const fetchExposure = useCallback(async () => {
-    try {
-      const res = await AuthService.sportsbookExposure()
-      const data = res?.data ?? res
-      setExposure(data?.totalExposure ?? null)
-      setCurrentLoss(data?.current_loss ?? data?.currentLoss ?? data?.totalExposure ?? null)
-    } catch {
-      setExposure(null)
-      setCurrentLoss(null)
-    }
-  }, [])
-
-  const fetchLossLimit = useCallback(async () => {
-    try {
-      const res = await AuthService.sportsbookGetLossLimit()
-      const data = res?.data ?? res
-      setLossLimit(data?.dailyLossLimit ?? null)
-    } catch {
-      setLossLimit(null)
-    }
-  }, [])
-
   useEffect(() => {
     fetchOpen(1)
-    fetchExposure()
-    fetchLossLimit()
-  }, [fetchOpen, fetchExposure, fetchLossLimit])
+  }, [fetchOpen])
 
-  const handleCancel = async (betId) => {
+  const handleCancelBet = useCallback(async (betId) => {
     if (!betId) return
-    setCancelId(betId)
+    setCancellingId(betId)
     try {
       const res = await AuthService.sportsbookCancelBet(betId)
-      const ok = res?.success === true || (res && res.success !== false && !res?.message)
-      if (ok) {
+      if (res?.success || res?.status === 'success') {
+        toast.success(res?.message || 'Bet cancelled')
         await fetchOpen(pagination.page)
-        fetchExposure()
-        fetchLossLimit()
-        const successMsg = res?.data?.message ?? res?.message
-        if (successMsg) alertSuccessMessage(successMsg)
       } else {
-        const errMsg = res?.data?.message ?? res?.message
-        if (errMsg) alertErrorMessage(errMsg)
+        toast.error(res?.message || 'Failed to cancel bet')
       }
-    } catch (err) {
-      const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message
-      if (msg) alertErrorMessage(msg)
+    } catch (e) {
+      toast.error(e?.message || 'Failed to cancel bet')
     } finally {
-      setCancelId(null)
+      setCancellingId(null)
     }
-  }
+  }, [fetchOpen, pagination.page])
 
   const searchLower = (search || '').trim().toLowerCase()
   const filteredBets = searchLower
@@ -155,15 +126,20 @@ export default function MyBets() {
 
   const data = filteredBets.map((row) => ({
     ...row,
-    actions: row.statusRaw === 'open' && row.id ? (
-      <button
-        type="button"
-        className="mybets_cancel_btn"
-        onClick={() => handleCancel(row.id)}
-        disabled={cancelId === row.id}
-      >
-        {cancelId === row.id ? 'Cancelling...' : 'Cancel'}
-      </button>
+    actions: row.statusRaw === 'open' ? (
+      <div className="mybets_actions_wrap">
+        <button type="button" className="mybets_cashout_btn_sm" onClick={goToOpenBets}>
+          Cash Out
+        </button>
+        <button
+          type="button"
+          className="mybets_cancel_btn_sm"
+          onClick={() => handleCancelBet(row.id)}
+          disabled={cancellingId === row.id}
+        >
+          {cancellingId === row.id ? 'Cancelling...' : 'Cancel'}
+        </button>
+      </div>
     ) : <span className="mybets_bet_closed">BET CLOSED</span>,
   }))
 
@@ -184,35 +160,11 @@ export default function MyBets() {
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label="Search"
                 />
-                {exposure != null && (
-                  <span className="transaction_value amount_value" style={{ marginRight: 12 }}>
-                    Exposure: ₹{Number(exposure).toLocaleString()}
-                  </span>
-                )}
                 <button type="button" className="mybets_cashout_btn" onClick={goToOpenBets}>
                   Cash Out
                 </button>
               </div>
             </div>
-
-            {(currentLoss != null || lossLimit != null || exposure != null) && (
-              <LossCutIndicator
-                currentLoss={currentLoss ?? exposure ?? 0}
-                lossLimit={lossLimit}
-                onSetLimit={async (amount) => {
-                  const res = await AuthService.sportsbookSetLossLimit(amount)
-                  const ok = res?.success === true || (res && res.success !== false && !res?.message)
-                  if (ok) {
-                    await fetchLossLimit()
-                    const msg = res?.data?.message ?? res?.message
-                    if (msg) alertSuccessMessage(msg)
-                  } else {
-                    const errMsg = res?.data?.message ?? res?.message
-                    if (errMsg) alertErrorMessage(errMsg)
-                  }
-                }}
-              />
-            )}
 
             {loading ? (
               <p className="text-white-50">Loading...</p>
@@ -242,17 +194,17 @@ export default function MyBets() {
                               <td key={col.key}>
                                 {col.key === 'actions' ? (
                                   row.statusRaw === 'open' ? (
-                                    <div className="mybets_actions_cell">
+                                    <div className="mybets_actions_wrap">
                                       <button type="button" className="mybets_cashout_btn_sm" onClick={goToOpenBets}>
                                         Cash Out
                                       </button>
                                       <button
                                         type="button"
-                                        className="mybets_cancel_btn"
-                                        onClick={() => handleCancel(row.id)}
-                                        disabled={cancelId === row.id}
+                                        className="mybets_cancel_btn_sm"
+                                        onClick={() => handleCancelBet(row.id)}
+                                        disabled={cancellingId === row.id}
                                       >
-                                        {cancelId === row.id ? 'Cancelling...' : 'Cancel'}
+                                        {cancellingId === row.id ? 'Cancelling...' : 'Cancel'}
                                       </button>
                                     </div>
                                   ) : (
@@ -296,7 +248,7 @@ export default function MyBets() {
                             </span>
                           </div>
                         ))}
-                        {row.statusRaw === 'open' && row.id && (
+                        {row.statusRaw === 'open' && (
                           <div className="transaction_card_row transaction_card_actions">
                             <span className="transaction_label">Actions</span>
                             <div className="transaction_card_actions_btns">
@@ -305,11 +257,11 @@ export default function MyBets() {
                               </button>
                               <button
                                 type="button"
-                                className="mybets_cancel_btn"
-                                onClick={() => handleCancel(row.id)}
-                                disabled={cancelId === row.id}
+                                className="mybets_cancel_btn_sm"
+                                onClick={() => handleCancelBet(row.id)}
+                                disabled={cancellingId === row.id}
                               >
-                                {cancelId === row.id ? 'Cancelling...' : 'Cancel'}
+                                {cancellingId === row.id ? 'Cancelling...' : 'Cancel'}
                               </button>
                             </div>
                           </div>

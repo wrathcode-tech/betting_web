@@ -3,8 +3,7 @@ import AuthService from '../api/services/AuthService'
 import { ApiConfig } from '../api/apiConfig/apiConfig'
 import MobileMenu from '../customComponents/MobileMenu'
 import Header from '../customComponents/Header'
-import DateFilter from '../customComponents/DateFilter'
-import './profileTransactions.css'
+import './ProfileTransactions.css'
 
 function getPaymentProofFullUrl(url) {
   if (!url || typeof url !== 'string') return null
@@ -64,10 +63,6 @@ function ProfileTransactions() {
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-  const [appliedFromDate, setAppliedFromDate] = useState('')
-  const [appliedToDate, setAppliedToDate] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [pagination, setPagination] = useState({ page: 1, limit: PAGE_SIZE, total: 0, totalPages: 1, hasMore: false })
@@ -81,59 +76,23 @@ function ProfileTransactions() {
       }
       setLoading(true)
       const effectiveType = typeParam != null ? typeParam : typeFilter
-
-      if (effectiveType === 'withdrawal') {
-        const res = await AuthService.walletWithdrawalTransactions(page, PAGE_SIZE)
-        setLoading(false)
-        if (res?.success && res?.data) {
-          const list = res.data.transactions || []
-          setTransactions(list)
-          setPagination({
-            page: res.data.pagination?.page ?? page,
-            limit: res.data.pagination?.limit ?? PAGE_SIZE,
-            total: res.data.pagination?.total ?? 0,
-            totalPages: res.data.pagination?.totalPages ?? 1,
-            hasMore: res.data.pagination?.hasMore ?? false,
-          })
-        }
-        return
-      }
-
-      if (effectiveType === 'all') {
-        const [depRes, wdrRes] = await Promise.all([
-          AuthService.walletDepositTransactions(1, 50),
-          AuthService.walletWithdrawalTransactions(1, 50),
-        ])
-        setLoading(false)
-        const deposits = depRes?.success && depRes?.data ? depRes.data.transactions || [] : []
-        const withdrawals = wdrRes?.success && wdrRes?.data ? wdrRes.data.transactions || [] : []
-        const merged = [...deposits, ...withdrawals].sort(
-          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-        )
-        const total = merged.length
-        setTransactions(merged)
-        setPagination({
-          page: 1,
-          limit: PAGE_SIZE,
-          total,
-          totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-          hasMore: total > PAGE_SIZE,
-        })
-        return
-      }
-
-      const res = await AuthService.walletDepositTransactions(page, PAGE_SIZE)
+      const res = await AuthService.walletTransactions(page, PAGE_SIZE, effectiveType)
       setLoading(false)
-      if (res?.success && res?.data) {
-        const list = res.data.transactions || []
+      if (res?.success && res?.data !== undefined) {
+        const raw = res.data
+        const list = Array.isArray(raw) ? raw : (raw?.transactions || [])
+        const pag = res.pagination ?? raw?.pagination ?? {}
         setTransactions(list)
         setPagination({
-          page: res.data.pagination?.page ?? page,
-          limit: res.data.pagination?.limit ?? PAGE_SIZE,
-          total: res.data.pagination?.total ?? 0,
-          totalPages: res.data.pagination?.totalPages ?? 1,
-          hasMore: res.data.pagination?.hasMore ?? false,
+          page: pag.page ?? page,
+          limit: pag.limit ?? PAGE_SIZE,
+          total: pag.total ?? pag.totalRecords ?? list.length,
+          totalPages: pag.totalPages ?? 1,
+          hasMore: (pag.page ?? page) < (pag.totalPages ?? 1),
         })
+      } else {
+        setTransactions([])
+        setPagination((prev) => ({ ...prev, total: 0, totalPages: 1, hasMore: false }))
       }
     },
     [typeFilter]
@@ -144,36 +103,20 @@ function ProfileTransactions() {
   }, [typeFilter, fetchTransactions])
 
   const handlePrev = useCallback(() => {
-    if (typeFilter === 'all') {
-      setPagination((prev) => {
-        if (prev.page <= 1) return prev
-        const nextPage = prev.page - 1
-        return { ...prev, page: nextPage, hasMore: nextPage < prev.totalPages }
-      })
-      return
-    }
     setPagination((prev) => {
       if (prev.page <= 1) return prev
       fetchTransactions(prev.page - 1)
       return prev
     })
-  }, [fetchTransactions, typeFilter])
+  }, [fetchTransactions])
 
   const handleNext = useCallback(() => {
-    if (typeFilter === 'all') {
-      setPagination((prev) => {
-        if (!prev.hasMore) return prev
-        const nextPage = prev.page + 1
-        return { ...prev, page: nextPage, hasMore: nextPage < prev.totalPages }
-      })
-      return
-    }
     setPagination((prev) => {
       if (!prev.hasMore) return prev
       fetchTransactions(prev.page + 1)
       return prev
     })
-  }, [fetchTransactions, typeFilter])
+  }, [fetchTransactions])
 
   const handleFilterChange = useCallback((e) => {
     setTypeFilter(e.target.value)
@@ -181,12 +124,6 @@ function ProfileTransactions() {
 
   const handleStatusFilterChange = useCallback((e) => {
     setStatusFilter(e.target.value)
-    setPagination((prev) => ({ ...prev, page: 1 }))
-  }, [])
-
-  const handleApplyDateFilter = useCallback((fromVal, toVal) => {
-    setAppliedFromDate(fromVal || '')
-    setAppliedToDate(toVal || '')
     setPagination((prev) => ({ ...prev, page: 1 }))
   }, [])
 
@@ -198,56 +135,6 @@ function ProfileTransactions() {
     const searchLower = (search || '').trim().toLowerCase()
     const searchFiltered = searchLower
       ? statusFiltered.filter((t) => {
-          const time = formatTime(t.createdAt) || ''
-          const id = (t.transactionId || t._id || '') + ''
-          const type = (t.type || '') + ''
-          const amount = formatAmount(t.amount, t.currency) || ''
-          const status = formatStatus(t.status) || ''
-          const method = formatPaymentMethod(t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod) || ''
-          return [time, id, type, amount, status, method].some((s) => String(s).toLowerCase().includes(searchLower))
-        })
-      : statusFiltered
-    const dateFiltered =
-      appliedFromDate || appliedToDate
-        ? searchFiltered.filter((t) => {
-            const created = t.createdAt ? new Date(t.createdAt) : null
-            if (!created || isNaN(created.getTime())) return false
-            const y = created.getFullYear()
-            const m = String(created.getMonth() + 1).padStart(2, '0')
-            const d = String(created.getDate()).padStart(2, '0')
-            const tDateStr = `${y}-${m}-${d}`
-            if (appliedFromDate && tDateStr < appliedFromDate) return false
-            if (appliedToDate && tDateStr > appliedToDate) return false
-            return true
-          })
-        : searchFiltered
-    const source =
-      typeFilter === 'all'
-        ? dateFiltered.slice((pagination.page - 1) * PAGE_SIZE, pagination.page * PAGE_SIZE)
-        : dateFiltered
-    return source.map((t) => ({
-      id: t._id,
-      time: formatTime(t.createdAt),
-      transactionId: t.transactionId || t._id,
-      type: t.type === 'deposit' ? 'Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : t.type,
-      amount: formatAmount(t.amount, t.currency),
-      approvedAmount: t.status === 'approved' || t.status === 'completed' ? formatAmount(t.amount, t.currency) : '—',
-      status: formatStatus(t.status),
-      statusRaw: t.status,
-      notes: t.adminRemarks || t.remarks || '—',
-      paymentMethod: formatPaymentMethod(
-        t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod
-      ),
-      paymentProofUrl: t.type === 'deposit' ? getPaymentProofFullUrl(t.paymentProofUrl) : null,
-    }))
-  }, [transactions, typeFilter, statusFilter, search, appliedFromDate, appliedToDate, pagination.page])
-
-  const statusFilteredLength = useMemo(() => {
-    let base = transactions
-    if (statusFilter !== 'all') base = base.filter((t) => String(t.status || '').toLowerCase() === statusFilter)
-    const searchLower = (search || '').trim().toLowerCase()
-    if (searchLower) {
-      base = base.filter((t) => {
         const time = formatTime(t.createdAt) || ''
         const id = (t.transactionId || t._id || '') + ''
         const type = (t.type || '') + ''
@@ -256,27 +143,30 @@ function ProfileTransactions() {
         const method = formatPaymentMethod(t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod) || ''
         return [time, id, type, amount, status, method].some((s) => String(s).toLowerCase().includes(searchLower))
       })
-    }
-    if (appliedFromDate || appliedToDate) {
-      base = base.filter((t) => {
-        const created = t.createdAt ? new Date(t.createdAt) : null
-        if (!created || isNaN(created.getTime())) return false
-        const y = created.getFullYear()
-        const m = String(created.getMonth() + 1).padStart(2, '0')
-        const d = String(created.getDate()).padStart(2, '0')
-        const tDateStr = `${y}-${m}-${d}`
-        if (appliedFromDate && tDateStr < appliedFromDate) return false
-        if (appliedToDate && tDateStr > appliedToDate) return false
-        return true
-      })
-    }
-    return base.length
-  }, [transactions, statusFilter, search, appliedFromDate, appliedToDate])
+      : statusFiltered
+    return searchFiltered.map((t, idx) => {
+      const rowId = t._id ?? t.id ?? t.transactionId
+      return {
+        id: rowId != null ? String(rowId) : `row-${idx}`,
+        time: formatTime(t.createdAt),
+        transactionId: t.transactionId || t._id || t.id,
+        type: t.type === 'deposit' ? 'Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : t.type,
+        amount: formatAmount(t.amount, t.currency),
+        approvedAmount: t.status === 'approved' || t.status === 'completed' ? formatAmount(t.amount, t.currency) : '—',
+        status: formatStatus(t.status),
+        statusRaw: t.status,
+        notes: t.adminRemarks || t.remarks || '—',
+        paymentMethod: formatPaymentMethod(
+          t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod
+        ),
+        paymentProofUrl: t.type === 'deposit' ? getPaymentProofFullUrl(t.paymentProofUrl) : null,
+      }
+    })
+  }, [transactions, typeFilter, statusFilter, search])
 
-  const effectiveTotalPages =
-    typeFilter === 'all' ? Math.max(1, Math.ceil(statusFilteredLength / PAGE_SIZE)) : 1
-  const effectiveHasMore = typeFilter === 'all' ? pagination.page < effectiveTotalPages : false
-  const effectiveTotal = statusFilteredLength
+  const effectiveTotalPages = pagination.totalPages
+  const effectiveHasMore = pagination.hasMore
+  const effectiveTotal = pagination.total
 
   return (
     <>
@@ -297,14 +187,6 @@ function ProfileTransactions() {
                     setPagination((prev) => ({ ...prev, page: 1 }))
                   }}
                   aria-label="Search"
-                />
-                <DateFilter
-                  fromDate={fromDate}
-                  toDate={toDate}
-                  onFromDateChange={setFromDate}
-                  onToDateChange={setToDate}
-                  onApply={handleApplyDateFilter}
-                  showWrapper={true}
                 />
                 <select
                   id="txn-type-filter"
@@ -329,7 +211,9 @@ function ProfileTransactions() {
               </div>
             </div>
 
-            {list.length === 0 ? (
+            {loading ? (
+              <p className="text-white-50">Loading...</p>
+            ) : list.length === 0 ? (
               <p className="text-white-50">No deposit or withdrawal transactions yet.</p>
             ) : (
               <>

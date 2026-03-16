@@ -1,0 +1,33 @@
+.history_pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.history_pagination_btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(180deg, #b85d26 0.8%, #f88540 100%);
+  color: #fff;
+}
+
+.history_pagination_btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #c96528 0.8%, #f97a31 100%);
+}
+
+.history_pagination_btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.history_pagination_info {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}

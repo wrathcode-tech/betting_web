@@ -1,8 +1,5 @@
 import { ApiConfig } from "../apiConfig/apiConfig";
-import { ApiCallGet, ApiCallGetVerifyRegistration, ApiCallPost, ApiCallPostFormData, ApiCallPut, ApiCallPutFormData, ApiCallPatch, ApiCallDelete } from "../apiConfig/apiCall";
-import { ConsoleLogs } from "../../utils/ConsoleLogs";
-
-const TAG = "AuthService";
+import { ApiCallGet, ApiCallPost, ApiCallPostFormData, ApiCallPut, ApiCallPutFormData, ApiCallPatch, ApiCallDelete } from "../apiConfig/apiCall";
 
 const AuthService = {
 
@@ -153,12 +150,30 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
+  /** GET /api/v1/wallet/transactions – list with pagination (page, limit, type). Returns { data: { transactions, pagination } }. */
+  walletTransactions: async (page = 1, limit = 10, type = "all") => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingWallet, bettingWalletTransactions } = ApiConfig;
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (type && type !== "all") params.set("type", type);
+    const base = baseBettingWallet.replace(/\/$/, "");
+    const path = bettingWalletTransactions.replace(/^\//, "");
+    const url = `${base}/${path}?${params.toString()}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
   /** GET /api/v1/wallet/transactions/:id – single transaction by ID (Section 2). */
   walletTransactionById: async (transactionId) => {
     const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
+    const id = transactionId != null ? String(transactionId).trim() : "";
+    if (!id) return { success: false, message: "Transaction ID required" };
     const { baseBettingWallet, bettingWalletTransactions } = ApiConfig;
-    const url = `${baseBettingWallet}${bettingWalletTransactions}/${encodeURIComponent(transactionId)}`;
+    const base = baseBettingWallet.replace(/\/$/, "");
+    const path = bettingWalletTransactions.replace(/^\//, "");
+    const url = `${base}/${path}/${encodeURIComponent(id)}`;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
     return ApiCallGet(url, headers);
   },

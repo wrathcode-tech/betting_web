@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import { useCasinoProviders } from '../context/CasinoProvidersContext'
 import LoginModal from './LoginModal'
-import SideBar from './SideBar/sideBar'
+import Sidebar from './SideBar/Sidebar'
 import Chat from '../cricket/Chat'
 import Search from './Search'
 import { useBalance } from '../context/BalanceContext'
@@ -284,7 +284,7 @@ export default function UserHeader() {
       </header>
 
       {showModal && <LoginModal show={showModal} onHide={() => { setShowModal(false); setModalTab('login'); }} initialTab={modalTab} />}
-      {sidebarOpen && <SideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
       {isChatOpen && <Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />}
       {isSearchOpen && <Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}
 

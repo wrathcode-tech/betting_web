@@ -28,6 +28,8 @@ function parseTrendingResponse(res) {
   if (Array.isArray(raw)) return raw
   if (Array.isArray(raw?.games)) return raw.games
   if (Array.isArray(raw?.data)) return raw.data
+  if (Array.isArray(raw?.trending)) return raw.trending
+  if (Array.isArray(raw?.results)) return raw.results
   return []
 }
 
@@ -54,11 +56,25 @@ function Search({ isOpen, onClose }) {
   const loadTrending = useCallback(async () => {
     setTrendingLoading(true)
     try {
+      let list = []
       const res = await AuthService.searchTrending(TRENDING_LIMIT)
-      const list = parseTrendingResponse(res)
-      setTrendingGames(Array.isArray(list) ? list : [])
+      list = parseTrendingResponse(res)
+      if (!Array.isArray(list)) list = []
+      if (list.length === 0) {
+        const landingRes = await AuthService.bettingGamesLanding()
+        const data = landingRes?.data ?? landingRes
+        list = Array.isArray(data?.trending) ? data.trending : []
+      }
+      setTrendingGames(list)
     } catch {
-      setTrendingGames([])
+      try {
+        const landingRes = await AuthService.bettingGamesLanding()
+        const data = landingRes?.data ?? landingRes
+        const list = Array.isArray(data?.trending) ? data.trending : []
+        setTrendingGames(list)
+      } catch {
+        setTrendingGames([])
+      }
     } finally {
       setTrendingLoading(false)
     }

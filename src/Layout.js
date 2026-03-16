@@ -5,7 +5,7 @@ import { useSidebar } from './context/SidebarContext'
 const DESKTOP_BREAKPOINT = 991
 
 const Header = lazy(() => import('./customComponents/Header'))
-const SideBar = lazy(() => import('./customComponents/SideBar/sideBar'))
+const SideBar = lazy(() => import('./customComponents/SideBar/Sidebar'))
 
 function Layout() {
   const { sidebarOpen, setSidebarOpen } = useSidebar()
@@ -33,7 +33,7 @@ function Layout() {
             <SideBar isOpen={sidebarOpen} onClose={onCloseSidebar} />
           </Suspense>
         </aside>
-        <div className={`right_content_side ${pathname === '/cricket' ? 'cricketDetail_block' : ''}`}>
+        <div className={`right_content_side ${pathname === '/cricket' || pathname === '/soccer' || pathname === '/tennis' ? 'cricketDetail_block' : ''}`}>
           <Outlet />
         </div>
       </div>

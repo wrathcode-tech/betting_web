@@ -1,0 +1,4 @@
+.live_score_root { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 6px; background: rgba(229,57,53,0.15); color: #fff; font-size: 14px; }
+.live_score_label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #e53935; }
+.live_score_value { font-weight: 600; }
+.live_score_placeholder { color: rgba(255,255,255,0.5); font-size: 14px; }

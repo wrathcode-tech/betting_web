@@ -249,6 +249,11 @@ header {
     margin: 0px 5px;
 }
 
+
+.history_filter_select option{ color: #000; }
+
+.history_filter_bar{ margin-top:15px;}
+
 .casino_hero_s {
     width: 100%;
     display: flex;

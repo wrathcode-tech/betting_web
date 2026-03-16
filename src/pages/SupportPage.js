@@ -4,7 +4,7 @@ import MobileMenu from "../customComponents/MobileMenu";
 import LoaderHelper from "../customComponents/Loading/LoaderHelper";
 import AuthService from "../api/services/AuthService";
 import { alertErrorMessage, alertSuccessMessage } from "../customComponents/CustomAlertMessage";
-import "../ProfileTransactions/profileTransactions.css";
+import "../ProfileTransactions/ProfileTransactions.css";
 import "./SupportPage.css";
 
 // API: category (deposit|withdrawal|betting|casino|launchpad|account|other), priority (low|medium|high), status (open|in_progress|resolved|closed)

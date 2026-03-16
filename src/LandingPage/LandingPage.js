@@ -15,33 +15,13 @@ import {
 import '../customComponents/Footer.css'
 import '../sports/sportsGame.css'
 
-const Footer = lazy(() => import('../customComponents/footer'));
+const Footer = lazy(() => import('../customComponents/Footer'));
 const MobileMenu = lazy(() => import('../customComponents/MobileMenu'));
 
 const MAX_SLIDER_ITEMS = 15
 const MAX_CONTENT_BEFORE_VIEW_ALL = MAX_SLIDER_ITEMS - 1
 
-const liveCasinoItems = [
-  { id: 1, icon: 'worldicon', image: 'images/casino_gallery_img.png' },
-  { id: 2, icon: null, image: 'images/casino_gallery_img2.png' },
-  { id: 3, icon: 'worldicon', image: 'images/casino_gallery_img3.png' },
-  { id: 4, icon: null, image: 'images/casino_gallery_img4.png' },
-  { id: 5, icon: 'worldicon', image: 'images/casino_gallery_img5.png' },
-  { id: 6, icon: null, image: 'images/casino_gallery_img6.png' },
-  { id: 7, icon: null, image: 'images/casino_gallery_img7.png' },
-  { id: 8, icon: null, image: 'images/casino_gallery_img3.png' },
-]
-const highrollerItems = [
-  { id: 1, icon: 'worldicon', image: 'images/highroller_gallery_img.png' },
-  { id: 2, icon: null, image: 'images/highroller_gallery_img2.png' },
-  { id: 3, icon: 'worldicon', image: 'images/highroller_gallery_img3.png' },
-  { id: 4, icon: null, image: 'images/highroller_gallery_img4.png' },
-  { id: 5, icon: 'worldicon', image: 'images/highroller_gallery_img5.png' },
-  { id: 6, icon: null, image: 'images/highroller_gallery_img6.png' },
-  { id: 7, icon: null, image: 'images/highroller_gallery_img7.png' },
-  { id: 8, icon: null, image: 'images/highroller_gallery_img2.png' },
-]
-// TOP Sports: 15 sports from design. Cricket first; Cricket -> /sports, rest -> /sportsbook. White outline icons.
+// TOP Sports: navigation config (Cricket -> /sports, rest -> /sportsbook)
 const topSportsItems = [
   { id: 1, title: 'Cricket', icon: 'menu-icon19.svg', to: '/sports' },
   { id: 2, title: 'Soccer', iconClass: 'ri-football-line', to: '/sportsbook' },
@@ -68,6 +48,7 @@ function parseMatchesFromResponse(res) {
   if (Array.isArray(d?.data)) return d.data
   if (Array.isArray(d?.matches)) return d.matches
   if (Array.isArray(raw?.matches)) return raw.matches
+  if (Array.isArray(res?.matches)) return res.matches
   return []
 }
 
@@ -104,11 +85,31 @@ function getDayGroup(isoStr) {
 
 const MARKET_ICONS = ['MC', 'BM', 'P', 'D', 'F']
 
+/** Landing/API game item – image can be in thumb, thumbnail, image, icon, logo */
+function getLandingGameImage(item) {
+  return item?.thumb || item?.thumbnail || item?.image || item?.icon || item?.logo || `${process.env.PUBLIC_URL || ''}/images/game_itemslider.png`
+}
+
 function toOddDatasArray(oddDatas) {
   if (!oddDatas) return []
   if (Array.isArray(oddDatas)) return oddDatas
   if (typeof oddDatas === 'object') return Object.values(oddDatas).filter(Boolean)
   return []
+}
+
+/** Get list of runners/odds from a market (handles oddDatas or runners). */
+function getMarketOddList(market) {
+  if (!market) return []
+  const fromOddDatas = toOddDatasArray(market.oddDatas)
+  if (fromOddDatas.length > 0) return fromOddDatas
+  const runners = Array.isArray(market.runners) ? market.runners : []
+  return runners.map((r) => ({
+    ...r,
+    b1: r.b1 ?? r.back,
+    l1: r.l1 ?? r.lay,
+    bs1: r.bs1 ?? r.size,
+    ls1: r.ls1 ?? r.size,
+  }))
 }
 
 function formatOddsSize(size) {
@@ -129,16 +130,8 @@ function LandingPage() {
   }, []);
 
   // TOP SLOTS slider state
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const sliderRef = useRef(null);
-  const betCasinoSliderRef = useRef(null);
-  const liveCasinoSliderRef = useRef(null);
-  const highrollerSliderRef = useRef(null);
   const topSportsSliderRef = useRef(null);
 
-  const [betCasinoIndex, setBetCasinoIndex] = useState(0);
-  const [liveCasinoIndex, setLiveCasinoIndex] = useState(0);
-  const [highrollerIndex, setHighrollerIndex] = useState(0);
   const [topSportsIndex, setTopSportsIndex] = useState(0);
 
   // TOP Matches from API (cricket) + socket for live updates
@@ -155,12 +148,14 @@ function LandingPage() {
   const landingLiveCasinoRef = useRef(null);
   const landingSlotsRef = useRef(null);
   const landingTrendingRef = useRef(null);
+  const trendingTopRef = useRef(null);
   const landingRouletteRef = useRef(null);
   const landingCardGamesRef = useRef(null);
   const lobbySliderRef = useRef(null);
   const [landingLiveCasinoIndex, setLandingLiveCasinoIndex] = useState(0);
   const [landingSlotsIndex, setLandingSlotsIndex] = useState(0);
   const [landingTrendingIndex, setLandingTrendingIndex] = useState(0);
+  const [trendingTopIndex, setTrendingTopIndex] = useState(0);
   const [landingRouletteIndex, setLandingRouletteIndex] = useState(0);
   const [landingCardGamesIndex, setLandingCardGamesIndex] = useState(0);
   const [lobbySliderIndex, setLobbySliderIndex] = useState(0);
@@ -178,35 +173,22 @@ function LandingPage() {
     return () => { document.title = prev; };
   }, []);
 
-  // Defer trending videos until section is in view (saves ~several MB on initial load, improves LCP)
-  const [showTrendingVideos, setShowTrendingVideos] = useState(false);
   const trendingSectionRef = useRef(null);
-  useEffect(() => {
-    const el = trendingSectionRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) setShowTrendingVideos(true);
-      },
-      { rootMargin: '200px', threshold: 0 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
 
-  // Fetch landing games (no auth). API returns { success, message, data: { liveCasino, slots, trending, roulette, cardGames } }
+  // Fetch landing games (no auth). API returns { data: { liveCasino, slots, trending, roulette, cardGames } } or same keys at top level
   useEffect(() => {
     let cancelled = false;
     AuthService.bettingGamesLanding()
       .then((res) => {
-        if (cancelled || !res?.data) return;
-        const data = res.data;
+        if (cancelled) return;
+        const data = res?.data && typeof res.data === 'object' ? res.data : res || {};
+        const arr = (v) => (Array.isArray(v) ? v : []);
         setLandingGames({
-          liveCasino: data.liveCasino || [],
-          slots: data.slots || [],
-          trending: data.trending || [],
-          roulette: data.roulette || [],
-          cardGames: data.cardGames || [],
+          liveCasino: arr(data.liveCasino),
+          slots: arr(data.slots),
+          trending: arr(data.trending),
+          roulette: arr(data.roulette),
+          cardGames: arr(data.cardGames),
         });
       })
       .catch(() => { })
@@ -354,7 +336,10 @@ function LandingPage() {
           if (!res) return;
           const raw = res.data ?? res;
           const d = raw?.data ?? raw;
-          const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds : [];
+          const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds
+            : Array.isArray(raw?.matchOdds) ? raw.matchOdds
+            : Array.isArray(res?.matchOdds) ? res.matchOdds
+            : [];
           next[gameId] = { ...(next[gameId] || {}), matchOdds };
         });
         return next;
@@ -423,43 +408,6 @@ function LandingPage() {
   });
   const justDraggedRef = useRef(false);
 
-  const gameItems = [
-    { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
-    { id: 2, badge: null, image: 'images/game_itemslider2.png' },
-    { id: 3, badge: 'Top', image: 'images/game_itemslider3.png' },
-    { id: 4, badge: null, image: 'images/game_itemslider4.png' },
-    { id: 5, badge: 'Hot', image: 'images/game_itemslider5.png' },
-    { id: 6, badge: null, image: 'images/game_itemslider6.png' },
-    { id: 7, badge: null, image: 'images/game_itemslider7.png' },
-    { id: 8, badge: null, image: 'images/game_itemslider4.png' },
-  ];
-
-  // BetCasino Original items
-  const betCasinoItems = [
-    { id: 1, badge: 'Top', image: 'images/betcasino_img.png' },
-    { id: 2, badge: null, image: 'images/betcasino_img2.png' },
-    { id: 3, badge: 'Top', image: 'images/betcasino_img3.png' },
-    { id: 4, badge: null, image: 'images/betcasino_img4.png' },
-    { id: 5, badge: 'Hot', image: 'images/betcasino_img5.png' },
-    { id: 6, badge: null, image: 'images/betcasino_img6.png' },
-    { id: 7, badge: null, image: 'images/betcasino_img7.png' },
-    { id: 8, badge: null, image: 'images/betcasino_img3.png' },
-  ];
-
-  // Trending section: 9 different videos (replace paths with your video files)
-  const trendingVideos = [
-    'images/freepik_create-a-bold-and-highenergy-animated-promo-video-_minimax_768p_16-9_24fps_68689.mp4',
-    'images/freepik_create-a-highintensity-animated-promo-video-using-_minimax_768p_16-9_24fps_68694.mp4',
-    'images/freepik_create-a-fun-and-energetic-animated-promo-video-us_kling_1080p_16-9_24fps_68693.mp4',
-    'images/freepik_create-a-glamorous-and-highend-animated-promo-vide_minimax_768p_16-9_24fps_68690.mp4',
-    'images/freepik_create-a-vibrant-animated-promo-video-using-this-c_kling_1080p_16-9_24fps_68692.mp4',
-    'images/freepik_create-a-stylish-and-engaging-animated-promo-video_kling_1080p_16-9_24fps_68691.mp4',
-  ];
-
-  const topSlotsDisplayItems = useMemo(() => [...gameItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
-  const betCasinoDisplayItems = useMemo(() => [...betCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
-  const liveCasinoDisplayItems = useMemo(() => [...liveCasinoItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
-  const highrollerDisplayItems = useMemo(() => [...highrollerItems.slice(0, MAX_CONTENT_BEFORE_VIEW_ALL), { viewAll: true, to: '/casino' }], [])
   const topSportsDisplayItems = useMemo(() => [...topSportsItems, { viewAll: true, to: '/sportsbook' }], [])
 
   // TOP Matches: grouped by day (Live, Today, Tomorrow, …) for table view
@@ -541,10 +489,6 @@ function LandingPage() {
     return [...g.map((game) => ({ ...game, viewAll: false })), { viewAll: true, to: '/casino?provider=EZ' }];
   }, [casinoLobbyGames]);
 
-  const itemsPerSet = topSlotsDisplayItems.length;
-  const betCasinoItemsPerSet = betCasinoDisplayItems.length;
-  const liveCasinoItemsPerSet = liveCasinoDisplayItems.length;
-  const highrollerItemsPerSet = highrollerDisplayItems.length;
   const topSportsItemsPerSet = topSportsDisplayItems.length;
   const landingItemWidth = 178 + 18;
   const landingLiveCasinoItemsPerSet = landingLiveCasinoDisplayItems.length;
@@ -561,30 +505,6 @@ function LandingPage() {
     const maxTranslate = contentWidth <= containerWidth ? 0 : -(contentWidth - containerWidth);
     return Math.max(maxTranslate, Math.min(0, translateX));
   };
-
-  // TOP SLOTS slider – sync transform to index (clamped)
-  useEffect(() => {
-    const el = sliderRef.current;
-    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -currentIndex * (178 + 18))}px)`;
-  }, [currentIndex]);
-
-  // BetCasino Original slider – sync transform to index (clamped)
-  useEffect(() => {
-    const el = betCasinoSliderRef.current;
-    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -betCasinoIndex * (178 + 18))}px)`;
-  }, [betCasinoIndex]);
-
-  // Live Casino slider – sync transform to index (clamped)
-  useEffect(() => {
-    const el = liveCasinoSliderRef.current;
-    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -liveCasinoIndex * (178 + 18))}px)`;
-  }, [liveCasinoIndex]);
-
-  // Highroller Hall slider – sync transform to index (clamped)
-  useEffect(() => {
-    const el = highrollerSliderRef.current;
-    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -highrollerIndex * (178 + 18))}px)`;
-  }, [highrollerIndex]);
 
   // TOP Sports slider – sync transform to index (clamped)
   useEffect(() => {
@@ -605,6 +525,10 @@ function LandingPage() {
     const el = landingTrendingRef.current;
     if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingTrendingIndex * landingItemWidth)}px)`;
   }, [landingTrendingIndex, landingItemWidth]);
+  useEffect(() => {
+    const el = trendingTopRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -trendingTopIndex * landingItemWidth)}px)`;
+  }, [trendingTopIndex, landingItemWidth]);
   useEffect(() => {
     const el = landingRouletteRef.current;
     if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingRouletteIndex * landingItemWidth)}px)`;
@@ -847,30 +771,35 @@ function LandingPage() {
       </div>
 
 
-      <div className='trending_games_section' ref={trendingSectionRef}>
-        <h2 className='heading_h2'>Trending Games</h2>
-        <div className='game_items_video'>
-          {(() => {
-            const trendingCategories = ['Aviator', 'Dragon Tiger', 'Chicken Road', 'Baccarat', 'Roulette', 'Teen Patti'];
-            return showTrendingVideos
-              ? trendingVideos.map((src, i) => {
-                const category = trendingCategories[i] ?? 'lobby';
-                const to = `/casino?provider=all&category=${encodeURIComponent(category)}`;
-                return (
-                  <Link key={i} to={to} className='game_video_bl' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-                    <video width="100%" height="auto" autoPlay muted loop playsInline loading="lazy">
-                      <source src={src} type="video/mp4" />
-                    </video>
-                    <span className='game_video_bl_title'>{category}</span>
+      {landingTrendingDisplayItems.length > 0 && (
+        <div className='trending_games_section' ref={trendingSectionRef}>
+          <h2 className='heading_h2'>Trending Games</h2>
+          <div
+            className="game_items_slider_wrapper"
+            onMouseDown={(e) => handleSliderMouseDown(e, { sliderRef: trendingTopRef, getItemWidth: landingItemWidth, itemsPerSet: landingTrendingItemsPerSet, currentIndex: trendingTopIndex, setIndex: setTrendingTopIndex })}
+            onClickCapture={handleSliderClickCapture}
+            style={{ cursor: 'grab' }}
+          >
+            <div className="game_items_slider" ref={trendingTopRef}>
+              {landingTrendingDisplayItems.map((item, index) =>
+                item.viewAll ? (
+                  <Link key="view-all-trending-top" to={item.to} className="game_items_inner slider_view_all_card link_plain">
+                    <span className="slider_view_all_text">View All</span>
                   </Link>
-                );
-              })
-              : trendingVideos.map((_, i) => (
-                <div key={i} className='game_video_bl' aria-hidden="true" />
-              ));
-          })()}
+                ) : (
+                  <Link key={`trend-${item.code}-${index}`} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain">
+                    <div className='playbtn'>
+                      <img loading="lazy" src="images/playbtn.png" alt="game" />
+                    </div>
+                    {item.badge && <div className="top_ads">{item.badge}</div>}
+                    <img loading="lazy" src={getLandingGameImage(item)} alt="game" />
+                  </Link>
+                )
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
 
       <div className="landing_page_content">
@@ -907,7 +836,7 @@ function LandingPage() {
                           {item.badge}
                         </div>
                       )}
-                      <img loading="lazy" src={item.thumb} alt="game" />
+                      <img loading="lazy" src={getLandingGameImage(item)} alt="game" />
                     </Link>
                   )
                 )}
@@ -945,7 +874,7 @@ function LandingPage() {
                           {item.badge}
                         </div>
                       )}
-                      <img loading="lazy" src={item.thumb} alt="game" />
+                      <img loading="lazy" src={getLandingGameImage(item)} alt="game" />
                     </Link>
                   )
                 )}
@@ -983,7 +912,7 @@ function LandingPage() {
                           {item.badge}
                         </div>
                       )}
-                      <img loading="lazy" src={item.thumb} alt="game" />
+                      <img loading="lazy" src={getLandingGameImage(item)} alt="game" />
                     </Link>
                   )
                 )}
@@ -1021,7 +950,7 @@ function LandingPage() {
                           {item.badge}
                         </div>
                       )}
-                      <img loading="lazy" src={item.thumb} alt="game" />
+                      <img loading="lazy" src={getLandingGameImage(item)} alt="game" />
                     </Link>
                   )
                 )}
@@ -1059,7 +988,7 @@ function LandingPage() {
                           {item.badge}
                         </div>
                       )}
-                      <img loading="lazy" src={item.thumb} alt="game" />
+                      <img loading="lazy" src={getLandingGameImage(item)} alt="game" />
                     </Link>
                   )
                 )}
@@ -1103,7 +1032,7 @@ function LandingPage() {
                           <div className="playbtn">
                             <img src="/images/playbtn.png" alt="play" />
                           </div>
-                          <img loading="lazy" src={item.thumbnail || item.thumb || item.image} alt={item.name || 'game'} />
+                          <img loading="lazy" src={getLandingGameImage(item)} alt={item.name || 'game'} />
                         </Link>
                       )
                     )
@@ -1124,7 +1053,7 @@ function LandingPage() {
                         <div className="playbtn">
                           <img src="/images/playbtn.png" alt="play" />
                         </div>
-                        <img loading="lazy" src={item.thumbnail || item.thumb || item.image} alt={item.name || 'game'} />
+                        <img loading="lazy" src={getLandingGameImage(item)} alt={item.name || 'game'} />
                       </Link>
                     )
                   )}
@@ -1350,7 +1279,7 @@ function LandingPage() {
                           const oddsPayload = match.gameId ? topMatchesOddsByGameId[match.gameId] : null;
                           const matchOdds = oddsPayload?.matchOdds ?? [];
                           const market = matchOdds[0];
-                          const oddList = market ? toOddDatasArray(market.oddDatas) : [];
+                          const oddList = market ? getMarketOddList(market) : [];
                           const cardOdds = oddList.slice(0, 6).map((o) => ({
                             back: o.b1 ?? o.back ?? '—',
                             lay: o.l1 ?? o.lay ?? '—',
@@ -1436,7 +1365,7 @@ function LandingPage() {
                           const oddsPayload = match.gameId ? topMatchesOddsByGameId[match.gameId] : null;
                           const matchOdds = oddsPayload?.matchOdds ?? [];
                           const market = matchOdds[0];
-                          const oddList = market ? toOddDatasArray(market.oddDatas) : [];
+                          const oddList = market ? getMarketOddList(market) : [];
                           const cardOdds = oddList.slice(0, 6).map((o) => ({
                             back: o.b1 ?? o.back ?? '—',
                             lay: o.l1 ?? o.lay ?? '—',

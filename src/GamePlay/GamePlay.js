@@ -1,32 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import './gamePlay.css';
+import './GamePlay.css';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { useBalance } from '../context/BalanceContext';
 import { getLastBalance } from '../socket/balanceSocket';
-
-const BEST_GAMES_ITEMS = [
-  { id: 1, badge: 'Top', image: 'images/betcasino_img.png' },
-  { id: 2, badge: null, image: 'images/betcasino_img2.png' },
-  { id: 3, badge: 'Top', image: 'images/betcasino_img3.png' },
-  { id: 4, badge: null, image: 'images/betcasino_img4.png' },
-  { id: 5, badge: 'Hot', image: 'images/betcasino_img5.png' },
-  { id: 6, badge: null, image: 'images/betcasino_img6.png' },
-  { id: 7, badge: null, image: 'images/betcasino_img7.png' },
-  { id: 8, badge: null, image: 'images/betcasino_img3.png' },
-];
-
-const TOP_SLOTS_ITEMS = [
-  { id: 1, badge: 'Top', image: 'images/game_itemslider.png' },
-  { id: 2, badge: null, image: 'images/game_itemslider2.png' },
-  { id: 3, badge: 'Top', image: 'images/game_itemslider3.png' },
-  { id: 4, badge: null, image: 'images/game_itemslider4.png' },
-  { id: 5, badge: 'Hot', image: 'images/game_itemslider5.png' },
-  { id: 6, badge: null, image: 'images/game_itemslider6.png' },
-  { id: 7, badge: null, image: 'images/game_itemslider7.png' },
-  { id: 8, badge: null, image: 'images/game_itemslider4.png' },
-];
 
 const GAME_SESSION_KEY = 'wcoGameSession';
 
@@ -90,24 +68,54 @@ function GamePlay() {
   const sliderDragRef = useRef({ isDragging: false, startX: 0, startScrollLeft: 0, wrapperEl: null });
   const justDraggedRef = useRef(false);
 
-  const bestGamesDisplayItems = useMemo(() => [
-    ...BEST_GAMES_ITEMS.map((item) => ({ ...item, viewAll: false })),
-    { viewAll: true, to: '/casino' },
-  ], []);
+  const [featuredGames, setFeaturedGames] = useState([]);
+  const [popularGames, setPopularGames] = useState([]);
+  const [gamesLoading, setGamesLoading] = useState(true);
 
-  const topSlotsDisplayItems = useMemo(() => [
-    ...TOP_SLOTS_ITEMS.map((item) => ({ ...item, viewAll: false })),
-    { viewAll: true, to: '/casino' },
-  ], []);
-
-  const [popularGamesItems, setPopularGamesItems] = useState([]);
-  const popularGamesDisplayItems = useMemo(() => {
-    if (!popularGamesItems.length) return [{ viewAll: true, to: '/casino' }];
+  const bestGamesDisplayItems = useMemo(() => {
+    if (!featuredGames.length) return [{ viewAll: true, to: '/casino' }];
     return [
-      ...popularGamesItems.map((item) => ({ ...item, viewAll: false })),
+      ...featuredGames.map((g) => ({ ...g, viewAll: false })),
       { viewAll: true, to: '/casino' },
     ];
-  }, [popularGamesItems]);
+  }, [featuredGames]);
+
+  const topSlotsDisplayItems = useMemo(() => {
+    if (!popularGames.length) return [{ viewAll: true, to: '/casino' }];
+    return [
+      ...popularGames.map((g) => ({ ...g, viewAll: false })),
+      { viewAll: true, to: '/casino' },
+    ];
+  }, [popularGames]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setGamesLoading(true);
+    Promise.all([
+      AuthService.bettingGamesFeatured(20),
+      AuthService.bettingGamesPopular(20),
+    ])
+      .then(([featuredRes, popularRes]) => {
+        if (cancelled) return;
+        const toList = (res) => {
+          if (!res?.data) return [];
+          const d = Array.isArray(res.data) ? res.data : res.data?.data ?? res.data?.games ?? [];
+          return Array.isArray(d) ? d : [];
+        };
+        setFeaturedGames(toList(featuredRes));
+        setPopularGames(toList(popularRes));
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFeaturedGames([]);
+          setPopularGames([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setGamesLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const handleSliderClickCapture = (e) => {
     if (justDraggedRef.current) {
@@ -312,32 +320,35 @@ function GamePlay() {
               <Link to="/casino"><button type="button" className="slotbtn">View All</button></Link>
             </div>
           </div>
-          <div
-            ref={bestGamesSliderWrapperRef}
-            className="game_items_slider_wrapper"
-            onMouseDown={(e) => handleSliderMouseDown(e, bestGamesSliderWrapperRef)}
-            onClickCapture={handleSliderClickCapture}
-            style={{ cursor: 'grab' }}
-          >
-            <div className="game_items_slider mt-2">
-              {bestGamesDisplayItems.map((item, index) =>
-                item.viewAll ? (
-                  <Link key="view-all" to={item.to} className="game_items_inner slider_view_all_card link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                    <span className="slider_view_all_text">View All</span>
-                  </Link>
-                ) : (
-                  <Link key={item.id} to="/casino" className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                    <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
-                    {item.badge && <div className="top_ads">{item.badge}</div>}
-                    <img loading="lazy" alt="game" src={item.image} />
-                  </Link>
-                )
-              )}
+          {gamesLoading ? (
+            <div className="game_items_slider_wrapper"><div className="game_items_slider mt-2 text-muted">Loading...</div></div>
+          ) : (
+            <div
+              ref={bestGamesSliderWrapperRef}
+              className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, bestGamesSliderWrapperRef)}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
+            >
+              <div className="game_items_slider mt-2">
+                {bestGamesDisplayItems.map((item, index) =>
+                  item.viewAll ? (
+                    <Link key="view-all" to={item.to} className="game_items_inner slider_view_all_card link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <span className="slider_view_all_text">View All</span>
+                    </Link>
+                  ) : (
+                    <Link key={item.code || index} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
+                      {item.badge && <div className="top_ads">{item.badge}</div>}
+                      <img loading="lazy" alt="game" src={item.thumb || item.image} />
+                    </Link>
+                  )
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
-
 
       <div className="top_slot_outer most_popular_games_outer_casino">
         <div className="container-fluid">
@@ -347,29 +358,33 @@ function GamePlay() {
               <Link to="/casino"><button type="button" className="slotbtn">View All</button></Link>
             </div>
           </div>
-          <div
-            ref={topSlotsSliderWrapperRef}
-            className="game_items_slider_wrapper"
-            onMouseDown={(e) => handleSliderMouseDown(e, topSlotsSliderWrapperRef)}
-            onClickCapture={handleSliderClickCapture}
-            style={{ cursor: 'grab' }}
-          >
-            <div className="game_items_slider mt-2">
-              {topSlotsDisplayItems.map((item) =>
-                item.viewAll ? (
-                  <Link key="view-all-slots" to={item.to} className="game_items_inner slider_view_all_card link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                    <span className="slider_view_all_text">View All</span>
-                  </Link>
-                ) : (
-                  <Link key={item.id} to="/casino" className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                    <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
-                    {item.badge && <div className="top_ads">{item.badge}</div>}
-                    <img loading="lazy" alt="game" src={item.image} />
-                  </Link>
-                )
-              )}
+          {gamesLoading ? (
+            <div className="game_items_slider_wrapper"><div className="game_items_slider mt-2 text-muted">Loading...</div></div>
+          ) : (
+            <div
+              ref={topSlotsSliderWrapperRef}
+              className="game_items_slider_wrapper"
+              onMouseDown={(e) => handleSliderMouseDown(e, topSlotsSliderWrapperRef)}
+              onClickCapture={handleSliderClickCapture}
+              style={{ cursor: 'grab' }}
+            >
+              <div className="game_items_slider mt-2">
+                {topSlotsDisplayItems.map((item, index) =>
+                  item.viewAll ? (
+                    <Link key="view-all-slots" to={item.to} className="game_items_inner slider_view_all_card link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <span className="slider_view_all_text">View All</span>
+                    </Link>
+                  ) : (
+                    <Link key={item.code || index} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                      <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
+                      {item.badge && <div className="top_ads">{item.badge}</div>}
+                      <img loading="lazy" alt="game" src={item.thumb || item.image} />
+                    </Link>
+                  )
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

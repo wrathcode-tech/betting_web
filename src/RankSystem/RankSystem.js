@@ -1,5 +1,5 @@
 import React from 'react'
-import './rankSystem.css'
+import './RankSystem.css'
 import MobileMenu from '../customComponents/MobileMenu'
 
 function RankSystem() {

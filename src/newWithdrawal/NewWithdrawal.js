@@ -4,9 +4,9 @@ import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
 import { useBalance } from '../context/BalanceContext';
-import '../newDeposit/newDeposit.css';
-import '../BankDetails/addAccount.css';
-import './newWithdrawal.css';
+import '../newDeposit/NewDeposit.css';
+import '../BankDetails/AddAccount.css';
+import './NewWithdrawal.css';
 
 function maskAccountNumber(num) {
   if (!num || num.length < 4) return '****';

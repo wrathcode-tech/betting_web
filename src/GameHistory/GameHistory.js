@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
-import '../ProfileTransactions/profileTransactions.css';
+import '../ProfileTransactions/ProfileTransactions.css';
 import './gameHistory.css';
 
 const PAGE_SIZE = 20;

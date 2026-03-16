@@ -40,6 +40,19 @@ export const ApiConfig = {
   bettingSendWithdrawalOtp: "send-withdrawal-otp",
   /** GET /wallet/transactions/:id – single transaction (Section 2). */
   bettingWalletTransactions: "transactions",
+  /** GET /wallet/statement – account statement with pagination/filters */
+  bettingWalletStatement: "statement",
+
+  /** GET /api/v1/account/statement – account statement (page, limit, from, to, type, sort) */
+  baseBettingAccount: `${bettingUrl}/api/v1/account`,
+  bettingAccountStatement: "statement",
+
+  // Sportsbook – bet history (baseBettingSportsbook = /api/v1/sportsbook)
+  bettingBetOpen: "bet/open",
+  bettingBetHistory: "bet/history",
+
+  // Referral rewards history
+  bettingReferralRewardsHistory: "rewards/history",
 
   // Bank accounts (base + paths must match backend: POST /api/v1/bank-accounts/send-otp etc.)
   baseBettingBankAccounts: `${bettingUrl}/api/v1/bank-accounts`,

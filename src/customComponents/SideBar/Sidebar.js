@@ -190,28 +190,10 @@ export default function SideBar({ isOpen, onClose }) {
                   <span className="sidebar_collapsed_label">Betting P&L</span>
                 </Link>
               </li>
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/turnover-history' ? 'active' : ''}`}>
-                <Link to="/turnover-history" onClick={onLinkClick}>
-                  <span><i className="ri-repeat-line" aria-hidden />Turnover History</span>
-                  <span className="sidebar_collapsed_label">Turnover</span>
-                </Link>
-              </li>
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/account-statement' ? 'active' : ''}`}>
                 <Link to="/account-statement" onClick={onLinkClick}>
                   <span><i className="ri-bank-card-line" aria-hidden />Account Statement</span>
                   <span className="sidebar_collapsed_label">Statement</span>
-                </Link>
-              </li>
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/bonus-statement' ? 'active' : ''}`}>
-                <Link to="/bonus-statement" onClick={onLinkClick}>
-                  <span><i className="ri-gift-line" aria-hidden />Bonus Statement</span>
-                  <span className="sidebar_collapsed_label">Bonus</span>
-                </Link>
-              </li>
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/deposit-turnover' ? 'active' : ''}`}>
-                <Link to="/deposit-turnover" onClick={onLinkClick}>
-                  <span><i className="ri-exchange-dollar-line" aria-hidden />Deposit Turnover</span>
-                  <span className="sidebar_collapsed_label">Deposit Turnover</span>
                 </Link>
               </li>
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/support' ? 'active' : ''}`}>

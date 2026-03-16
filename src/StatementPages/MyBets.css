@@ -22,6 +22,36 @@
     cursor: not-allowed;
 }
 
+.mybets_cancel_btn_sm {
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #ff6b6b;
+    background: transparent;
+    border: 1px solid rgba(255, 107, 107, 0.6);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.mybets_cancel_btn_sm:hover:not(:disabled) {
+    background: rgba(255, 107, 107, 0.15);
+    color: #ff8787;
+    border-color: #ff6b6b;
+}
+
+.mybets_cancel_btn_sm:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.mybets_actions_wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
 .transaction_card_row .mybets_cancel_btn {
     margin-top: 4px;
 }

@@ -4,6 +4,8 @@ import ScrollToTop from "./ScrollToTop";
 import { SidebarProvider } from "./context/SidebarContext";
 import { CasinoProvidersProvider } from "./context/CasinoProvidersContext";
 import { BalanceProvider } from "./context/BalanceContext";
+import { BetSlipProvider } from "./context/BetSlipContext";
+import { SportsbookStoreProvider } from "./context/SportsbookStore";
 import Layout from "./Layout";
 
 function ProtectedRoute() {
@@ -15,33 +17,38 @@ function ProtectedRoute() {
 // Lazy load pages – only the current route's chunk loads (faster initial load)
 const LandingPage = lazy(() => import("./LandingPage/LandingPage"));
 const ProfilePage = lazy(() => import("./ProfilePage"));
-const CasinoGame = lazy(() => import("./Casino/casinoGame"));
+const CasinoGame = lazy(() => import("./Casino/CasinoGame"));
 const CasinoCategoryPage = lazy(() => import("./Casino/CasinoCategoryPage"));
-const GamePlay = lazy(() => import("./GamePlay/gamePlay"));
+const GamePlay = lazy(() => import("./GamePlay/GamePlay"));
 const GameHistory = lazy(() => import("./GameHistory/GameHistory"));
 const SportsGame = lazy(() => import("./sports/SportsGame"));
 const SportsBook = lazy(() => import("./SportsBook/SportsBook"));
-const ProfileTransactions = lazy(() => import("./ProfileTransactions/profileTransactions"));
+const ProfileTransactions = lazy(() => import("./ProfileTransactions/ProfileTransactions"));
 const Promotions = lazy(() => import("./promotions/Promotions"));
 const MyBets = lazy(() => import("./StatementPages/MyBets"));
-const BetHistory = lazy(() => import("./StatementPages/BetHistory"));
 const MyWallet = lazy(() => import("./StatementPages/MyWallet"));
 const BettingProfitLoss = lazy(() => import("./StatementPages/BettingProfitLoss"));
 const TurnoverHistory = lazy(() => import("./StatementPages/TurnoverHistory"));
 const AccountStatement = lazy(() => import("./StatementPages/AccountStatement"));
 const BonusStatement = lazy(() => import("./StatementPages/BonusStatement"));
 const DepositTurnover = lazy(() => import("./StatementPages/DepositTurnover"));
-const GameRules = lazy(() => import("./GameRule/gameRules"));
+const GameRules = lazy(() => import("./GameRule/GameRules"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
-const CricketDetail = lazy(() => import("./cricket/cricketDetail"));
-const ReferralProgram = lazy(() => import("./ReferralProgram/referralProgram"));
-const RankSystem = lazy(() => import("./RankSystem/rankSystem"));
-const NewDeposit = lazy(() => import("./newDeposit/newDeposit"));
-const NewWithdrawal = lazy(() => import("./newWithdrawal/newWithdrawal"));
-const AddAccount = lazy(() => import("./BankDetails/addAccount"));
-const AddBank = lazy(() => import("./BankDetails/addBank"));
+const CricketDetail = lazy(() => import("./cricket/CricketDetail"));
+const ReferralProgram = lazy(() => import("./ReferralProgram/ReferralProgram"));
+const RankSystem = lazy(() => import("./RankSystem/RankSystem"));
+const NewDeposit = lazy(() => import("./newDeposit/NewDeposit"));
+const NewWithdrawal = lazy(() => import("./newWithdrawal/NewWithdrawal"));
+const AddAccount = lazy(() => import("./BankDetails/AddAccount"));
+const AddBank = lazy(() => import("./BankDetails/AddBank"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SupportPage = lazy(() => import("./pages/SupportPage"));
+const DepositHistory = lazy(() => import("./pages/DepositHistory"));
+const WithdrawalHistory = lazy(() => import("./pages/WithdrawalHistory"));
+const StatementHistory = lazy(() => import("./pages/StatementHistory"));
+const OpenBets = lazy(() => import("./pages/OpenBets"));
+const BetHistoryPage = lazy(() => import("./pages/BetHistoryPage"));
+const ReferralRewards = lazy(() => import("./pages/ReferralRewards"));
 
 const Routing = memo(function Routing() {
   return (
@@ -49,6 +56,8 @@ const Routing = memo(function Routing() {
       <SidebarProvider>
         <CasinoProvidersProvider>
         <BalanceProvider>
+        <SportsbookStoreProvider>
+        <BetSlipProvider>
         <ScrollToTop />
         <Suspense fallback={null}>
           <Routes>
@@ -56,6 +65,7 @@ const Routing = memo(function Routing() {
               {/* Public routes – no login required */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<LoginPage />} />
               <Route path="/casino" element={<CasinoGame />} />
               <Route path="/casino/category/:categoryId" element={<CasinoCategoryPage />} />
               <Route path="/sports" element={<SportsGame />} />
@@ -70,7 +80,12 @@ const Routing = memo(function Routing() {
                 <Route path="/game-history" element={<GameHistory />} />
                 <Route path="/transactions" element={<ProfileTransactions />} />
                 <Route path="/my-bets" element={<MyBets />} />
-                <Route path="/bet-history" element={<BetHistory />} />
+                <Route path="/bet-history" element={<BetHistoryPage />} />
+                <Route path="/deposit-history" element={<DepositHistory />} />
+                <Route path="/withdrawal-history" element={<WithdrawalHistory />} />
+                <Route path="/statement-history" element={<StatementHistory />} />
+                <Route path="/open-bets" element={<OpenBets />} />
+                <Route path="/referral-rewards" element={<ReferralRewards />} />
                 <Route path="/my-wallet" element={<MyWallet />} />
                 <Route path="/betting-profit-loss" element={<BettingProfitLoss />} />
                 <Route path="/turnover-history" element={<TurnoverHistory />} />
@@ -92,6 +107,8 @@ const Routing = memo(function Routing() {
             </Route>
           </Routes>
         </Suspense>
+        </BetSlipProvider>
+        </SportsbookStoreProvider>
         </BalanceProvider>
         </CasinoProvidersProvider>
       </SidebarProvider>
