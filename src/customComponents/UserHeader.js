@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import { useCasinoProviders } from '../context/CasinoProvidersContext'
 import LoginModal from './LoginModal'
@@ -7,11 +7,13 @@ import Sidebar from './SideBar/Sidebar'
 import Chat from '../cricket/Chat'
 import Search from './Search'
 import { useBalance } from '../context/BalanceContext'
+import { usePlatformConfig } from '../context/PlatformConfigContext'
 import {
   connectSportsbookSocket,
   disconnectSportsbookSocket,
 } from '../socket/sportsbookSocket'
 import { disconnectBalanceSocket } from '../socket/balanceSocket'
+import AuthService from '../api/services/AuthService'
 
 const CURRENCY_LIST = [
   { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹', icon: 'images/digital_currency.svg' },
@@ -25,23 +27,27 @@ const INR_SYMBOL = '₹';
 
 export default function UserHeader() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showModal, setShowModal] = useState(false);
   const [modalTab, setModalTab] = useState('login');
+  const returnTo = location.pathname + location.search;
   const { sidebarOpen, setSidebarOpen } = useSidebar();
+  /* eslint-disable no-unused-vars -- providers, casinoDropdownOpen used in JSX (casino dropdown) */
   const { providers } = useCasinoProviders();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [casinoDropdownOpen, setCasinoDropdownOpen] = useState(false);
+  /* eslint-enable no-unused-vars */
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [currencySearch, setCurrencySearch] = useState('');
   const { balance: balanceFromContext } = useBalance();
+  const { config: platformConfig } = usePlatformConfig();
+  const [userDisplayName, setUserDisplayName] = useState('');
   const dropdownRef = useRef(null);
-  const currencyDropdownRef = useRef(null);
   const casinoDropdownRef = useRef(null);
 
   const balance = balanceFromContext != null ? Number(balanceFromContext) : 0;
-  const defaultCurrency = { ...CURRENCY_LIST[0], balance: `${INR_SYMBOL}0.00` };
 
   // Balance from socket only (INR) – no external rates API
   const balanceDisplay = `${INR_SYMBOL}${balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -53,10 +59,38 @@ export default function UserHeader() {
   }, [balanceDisplay]);
 
   const [selectedCurrencyCode, setSelectedCurrencyCode] = useState('INR');
-  const selectedCurrency = currencies.find((c) => c.code === selectedCurrencyCode) || currencies[0] || defaultCurrency;
   const filteredCurrencies = currencies.filter(
     (c) => c.code.toLowerCase().includes(currencySearch.toLowerCase()) || c.name.toLowerCase().includes(currencySearch.toLowerCase())
   );
+
+  const fetchUserDisplayName = () => {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      setUserDisplayName('');
+      return;
+    }
+    AuthService.bettingGetMe()
+      .then((res) => {
+        const raw = res?.data ?? res;
+        const user = raw?.user ?? raw;
+        const name = user?.fullName ?? user?.full_name ?? user?.username ?? '';
+        if (name && String(name).trim()) {
+          setUserDisplayName(String(name).trim());
+        } else if (user?.mobile) {
+          const m = String(user.mobile);
+          setUserDisplayName(m.length >= 4 ? `User ${m.slice(-4)}` : 'User');
+        } else {
+          setUserDisplayName('User');
+        }
+      })
+      .catch(() => setUserDisplayName('User'));
+  };
+
+  useEffect(() => {
+    fetchUserDisplayName();
+    window.addEventListener('loginStateChange', fetchUserDisplayName);
+    return () => window.removeEventListener('loginStateChange', fetchUserDisplayName);
+  }, []);
 
   // Sportsbook socket for matches/odds (balance updates via BalanceContext)
   useEffect(() => {
@@ -157,10 +191,14 @@ export default function UserHeader() {
           </div>
           )}
         </div>
-        <button className="deposit_btn" onClick={() => navigate('/deposit')} aria-label="Deposit">
-          <i className="ri-add-line deposit_btn_icon" aria-hidden />
-          <span className="deposit_btn_text">Deposit</span>
-        </button>
+        {platformConfig.depositServiceStatus ? (
+          <button className="deposit_btn" onClick={() => navigate('/deposit')} aria-label="Deposit">
+            <i className="ri-add-line deposit_btn_icon" aria-hidden />
+            <span className="deposit_btn_text">Deposit</span>
+          </button>
+        ) : (
+          <span className="deposit_disabled_banner" aria-live="polite">Deposits temporarily unavailable</span>
+        )}
       </div>
      
           <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>
@@ -212,7 +250,7 @@ export default function UserHeader() {
               <div className="user_profile_dropdown_header">
                 <div className='user_top_dropdown_header d-flex align-items-center gap-2'>
               <img className='user_img' src="/images/user_vector.png" alt="user" />
-                <h4>User12345</h4>
+                <h4 className="text_uppercase">{userDisplayName || 'User'}</h4>
                 </div>
               </div>
               
@@ -241,14 +279,16 @@ export default function UserHeader() {
                   <i className="ri-safe-2-line"></i>
                   <span>Vault</span>
                 </Link> */}
-                <Link 
-                  to="/withdrawal" 
-                  className="dropdown_menu_item" 
-                  onClick={() => setIsProfileDropdownOpen(false)}
-                >
-                  <i className="ri-bank-line"></i>
-                  <span>Withdrawal</span>
-                </Link>
+                {platformConfig.withdrawalServiceStatus && (
+                  <Link 
+                    to="/withdrawal" 
+                    className="dropdown_menu_item" 
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                  >
+                    <i className="ri-bank-line"></i>
+                    <span>Withdrawal</span>
+                  </Link>
+                )}
               </div>
               
               <button
@@ -259,6 +299,7 @@ export default function UserHeader() {
                   disconnectSportsbookSocket();
                   sessionStorage.removeItem('token');
                   sessionStorage.removeItem('refreshToken');
+                  setUserDisplayName('');
                   window.dispatchEvent(new CustomEvent('loginStateChange'));
                   setIsProfileDropdownOpen(false);
                   navigate('/', { replace: true });
@@ -283,7 +324,7 @@ export default function UserHeader() {
         </div>
       </header>
 
-      {showModal && <LoginModal show={showModal} onHide={() => { setShowModal(false); setModalTab('login'); }} initialTab={modalTab} />}
+      {showModal && <LoginModal show={showModal} onHide={() => { setShowModal(false); setModalTab('login'); }} initialTab={modalTab} returnTo={returnTo} />}
       {sidebarOpen && <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
       {isChatOpen && <Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />}
       {isSearchOpen && <Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}

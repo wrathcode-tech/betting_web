@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, lazy, Suspense, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthService from '../api/services/AuthService'
+import { usePlatformConfig } from '../context/PlatformConfigContext'
+import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import {
   connectSportsbookSocket,
   subscribeMatches,
@@ -24,7 +26,7 @@ const MAX_CONTENT_BEFORE_VIEW_ALL = MAX_SLIDER_ITEMS - 1
 // TOP Sports: navigation config (Cricket -> /sports, rest -> /sportsbook)
 const topSportsItems = [
   { id: 1, title: 'Cricket', icon: 'menu-icon19.svg', to: '/sports' },
-  { id: 2, title: 'Soccer', iconClass: 'ri-football-line', to: '/sportsbook' },
+  { id: 2, title: 'Football', iconClass: 'ri-football-line', to: '/sportsbook' },
   { id: 3, title: 'Basketball', iconClass: 'ri-basketball-line', to: '/sportsbook' },
   { id: 4, title: 'Baseball', iconClass: 'ri-baseball-line', to: '/sportsbook' },
   { id: 5, title: 'Ice Hockey', iconClass: 'ri-flashlight-line', to: '/sportsbook' },
@@ -123,6 +125,7 @@ function formatOddsSize(size) {
 function LandingPage() {
   // Auth token – sync with sessionStorage so button updates instantly after login (no refresh)
   const [token, setToken] = useState(() => sessionStorage.getItem('token'));
+  const { config: platformConfig } = usePlatformConfig();
   useEffect(() => {
     const onLoginChange = () => setToken(sessionStorage.getItem('token'));
     window.addEventListener('loginStateChange', onLoginChange);
@@ -443,7 +446,7 @@ function LandingPage() {
   const navigate = useNavigate();
   const handleTopMatchRowClick = (e, match) => {
     if (e.target.closest('button')) return;
-    if (match?.gameId) navigate('/cricket', { state: { gameId: match.gameId, eventName: match.teams, sportName: 'cricket', inPlay: match.inPlay } });
+    if (match?.gameId) navigate('/cricket', { state: { gameId: match.gameId, eventName: match.teams, sportName: 'cricket', inPlay: match.inPlay, seriesName: match.tournament } });
     else navigate('/sports');
   };
 
@@ -720,7 +723,13 @@ function LandingPage() {
                   <button
                     type="button"
                     className="btnbnr"
-                    onClick={() => navigate('/deposit')}
+                    onClick={() => {
+                      if (!platformConfig.depositServiceStatus) {
+                        alertErrorMessage('Deposits are temporarily unavailable. Please try again later.');
+                        return;
+                      }
+                      navigate('/deposit');
+                    }}
                   >
                     Deposit Now
                   </button>

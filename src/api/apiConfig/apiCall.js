@@ -13,7 +13,7 @@ const tokenExpire = () => {
 
 const refreshUrl = `${ApiConfig.baseBettingAuth}${ApiConfig.bettingRefreshToken}`;
 
-/** Per API doc: on 401, retry once with new token from refresh-token, then redirect to login. */
+/** Per API doc: on 401, retry once with new token from refresh-token, then redirect to login. Do not reload for guest (no token sent). */
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -27,7 +27,9 @@ axios.interceptors.response.use(
     }
     const refreshToken = sessionStorage.getItem('refreshToken');
     if (!refreshToken) {
-      tokenExpire();
+      if (originalRequest?.headers?.Authorization) {
+        tokenExpire();
+      }
       return Promise.reject(error);
     }
     try {
@@ -60,8 +62,8 @@ const handleApiError = (error) => {
     return { success: false, message: 'Network error. Please check your connection.' };
   }
 
-  // Handle token expiry (legacy message; 401 is now handled by interceptor)
-  if (error?.response?.data?.message === "Token is expired") {
+  // Handle token expiry (legacy message; 401 is now handled by interceptor). Don't reload for guest.
+  if (error?.response?.data?.message === "Token is expired" && sessionStorage.getItem('token')) {
     tokenExpire();
     return;
   }

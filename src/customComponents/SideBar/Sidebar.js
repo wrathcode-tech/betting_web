@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useSidebar } from '../../context/SidebarContext'
 import { useCasinoProviders } from '../../context/CasinoProvidersContext'
+import { usePlatformConfig } from '../../context/PlatformConfigContext'
 import './sidebar.css'
 
 const MOBILE_BREAKPOINT = 991
@@ -9,13 +10,26 @@ const MOBILE_BREAKPOINT = 991
 const emptyProviders = { providers: [], loadingProviders: false, refetchProviders: () => { } }
 
 export default function SideBar({ isOpen, onClose }) {
+  /* eslint-disable no-unused-vars -- setSidebarOpen kept for hook; providers/toggleSubmenu/isCasino* used in JSX below */
   const { setSidebarOpen } = useSidebar()
   const casinoState = useCasinoProviders()
   const { providers = [] } = casinoState && typeof casinoState === 'object' ? casinoState : emptyProviders
+  const { config: platformConfig } = usePlatformConfig()
   const { pathname } = useLocation()
   const [searchParams] = useSearchParams()
   const [openSubmenu, setOpenSubmenu] = useState(null)
   const sidebarRef = useRef(null)
+
+  const toggleSubmenu = (menuName) => {
+    setOpenSubmenu(openSubmenu === menuName ? null : menuName)
+  }
+
+  const providerCodeParam = searchParams.get('provider') || ''
+  const isCasinoAllGames = pathname === '/casino' && !providerCodeParam
+  const isCasinoProvider = (code) => pathname === '/casino' && providerCodeParam.toLowerCase() === (code || '').toLowerCase()
+  const isSportsActive = pathname === '/sports'
+  const isCricketActive = pathname === '/cricket'
+  /* eslint-enable no-unused-vars */
 
   const closeIfMobile = () => {
     if (typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT) {
@@ -36,15 +50,6 @@ export default function SideBar({ isOpen, onClose }) {
     }
   }, [pathname])
 
-  const toggleSubmenu = (menuName) => {
-    setOpenSubmenu(openSubmenu === menuName ? null : menuName)
-  }
-
-  const providerCodeParam = searchParams.get('provider') || ''
-  const isCasinoAllGames = pathname === '/casino' && !providerCodeParam
-  const isCasinoProvider = (code) => pathname === '/casino' && providerCodeParam.toLowerCase() === (code || '').toLowerCase()
-  const isSportsActive = pathname === '/sports'
-  const isCricketActive = pathname === '/cricket'
   useEffect(() => {
     const sidebar = sidebarRef.current;
     if (!sidebar) return;
@@ -87,25 +92,31 @@ export default function SideBar({ isOpen, onClose }) {
                   <span><img src="/images/casino_icon.svg" alt="home" />Home</span>
                 </Link>
               </li> */}
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
-                <Link to="/casino" onClick={onLinkClick}>
-                  <span><i className="ri-poker-spades-fill" aria-hidden />Casino</span>
-                  <span className="sidebar_collapsed_label">Casino</span>
-                </Link>
-              </li>
+              {platformConfig.gameServiceStatus && (
+                <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
+                  <Link to="/casino" onClick={onLinkClick}>
+                    <span><i className="ri-poker-spades-fill" aria-hidden />Casino</span>
+                    <span className="sidebar_collapsed_label">Casino</span>
+                  </Link>
+                </li>
+              )}
 
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sports' ? 'active' : ''}`}>
-                <Link to="/sports" onClick={onLinkClick}>
-                  <span><img src={`${process.env.PUBLIC_URL || ''}/images/menu-icon19.svg`} alt="" className="sidebar_inplay_icon" aria-hidden />Cricket</span>
-                  <span className="sidebar_collapsed_label">Cricket</span>
-                </Link>
-              </li>
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sportsbook' ? 'active' : ''}`}>
-                <Link to="/sportsbook" onClick={onLinkClick}>
-                  <span><i className="ri-basketball-fill" aria-hidden />SportsBook</span>
-                  <span className="sidebar_collapsed_label">SportsBook</span>
-                </Link>
-              </li>
+              {platformConfig.inPlayServiceStatus && (
+                <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sports' ? 'active' : ''}`}>
+                  <Link to="/sports" onClick={onLinkClick}>
+<span><i className="ri-gamepad-fill sidebar_inplay_icon" aria-hidden />InPlay</span>
+                  <span className="sidebar_collapsed_label">InPlay</span>
+                  </Link>
+                </li>
+              )}
+              {platformConfig.sportsBookServiceStatus && (
+                <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sportsbook' ? 'active' : ''}`}>
+                  <Link to="/sportsbook" onClick={onLinkClick}>
+                    <span><i className="ri-basketball-fill" aria-hidden />SportsBook</span>
+                    <span className="sidebar_collapsed_label">SportsBook</span>
+                  </Link>
+                </li>
+              )}
               {/* <li className={`sidebar_menu_item ${openSubmenu === 'casino' ? 'active' : ''} ${pathname.startsWith('/casino') ? 'current_section' : ''}`}>
                 <a href="#!" onClick={(e) => { e.preventDefault(); toggleSubmenu('casino'); }}>
                   <i className={openSubmenu === 'casino' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
@@ -148,18 +159,22 @@ export default function SideBar({ isOpen, onClose }) {
                   <span className="sidebar_collapsed_label">Game Rules</span>
                 </Link>
               </li>
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/promotions' ? 'active' : ''}`}>
-                <Link to="/promotions" onClick={onLinkClick}>
-                  <span><i className="ri-megaphone-line" aria-hidden />Promotions</span>
-                  <span className="sidebar_collapsed_label">Promotions</span>
-                </Link>
-              </li>
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/referral' ? 'active' : ''}`}>
-                <Link to="/referral" onClick={onLinkClick}>
-                  <span><i className="ri-user-shared-line" aria-hidden />Referral</span>
-                  <span className="sidebar_collapsed_label">Refer & Earn</span>
-                </Link>
-              </li>
+              {platformConfig.bonusServiceStatus && (
+                <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/promotions' ? 'active' : ''}`}>
+                  <Link to="/promotions" onClick={onLinkClick}>
+                    <span><i className="ri-megaphone-line" aria-hidden />Promotions</span>
+                    <span className="sidebar_collapsed_label">Promotions</span>
+                  </Link>
+                </li>
+              )}
+              {platformConfig.referralServiceStatus && (
+                <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/referral' ? 'active' : ''}`}>
+                  <Link to="/referral" onClick={onLinkClick}>
+                    <span><i className="ri-user-shared-line" aria-hidden />Referral</span>
+                    <span className="sidebar_collapsed_label">Refer & Earn</span>
+                  </Link>
+                </li>
+              )}
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/transactions' ? 'active' : ''}`}>
                 <Link to="/transactions" onClick={onLinkClick}>
                   <span><i className="ri-file-list-3-line" aria-hidden />Transactions</span>
@@ -176,6 +191,12 @@ export default function SideBar({ isOpen, onClose }) {
                 <Link to="/bet-history" onClick={onLinkClick}>
                   <span><i className="ri-history-line" aria-hidden />Bet History</span>
                   <span className="sidebar_collapsed_label">Bet History</span>
+                </Link>
+              </li>
+              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-history' ? 'active' : ''}`}>
+                <Link to="/game-history" onClick={onLinkClick}>
+                  <span><i className="ri-gamepad-line" aria-hidden />Game History</span>
+                  <span className="sidebar_collapsed_label">Game History</span>
                 </Link>
               </li>
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/my-wallet' ? 'active' : ''}`}>
@@ -196,12 +217,14 @@ export default function SideBar({ isOpen, onClose }) {
                   <span className="sidebar_collapsed_label">Statement</span>
                 </Link>
               </li>
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/support' ? 'active' : ''}`}>
-                <Link to="/support" onClick={onLinkClick}>
-                  <span><i className="ri-customer-service-2-line" aria-hidden />Live Support</span>
-                  <span className="sidebar_collapsed_label">Live Support</span>
-                </Link>
-              </li>
+              {platformConfig.supportServiceStatus && (
+                <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/support' ? 'active' : ''}`}>
+                  <Link to="/support" onClick={onLinkClick}>
+                    <span><i className="ri-customer-service-2-line" aria-hidden />Live Support</span>
+                    <span className="sidebar_collapsed_label">Live Support</span>
+                  </Link>
+                </li>
+              )}
 
             </ul>
           </nav>

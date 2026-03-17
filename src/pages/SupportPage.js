@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Header from "../customComponents/Header";
 import MobileMenu from "../customComponents/MobileMenu";
 import LoaderHelper from "../customComponents/Loading/LoaderHelper";
 import AuthService from "../api/services/AuthService";
 import { alertErrorMessage, alertSuccessMessage } from "../customComponents/CustomAlertMessage";
+import { usePlatformConfig } from "../context/PlatformConfigContext";
 import "../ProfileTransactions/ProfileTransactions.css";
 import "./SupportPage.css";
 
@@ -46,6 +47,7 @@ function formatTicketDate(dateStr) {
 }
 
 const SupportPage = () => {
+  const { config: platformConfig } = usePlatformConfig();
   const messagesEndRef = useRef(null);
 
   const [subject, setSubject] = useState("");
@@ -81,6 +83,12 @@ const SupportPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    if (platformConfig.supportServiceStatus === false) {
+      alertErrorMessage("Support is temporarily unavailable. Please try again later.");
+    }
+  }, [platformConfig.supportServiceStatus]);
 
   const getIssueList = useCallback(async (page = 1, ticketIdToSelect = null) => {
     try {
@@ -347,6 +355,12 @@ const SupportPage = () => {
       <Header />
       <div className="dashboard_page">
         <div className="container-fluid">
+          {!platformConfig.supportServiceStatus && (
+            <div className="platform_service_banner platform_service_banner_disabled" role="alert">
+              Support is temporarily unavailable. Please try again later.
+            </div>
+          )}
+          {platformConfig.supportServiceStatus && (
           <div className="profile_transactions_section">
             <div className="transactions_header">
               <h1>Help / Support</h1>
@@ -582,6 +596,7 @@ const SupportPage = () => {
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
 
@@ -723,9 +738,8 @@ const SupportPage = () => {
               </div>
             </div>
           </div>
-        </div>
-      )}
-
+          </div>
+          )}
       <MobileMenu />
     </>
   );

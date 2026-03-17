@@ -84,7 +84,7 @@ function BettingProfitLoss() {
               <div className="transactions_header_right betting_pl_filters">
                 <input
                   type="text"
-                  placeholder="Search by sport (e.g. cricket, soccer)..."
+                  placeholder="Search by sport (e.g. cricket, football)..."
                   className="transactions_search_input"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}

@@ -78,16 +78,16 @@ function ProfileTransactions() {
       const effectiveType = typeParam != null ? typeParam : typeFilter
       const res = await AuthService.walletTransactions(page, PAGE_SIZE, effectiveType)
       setLoading(false)
-      if (res?.success && res?.data !== undefined) {
-        const raw = res.data
-        const list = Array.isArray(raw) ? raw : (raw?.transactions || [])
-        const pag = res.pagination ?? raw?.pagination ?? {}
+      const raw = res?.data
+      const list = Array.isArray(raw) ? raw : (raw?.transactions || [])
+      const pag = res?.pagination ?? raw?.pagination ?? {}
+      if (list.length >= 0) {
         setTransactions(list)
         setPagination({
           page: pag.page ?? page,
           limit: pag.limit ?? PAGE_SIZE,
           total: pag.total ?? pag.totalRecords ?? list.length,
-          totalPages: pag.totalPages ?? 1,
+          totalPages: Math.max(1, pag.totalPages ?? 1),
           hasMore: (pag.page ?? page) < (pag.totalPages ?? 1),
         })
       } else {
@@ -141,7 +141,8 @@ function ProfileTransactions() {
         const amount = formatAmount(t.amount, t.currency) || ''
         const status = formatStatus(t.status) || ''
         const method = formatPaymentMethod(t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod) || ''
-        return [time, id, type, amount, status, method].some((s) => String(s).toLowerCase().includes(searchLower))
+        const notes = (t.adminRemarks || t.remarks || '') + ''
+        return [time, id, type, amount, status, method, notes].some((s) => String(s).toLowerCase().includes(searchLower))
       })
       : statusFiltered
     return searchFiltered.map((t, idx) => {
@@ -150,19 +151,21 @@ function ProfileTransactions() {
         id: rowId != null ? String(rowId) : `row-${idx}`,
         time: formatTime(t.createdAt),
         transactionId: t.transactionId || t._id || t.id,
-        type: t.type === 'deposit' ? 'Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : t.type,
+        type: t.type === 'deposit' ? 'Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : (t.type || '—'),
         amount: formatAmount(t.amount, t.currency),
         approvedAmount: t.status === 'approved' || t.status === 'completed' ? formatAmount(t.amount, t.currency) : '—',
         status: formatStatus(t.status),
         statusRaw: t.status,
         notes: t.adminRemarks || t.remarks || '—',
+        balanceBefore: t.balanceBefore != null ? formatAmount(t.balanceBefore, t.currency) : '—',
+        balanceAfter: t.balanceAfter != null ? formatAmount(t.balanceAfter, t.currency) : '—',
         paymentMethod: formatPaymentMethod(
           t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod
         ),
         paymentProofUrl: t.type === 'deposit' ? getPaymentProofFullUrl(t.paymentProofUrl) : null,
       }
     })
-  }, [transactions, typeFilter, statusFilter, search])
+  }, [transactions, statusFilter, search])
 
   const effectiveTotalPages = pagination.totalPages
   const effectiveHasMore = pagination.hasMore
@@ -223,10 +226,13 @@ function ProfileTransactions() {
                       <tr>
                         <th>Transaction Time</th>
                         <th>Transaction ID</th>
-                        <th>Transaction Type</th>
+                        <th>Type</th>
                         <th>Amount</th>
-                        <th>Transaction Status</th>
+                        <th>Balance Before</th>
+                        <th>Balance After</th>
+                        <th>Status</th>
                         <th>Payment Method</th>
+                        <th>Admin / Notes</th>
                         <th>Payment Proof</th>
                       </tr>
                     </thead>
@@ -237,12 +243,15 @@ function ProfileTransactions() {
                           <td>{tx.transactionId}</td>
                           <td>{tx.type}</td>
                           <td>{tx.amount}</td>
+                          <td>{tx.balanceBefore}</td>
+                          <td>{tx.balanceAfter}</td>
                           <td>
                             <span className={`status_badge status_${(tx.statusRaw || '').toLowerCase()}`}>
                               {tx.status}
                             </span>
                           </td>
                           <td>{tx.paymentMethod}</td>
+                          <td>{tx.notes}</td>
                           <td>
                             {tx.paymentProofUrl ? (
                               <a href={tx.paymentProofUrl} target="_blank" rel="noopener noreferrer" className="transaction_payment_proof_link" aria-label="View payment proof">
@@ -283,6 +292,14 @@ function ProfileTransactions() {
                           <span className='transaction_value amount_value'>{tx.amount}</span>
                         </div>
                         <div className='transaction_card_row'>
+                          <span className='transaction_label'>Balance Before</span>
+                          <span className='transaction_value amount_value'>{tx.balanceBefore}</span>
+                        </div>
+                        <div className='transaction_card_row'>
+                          <span className='transaction_label'>Balance After</span>
+                          <span className='transaction_value amount_value'>{tx.balanceAfter}</span>
+                        </div>
+                        <div className='transaction_card_row'>
                           <span className='transaction_label'>Approved Amount</span>
                           <span className='transaction_value'>{tx.approvedAmount}</span>
                         </div>
@@ -291,7 +308,7 @@ function ProfileTransactions() {
                           <span className='transaction_value'>{tx.paymentMethod}</span>
                         </div>
                         <div className='transaction_card_row'>
-                          <span className='transaction_label'>Notes</span>
+                          <span className='transaction_label'>Admin / Notes</span>
                           <span className='transaction_value'>{tx.notes}</span>
                         </div>
                         {tx.paymentProofUrl && (

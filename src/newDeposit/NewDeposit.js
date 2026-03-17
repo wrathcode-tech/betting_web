@@ -4,6 +4,7 @@ import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
+import { usePlatformConfig } from '../context/PlatformConfigContext';
 import '../customComponents/Deposit.css';
 import './NewDeposit.css';
 
@@ -35,6 +36,7 @@ const FALLBACK_BANK_ACCOUNTS = [
 ];
 
 function NewDeposit() {
+  const { config: platformConfig } = usePlatformConfig();
   const [masterAccounts, setMasterAccounts] = useState([]);
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [step, setStep] = useState(1);
@@ -47,7 +49,14 @@ function NewDeposit() {
   const [paymentProofFile, setPaymentProofFile] = useState(null);
   const [selectedFileName, setSelectedFileName] = useState('');
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [transactionLimits, setTransactionLimits] = useState(null);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (platformConfig.depositServiceStatus === false) {
+      alertErrorMessage('Deposits are temporarily unavailable. Please try again later.');
+    }
+  }, [platformConfig.depositServiceStatus]);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -63,6 +72,14 @@ function NewDeposit() {
       }
     };
     fetchAccounts();
+  }, []);
+
+  useEffect(() => {
+    const fetchLimits = async () => {
+      const res = await AuthService.getTransactionLimits();
+      if (res?.success && res?.data) setTransactionLimits(res.data);
+    };
+    fetchLimits();
   }, []);
 
   const bankAccounts = masterAccounts.filter((a) => a.type === 'bank');
@@ -93,10 +110,17 @@ function NewDeposit() {
 
   const currentDetailId = usingFallback ? null : (selectedAccount?._id || null);
 
+  // Validation strictly as per GET /api/v1/user/transaction-limits (minDepositLimit, maxDepositLimit)
+  const limitMin = transactionLimits?.minDepositLimit != null ? Number(transactionLimits.minDepositLimit) : null;
+  const limitMax = transactionLimits?.maxDepositLimit != null ? Number(transactionLimits.maxDepositLimit) : null;
+  const accountMin = selectedAccount?.minDeposit != null ? Number(selectedAccount.minDeposit) : MIN_AMOUNT;
+  const accountMax = selectedAccount?.maxDeposit != null ? Number(selectedAccount.maxDeposit) : MAX_AMOUNT;
+  const minAllowed = limitMin != null ? limitMin : accountMin;
+  const maxAllowed = limitMax != null ? limitMax : accountMax;
+
   const handleNext = () => {
+    if (!platformConfig.depositServiceStatus) return;
     const amount = Number(amountInput?.replace(/,/g, '')) || 0;
-    const minAllowed = selectedAccount?.minDeposit != null ? Number(selectedAccount.minDeposit) : MIN_AMOUNT;
-    const maxAllowed = selectedAccount?.maxDeposit != null ? Number(selectedAccount.maxDeposit) : MAX_AMOUNT;
     if (amount < minAllowed) {
       alertErrorMessage(`Minimum deposit amount is ₹${minAllowed}`);
       return;
@@ -113,11 +137,9 @@ function NewDeposit() {
   };
 
   const handleConfirmPayment = async () => {
+    if (!platformConfig.depositServiceStatus) return;
     const amount = Number(amountInput?.replace(/,/g, '')) || 0;
     const utr = (utrInput || '').trim();
-    const minAllowed = selectedAccount?.minDeposit != null ? Number(selectedAccount.minDeposit) : MIN_AMOUNT;
-    const maxAllowed = selectedAccount?.maxDeposit != null ? Number(selectedAccount.maxDeposit) : MAX_AMOUNT;
-
     if (amount < minAllowed) {
       alertErrorMessage(`Minimum deposit amount is ₹${minAllowed}`);
       return;
@@ -162,6 +184,12 @@ function NewDeposit() {
       <Header />
       <div className="new_deposit_page">
         <div className="container">
+          {!platformConfig.depositServiceStatus ? (
+            <div className="platform_service_banner platform_service_banner_disabled" role="alert">
+              Deposits are temporarily unavailable. Please try again later.
+            </div>
+          ) : (
+            <>
           <div className="top_bar_hd">
             <h2>Deposit</h2>
             <p>
@@ -245,6 +273,12 @@ function NewDeposit() {
               {/* Amount input */}
               <div className="enter_amount_deposit">
                 <h5>Enter Amount (INR)</h5>
+                {(minAllowed !== MIN_AMOUNT || maxAllowed !== MAX_AMOUNT || (transactionLimits?.bonusPercentage != null)) && (
+                  <p className="text-white-50 small mb-2">
+                    Limit: ₹{minAllowed.toLocaleString('en-IN')} – ₹{maxAllowed.toLocaleString('en-IN')}.
+                    {transactionLimits?.bonusPercentage != null && ` Bonus: ${Number(transactionLimits.bonusPercentage)}%.`}
+                  </p>
+                )}
                 <div className="enter_filed d-flex">
                   <input
                     type="text"
@@ -284,7 +318,7 @@ function NewDeposit() {
                 <>
                   <ul>
                     <li><span>Bank name</span>{selectedAccount.bankName || '—'}</li>
-                    <li><span>Account Holder Name</span>{selectedAccount.accountHolderName || '—'}</li>
+                    <li><span>Account Holder Name</span><span className="text_uppercase">{selectedAccount.accountHolderName || '—'}</span></li>
                     <li><span>Account Number</span>{selectedAccount.accountNumber || '—'}</li>
                     <li><span>IFSC Code</span>{selectedAccount.ifscCode || '—'}</li>
                   </ul>
@@ -387,6 +421,8 @@ function NewDeposit() {
                 </button>
               </div>
             </div>
+          )}
+            </>
           )}
         </div>
       </div>

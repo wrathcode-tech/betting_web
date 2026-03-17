@@ -1,12 +1,23 @@
 /* Game History – reuses profile_transactions_section from ProfileTransactions */
 
-/* Casino / SportsBook filter – dropdown */
+/* Header row: consistent alignment and spacing */
+.game_history_page .game_history_header {
+  flex-wrap: wrap;
+}
+
+.game_history_header_right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  row-gap: 12px;
+}
+
+/* Filter group: label + control */
 .game_history_filter_wrapper {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 12px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .game_history_filter_label {
@@ -14,13 +25,15 @@
   color: rgba(255, 255, 255, 0.85);
   font-weight: 500;
   margin: 0;
+  white-space: nowrap;
 }
 
 .game_history_filter_select {
-  min-width: 160px;
-  padding: 8px 32px 8px 12px;
+  min-width: 140px;
+  height: 40px;
+  padding: 0 32px 0 12px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
   font-size: 14px;
@@ -43,6 +56,84 @@
 .game_history_filter_select option {
   background: #16202c;
   color: #fff;
+}
+
+/* Date range + Apply – one visual group */
+.game_history_date_group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.game_history_date_input {
+  width: 160px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.game_history_date_input:hover,
+.game_history_date_input:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.game_history_date_input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.game_history_apply_btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.game_history_apply_btn:hover,
+.game_history_apply_btn:focus-visible {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+  outline: none;
+}
+
+/* Search input – same height and style as other controls */
+.game_history_search_input {
+  min-width: 200px;
+  max-width: 280px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.game_history_search_input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.game_history_search_input:hover,
+.game_history_search_input:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Win = green, Loss = red */
@@ -203,6 +294,24 @@
 }
 
 @media (max-width: 768px) {
+  .game_history_header_right {
+    gap: 12px;
+  }
+
+  .game_history_date_group {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .game_history_date_input {
+    width: 140px;
+  }
+
+  .game_history_search_input {
+    min-width: 100%;
+    max-width: none;
+  }
+
   .game_history_page .transactions_table_wrapper {
     display: none;
   }

@@ -1,18 +1,20 @@
 import React, { Suspense, lazy, memo } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 import ScrollToTop from "./ScrollToTop";
 import { SidebarProvider } from "./context/SidebarContext";
 import { CasinoProvidersProvider } from "./context/CasinoProvidersContext";
 import { BalanceProvider } from "./context/BalanceContext";
 import { BetSlipProvider } from "./context/BetSlipContext";
 import { SportsbookStoreProvider } from "./context/SportsbookStore";
+import { PlatformConfigProvider } from "./context/PlatformConfigContext";
 import Layout from "./Layout";
 
 function ProtectedRoute() {
+  const location = useLocation();
   const isLoggedIn = !!(sessionStorage.getItem("token"));
-  if (!isLoggedIn) return <Navigate to="/login" replace />;
+  if (!isLoggedIn) return <Navigate to="/login" replace state={{ returnTo: location.pathname + location.search }} />;
   return <Outlet />;
-};
+}
 
 // Lazy load pages – only the current route's chunk loads (faster initial load)
 const LandingPage = lazy(() => import("./LandingPage/LandingPage"));
@@ -54,6 +56,7 @@ const Routing = memo(function Routing() {
   return (
     <Router>
       <SidebarProvider>
+        <PlatformConfigProvider>
         <CasinoProvidersProvider>
         <BalanceProvider>
         <SportsbookStoreProvider>
@@ -70,6 +73,9 @@ const Routing = memo(function Routing() {
               <Route path="/casino/category/:categoryId" element={<CasinoCategoryPage />} />
               <Route path="/sports" element={<SportsGame />} />
               <Route path="/sportsbook" element={<SportsBook />} />
+              <Route path="/cricket" element={<CricketDetail />} />
+              <Route path="/tennis" element={<CricketDetail />} />
+              <Route path="/soccer" element={<CricketDetail />} />
               <Route path="/promotions" element={<Promotions />} />
               <Route path="/game-rules" element={<GameRules />} />
               <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
@@ -92,9 +98,6 @@ const Routing = memo(function Routing() {
                 <Route path="/account-statement" element={<AccountStatement />} />
                 <Route path="/bonus-statement" element={<BonusStatement />} />
                 <Route path="/deposit-turnover" element={<DepositTurnover />} />
-                <Route path="/cricket" element={<CricketDetail />} />
-                <Route path="/tennis" element={<CricketDetail />} />
-                <Route path="/soccer" element={<CricketDetail />} />
                 <Route path="/referral" element={<ReferralProgram />} />
                 <Route path="/rank" element={<RankSystem />} />
                 <Route path="/deposit" element={<NewDeposit />} />
@@ -111,6 +114,7 @@ const Routing = memo(function Routing() {
         </SportsbookStoreProvider>
         </BalanceProvider>
         </CasinoProvidersProvider>
+        </PlatformConfigProvider>
       </SidebarProvider>
     </Router>
   );

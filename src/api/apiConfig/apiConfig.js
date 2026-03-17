@@ -67,16 +67,20 @@ export const ApiConfig = {
   bettingGamesFeatured: "featured",
   bettingGamesPopular: "popular",
   bettingGamesLanding: "landing",
+  bettingGamesHistory: "history",
   bettingGamesTransactions: "transactions",
+  bettingGamesTransactionHistory: "transaction-history",
   gamesSportsbookTransactions: "sportsbook/transactions",
   gamesSportsbookTransactionHistory: "sportsbook/transaction-history",
 
   // Sportsbook & Betting – base https://YOUR_API_HOST/api/v1/sportsbook (auth: Bearer token; socket namespace /sportsbook)
   baseBettingSportsbook: `${bettingUrl}/api/v1/sportsbook`,
 
-  // User – master deposit accounts for /deposit page
+  // User – master deposit accounts for /deposit page; platform configuration (service toggles)
   baseBettingUser: `${bettingUrl}/api/v1/user`,
   depositAccountsMaster: "deposit-accounts/master",
+  platformConfiguration: "platform-configuration",
+  transactionLimits: "transaction-limits",
 
   // Support / Tickets (Section 7)
   baseBettingSupport: `${bettingUrl}/api/v1/support`,

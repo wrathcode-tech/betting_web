@@ -25,6 +25,8 @@ export default function LoginPage() {
 
   if (isLoggedIn) return null
 
+  const returnTo = (location.state?.returnTo && String(location.state.returnTo).trim()) ? String(location.state.returnTo).trim() : '/'
+
   return (
     <div className="login_page_wrapper" style={{ minHeight: '100vh', background: '#0d131c' }}>
       <LoginModal
@@ -32,6 +34,7 @@ export default function LoginPage() {
         onHide={handleHide}
         initialTab={initialTab}
         initialReferralCode={referralFromQuery}
+        returnTo={returnTo}
       />
     </div>
   )

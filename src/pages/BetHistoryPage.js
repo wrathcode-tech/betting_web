@@ -21,7 +21,7 @@ const RESULT_OPTIONS = [
 ];
 const SPORT_OPTIONS = [
   { value: 'cricket', label: 'Cricket' },
-  { value: 'soccer', label: 'Soccer' },
+  { value: 'soccer', label: 'Football' },
   { value: 'tennis', label: 'Tennis' },
 ];
 

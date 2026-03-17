@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import AuthService from '../api/services/AuthService'
 import { ApiConfig } from '../api/apiConfig/apiConfig'
 import LoaderHelper from '../customComponents/Loading/LoaderHelper'
 import { alertErrorMessage, alertSuccessMessage } from '../customComponents/CustomAlertMessage'
 import { useBalance } from '../context/BalanceContext'
+import { usePlatformConfig } from '../context/PlatformConfigContext'
 import MobileMenu from '../customComponents/MobileMenu'
 import './ReferralProgram.css'
 
@@ -13,6 +14,7 @@ const PROFIT_PAGE_SIZE = 20
 
 function ReferralProgram() {
     const { setBalance } = useBalance()
+    const { config: platformConfig } = usePlatformConfig()
 
     const [referralCode, setReferralCode] = useState('')
     const [referralLink, setReferralLink] = useState('')
@@ -43,6 +45,7 @@ function ReferralProgram() {
     useEffect(() => {
         loadDashboard()
         loadBalance()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
@@ -51,10 +54,12 @@ function ReferralProgram() {
             loadProfit(1)
             loadRewardsLive()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab])
 
     useEffect(() => {
         if (activeTab === 'referrals') loadReferralList(1)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab])
 
     const loadDashboard = async () => {
@@ -66,8 +71,13 @@ function ReferralProgram() {
                 setDashboard(data)
                 const code = data.referralCode ?? data.referral_code ?? data.code ?? data.user_code ?? (balanceInfo?.referralCode ?? balanceInfo?.referral_code ?? '')
                 setReferralCode(String(code || ''))
-                const base = (typeof window !== 'undefined' && window.location?.origin) || ApiConfig.deployedUrl || ''
-                setReferralLink(base ? `${base.replace(/\/$/, '')}/signup?r=${encodeURIComponent(code || '')}` : '')
+                const link = data.referralLink ?? data.referral_link
+                if (link && typeof link === 'string' && link.trim()) {
+                    setReferralLink(link.trim())
+                } else {
+                    const base = (typeof window !== 'undefined' && window.location?.origin) || ApiConfig.deployedUrl || ''
+                    setReferralLink(base ? `${base.replace(/\/$/, '')}/signup?r=${encodeURIComponent(code || '')}` : '')
+                }
             }
         } catch (e) {
             alertErrorMessage('Failed to load referral dashboard.')
@@ -85,8 +95,13 @@ function ReferralProgram() {
                 if (!referralCode && (data.referralCode ?? data.referral_code ?? data.code)) {
                     const code = data.referralCode ?? data.referral_code ?? data.code ?? ''
                     setReferralCode(String(code))
-                    const base = (typeof window !== 'undefined' && window.location?.origin) || ApiConfig.deployedUrl || ''
-                    setReferralLink(base ? `${base.replace(/\/$/, '')}/signup?r=${encodeURIComponent(code)}` : '')
+                    const link = data.referralLink ?? data.referral_link
+                    if (link && typeof link === 'string' && link.trim()) {
+                        setReferralLink(link.trim())
+                    } else {
+                        const base = (typeof window !== 'undefined' && window.location?.origin) || ApiConfig.deployedUrl || ''
+                        setReferralLink(base ? `${base.replace(/\/$/, '')}/signup?r=${encodeURIComponent(code)}` : '')
+                    }
                 }
             }
         } catch {
@@ -100,12 +115,14 @@ function ReferralProgram() {
             const params = { page, limit: REFERRALS_PAGE_SIZE }
             if (referralFrom) params.from = referralFrom
             if (referralTo) params.to = referralTo
+            if (referralSearchQuery.trim()) params.search = referralSearchQuery.trim()
             const res = await AuthService.referralList(params)
             const data = res?.data ?? res
-            const list = Array.isArray(data?.referrals) ? data.referrals : Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []
+            const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.referrals) ? data.referrals : Array.isArray(data) ? data : []
             setReferralList(list)
-            const total = data?.total ?? data?.totalCount ?? list.length
-            setReferralPagination({ page, total, totalPages: Math.max(1, Math.ceil(total / REFERRALS_PAGE_SIZE)) })
+            const total = data?.total ?? data?.totalCount ?? data?.pagination?.totalRecords ?? list.length
+            const totalPages = data?.totalPages ?? data?.pagination?.totalPages ?? Math.max(1, Math.ceil(total / REFERRALS_PAGE_SIZE))
+            setReferralPagination({ page, total, totalPages })
         } catch {
             setReferralList([])
             setReferralPagination({ page: 1, total: 0, totalPages: 0 })
@@ -120,12 +137,15 @@ function ReferralProgram() {
             const params = { page, limit: REWARDS_PAGE_SIZE }
             if (rewardsFrom) params.from = rewardsFrom
             if (rewardsTo) params.to = rewardsTo
+            if (rewardSearchQuery.trim()) params.search = rewardSearchQuery.trim()
             const res = await AuthService.referralRewardsHistory(params)
             const data = res?.data ?? res
             const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.rewards) ? data.rewards : Array.isArray(data) ? data : []
             setRewardsHistory(list)
-            const total = data?.total ?? data?.totalCount ?? list.length
-            setRewardsPagination({ page, totalPages: Math.max(1, Math.ceil(total / REWARDS_PAGE_SIZE)) })
+            const pag = data?.pagination ?? data
+            const total = pag?.totalRecords ?? data?.total ?? data?.totalCount ?? list.length
+            const totalPages = pag?.totalPages ?? data?.totalPages ?? Math.max(1, Math.ceil(total / REWARDS_PAGE_SIZE))
+            setRewardsPagination({ page, total, totalPages })
         } catch {
             setRewardsHistory([])
             setRewardsPagination({ page: 1, totalPages: 0 })
@@ -137,12 +157,15 @@ function ReferralProgram() {
     const loadProfit = async (page = 1) => {
         try {
             if (page === 1) LoaderHelper.show()
-            const res = await AuthService.referralProfit({ page, limit: PROFIT_PAGE_SIZE })
+            const params = { page, limit: PROFIT_PAGE_SIZE }
+            if (profitSearchQuery.trim()) params.search = profitSearchQuery.trim()
+            const res = await AuthService.referralProfit(params)
             const data = res?.data ?? res
             const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.profit) ? data.profit : Array.isArray(data) ? data : []
             setProfitList(list)
-            const total = data?.total ?? data?.totalCount ?? list.length
-            setProfitPagination({ page, totalPages: Math.max(1, Math.ceil(total / PROFIT_PAGE_SIZE)) })
+            const total = data?.total ?? data?.totalCount ?? data?.pagination?.totalRecords ?? list.length
+            const totalPages = data?.totalPages ?? data?.pagination?.totalPages ?? Math.max(1, Math.ceil(total / PROFIT_PAGE_SIZE))
+            setProfitPagination({ page, total, totalPages })
         } catch {
             setProfitList([])
             setProfitPagination({ page: 1, totalPages: 0 })
@@ -226,6 +249,10 @@ function ReferralProgram() {
             alertErrorMessage('Please enter a referral code.')
             return
         }
+        if (code.length !== 8 || !/^[A-Za-z0-9]+$/.test(code)) {
+            alertErrorMessage('Referral code must be exactly 8 characters (letters and numbers only).')
+            return
+        }
         try {
             setIsApplying(true)
             LoaderHelper.show()
@@ -271,41 +298,14 @@ function ReferralProgram() {
     const availableBalance = balanceInfo?.available ?? balanceInfo?.availableBalance ?? dashboard?.balance?.available ?? 0
     const lockedBalance = balanceInfo?.locked ?? balanceInfo?.lockedBalance ?? dashboard?.balance?.locked ?? 0
     const totalClaimed = balanceInfo?.totalClaimed ?? balanceInfo?.total_claimed ?? 0
-    const minClaim = balanceInfo?.minClaim ?? balanceInfo?.min_claim ?? 0
+    const minClaim = balanceInfo?.minClaim ?? balanceInfo?.min_claim ?? dashboard?.minClaimAmount ?? dashboard?.min_claim_amount ?? 0
     const totalProfit = dashboard?.totalProfit ?? dashboard?.total_profit ?? 0
     const totalReferrals = dashboard?.totalReferrals ?? dashboard?.total_referrals ?? referralPagination?.total ?? (referralList?.length ?? 0)
 
-    const filteredReferralList = useMemo(() => {
-        if (!referralSearchQuery.trim()) return referralList
-        const q = referralSearchQuery.toLowerCase().trim()
-        return referralList.filter((item) => {
-            const user = item?.user ?? item
-            const name = (user?.fullName ?? user?.full_name ?? '').toLowerCase()
-            const mobile = (user?.mobile ?? user?.mobileNumber ?? '').toLowerCase()
-            const id = (item?.userId ?? user?.id ?? user?._id ?? '').toString().toLowerCase()
-            return name.includes(q) || mobile.includes(q) || id.includes(q)
-        })
-    }, [referralList, referralSearchQuery])
+    const filteredReferralList = referralList
 
-    const filteredRewardsHistory = useMemo(() => {
-        if (!rewardSearchQuery.trim()) return rewardsHistory
-        const q = rewardSearchQuery.toLowerCase().trim()
-        return rewardsHistory.filter((item) => {
-            const name = (item?.userId?.fullName ?? item?.userName ?? '').toLowerCase()
-            const id = (item?.userId ?? item?.userId?._id ?? '').toString().toLowerCase()
-            return name.includes(q) || id.includes(q)
-        })
-    }, [rewardsHistory, rewardSearchQuery])
-
-    const filteredProfitList = useMemo(() => {
-        if (!profitSearchQuery.trim()) return profitList
-        const q = profitSearchQuery.toLowerCase().trim()
-        return profitList.filter((item) => {
-            const name = (item?.userId?.fullName ?? item?.fullName ?? '').toLowerCase()
-            const id = (item?.userId ?? item?.userId?._id ?? '').toString().toLowerCase()
-            return name.includes(q) || id.includes(q)
-        })
-    }, [profitList, profitSearchQuery])
+    const filteredRewardsHistory = rewardsHistory
+    const filteredProfitList = profitList
 
     const formatDate = (val) => {
         if (!val) return '—'
@@ -321,6 +321,11 @@ function ReferralProgram() {
         <>
             <div className="dashboard_page removebgsports">
                 <div className="container-fluid">
+                    {!platformConfig.referralServiceStatus && (
+                        <div className="platform_service_banner platform_service_banner_disabled" role="alert">
+                            Referral program is temporarily unavailable. Please try again later.
+                        </div>
+                    )}
                     <div className="profile_transactions_section referral_program_section">
                         <div className="transactions_header referral_header">
                             <h1>Referral Program</h1>
@@ -438,7 +443,7 @@ function ReferralProgram() {
                                         <div className="referral_live_list">
                                             {rewardsLive.slice(0, 10).map((row, idx) => (
                                                 <div key={row?.id ?? row?._id ?? idx} className="referral_live_item">
-                                                    <span>{row?.userId?.fullName ?? row?.userName ?? '—'}</span>
+                                                    <span className="text_uppercase">{row?.userId?.fullName ?? row?.userName ?? '—'}</span>
                                                     <span>₹ {row?.amount ?? row?.commissionAmount ?? '0'}</span>
                                                     <span>{formatDate(row?.createdAt ?? row?.created_at)}</span>
                                                 </div>
@@ -450,15 +455,18 @@ function ReferralProgram() {
                                 <div className="referral_table_block">
                                     <div className="transactions_header">
                                         <h3>Recent Commission / Profit</h3>
-                                        <input
-                                            type="text"
-                                            className="transactions_search_input"
-                                            placeholder="Search..."
-                                            value={profitSearchQuery}
-                                            onChange={(e) => setProfitSearchQuery(e.target.value)}
-                                        />
+                                        <div className="referral_filters_row">
+                                            <input
+                                                type="text"
+                                                className="transactions_search_input"
+                                                placeholder="Search by name..."
+                                                value={profitSearchQuery}
+                                                onChange={(e) => setProfitSearchQuery(e.target.value)}
+                                            />
+                                            <button type="button" className="referral_btn_filter" onClick={() => loadProfit(1)}>Search</button>
+                                        </div>
                                     </div>
-                                    <div className="referral_table_wrap">
+                                    <div className={`referral_table_wrap ${filteredProfitList.length === 0 ? 'no-data' : ''}`}>
                                         <table className="referral_table">
                                             <thead>
                                                 <tr><th>#</th><th>Name</th><th>Amount</th></tr>
@@ -468,8 +476,8 @@ function ReferralProgram() {
                                                 {filteredProfitList.map((row, idx) => (
                                                     <tr key={row?.id ?? row?._id ?? idx}>
                                                         <td>{(profitPagination.page - 1) * PROFIT_PAGE_SIZE + idx + 1}</td>
-                                                        <td>{row?.userId?.fullName ?? row?.fullName ?? row?.userId ?? '—'}</td>
-                                                        <td>₹ {row?.profit ?? row?.commissionAmount ?? row?.amount ?? '0'}</td>
+                                                        <td className="text_uppercase">{row?.name ?? row?.username ?? row?.userId?.fullName ?? row?.fullName ?? '—'}</td>
+                                                        <td>₹ {row?.amount ?? row?.totalProfit ?? row?.profit ?? row?.commissionAmount ?? '0'}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -500,7 +508,7 @@ function ReferralProgram() {
                                             />
                                         </div>
                                     </div>
-                                    <div className="referral_table_wrap">
+                                    <div className={`referral_table_wrap ${filteredRewardsHistory.length === 0 ? 'no-data' : ''}`}>
                                         <table className="referral_table">
                                             <thead>
                                                 <tr><th>#</th><th>Date</th><th>User</th><th>Amount</th><th>Status</th></tr>
@@ -510,8 +518,8 @@ function ReferralProgram() {
                                                 {filteredRewardsHistory.map((row, idx) => (
                                                     <tr key={row?.id ?? row?._id ?? idx}>
                                                         <td>{(rewardsPagination.page - 1) * REWARDS_PAGE_SIZE + idx + 1}</td>
-                                                        <td>{formatDate(row?.createdAt ?? row?.created_at)}</td>
-                                                        <td>{row?.userId?.fullName ?? row?.userName ?? '—'}</td>
+                                                        <td>{formatDate(row?.date ?? row?.createdAt ?? row?.created_at)}</td>
+                                                        <td className="text_uppercase">{row?.user ?? row?.username ?? row?.userId?.fullName ?? row?.userName ?? '—'}</td>
                                                         <td>₹ {row?.amount ?? row?.bonusAmount ?? row?.commissionAmount ?? '0'}</td>
                                                         <td>{row?.status ?? '—'}</td>
                                                     </tr>
@@ -537,10 +545,6 @@ function ReferralProgram() {
                                     <div className="referral_filters_row">
                                         <input type="date" value={referralFrom} onChange={(e) => setReferralFrom(e.target.value)} className="referral_date_input" placeholder="From" />
                                         <input type="date" value={referralTo} onChange={(e) => setReferralTo(e.target.value)} className="referral_date_input" placeholder="To" />
-                                        <button type="button" className="referral_btn_filter" onClick={() => loadReferralList(1)}>Apply</button>
-                                        <button type="button" className="referral_btn_export" onClick={handleExport} disabled={isExporting}>
-                                            {isExporting ? 'Exporting...' : 'Export CSV'}
-                                        </button>
                                         <input
                                             type="text"
                                             className="transactions_search_input"
@@ -548,23 +552,34 @@ function ReferralProgram() {
                                             value={referralSearchQuery}
                                             onChange={(e) => setReferralSearchQuery(e.target.value)}
                                         />
+                                        <button type="button" className="referral_btn_filter" onClick={() => loadReferralList(1)}>Apply</button>
+                                        <button type="button" className="referral_btn_export" onClick={handleExport} disabled={isExporting}>
+                                            {isExporting ? 'Exporting...' : 'Export CSV'}
+                                        </button>
                                     </div>
                                 </div>
-                                <div className="referral_table_wrap">
+                                <div className={`referral_table_wrap ${filteredReferralList.length === 0 ? 'no-data' : ''}`}>
                                     <table className="referral_table">
                                         <thead>
-                                            <tr><th>#</th><th>Date & Time</th><th>User Name</th><th>Mobile</th></tr>
+                                            <tr><th>#</th><th>Date & Time</th><th>User Name</th><th>Mobile</th><th>Status</th><th>Total Earnings</th></tr>
                                         </thead>
                                         <tbody>
-                                            {filteredReferralList.length === 0 && <tr><td colSpan={4}>No referrals yet</td></tr>}
+                                            {filteredReferralList.length === 0 && <tr><td colSpan={6}>No referrals yet</td></tr>}
                                             {filteredReferralList.map((row, idx) => {
                                                 const user = row?.user ?? row
+                                                const dateTime = row?.dateTime ?? row?.joinedAt ?? user?.createdAt ?? user?.created_at ?? row?.createdAt
+                                                const userName = row?.userName ?? user?.fullName ?? user?.full_name ?? '—'
+                                                const mobile = row?.mobile ?? user?.mobile ?? user?.mobileNumber ?? '—'
+                                                const totalEarnings = row?.totalEarnings ?? row?.total_earnings ?? '—'
+                                                const status = row?.status ?? '—'
                                                 return (
                                                     <tr key={row?.id ?? row?._id ?? idx}>
                                                         <td>{(referralPagination.page - 1) * REFERRALS_PAGE_SIZE + idx + 1}</td>
-                                                        <td>{formatDate(user?.createdAt ?? user?.created_at ?? row?.createdAt)}</td>
-                                                        <td>{user?.fullName ?? user?.full_name ?? '—'}</td>
-                                                        <td>{user?.mobile ?? user?.mobileNumber ?? '—'}</td>
+                                                        <td>{formatDate(dateTime)}</td>
+                                                        <td className="text_uppercase">{userName}</td>
+                                                        <td>{mobile}</td>
+                                                        <td>{status}</td>
+                                                        <td>{typeof totalEarnings === 'number' ? `₹ ${Number(totalEarnings).toFixed(2)}` : totalEarnings}</td>
                                                     </tr>
                                                 )
                                             })}

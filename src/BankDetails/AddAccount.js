@@ -15,7 +15,7 @@ function maskAccountNumber(num) {
 
 function AddAccount() {
   const [accounts, setAccounts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [showBankForm, setShowBankForm] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
@@ -184,7 +184,7 @@ function AddAccount() {
                     </button>
                     <div className="account_card_content">
                       <p className="account_card_bank">{acc.bankName}</p>
-                      <p className="account_card_holder">{acc.accountHolderName}</p>
+                      <p className="account_card_holder text_uppercase">{acc.accountHolderName}</p>
                       <p className="account_card_number">{maskAccountNumber(acc.accountNumber)}</p>
                       <p className="account_card_ifsc">IFSC: {acc.ifscCode}</p>
                       {acc.isDefaultForWithdrawal && (

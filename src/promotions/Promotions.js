@@ -1,13 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './promotions.css'
 import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
+import { usePlatformConfig } from '../context/PlatformConfigContext'
+import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 
 function Promotions() {
+  const { config: platformConfig } = usePlatformConfig();
+
+  useEffect(() => {
+    if (platformConfig.bonusServiceStatus === false) {
+      alertErrorMessage('Promotions / Bonus is temporarily unavailable. Please try again later.');
+    }
+  }, [platformConfig.bonusServiceStatus]);
+
   return (
     <>
     <Header />
     <div className="new_deposit_page">
+        {!platformConfig.bonusServiceStatus && (
+          <div className="platform_service_banner platform_service_banner_disabled" role="alert">
+            Promotions / Bonus is temporarily unavailable. Please try again later.
+          </div>
+        )}
+        {platformConfig.bonusServiceStatus && (
+        <>
         <div className='promotions_top_hd'>
             <h1>Promotions</h1>
             <p>All promotions will be shown here.</p>
@@ -87,7 +104,8 @@ function Promotions() {
 
         </div>
 
-
+        </>
+        )}
     </div>
     <MobileMenu />
     </>

@@ -11,7 +11,7 @@ import '../ProfileTransactions/ProfileTransactions.css';
 const LIMIT = 20;
 const SPORT_OPTIONS = [
   { value: 'cricket', label: 'Cricket' },
-  { value: 'soccer', label: 'Soccer' },
+  { value: 'soccer', label: 'Football' },
   { value: 'tennis', label: 'Tennis' },
 ];
 

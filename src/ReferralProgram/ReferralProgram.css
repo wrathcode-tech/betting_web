@@ -1,3 +1,18 @@
+/* Platform service disabled banner (matches NewDeposit.css) */
+.platform_service_banner {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.platform_service_banner_disabled {
+    background-color: rgba(220, 53, 69, 0.2);
+    border: 1px solid rgba(220, 53, 69, 0.5);
+    color: #f8d7da;
+}
+
 .referral_program_section {
     padding: 20px 0;
     color: #fff;
@@ -2009,6 +2024,45 @@ html {
     overflow-x: auto;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    min-height: 350px;
+}
+
+/* Only when no data: center "No data" text in the middle of the wrap */
+.referral_table_wrap.no-data {
+    display: flex;
+    flex-direction: column;
+}
+
+.referral_table_wrap.no-data .referral_table {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.referral_table_wrap.no-data .referral_table thead {
+    flex-shrink: 0;
+}
+
+.referral_table_wrap.no-data .referral_table tbody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.referral_table_wrap.no-data .referral_table tbody tr {
+    flex: 1;
+    display: flex;
+    width: 100%;
+}
+
+.referral_table_wrap.no-data .referral_table tbody tr td {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .referral_table {

@@ -116,7 +116,7 @@ export default function BetHistory() {
                 >
                   <option value="">All Sports</option>
                   <option value="cricket">Cricket</option>
-                  <option value="soccer">Soccer</option>
+                  <option value="soccer">Football</option>
                   <option value="tennis">Tennis</option>
                 </select>
                 <select

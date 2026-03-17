@@ -1,3 +1,18 @@
+/* Platform service disabled banner (deposit / withdrawal / referral pages) */
+.platform_service_banner {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.platform_service_banner_disabled {
+  background-color: rgba(220, 53, 69, 0.2);
+  border: 1px solid rgba(220, 53, 69, 0.5);
+  color: #f8d7da;
+}
+
 .new_deposit_page {
   width: 100%;
   display: block;

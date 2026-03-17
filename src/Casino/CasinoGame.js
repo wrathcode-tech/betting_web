@@ -4,9 +4,12 @@ import './casino.css'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
 import { useCasinoProviders } from '../context/CasinoProvidersContext'
+import { usePlatformConfig } from '../context/PlatformConfigContext'
+import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 
 function CasinoGame() {
     const navigate = useNavigate();
+    const { config: platformConfig } = usePlatformConfig();
     const [searchParams, setSearchParams] = useSearchParams();
     const { providers } = useCasinoProviders();
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -60,6 +63,12 @@ function CasinoGame() {
         const sel = providers.find((p) => p.code === selectedProviderCode);
         return sel ? [lobby, ...(sel.categories || [])] : [lobby];
     }, [providers, selectedProviderCode]);
+
+    useEffect(() => {
+        if (platformConfig.gameServiceStatus === false) {
+            alertErrorMessage('Casino is temporarily unavailable. Please try again later.');
+        }
+    }, [platformConfig.gameServiceStatus]);
 
     useEffect(() => {
         if (categoryParam == null || categoryParam === '' || categoryParam === 'lobby') {
@@ -236,6 +245,13 @@ function CasinoGame() {
             <div className='dashboard_page'>
                 <div className='casino_outer'>
                     <div className='container-fluid'>
+                        {!platformConfig.gameServiceStatus && (
+                            <div className="platform_service_banner platform_service_banner_disabled" role="alert">
+                                Casino is temporarily unavailable. Please try again later.
+                            </div>
+                        )}
+                        {platformConfig.gameServiceStatus && (
+                        <>
                         <div className='casino_hero_section'>
                             <div className='casinobnr_gallery_wrapper'>
                                 <button type="button" className={`casinobnr_arrow casinobnr_arrow_prev ${!canGoPrev ? 'casinobnr_arrow_disabled' : ''}`} onClick={handleBannerPrev} disabled={!canGoPrev} aria-label="Previous slide">
@@ -466,6 +482,8 @@ function CasinoGame() {
                                 </div>
                             </div>
                         </div>
+                        </>
+                        )}
                     </div>
                 </div>
             </div>

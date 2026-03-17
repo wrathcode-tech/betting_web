@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 
 const LoginModal = lazy(() => import('./LoginModal'))
@@ -9,8 +9,10 @@ const Withdrawal = lazy(() => import('./Withdrawal'))
 const Search = lazy(() => import('./Search'))
 
 export default function AuthHeader() {
+  const location = useLocation()
   const [showModal, setShowModal] = useState(false);
   const [modalTab, setModalTab] = useState('login');
+  const returnTo = location.pathname + location.search;
   const { sidebarOpen, setSidebarOpen } = useSidebar();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
@@ -85,7 +87,7 @@ export default function AuthHeader() {
         </div>
       </header>
 
-      {showModal && <Suspense fallback={null}><LoginModal show={showModal} onHide={() => setShowModal(false)} initialTab={modalTab} /></Suspense>}
+      {showModal && <Suspense fallback={null}><LoginModal show={showModal} onHide={() => setShowModal(false)} initialTab={modalTab} returnTo={returnTo} /></Suspense>}
       {isChatOpen && <Suspense fallback={null}><Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} /></Suspense>}
       {isDepositOpen && <Suspense fallback={null}><Deposit isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} /></Suspense>}
       {isWithdrawalOpen && <Suspense fallback={null}><Withdrawal isOpen={isWithdrawalOpen} onClose={() => setIsWithdrawalOpen(false)} /></Suspense>}

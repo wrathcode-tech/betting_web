@@ -2,16 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthService from '../api/services/AuthService';
 import { useBalance } from '../context/BalanceContext';
+import { usePlatformConfig } from '../context/PlatformConfigContext';
+import { alertErrorMessage } from '../customComponents/CustomAlertMessage';
 import MobileMenu from '../customComponents/MobileMenu';
 import '../GamePlay/GamePlay.css';
 
 function SportsBook() {
   const navigate = useNavigate();
   const { setBalance } = useBalance();
+  const { config: platformConfig } = usePlatformConfig();
   const [launchURL, setLaunchURL] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const calledRef = useRef(false);
+
+  useEffect(() => {
+    if (platformConfig.sportsBookServiceStatus === false) {
+      alertErrorMessage('SportsBook is temporarily unavailable. Please try again later.');
+    }
+  }, [platformConfig.sportsBookServiceStatus]);
 
   useEffect(() => {
     const token = sessionStorage.getItem('token');
@@ -54,6 +63,21 @@ function SportsBook() {
                   Back to Home
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+        <MobileMenu />
+      </>
+    );
+  }
+
+  if (!platformConfig.sportsBookServiceStatus) {
+    return (
+      <>
+        <div className="container-fluid">
+          <div className="dashboard_page">
+            <div className="platform_service_banner platform_service_banner_disabled" role="alert">
+              SportsBook is temporarily unavailable. Please try again later.
             </div>
           </div>
         </div>

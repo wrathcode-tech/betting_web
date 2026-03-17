@@ -4,8 +4,9 @@ import AuthService from '../api/services/AuthService'
 import { alertErrorMessage, alertSuccessMessage } from './CustomAlertMessage'
 import './LoginModal.css'
 
-export default function LoginModal({ show, onHide, initialTab = 'login', initialReferralCode = '' }) {
+export default function LoginModal({ show, onHide, initialTab = 'login', initialReferralCode = '', returnTo = '' }) {
   const navigate = useNavigate()
+  const redirectTo = (returnTo && returnTo.trim()) ? returnTo.trim() : '/'
   const [activeTab, setActiveTab] = useState(initialTab)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -151,7 +152,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
           window.dispatchEvent(new CustomEvent('loginStateChange'))
           alertSuccessMessage(result?.message || 'Registration successful!')
           onHide()
-          navigate('/casino', { replace: true })
+          navigate(redirectTo, { replace: true })
         } else {
           alertSuccessMessage(result?.message || 'Registration successful! Please login.')
           setActiveTab('login')
@@ -191,7 +192,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
           window.dispatchEvent(new CustomEvent('loginStateChange'))
           alertSuccessMessage('Login successful!')
           onHide()
-          navigate('/casino', { replace: true })
+          navigate(redirectTo, { replace: true })
         } else {
           alertErrorMessage('Login failed: No token received')
         }

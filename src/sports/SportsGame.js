@@ -4,6 +4,8 @@ import { toast } from 'react-toastify'
 import './sportsGame.css'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
+import { usePlatformConfig } from '../context/PlatformConfigContext'
+import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import {
     connectSportsbookSocket,
     subscribeMatches,
@@ -21,7 +23,7 @@ const GALLERY_SLIDES_MOBILE = ['images/sports_bnr_mobile2.jpg', 'images/sports_b
 const TABS = [
     { id: 'cricket', label: 'Cricket', icon: 'images/menu-icon19.svg' },
     { id: 'tennis', label: 'Tennis', icon: 'images/menu-icon20.svg' },
-    { id: 'soccer', label: 'Soccer', icon: 'ri-football-line' },
+    { id: 'soccer', label: 'Football', icon: 'ri-football-line' },
 ]
 
 const NO_MATCHES_MSG = () => 'No matches available'
@@ -76,6 +78,7 @@ const MARKET_ICONS = ['MC', 'BM', 'P', 'D', 'F']
 
 function SportsGame() {
     const navigate = useNavigate()
+    const { config: platformConfig } = usePlatformConfig()
     const [activeTab, setActiveTab] = useState('cricket')
     const [currentSlide, setCurrentSlide] = useState(0)
     const [arrowsVisible, setArrowsVisible] = useState(false)
@@ -291,7 +294,7 @@ function SportsGame() {
         return list.sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
     }, [tennisMatches, mapToDisplayMatch])
     const soccerDisplayMatches = useMemo(() => {
-        const list = (soccerMatches || []).map((m) => mapToDisplayMatch(m, 'Soccer', 'images/menu-icon19.svg'))
+        const list = (soccerMatches || []).map((m) => mapToDisplayMatch(m, 'Football', 'images/menu-icon19.svg'))
         return list.sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
     }, [soccerMatches, mapToDisplayMatch])
 
@@ -358,6 +361,12 @@ function SportsGame() {
         if (touchHideTimerRef.current) clearTimeout(touchHideTimerRef.current)
     }, [])
 
+    useEffect(() => {
+        if (platformConfig.sportsBookServiceStatus === false || platformConfig.inPlayServiceStatus === false) {
+            alertErrorMessage('Sports / In-Play is temporarily unavailable. Please try again later.')
+        }
+    }, [platformConfig.sportsBookServiceStatus, platformConfig.inPlayServiceStatus])
+
     const handleSliderEnter = () => setArrowsVisible(true)
     const handleSliderLeave = () => setArrowsVisible(false)
     const handleSliderTouchStart = () => {
@@ -381,6 +390,7 @@ function SportsGame() {
             eventId: match.eventId,
             eventName: match.teams,
             sportName,
+            seriesName: match.tournament ?? match.seriesName ?? match.series_name,
             tv_url: match.tv_url ?? match.tvUrl,
             IsTv: match.IsTv ?? match.isTv,
         } : undefined
@@ -496,6 +506,13 @@ function SportsGame() {
         <>
             <div className='dashboard_page'>
                 <div className='container-fluid'>
+                    {(!platformConfig.sportsBookServiceStatus || !platformConfig.inPlayServiceStatus) && (
+                        <div className="platform_service_banner platform_service_banner_disabled" role="alert">
+                            Sports / In-Play is temporarily unavailable. Please try again later.
+                        </div>
+                    )}
+                    {(platformConfig.sportsBookServiceStatus && platformConfig.inPlayServiceStatus) && (
+                    <>
                     <div className='sports_hero_section'>
                         <div
                             className={`sports_bnr_gallery_wrapper ${arrowsVisible ? 'sports_bnr_arrows_visible' : ''}`}
@@ -575,7 +592,7 @@ function SportsGame() {
                                         <div className='sports_grid_header'>
                                             <div className='sports_grid_title'>
                                                 <img src={activeTab === 'tennis' ? 'images/menu-icon20.svg' : activeTab === 'soccer' ? 'images/menu-icon19.svg' : 'images/menu-icon19.svg'} alt='' className='sports_grid_icon' />
-                                                <h2 className='sports_grid_heading'>{activeTab === 'cricket' ? 'Cricket' : activeTab === 'tennis' ? 'Tennis' : 'Soccer'}</h2>
+                                                <h2 className='sports_grid_heading'>{activeTab === 'cricket' ? 'Cricket' : activeTab === 'tennis' ? 'Tennis' : 'Football'}</h2>
                                             </div>
                                             <div className='sports_grid_filters'>
                                                 <button type='button' className={`sports_filter_btn ${sportsFilter === 'all' ? 'active' : ''}`} onClick={() => setSportsFilter('all')}>All</button>
@@ -802,6 +819,8 @@ function SportsGame() {
                         </div>
 
                     </div>
+                    </>
+                    )}
                 </div>
             </div>
             <MobileMenu />

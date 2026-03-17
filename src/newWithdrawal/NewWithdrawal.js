@@ -4,6 +4,7 @@ import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
 import { useBalance } from '../context/BalanceContext';
+import { usePlatformConfig } from '../context/PlatformConfigContext';
 import '../newDeposit/NewDeposit.css';
 import '../BankDetails/AddAccount.css';
 import './NewWithdrawal.css';
@@ -13,8 +14,12 @@ function maskAccountNumber(num) {
   return '****' + num.slice(-4);
 }
 
+const DEFAULT_MIN_WITHDRAWAL = 500;
+const DEFAULT_MAX_WITHDRAWAL = 50000;
+
 function NewWithdrawal() {
   const navigate = useNavigate();
+  const { config: platformConfig } = usePlatformConfig();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("");
@@ -23,6 +28,7 @@ function NewWithdrawal() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [transactionLimits, setTransactionLimits] = useState(null);
   const { balance } = useBalance();
 
   const fetchAccounts = async () => {
@@ -40,7 +46,21 @@ function NewWithdrawal() {
   };
 
   useEffect(() => {
+    if (platformConfig.withdrawalServiceStatus === false) {
+      alertErrorMessage('Withdrawals are temporarily unavailable. Please try again later.');
+    }
+  }, [platformConfig.withdrawalServiceStatus]);
+
+  useEffect(() => {
     fetchAccounts();
+  }, []);
+
+  useEffect(() => {
+    const fetchLimits = async () => {
+      const res = await AuthService.getTransactionLimits();
+      if (res?.success && res?.data) setTransactionLimits(res.data);
+    };
+    fetchLimits();
   }, []);
 
   const selectAccount = async (accountId) => {
@@ -54,6 +74,10 @@ function NewWithdrawal() {
 
   const defaultAccount = accounts.find((a) => a.isDefaultForWithdrawal) || accounts[0];
 
+  // Validation as per GET /api/v1/user/transaction-limits (minWithdrawalLimit, maxWithdrawalLimit); fallback when API not loaded
+  const minWithdrawal = transactionLimits?.minWithdrawalLimit != null ? Number(transactionLimits.minWithdrawalLimit) : DEFAULT_MIN_WITHDRAWAL;
+  const maxWithdrawal = transactionLimits?.maxWithdrawalLimit != null ? Number(transactionLimits.maxWithdrawalLimit) : DEFAULT_MAX_WITHDRAWAL;
+
   const validateAmountAndAccount = () => {
     if (!defaultAccount) {
       alertErrorMessage('Please select a bank account for withdrawal.');
@@ -64,10 +88,21 @@ function NewWithdrawal() {
       alertErrorMessage('Enter a valid amount greater than 0.');
       return null;
     }
+    if (minWithdrawal != null && numAmount < minWithdrawal) {
+      alertErrorMessage(`Minimum withdrawal amount is ₹${minWithdrawal}`);
+      return null;
+    }
+    if (maxWithdrawal != null && numAmount > maxWithdrawal) {
+      alertErrorMessage(`Maximum withdrawal amount is ₹${maxWithdrawal.toLocaleString('en-IN')}`);
+      return null;
+    }
     return numAmount;
   };
 
   const handleSendOtp = async () => {
+    if (!platformConfig.withdrawalServiceStatus) return;
+    const numAmount = validateAmountAndAccount();
+    if (numAmount == null) return;
     setOtpLoading(true);
     const res = await AuthService.walletRequestWithdrawalOtp();
     setOtpLoading(false);
@@ -82,6 +117,7 @@ function NewWithdrawal() {
 
   const handleWithdrawalSubmit = async (e) => {
     e.preventDefault();
+    if (!platformConfig.withdrawalServiceStatus) return;
     const numAmount = validateAmountAndAccount();
     if (numAmount == null) return;
     if (!otpSent) {
@@ -119,6 +155,12 @@ function NewWithdrawal() {
     <>
       <div className="new_withdrawal_page new_deposit_page">
         <div className="container">
+          {!platformConfig.withdrawalServiceStatus ? (
+            <div className="platform_service_banner platform_service_banner_disabled" role="alert">
+              Withdrawals are temporarily unavailable. Please try again later.
+            </div>
+          ) : (
+            <>
           <div className="top_bar_hd">
             <h2>Withdrawal</h2>
             <p>Following payment withdrawal information:: <span>Cashable Amount : {balance != null ? Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span></p>
@@ -162,7 +204,7 @@ function NewWithdrawal() {
                   >
                     <div className="account_card_content">
                       <p className="account_card_bank">{acc.bankName}</p>
-                      <p className="account_card_holder">{acc.accountHolderName}</p>
+                      <p className="account_card_holder text_uppercase">{acc.accountHolderName}</p>
                       <p className="account_card_number">{maskAccountNumber(acc.accountNumber)}</p>
                       <p className="account_card_ifsc">IFSC: {acc.ifscCode}</p>
                       {acc.isDefaultForWithdrawal && (
@@ -178,6 +220,13 @@ function NewWithdrawal() {
           {!loading && accounts.length > 0 && (
             <form className="withdrawal_from_dl" onSubmit={handleWithdrawalSubmit}>
               <h5>Enter Details</h5>
+              {(minWithdrawal != null || maxWithdrawal != null || (transactionLimits?.minWagerForWithdrawal != null)) && (
+                <p className="text-white-50 small mb-2">
+                  {minWithdrawal != null && `Min withdrawal: ₹${minWithdrawal.toLocaleString('en-IN')}. `}
+                  {maxWithdrawal != null && `Max: ₹${maxWithdrawal.toLocaleString('en-IN')}. `}
+                  {transactionLimits?.minWagerForWithdrawal != null && `Min wager required: ₹${Number(transactionLimits.minWagerForWithdrawal).toLocaleString('en-IN')}.`}
+                </p>
+              )}
               <div className="enter_amount_deposit">
                 <label>Amount to withdraw</label>
                 <div className="enter_filed d-flex">
@@ -230,6 +279,8 @@ function NewWithdrawal() {
                 </button>
               </div>
             </form>
+          )}
+            </>
           )}
         </div>
       </div>

@@ -15,6 +15,7 @@ import {
     removeOddsListener,
 } from '../socket/sportsbookSocket'
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage'
+import { usePlatformConfig } from '../context/PlatformConfigContext'
 import LossCutIndicator from '../customComponents/LossCutIndicator'
 import { BackPriceCell, LayPriceCell } from './OddsMarketComponents'
 
@@ -22,6 +23,7 @@ const CASHOUT_COMMISSION = 0.05 // 5% of total bet (stake)
 
 function CricketDetail() {
     const location = useLocation()
+    const { config: platformConfig } = usePlatformConfig()
     const scrollContainerRef = useRef(null)
     const betslipContentRef = useRef(null)
     const marketsSectionRef = useRef(null)
@@ -111,6 +113,7 @@ function CricketDetail() {
     const [defaultMatch, setDefaultMatch] = useState(null)
     const gameIdFromState = location.state?.gameId
     const eventNameFromState = location.state?.eventName ?? defaultMatch?.eventName
+    const seriesOrTournamentName = location.state?.seriesName ?? location.state?.tournamentName ?? location.state?.series_name ?? defaultMatch?.seriesName ?? defaultMatch?.series_name ?? defaultMatch?.tournamentName ?? defaultMatch?.tournament ?? ''
     const sportFromPath = location.pathname?.includes('/tennis') ? 'tennis' : location.pathname?.includes('/soccer') ? 'soccer' : null
     const sportName = location.state?.sportName || sportFromPath || 'cricket'
     const cricketOnlyTabs = ['sessions', 'wp-market', 'extra-market', 'odd-even']
@@ -128,6 +131,30 @@ function CricketDetail() {
     const [oddsData, setOddsData] = useState(null)
     const [oddsLoading, setOddsLoading] = useState(false)
     const [liveScore, setLiveScore] = useState(null)
+    const [streamUrl, setStreamUrl] = useState(null)
+
+    // Guest (no token): fetch matches via REST and set first match so odds load without login
+    useEffect(() => {
+        if (gameIdFromState) return
+        const token = sessionStorage.getItem('token')
+        if (token) return
+        let cancelled = false
+        AuthService.sportsbookMatches(sportName)
+            .then((res) => {
+                if (cancelled) return
+                const raw = res?.data ?? res
+                const list = Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : raw?.matches ?? []
+                const first = list.find((m) => m.gameId || m.game_id)
+                if (first) setDefaultMatch({
+                    gameId: first.gameId ?? first.game_id,
+                    eventName: first.eventName ?? first.event_name,
+                    eventId: first.eventId ?? first.event_id,
+                    seriesName: first.seriesName ?? first.series_name ?? first.tournamentName ?? first.tournament ?? first.competitionName ?? null,
+                })
+            })
+            .catch(() => {})
+        return () => { cancelled = true }
+    }, [gameIdFromState, sportName])
 
     // Socket (doc): subscribe:matches { sport } when need default match; on('matches') { sport, data, timestamp }. Leave → unsubscribe:matches.
     useEffect(() => {
@@ -143,6 +170,7 @@ function CricketDetail() {
                 gameId: first.gameId ?? first.game_id,
                 eventName: first.eventName ?? first.event_name,
                 eventId: first.eventId ?? first.event_id,
+                seriesName: first.seriesName ?? first.series_name ?? first.tournamentName ?? first.tournament ?? first.competitionName ?? null,
             })
         }
         addMatchesListener(onMatches)
@@ -172,8 +200,23 @@ function CricketDetail() {
         }
     }
 
-    // 1) Pehle odds REST API chalao – initial data. Tennis uses eventId in payload.
+    // 0) On match open: fetch event config for initial tvUrl (REST). Clear stream when match changes.
     const oddsId = sportName === 'tennis' ? (eventId || gameId) : gameId
+    useEffect(() => {
+        if (!oddsId) return
+        setStreamUrl(null)
+        let cancelled = false
+        AuthService.sportsbookEventConfig(oddsId)
+            .then((res) => {
+                if (cancelled) return
+                const url = res?.tvUrl ?? res?.response?.tvUrl ?? res?.response?.tv_url ?? null
+                if (url) setStreamUrl(url)
+            })
+            .catch(() => {})
+        return () => { cancelled = true }
+    }, [oddsId])
+
+    // 1) Pehle odds REST API chalao – initial data. Tennis uses eventId in payload. Merge data.tvUrl into streamUrl.
     useEffect(() => {
         if (!oddsId) return
         let cancelled = false
@@ -183,7 +226,11 @@ function CricketDetail() {
                 if (cancelled || !res) return
                 const raw = res.data ?? res
                 const d = raw?.data ?? raw
-                if (d && typeof d === 'object') setOddsData(normalizeOdds(d))
+                if (d && typeof d === 'object') {
+                    setOddsData(normalizeOdds(d))
+                    const tvUrl = d?.tvUrl ?? d?.tv_url ?? null
+                    if (tvUrl) setStreamUrl(tvUrl)
+                }
             })
             .catch(() => {
                 if (!cancelled) {
@@ -195,7 +242,7 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [oddsId, sportName])
 
-    // 2) Phir socket – live updates (token ho to). Tennis uses eventId in payload.
+    // 2) Phir socket – live updates (token ho to). Tennis uses eventId in payload. Update odds, liveScore, streamUrl (tvUrl may appear later).
     useEffect(() => {
         if (!oddsId) return
         const token = sessionStorage.getItem('token')
@@ -205,9 +252,12 @@ function CricketDetail() {
         const onOdds = (payload) => {
             const payloadKey = payload?.eventId ?? payload?.gameId
             if (payloadKey !== currentOddsKey || payload?.data === undefined) return
-            setOddsData(normalizeOdds(payload.data))
+            const data = payload.data
+            setOddsData(normalizeOdds(data))
             setOddsLoading(false)
-            setLiveScore(payload.data.liveScore ?? null)
+            setLiveScore(data?.liveScore ?? null)
+            const tvUrl = data?.tvUrl ?? data?.tv_url ?? null
+            if (tvUrl != null) setStreamUrl(tvUrl)
         }
         addOddsListener(onOdds)
         subscribeOdds(oddsId, sportName)
@@ -237,13 +287,34 @@ function CricketDetail() {
         return () => { cancelled = true; clearInterval(t) }
     }, [eventId, gameId])
 
-    // Fetch open bets when gameId available so header Cashout button shows API value (same as popup)
+    // Fetch open bets on page load so (OPEN BETS) count and cashout list show as soon as user lands on page
+    useEffect(() => {
+        let cancelled = false
+        setOpenBetsLoading(true)
+        AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
+            .then((res) => {
+                if (cancelled) return
+                const data = res?.data ?? res
+                const list = data?.bets ?? (Array.isArray(data) ? data : []) ?? []
+                setOpenBetsList(Array.isArray(list) ? list : [])
+            })
+            .catch(() => {
+                if (!cancelled) setOpenBetsList([])
+            })
+            .finally(() => {
+                if (!cancelled) setOpenBetsLoading(false)
+            })
+        return () => { cancelled = true }
+    }, [])
+
+    // Refresh open bets when gameId changes (e.g. navigated to another match)
     useEffect(() => {
         if (!gameId) return
         AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
             .then((res) => {
                 const data = res?.data ?? res
-                setOpenBetsList(data?.bets ?? [])
+                const list = data?.bets ?? (Array.isArray(data) ? data : []) ?? []
+                setOpenBetsList(Array.isArray(list) ? list : [])
             })
             .catch(() => { })
     }, [gameId])
@@ -260,24 +331,30 @@ function CricketDetail() {
         })
     }
 
+    const isSameSelectionBet = (existing, name, mkt, payload) => {
+        if (existing.placePayload && payload) {
+            return existing.placePayload.marketId === payload.marketId &&
+                existing.placePayload.selectionId === payload.selectionId &&
+                (existing.placePayload.betType || 'back') === (payload.betType || 'back')
+        }
+        return existing.market === mkt && existing.betName === name
+    }
+
     const handleBetClick = (betName, market, odds, elementId, placePayload = null) => {
         const betId = `${market}-${betName}-${odds}-${elementId || ''}`
         const uniqueId = elementId || betId
         const oddsNum = parseFloat(odds)
         const isMobileViewport = typeof window !== 'undefined' && window.innerWidth <= 1024
 
-        const existingBet = selectedBets.find((bet) => bet.elementId === uniqueId)
-        if (existingBet) {
-            // Same selection again → update odds to current price, do not remove bet
-            const updatedOdds = Number.isNaN(oddsNum) ? existingBet.odds : oddsNum
-            const updatedOddsDisplay = (oddsNum && !Number.isNaN(oddsNum)) ? String(oddsNum) : (existingBet.oddsDisplay ?? String(existingBet.odds))
-            setSelectedBets((prev) =>
-                prev.map((b) =>
-                    b.elementId === uniqueId
-                        ? { ...b, odds: updatedOdds, oddsDisplay: updatedOddsDisplay }
-                        : b
-                )
-            )
+        const existingByElement = selectedBets.find((bet) => bet.elementId === uniqueId)
+        const existingSameSelection = selectedBets.find((b) => isSameSelectionBet(b, betName, market, placePayload))
+
+        if (existingByElement || existingSameSelection) {
+            const existing = existingByElement || existingSameSelection
+            const updatedOdds = Number.isNaN(oddsNum) ? existing.odds : oddsNum
+            const updatedOddsDisplay = (oddsNum && !Number.isNaN(oddsNum)) ? String(oddsNum) : (existing.oddsDisplay ?? String(existing.odds))
+            const updatedBet = { ...existing, odds: updatedOdds, oddsDisplay: updatedOddsDisplay, elementId: uniqueId }
+            setSelectedBets([updatedBet])
             setSlipOdds(Number.isNaN(oddsNum) ? slipOdds : oddsNum)
             if (isMobileViewport) setIsMobileBetslipOpen(true)
             setIsBetslipOpen(true)
@@ -294,8 +371,9 @@ function CricketDetail() {
             placePayload: placePayload || undefined,
         }
 
+        // Ek baar mein sirf ek hi bet: naya selection = purani bet replace
         setSelectedBets([newBet])
-        setSlipOdds(Number.isNaN(oddsNum) ? null : oddsNum)
+        setSlipOdds(Number.isNaN(oddsNum) ? slipOdds : oddsNum)
 
         if (isMobileViewport) {
             setIsMobileBetslipOpen(true)
@@ -327,8 +405,23 @@ function CricketDetail() {
 
     const [placeBetLoading, setPlaceBetLoading] = useState(false)
     const [placeBetError, setPlaceBetError] = useState(null)
+    const [placeBetSuccessMessage, setPlaceBetSuccessMessage] = useState(null)
+
+    useEffect(() => {
+        if (!placeBetSuccessMessage) return
+        const t = setTimeout(() => setPlaceBetSuccessMessage(null), 4000)
+        return () => clearTimeout(t)
+    }, [placeBetSuccessMessage])
+
+    useEffect(() => {
+        if (selectedBets.length > 0) setPlaceBetSuccessMessage(null)
+    }, [selectedBets.length])
 
     const handlePlaceBet = async () => {
+        if (!sessionStorage.getItem('token')) {
+            window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'login' }))
+            return
+        }
         const toPlace = selectedBets.filter((b) => b.placePayload)
         if (toPlace.length === 0) {
             const msg = 'Only bets from live odds can be placed. Add a selection from Match Odds above.'
@@ -380,10 +473,9 @@ function CricketDetail() {
             }
             setSelectedBets([])
             setStake(100)
-            setBetslipView('openbets')
             const successMsg = lastRes?.data?.message ?? lastRes?.message
-            if (successMsg) alertSuccessMessage(successMsg)
-            // Refetch open bets and show Back/Lay layout
+            setPlaceBetSuccessMessage(successMsg || 'Bet placed successfully.')
+            // Refetch open bets in background (count and list stay updated)
             AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
                 .then((res) => {
                     const data = res?.data ?? res
@@ -414,8 +506,11 @@ function CricketDetail() {
     const currentLossAmount = Number(betslipCurrentLoss) || 0
     const lossLimitReached = lossLimitAmount != null && lossLimitAmount > 0 && currentLossAmount >= lossLimitAmount
 
+    const cashoutInProgressRef = useRef(false)
     const handleCashoutBetslip = async (betId) => {
         if (!betId) return
+        if (cashoutInProgressRef.current) return
+        cashoutInProgressRef.current = true
         setCashoutId(betId)
         try {
             const res = await AuthService.sportsbookCashout(betId)
@@ -433,6 +528,7 @@ function CricketDetail() {
             const errMsg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message
             if (errMsg) alertErrorMessage(errMsg)
         } finally {
+            cashoutInProgressRef.current = false
             setCashoutId(null)
         }
     }
@@ -467,15 +563,20 @@ function CricketDetail() {
                             <span className='betslip_open_bet_stake'>{(Number(b.stake || 0)).toFixed(2)}</span>
                         </div>
                     </div>
-                    {netCashout != null && <div className='betslip_open_bet_row'><span>Cash Out Value</span><span>₹{netCashout.toLocaleString()}</span></div>}
+                    <div className='betslip_open_bet_row betslip_cashout_value_row'>
+                        <span>Cash Out Value</span>
+                        <span className='betslip_cashout_balance'>
+                            {netCashout != null ? `₹${netCashout.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
+                        </span>
+                    </div>
                     <div className='betslip_open_bet_actions'>
                         {statusRaw !== 'open' ? (
                             <span className='betslip_open_bet_closed'>BET CLOSED</span>
                         ) : suspended ? (
                             <span className='betslip_cashout_suspended'>CASH OUT NOT AVAILABLE</span>
                         ) : (
-                            <button type='button' className='betslip_cashout_btn' onClick={() => handleCashoutBetslip(bid)} disabled={isCashingOut}>
-                                {isCashingOut ? 'CASHING OUT...' : (netCashout != null && netCashout > 0 ? `CASH OUT (₹${netCashout.toLocaleString()})` : 'CASH OUT')}
+                            <button type='button' className='betslip_cashout_btn' onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleCashoutBetslip(bid); }} disabled={isCashingOut}>
+                                {isCashingOut ? 'CASHING OUT...' : (netCashout != null ? `CASH OUT ₹${netCashout.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'CASH OUT')}
                             </button>
                         )}
                     </div>
@@ -590,6 +691,7 @@ function CricketDetail() {
         const hasMultipleBets = gameBets.length > 1
         const handleCashoutClick = (e) => {
             e.stopPropagation()
+            e.preventDefault()
             setOpenLossCutSection(null)
             if (gameBets.length === 0) return
             if (hasOneBet) {
@@ -654,7 +756,7 @@ function CricketDetail() {
                                                             {suspended ? (
                                                                 <span className="odds_section_popover_suspended">Not available</span>
                                                             ) : (
-                                                                <button type="button" className="odds_section_popover_cashout_btn" onClick={() => handleCashoutBetslip(bid)} disabled={isCashingOut}>
+                                                                <button type="button" className="odds_section_popover_cashout_btn" onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleCashoutBetslip(bid); }} disabled={isCashingOut}>
                                                                     {isCashingOut ? '...' : (netCashout != null && netCashout > 0 ? `Cashout ₹${netCashout.toLocaleString()}` : 'Cashout')}
                                                                 </button>
                                                             )}
@@ -1292,17 +1394,23 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [isBetslipOpen, activeTab])
 
-    // Fetch open bets as soon as popup opens (or page Open Bets tab), so OPEN BETS tab shows data without waiting for click
+    useEffect(() => {
+        if (platformConfig.sportsBookServiceStatus === false || platformConfig.inPlayServiceStatus === false) {
+            alertErrorMessage('Sports / In-Play is temporarily unavailable. Please try again later.')
+        }
+    }, [platformConfig.sportsBookServiceStatus, platformConfig.inPlayServiceStatus])
+
+    // Refresh open bets when popup opens or Open Bets tab – use same parsing as mount; on error don’t clear list so existing data stays
     useEffect(() => {
         if (!shouldFetchOpenBets) return
         setOpenBetsLoading(true)
         AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
             .then((res) => {
                 const data = res?.data ?? res
-                const list = data?.bets ?? []
-                setOpenBetsList(list)
+                const list = data?.bets ?? (Array.isArray(data) ? data : []) ?? []
+                setOpenBetsList(Array.isArray(list) ? list : [])
             })
-            .catch(() => setOpenBetsList([]))
+            .catch(() => { /* keep previous openBetsList so "No open bets" doesn’t replace real data */ })
             .finally(() => setOpenBetsLoading(false))
     }, [shouldFetchOpenBets])
 
@@ -1322,6 +1430,13 @@ function CricketDetail() {
         <React.Fragment>
             <div className='dashboard_page removebgsports'>
                 <div className='container-fluid'>
+                    {(!platformConfig.sportsBookServiceStatus || !platformConfig.inPlayServiceStatus) && (
+                        <div className="platform_service_banner platform_service_banner_disabled" role="alert">
+                            Sports / In-Play is temporarily unavailable. Please try again later.
+                        </div>
+                    )}
+                    {(platformConfig.sportsBookServiceStatus && platformConfig.inPlayServiceStatus) && (
+                    <>
                     <div className='cricket_detail_section'>
                         {/* <div className='sports_top_tabs'>
                             <ul>
@@ -1417,21 +1532,29 @@ function CricketDetail() {
 
                         <div className='match_info_section_wrapper'>
 
-                            {sportName === 'tennis' && (oddsData?.tvUrl ?? location.state?.tv_url ?? location.state?.tvUrl) && (
+                            {/* Live streaming – commented out
+                            {(sportName === 'soccer' || sportName === 'tennis' || sportName === 'cricket') && (
                                 <div className='match_tv_iframe_wrap'>
                                     <div className='match_tv_iframe_header'>Live TV</div>
-                                    <iframe
-                                        title='Live TV'
-                                        src={oddsData?.tvUrl ?? location.state?.tv_url ?? location.state?.tvUrl}
-                                        className='match_tv_iframe'
-                                        allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-                                        allowFullScreen
-                                    />
+                                    {streamUrl ? (
+                                        <iframe
+                                            title='Live TV'
+                                            src={streamUrl}
+                                            className='match_tv_iframe'
+                                            allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                                            allowFullScreen
+                                        />
+                                    ) : (
+                                        <div className='match_tv_no_stream'>
+                                            No stream available
+                                        </div>
+                                    )}
                                 </div>
                             )}
+                            */}
 
                             <div className='series_name_row'>
-                                <p>Vodafone Serives</p>
+                                <p>{seriesOrTournamentName || '—'}</p>
                             </div>
                             {/* <div className='cricket_info_inner'>
                                 <div className='cricket_vector_icon'>
@@ -2099,7 +2222,7 @@ function CricketDetail() {
                                                 ) : openBetsList.length === 0 ? (
                                                     <div className='betslip_empty'><p>No open bets.</p></div>
                                                 ) : (
-                                                    <div className='betslip_open_bets'>{renderOpenBetsContent()}</div>
+                                                    <div className='betslip_open_bets betdel_sl'>{renderOpenBetsContent()}</div>
                                                 )}
                                             </div>
                                         )}
@@ -2278,6 +2401,8 @@ function CricketDetail() {
                         </div>
 
                     </div>
+                    </>
+                    )}
                 </div>
             </div>
 
@@ -2323,21 +2448,34 @@ function CricketDetail() {
                                         <div className='betslip_open_bets betslip_open_bets_panel'>{renderOpenBetsContent()}</div>
                                     )}
                                 </>
+                            ) : placeBetSuccessMessage ? (
+                                <>
+                                    <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
+                                    <div className='betslip_success'>
+                                        <p className='betslip_success_title'>Bet placed</p>
+                                        <p className='betslip_success_msg'>{placeBetSuccessMessage}</p>
+                                    </div>
+                                </>
                             ) : selectedBets.length > 0 ? (
                                 <>
                                     <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
                                     {lossLimitReached && <p className='betslip_error'>Loss limit reached. Betting is disabled.</p>}
-                                    {selectedBets.map((bet) => (
-                                        <div key={bet.id} className='betslip_card_light'>
-                                            <div className='betslip_card_header'>
-                                                <span className='betslip_match_title'>{eventNameFromState || 'Match'}</span>
-                                                <button type='button' className='betslip_card_close' onClick={() => removeBet(bet.id)} aria-label='Remove'>×</button>
+                                    {selectedBets.map((bet) => {
+                                        const betType = (bet.placePayload?.betType ?? bet.betType ?? 'back').toLowerCase()
+                                        const isBack = betType === 'back'
+                                        const cardClass = `betslip_card_light betslip_card_${isBack ? 'back' : 'lay'}`
+                                        return (
+                                            <div key={bet.id} className={cardClass}>
+                                                <div className='betslip_card_header'>
+                                                    <span className='betslip_match_title'>{eventNameFromState || 'Match'}</span>
+                                                    <button type='button' className='betslip_card_close' onClick={() => removeBet(bet.id)} aria-label='Remove'>×</button>
+                                                </div>
+                                                <div className='betslip_selection'>
+                                                    {bet.betName} @ {(Number(slipOdds ?? bet.oddsDisplay ?? bet.odds) || 0).toFixed(2)}
+                                                </div>
                                             </div>
-                                            <div className='betslip_selection'>
-                                                {bet.betName} @ {(Number(slipOdds ?? bet.oddsDisplay ?? bet.odds) || 0).toFixed(2)}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
 
                                     <div className='betslip_odd_section'>
                                         <label className='betslip_label'>Odd Value</label>

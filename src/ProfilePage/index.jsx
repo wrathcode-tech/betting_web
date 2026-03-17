@@ -170,7 +170,7 @@ function ProfilePage() {
                     <div className="user_active"></div>
                   </div>
                   <div className="profile_bio_info_cnt">
-                    <h3>{displayName}</h3>
+                    <h3 className="text_uppercase">{displayName}</h3>
                     <span>{safeUser.email || (safeUser.countryCode && safeUser.mobile ? `${safeUser.countryCode} ${safeUser.mobile}` : safeUser.mobile) || '—'}</span>
                     {user?.username && <span className="d-block text-white-50 small">@{user.username}</span>}
                     <div className="d-flex align-items-center gap-2 mt-2">

@@ -118,6 +118,26 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
+  /** GET /api/v1/user/platform-configuration – returns { success, data: { depositServiceStatus, withdrawalServiceStatus, referralServiceStatus, ... } }. */
+  getPlatformConfiguration: async () => {
+    const token = sessionStorage.getItem("token");
+    const { baseBettingUser, platformConfiguration } = ApiConfig;
+    const url = `${baseBettingUser}/${platformConfiguration}`;
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/user/transaction-limits – min/max deposit & withdrawal, bonus %, min wager for withdrawal. */
+  getTransactionLimits: async () => {
+    const token = sessionStorage.getItem("token");
+    const { baseBettingUser, transactionLimits } = ApiConfig;
+    const url = `${baseBettingUser}/${transactionLimits}`;
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return ApiCallGet(url, headers);
+  },
+
   /** GET /api/v1/user/deposit-accounts/master – auth required. Returns { data: { accounts, source } }. */
   getMasterDepositAccounts: async () => {
     const token = sessionStorage.getItem("token");
@@ -418,13 +438,61 @@ const AuthService = {
     return { liveScore };
   },
 
-  /** GET /api/v1/games/transactions?page=1&limit=20 – auth required. Returns { data: { transactions, pagination } }. */
-  gamesTransactions: async (page = 1, limit = 20) => {
+  /** GET /api/v1/sportsbook/event/config?eventId=<gameId> – tvUrl for live stream (Berlin). Response: { response: { tvUrl, eventId, minStack, maxStack, ... } }. */
+  sportsbookEventConfig: async (eventId) => {
+    if (!eventId) return { tvUrl: null };
+    const token = sessionStorage.getItem("token");
+    const { baseBettingSportsbook } = ApiConfig;
+    const url = `${baseBettingSportsbook}/event/config?eventId=${encodeURIComponent(eventId)}`;
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    const res = await ApiCallGet(url, headers);
+    const response = res?.response ?? res?.data ?? res;
+    const tvUrl = response?.tvUrl ?? response?.tv_url ?? null;
+    return { tvUrl, ...response };
+  },
+
+  /** GET /api/v1/games/history – sessions list. Query: page, limit, from, to (ISO date). */
+  gamesHistory: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingGames, bettingGamesHistory } = ApiConfig;
+    const q = new URLSearchParams();
+    q.set("page", String(params.page != null ? params.page : 1));
+    q.set("limit", String(params.limit != null ? params.limit : 10));
+    if (params.from) q.set("from", params.from);
+    if (params.to) q.set("to", params.to);
+    const url = `${baseBettingGames}${bettingGamesHistory}?${q.toString()}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/games/transactions – rounds (game, date, bet, result, amount). Query: page, limit, gameCode, providerCode. */
+  gamesTransactions: async (page = 1, limit = 20, opts = {}) => {
     const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingGames, bettingGamesTransactions } = ApiConfig;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (opts.gameCode) params.set("gameCode", opts.gameCode);
+    if (opts.providerCode) params.set("providerCode", opts.providerCode);
     const url = `${baseBettingGames}${bettingGamesTransactions}?${params.toString()}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  /** GET /api/v1/games/transaction-history – ledger (date, credit, debit, balance, remark). Query: page, limit, from, to. */
+  gamesTransactionHistory: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingGames, bettingGamesTransactionHistory } = ApiConfig;
+    const q = new URLSearchParams();
+    q.set("page", String(params.page != null ? params.page : 1));
+    q.set("limit", String(params.limit != null ? params.limit : 20));
+    if (params.from) q.set("from", params.from);
+    if (params.to) q.set("to", params.to);
+    const url = `${baseBettingGames}${bettingGamesTransactionHistory}?${q.toString()}`;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
     return ApiCallGet(url, headers);
   },
