@@ -96,12 +96,11 @@ export default function UserHeader() {
     return () => window.removeEventListener('loginStateChange', fetchUserDisplayName);
   }, []);
 
-  // Sportsbook socket for matches/odds (balance updates via BalanceContext)
+  // Sportsbook socket for matches/odds (balance updates via BalanceContext). Guest = no token, still connect for odds.
   useEffect(() => {
     const sync = () => {
       const t = sessionStorage.getItem('token');
-      if (t) connectSportsbookSocket(t);
-      else disconnectSportsbookSocket();
+      connectSportsbookSocket(t || null);
     };
     sync();
     window.addEventListener('loginStateChange', sync);
@@ -305,7 +304,6 @@ export default function UserHeader() {
                 className="dropdown_logout_btn"
                 onClick={() => {
                   disconnectBalanceSocket();
-                  disconnectSportsbookSocket();
                   sessionStorage.removeItem('token');
                   sessionStorage.removeItem('refreshToken');
                   sessionStorage.removeItem('user');

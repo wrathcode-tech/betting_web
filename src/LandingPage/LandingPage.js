@@ -325,12 +325,11 @@ function LandingPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Socket: live matches for TOP Matches (when user has token)
+  // Socket: live matches & odds for TOP Matches (connect even without login so odds keep coming)
   useEffect(() => {
     const token = sessionStorage.getItem('token');
-    if (!token) return;
     const eventTime = (m) => m.eventTime ?? m.event_time ?? m.startTime;
-    connectSportsbookSocket(token);
+    connectSportsbookSocket(token || null);
     const onMatches = (payload) => {
       if (payload?.sport !== 'cricket') return;
       const raw = payload.data ?? payload.matches;

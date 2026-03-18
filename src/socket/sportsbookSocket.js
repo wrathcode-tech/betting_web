@@ -171,31 +171,37 @@ function ensureHandlers() {
 }
 
 export function connectSportsbookSocket(token) {
-  if (!token) {
-    disconnectSportsbookSocket();
-    return null;
-  }
-
-  const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
   const baseUrl = getSportsbookBaseUrl().replace(/\/$/, '');
   const namespaceUrl = `${baseUrl}/sportsbook`;
+  const authPayload = token
+    ? { token: token.startsWith('Bearer ') ? token : `Bearer ${token}` }
+    : {};
 
+  // If already connected with same auth, reuse
   if (socket?.connected) {
-    return socket;
+    const hadToken = !!socket.auth?.token;
+    const hasToken = !!authPayload.token;
+    if (hadToken === hasToken) {
+      if (hasToken) socket.auth = authPayload;
+      return socket;
+    }
+    // Auth changed (guest→logged-in or logged-in→guest): reconnect
+    socket.disconnect();
+    socket.removeAllListeners();
+    socket = null;
   }
 
   if (socket) {
-    socket.auth = { token: authToken };
+    socket.auth = authPayload;
     socket.connect();
     ensureHandlers();
     return socket;
   }
 
-  // Auth: same JWT as REST. Backend accepts auth: { token } or query: { token }.
+  // Connect with or without token (guest: matches/odds only; logged-in: full)
   socket = io(namespaceUrl, {
     ...SOCKET_CONFIG,
-    auth: { token: authToken },
-    // query: { token: authToken },  // alternative if server expects query
+    auth: authPayload,
   });
 
   ensureHandlers();
