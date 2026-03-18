@@ -32,6 +32,14 @@ const AuthService = {
     return ApiCallPost(url, params, headers);
   },
 
+  /** POST /api/v1/auth/demo-login – view-only guest. Returns { token, user: { id, username, balance: 0, currency, isDemo: true, expiresAt } }. */
+  bettingDemoLogin: async () => {
+    const { baseBettingAuth, bettingDemoLogin } = ApiConfig;
+    const url = baseBettingAuth + bettingDemoLogin;
+    const headers = { "Content-Type": "application/json" };
+    return ApiCallPost(url, {}, headers);
+  },
+
   bettingRefreshToken: async (refreshToken) => {
     const { baseBettingAuth, bettingRefreshToken } = ApiConfig;
     const url = baseBettingAuth + bettingRefreshToken;

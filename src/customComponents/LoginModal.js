@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthService from '../api/services/AuthService'
+import { useAuth } from '../context/AuthContext'
 import { alertErrorMessage, alertSuccessMessage } from './CustomAlertMessage'
 import './LoginModal.css'
 
 export default function LoginModal({ show, onHide, initialTab = 'login', initialReferralCode = '', returnTo = '' }) {
   const navigate = useNavigate()
+  const { setUser } = useAuth()
   const redirectTo = (returnTo && returnTo.trim()) ? returnTo.trim() : '/'
   const [activeTab, setActiveTab] = useState(initialTab)
   const [showPassword, setShowPassword] = useState(false)
@@ -257,6 +259,46 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
       }
     } catch (error) {
       alertErrorMessage('Something went wrong. Please try again.')
+    }
+    setLoading(false)
+  }
+
+  const handleDemoLogin = async () => {
+    setLoading(true)
+    setErrors({})
+    try {
+      const result = await AuthService.bettingDemoLogin()
+      if (result?.success === false) {
+        alertErrorMessage(result?.message || 'Demo login failed.')
+        setLoading(false)
+        return
+      }
+      const data = result?.data ?? result
+      const token = data?.token ?? data?.accessToken ?? data?.access_token
+      const userPayload = data?.user ?? data
+      if (token && userPayload && typeof userPayload === 'object') {
+        const user = {
+          id: userPayload.id ?? userPayload._id,
+          username: userPayload.username ?? userPayload.mobile ?? 'Guest',
+          balance: userPayload.balance ?? 0,
+          currency: userPayload.currency ?? 'INR',
+          isDemo: true,
+          expiresAt: userPayload.expiresAt ?? userPayload.expires_at,
+          ...userPayload,
+        }
+        sessionStorage.setItem('token', token)
+        const refresh = data?.refreshToken ?? data?.refresh_token
+        if (refresh) sessionStorage.setItem('refreshToken', refresh)
+        setUser(user)
+        window.dispatchEvent(new CustomEvent('loginStateChange'))
+        alertSuccessMessage('Demo mode – view only. Login to place bets.')
+        onHide()
+        navigate(redirectTo, { replace: true })
+      } else {
+        alertErrorMessage(result?.message || 'Demo login failed.')
+      }
+    } catch (err) {
+      alertErrorMessage(err?.message || 'Something went wrong. Please try again.')
     }
     setLoading(false)
   }
@@ -529,6 +571,15 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
 
                     <button type="submit" className="premium_submit_btn" disabled={loading}>
                       {loading ? 'Please wait...' : activeTab === 'login' ? 'Log in' : 'Sign up & play'}
+                    </button>
+                    <div className="premium_demo_divider">— or —</div>
+                    <button
+                      type="button"
+                      className="premium_demo_btn"
+                      onClick={handleDemoLogin}
+                      disabled={loading}
+                    >
+                      Demo account login
                     </button>
                   </form>
                 </>

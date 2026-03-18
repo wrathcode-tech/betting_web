@@ -2,6 +2,18 @@
   to { transform: rotate(360deg); }
 }
 
+.demo_mode_badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(249, 122, 49, 0.35);
+  border: 1px solid rgba(249, 122, 49, 0.5);
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
 /* Main content wrapper: header outside; left = sidebar, right = content */
 .main_content_wrapper {
   display: flex;

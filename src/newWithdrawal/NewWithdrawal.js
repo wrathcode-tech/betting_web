@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
@@ -161,125 +161,132 @@ function NewWithdrawal() {
             </div>
           ) : (
             <>
-          <div className="top_bar_hd">
-            <h2>Withdrawal</h2>
-            <p>Following payment withdrawal information:: <span>Cashable Amount : {balance != null ? Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span></p>
-          </div>
-          <div className="payment_topbr">
-            <button type="button" className="active">Bank</button>
-          </div>
-
-          {loading ? (
-            <p className="text-white-50">Loading bank accounts...</p>
-          ) : accounts.length === 0 ? (
-            <div className="choose_payment_option">
-              <h3 className="choose_payment_option_title">Add Bank Details</h3>
-              <p className="text-white-50 mb-3">No bank account added yet. Add one to request withdrawal.</p>
-              <button
-                type="button"
-                className="add_account_upload add_account_upload_btn"
-                onClick={() => navigate('/add-account')}
-                aria-label="Add account"
-              >
-                <div className="add_account_icon_wrap">
-                  <i className="ri-add-line add_account_plus_icon" aria-hidden />
-                </div>
-                <span className="add_account_label">Add Account</span>
-              </button>
-            </div>
-          ) : (
-            <div className="choose_payment_option_bl">
-              <h5>Your bank account</h5>
-              <p className="text-white-50 small mb-2">Withdrawal will be sent to the selected account below.</p>
-              <div className="account_cards_row">
-                {accounts.map((acc) => (
-                  <div
-                    key={acc._id}
-                    role="button"
-                    tabIndex={0}
-                    className={`account_card account_card_details ${acc.isDefaultForWithdrawal ? 'account_card_selected' : ''}`}
-                    onClick={() => selectAccount(acc._id)}
-                    onKeyDown={(e) => e.key === 'Enter' && selectAccount(acc._id)}
-                    aria-label={`Select account ${acc.bankName}`}
-                  >
-                    <div className="account_card_content">
-                      <p className="account_card_bank">{acc.bankName}</p>
-                      <p className="account_card_holder text_uppercase">{acc.accountHolderName}</p>
-                      <p className="account_card_number">{maskAccountNumber(acc.accountNumber)}</p>
-                      <p className="account_card_ifsc">IFSC: {acc.ifscCode}</p>
-                      {acc.isDefaultForWithdrawal && (
-                        <span className="account_card_default_badge">Use for withdrawal</span>
-                      )}
-                    </div>
+              <div className="top_bar_hd">
+                <div className="d-flex align-items-center gap-2 flex-wrap">
+                  <Link to="/my-wallet" className="back_link_btn withdrawal_back_option" aria-label="Back to My Wallet">
+                    <i className="ri-arrow-left-s-line" aria-hidden />
+                  </Link>
+                  <div>
+                    <h2>Withdrawal</h2>
+                    <p>Following payment withdrawal information:: <span>Cashable Amount : {balance != null ? Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span></p>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          )}
+              <div className="payment_topbr">
+                <button type="button" className="active">Bank</button>
+              </div>
 
-          {!loading && accounts.length > 0 && (
-            <form className="withdrawal_from_dl" onSubmit={handleWithdrawalSubmit}>
-              <h5>Enter Details</h5>
-              {(minWithdrawal != null || maxWithdrawal != null || (transactionLimits?.minWagerForWithdrawal != null)) && (
-                <p className="text-white-50 small mb-2">
-                  {minWithdrawal != null && `Min withdrawal: ₹${minWithdrawal.toLocaleString('en-IN')}. `}
-                  {maxWithdrawal != null && `Max: ₹${maxWithdrawal.toLocaleString('en-IN')}. `}
-                  {transactionLimits?.minWagerForWithdrawal != null && `Min wager required: ₹${Number(transactionLimits.minWagerForWithdrawal).toLocaleString('en-IN')}.`}
-                </p>
-              )}
-              <div className="enter_amount_deposit">
-                <label>Amount to withdraw</label>
-                <div className="enter_filed d-flex">
-                  <input
-                    type="number"
-                    min="1"
-                    step="1"
-                    placeholder="Enter Amount To Be Withdrawn"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="enter_amount_deposit">
-                <label>Note (optional, max 200 characters)</label>
-                <div className="enter_filed d-flex">
-                  <input
-                    type="text"
-                    placeholder="Note (optional)"
-                    maxLength={200}
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="enter_amount_deposit">
-                <label>OTP (sent to your registered mobile)</label>
-                <div className="enter_filed d-flex">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="Enter 6-digit OTP"
-                    maxLength={6}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  />
+              {loading ? (
+                <p className="text-white-50">Loading bank accounts...</p>
+              ) : accounts.length === 0 ? (
+                <div className="choose_payment_option">
+                  <h3 className="choose_payment_option_title">Add Bank Details</h3>
+                  <p className="text-white-50 mb-3">No bank account added yet. Add one to request withdrawal.</p>
                   <button
                     type="button"
-                    className="otp_btn"
-                    onClick={handleSendOtp}
-                    disabled={otpLoading}
+                    className="add_account_upload add_account_upload_btn"
+                    onClick={() => navigate('/add-account')}
+                    aria-label="Add account"
                   >
-                    {otpLoading ? 'Sending...' : 'Send OTP'}
+                    <div className="add_account_icon_wrap">
+                      <i className="ri-add-line add_account_plus_icon" aria-hidden />
+                    </div>
+                    <span className="add_account_label">Add Account</span>
                   </button>
                 </div>
-              </div>
-              <div className="payment_btn">
-                <button type="submit" disabled={submitLoading || !otpSent}>
-                  {submitLoading ? 'Submitting...' : 'Request Withdrawal'}
-                </button>
-              </div>
-            </form>
-          )}
+              ) : (
+                <div className="choose_payment_option_bl">
+                  <h5>Your bank account</h5>
+                  <p className="text-white-50 small mb-2">Withdrawal will be sent to the selected account below.</p>
+                  <div className="account_cards_row">
+                    {accounts.map((acc) => (
+                      <div
+                        key={acc._id}
+                        role="button"
+                        tabIndex={0}
+                        className={`account_card account_card_details ${acc.isDefaultForWithdrawal ? 'account_card_selected' : ''}`}
+                        onClick={() => selectAccount(acc._id)}
+                        onKeyDown={(e) => e.key === 'Enter' && selectAccount(acc._id)}
+                        aria-label={`Select account ${acc.bankName}`}
+                      >
+                        <div className="account_card_content">
+                          <p className="account_card_bank">{acc.bankName}</p>
+                          <p className="account_card_holder text_uppercase">{acc.accountHolderName}</p>
+                          <p className="account_card_number">{maskAccountNumber(acc.accountNumber)}</p>
+                          <p className="account_card_ifsc">IFSC: {acc.ifscCode}</p>
+                          {acc.isDefaultForWithdrawal && (
+                            <span className="account_card_default_badge">Use for withdrawal</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!loading && accounts.length > 0 && (
+                <form className="withdrawal_from_dl" onSubmit={handleWithdrawalSubmit}>
+                  <h5>Enter Details</h5>
+                  {(minWithdrawal != null || maxWithdrawal != null || (transactionLimits?.minWagerForWithdrawal != null)) && (
+                    <p className="text-white-50 small mb-2">
+                      {minWithdrawal != null && `Min withdrawal: ₹${minWithdrawal.toLocaleString('en-IN')}. `}
+                      {maxWithdrawal != null && `Max: ₹${maxWithdrawal.toLocaleString('en-IN')}. `}
+                      {transactionLimits?.minWagerForWithdrawal != null && `Min wager required: ₹${Number(transactionLimits.minWagerForWithdrawal).toLocaleString('en-IN')}.`}
+                    </p>
+                  )}
+                  <div className="enter_amount_deposit">
+                    <label>Amount to withdraw</label>
+                    <div className="enter_filed d-flex">
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        placeholder="Enter Amount To Be Withdrawn"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="enter_amount_deposit">
+                    <label>Note (optional, max 200 characters)</label>
+                    <div className="enter_filed d-flex">
+                      <input
+                        type="text"
+                        placeholder="Note (optional)"
+                        maxLength={200}
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="enter_amount_deposit">
+                    <label>OTP (sent to your registered mobile)</label>
+                    <div className="enter_filed d-flex">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="Enter 6-digit OTP"
+                        maxLength={6}
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      />
+                      <button
+                        type="button"
+                        className="otp_btn"
+                        onClick={handleSendOtp}
+                        disabled={otpLoading}
+                      >
+                        {otpLoading ? 'Sending...' : 'Send OTP'}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="payment_btn">
+                    <button type="submit" disabled={submitLoading || !otpSent}>
+                      {submitLoading ? 'Submitting...' : 'Request Withdrawal'}
+                    </button>
+                  </div>
+                </form>
+              )}
             </>
           )}
         </div>

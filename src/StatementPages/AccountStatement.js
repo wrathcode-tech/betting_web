@@ -75,6 +75,7 @@ export default function AccountStatement() {
         emptyMessage="Loading..."
         enableExport
         exportFileName="account-statement"
+        headerRightClassName="account_statement_header_right"
       />
     )
   }
@@ -87,6 +88,7 @@ export default function AccountStatement() {
       emptyMessage="No account statement entries yet."
       enableExport
       exportFileName="account-statement"
+      headerRightClassName="account_statement_header_right"
     />
   )
 }

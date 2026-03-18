@@ -691,41 +691,29 @@ function SportsGame() {
                                         </div>
 
 
+                                        {/* Mobile: same as landing – MATCH | Markets | Back | Lay */}
                                         <div className='sports_grid_table_wrap mobile_view'>
                                             <table className='sports_grid_table sports_grid_table_mobile'>
                                                 <thead>
                                                     <tr className='sports_grid_header_row'>
                                                         <th className='sports_grid_match_cell'>MATCH</th>
+                                                        <th className='sports_grid_mobile_markets_header' aria-label="Markets"><span className='sports_grid_header_markets'>Markets</span></th>
                                                         <th className='sports_grid_mobile_backs_header'>Back</th>
                                                         <th className='sports_grid_mobile_lays_header'>Lay</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {(activeTab === 'cricket' ? cricketMatchesLoading : activeTab === 'tennis' ? tennisMatchesLoading : soccerMatchesLoading) ? (
-                                                        <tr><td colSpan={3} className='sports_grid_loading'>Loading {activeTab} matches...</td></tr>
+                                                        <tr><td colSpan={4} className='sports_grid_loading'>Loading {activeTab} matches...</td></tr>
                                                     ) : matchesByDay.length === 0 ? (
-                                                        <tr><td colSpan={3} className='sports_grid_empty'>{NO_MATCHES_MSG()}</td></tr>
+                                                        <tr><td colSpan={4} className='sports_grid_empty'>{NO_MATCHES_MSG()}</td></tr>
                                                     ) : (
                                                         matchesByDay.map(({ day, matches }) =>
                                                             matches.map((match, idx) => {
                                                                 const cardOdds = getCardOdds(match)
                                                                 const padTo3 = (arr) => { const a = [...arr]; while (a.length < 3) a.push(null); return a.slice(0, 3) }
-                                                                const sortByBack = (a, b) => {
-                                                                    const na = a ? parseFloat(a.back) : NaN
-                                                                    const nb = b ? parseFloat(b.back) : NaN
-                                                                    if (Number.isNaN(na) && Number.isNaN(nb)) return 0
-                                                                    if (Number.isNaN(na)) return 1
-                                                                    if (Number.isNaN(nb)) return -1
-                                                                    return na - nb
-                                                                }
-                                                                const sortByLay = (a, b) => {
-                                                                    const na = a ? parseFloat(a.lay) : NaN
-                                                                    const nb = b ? parseFloat(b.lay) : NaN
-                                                                    if (Number.isNaN(na) && Number.isNaN(nb)) return 0
-                                                                    if (Number.isNaN(na)) return 1
-                                                                    if (Number.isNaN(nb)) return -1
-                                                                    return na - nb
-                                                                }
+                                                                const sortByBack = (a, b) => { const na = a ? parseFloat(a.back) : NaN; const nb = b ? parseFloat(b.back) : NaN; if (Number.isNaN(na) && Number.isNaN(nb)) return 0; if (Number.isNaN(na)) return 1; if (Number.isNaN(nb)) return -1; return na - nb }
+                                                                const sortByLay = (a, b) => { const na = a ? parseFloat(a.lay) : NaN; const nb = b ? parseFloat(b.lay) : NaN; if (Number.isNaN(na) && Number.isNaN(nb)) return 0; if (Number.isNaN(na)) return 1; if (Number.isNaN(nb)) return -1; return na - nb }
                                                                 const backSorted = padTo3([...cardOdds].sort(sortByBack))
                                                                 const laySorted = padTo3([...cardOdds].sort(sortByLay))
                                                                 return (
@@ -736,7 +724,6 @@ function SportsGame() {
                                                                     >
                                                                         <td className='sports_grid_match_cell d-flex align-items-center gap-3'>
                                                                             <div className='sports_grid_match_cell_inner'>
-                                                                                {/* <span className='sports_grid_day_time'>{match.dayGroup}{match.timeOnly ? <span className='sports_grid_time_only'>` ${match.timeOnly}`</span> : ''}</span> */}
                                                                                 <span className="sports_grid_day_time">
                                                                                     {match.dayGroup}
                                                                                     {match.timeOnly && <span className='sports_grid_time_only'> {match.timeOnly}</span>}
@@ -744,48 +731,47 @@ function SportsGame() {
                                                                                 {match.inPlay && <span className='sports_grid_live'>LIVE</span>}
                                                                             </div>
                                                                             <div className='sports_grid_match_info'>
-                                                                                {/* <div className='sports_grid_tournament'>{match.tournament}</div> */}
+                                                                                <div className='sports_grid_tournament'>{match.tournament}</div>
                                                                                 <div className='sports_grid_teams'>{match.teams}</div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className='sports_grid_mobile_markets_cell'>
+                                                                            <div className='sports_grid_market_icons'>
+                                                                                {MARKET_ICONS.map((icon) => (
+                                                                                    <span key={icon} className='sports_grid_market_icon'>{icon}</span>
+                                                                                ))}
                                                                             </div>
                                                                         </td>
                                                                         <td className='sports_grid_mobile_backs_cell'>
                                                                             <div className='sports_grid_mobile_odds_list'>
-                                                                                {backSorted.map((pair, i) => {
-                                                                                    const hasBack = pair && pair.back != null
-                                                                                    const disabledClass = !hasBack ? 'sports_grid_odds_disabled' : ''
-                                                                                    return (
-                                                                                        <div key={i} className={`sports_grid_mobile_odds_item sports_grid_back ${disabledClass}`}>
-                                                                                            {hasBack ? (
-                                                                                                <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
-                                                                                                    <span className='sports_grid_odds_val'>{pair.back}</span>
-                                                                                                    <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
-                                                                                                </button>
-                                                                                            ) : (
-                                                                                                <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
-                                                                                            )}
-                                                                                        </div>
-                                                                                    )
-                                                                                })}
+                                                                                {backSorted.map((pair, i) => (
+                                                                                    <div key={i} className={`sports_grid_mobile_odds_item sports_grid_back ${!pair ? 'sports_grid_odds_disabled' : ''}`}>
+                                                                                        {pair ? (
+                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                <span className='sports_grid_odds_val'>{pair.back}</span>
+                                                                                                <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
+                                                                                            </button>
+                                                                                        ) : (
+                                                                                            <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                ))}
                                                                             </div>
                                                                         </td>
                                                                         <td className='sports_grid_mobile_lays_cell'>
                                                                             <div className='sports_grid_mobile_odds_list'>
-                                                                                {laySorted.map((pair, i) => {
-                                                                                    const hasLay = pair && pair.lay != null
-                                                                                    const disabledClass = !hasLay ? 'sports_grid_odds_disabled' : ''
-                                                                                    return (
-                                                                                        <div key={i} className={`sports_grid_mobile_odds_item sports_grid_lay ${disabledClass}`}>
-                                                                                            {hasLay ? (
-                                                                                                <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
-                                                                                                    <span className='sports_grid_odds_val'>{pair.lay}</span>
-                                                                                                    <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
-                                                                                                </button>
-                                                                                            ) : (
-                                                                                                <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
-                                                                                            )}
-                                                                                        </div>
-                                                                                    )
-                                                                                })}
+                                                                                {laySorted.map((pair, i) => (
+                                                                                    <div key={i} className={`sports_grid_mobile_odds_item sports_grid_lay ${!pair ? 'sports_grid_odds_disabled' : ''}`}>
+                                                                                        {pair ? (
+                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                <span className='sports_grid_odds_val'>{pair.lay}</span>
+                                                                                                <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
+                                                                                            </button>
+                                                                                        ) : (
+                                                                                            <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                ))}
                                                                             </div>
                                                                         </td>
                                                                     </tr>

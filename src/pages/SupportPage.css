@@ -512,6 +512,83 @@
   color: #fff;
 }
 
+/* Mobile – Support tickets table as card boxes */
+@media (max-width: 768px) {
+  .support_tickets_table_wrapper {
+    overflow-x: visible;
+    display: block;
+  }
+
+  .transactions_table_wrapper.support_tickets_table_wrapper{   display: block !important; }
+
+  .support_tickets_table_wrapper .transactions_table {
+    display: block;
+  }
+
+  .support_tickets_table_wrapper .transactions_table thead {
+    display: none;
+  }
+
+  .support_tickets_table_wrapper .transactions_table tbody tr {
+    display: block;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .support_tickets_table_wrapper .transactions_table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .support_tickets_table_wrapper .transactions_table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    white-space: normal;
+    font-size: 14px;
+  }
+
+  .support_tickets_table_wrapper .transactions_table tbody td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    padding-top: 12px;
+  }
+
+  .support_tickets_table_wrapper .transactions_table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    flex-shrink: 0;
+    min-width: 90px;
+  }
+
+  .support_tickets_table_wrapper .transactions_table tbody td:last-child::before {
+    display: none;
+  }
+
+  .support_tickets_table_wrapper .transactions_table tbody td:last-child {
+    justify-content: flex-end;
+  }
+
+  .support_tickets_table_wrapper .transactions_table tbody tr.no-data-row td {
+    display: block;
+    border: none;
+    padding: 24px 16px;
+  }
+
+  .support_tickets_table_wrapper .transactions_table tbody tr.no-data-row td::before {
+    display: none;
+  }
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .support_form_section {

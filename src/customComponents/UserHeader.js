@@ -8,6 +8,7 @@ import Chat from '../cricket/Chat'
 import Search from './Search'
 import { useBalance } from '../context/BalanceContext'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
+import { useAuth } from '../context/AuthContext'
 import {
   connectSportsbookSocket,
   disconnectSportsbookSocket,
@@ -43,14 +44,17 @@ export default function UserHeader() {
   const [currencySearch, setCurrencySearch] = useState('');
   const { balance: balanceFromContext } = useBalance();
   const { config: platformConfig } = usePlatformConfig();
+  const { isDemo } = useAuth();
   const [userDisplayName, setUserDisplayName] = useState('');
   const dropdownRef = useRef(null);
   const casinoDropdownRef = useRef(null);
 
   const balance = balanceFromContext != null ? Number(balanceFromContext) : 0;
 
-  // Balance from socket only (INR) – no external rates API
-  const balanceDisplay = `${INR_SYMBOL}${balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  // Balance from socket only (INR) – no external rates API; demo mode shows "View only – ₹0"
+  const balanceDisplay = isDemo
+    ? `View only – ${INR_SYMBOL}0.00`
+    : `${INR_SYMBOL}${balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const currencies = useMemo(() => {
     return CURRENCY_LIST.map((c) => ({
       ...c,
@@ -147,6 +151,9 @@ export default function UserHeader() {
       
     
         <div className="header_right">
+        {isDemo && (
+          <span className="demo_mode_badge" title="View only – login to place bets">Demo Mode (View Only)</span>
+        )}
         <div className='d-flex align-items-center gap-2 depositheader'>
         <div className="currency_balance_wrapper currency_balance_inr_only">
           <div className='d-flex align-items-center gap-2 currency_balance'>
@@ -191,7 +198,9 @@ export default function UserHeader() {
           </div>
           )}
         </div>
-        {platformConfig.depositServiceStatus ? (
+        {isDemo ? (
+          <span className="deposit_disabled_banner" aria-live="polite">Login to play and place bets</span>
+        ) : platformConfig.depositServiceStatus ? (
           <button className="deposit_btn" onClick={() => navigate('/deposit')} aria-label="Deposit">
             <i className="ri-add-line deposit_btn_icon" aria-hidden />
             <span className="deposit_btn_text">Deposit</span>
@@ -279,7 +288,7 @@ export default function UserHeader() {
                   <i className="ri-safe-2-line"></i>
                   <span>Vault</span>
                 </Link> */}
-                {platformConfig.withdrawalServiceStatus && (
+                {platformConfig.withdrawalServiceStatus && !isDemo && (
                   <Link 
                     to="/withdrawal" 
                     className="dropdown_menu_item" 
@@ -299,6 +308,7 @@ export default function UserHeader() {
                   disconnectSportsbookSocket();
                   sessionStorage.removeItem('token');
                   sessionStorage.removeItem('refreshToken');
+                  sessionStorage.removeItem('user');
                   setUserDisplayName('');
                   window.dispatchEvent(new CustomEvent('loginStateChange'));
                   setIsProfileDropdownOpen(false);

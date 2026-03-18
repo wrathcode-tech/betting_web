@@ -5,13 +5,30 @@ import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
 import { useCasinoProviders } from '../context/CasinoProvidersContext'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
+import { useAuth } from '../context/AuthContext'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
+import { useBalance } from '../context/BalanceContext'
+import { connectBalanceSocket, addBalanceListener, removeBalanceListener } from '../socket/balanceSocket'
 
 function CasinoGame() {
     const navigate = useNavigate();
     const { config: platformConfig } = usePlatformConfig();
+    const { isDemo } = useAuth();
+    const { setBalance } = useBalance();
     const [searchParams, setSearchParams] = useSearchParams();
     const { providers } = useCasinoProviders();
+
+    // Casino pe balance socket connect – balance live update ke liye (header + koi bhi balance UI)
+    useEffect(() => {
+        const token = sessionStorage.getItem('token');
+        if (!token) return;
+        connectBalanceSocket(token);
+        const onBalance = (payload) => {
+            if (payload?.balance != null) setBalance(payload.balance);
+        };
+        addBalanceListener(onBalance);
+        return () => removeBalanceListener(onBalance);
+    }, [setBalance]);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [selectedProviderCode, setSelectedProviderCode] = useState('all');
     const [selectedCategoryCode, setSelectedCategoryCode] = useState('lobby');
@@ -42,6 +59,20 @@ function CasinoGame() {
             }
         }
     }, [searchParams, providers]);
+
+    // URL gameName: when user clicks a game from home, show that game first in the list
+    const gameNameParam = searchParams.get('gameName');
+    const sortedProviderCategoryGames = useMemo(() => {
+        if (!gameNameParam || !providerCategoryGames.length) return providerCategoryGames;
+        const want = String(gameNameParam).trim().toLowerCase();
+        if (!want) return providerCategoryGames;
+        const idx = providerCategoryGames.findIndex((g) => String(g.name || '').trim().toLowerCase() === want);
+        if (idx <= 0) return providerCategoryGames;
+        const arr = [...providerCategoryGames];
+        const [item] = arr.splice(idx, 1);
+        arr.unshift(item);
+        return arr;
+    }, [providerCategoryGames, gameNameParam]);
 
     // Sync category FROM URL once we have categoriesForProvider (depends on provider)
     const categoryParam = searchParams.get('category');
@@ -85,9 +116,13 @@ function CasinoGame() {
 
     const handlePlayGame = useCallback((game) => {
         if (!game?.gameCode || !game?.providerCode) return;
+        if (isDemo) {
+            alertErrorMessage('Demo mode: View only. Login to play.');
+            return;
+        }
         try { sessionStorage.removeItem('wcoGameSession'); } catch (_) {}
         navigate('/game', { state: { gameCode: game.gameCode, providerCode: game.providerCode, gameName: game.name } });
-    }, [navigate]);
+    }, [navigate, isDemo]);
 
     const selectedProvider = useMemo(
         () =>
@@ -412,7 +447,7 @@ function CasinoGame() {
                             <div className='lobbytabs_content'>
                                 {/* Provider + category games (GET /api/v1/games) */}
                                 <div className="inner_tabs_block show">
-                                    {providerCategoryGames.length > 0 ? (
+                                    {sortedProviderCategoryGames.length > 0 ? (
                                         <div className="top_slot_outer">
                                             <div className="top_hd d-flex align-items-center justify-content-between">
                                                 <h2 className="heading_h2">
@@ -423,7 +458,7 @@ function CasinoGame() {
                                                 </h2>
                                             </div>
                                             <div className="game_items_grid">
-                                                {providerCategoryGames.map((g) => {
+                                                {sortedProviderCategoryGames.map((g) => {
                                                     const gameCode = g.gameCode ?? g.code;
                                                     const providerCode = g.providerCode;
                                                     const name = g.name;
@@ -434,6 +469,8 @@ function CasinoGame() {
                                                             type="button"
                                                             className="game_items_inner casino_api_game_card"
                                                             onClick={() => handlePlayGame({ gameCode, providerCode, name })}
+                                                            disabled={isDemo}
+                                                            title={isDemo ? 'Demo mode: View only. Login to play.' : undefined}
                                                         >
                                                             <div className="playbtn"><img loading="lazy" alt="play" src={`${process.env.PUBLIC_URL || ''}/images/playbtn.png`} /></div>
                                                             <img

@@ -30,7 +30,7 @@ export default function FilterBar({
           </label>
         );
       })}
-      {sortOptions.length > 0 && (
+      {/* {sortOptions.length > 0 && (
         <label className="history_filter_label">
           <span className="history_filter_label_text">Sort</span>
           <select
@@ -44,7 +44,7 @@ export default function FilterBar({
             })}
           </select>
         </label>
-      )}
+      )} */}
     </div>
   );
 }

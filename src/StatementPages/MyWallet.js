@@ -40,7 +40,7 @@ function formatStatus(s) {
 }
 
 function mapStatementToRow(item, index) {
-  const id = item._id ?? item.id ?? index
+  const id = item.id ?? item._id ?? index
   const statusRaw = (item.status || '').toLowerCase()
   const type = item.type ?? item.transactionType ?? '—'
   const amount = item.amount != null ? formatAmount(item.amount, item.currency) : '—'
@@ -48,13 +48,13 @@ function mapStatementToRow(item, index) {
   return {
     id: String(id),
     time: formatTime(item.createdAt ?? item.date ?? item.transactionDate),
-    txnId: item.transactionId ?? item._id ?? item.id ?? '—',
+    txnId: item.id ?? item.transactionId ?? item._id ?? '—',
     type: String(type).charAt(0).toUpperCase() + String(type).slice(1).toLowerCase(),
     amount,
     balanceAfter,
     status: formatStatus(item.status),
     statusRaw,
-    cardTitle: item.transactionId ?? item._id ?? String(id),
+    cardTitle: item.id != null ? `Transaction #${item.id}` : (item.transactionId ?? item._id ?? String(id)),
   }
 }
 

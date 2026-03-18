@@ -854,7 +854,7 @@ ul.match_type_tabs li.active button {
         position: sticky;
         left: -1px;
         z-index: 2;
-        min-height: 50px;
+        min-height: 100px;
         background: #1e1e22 !important;
         min-width: 260px;
         max-width: 260px;
@@ -877,6 +877,8 @@ ul.match_type_tabs li.active button {
         font-size: 9px;
     }
 
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_markets_header,
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_scroll_header,
     .sports_grid_table_wrap.mobile_view .sports_grid_mobile_backs_header,
     .sports_grid_table_wrap.mobile_view .sports_grid_mobile_lays_header {
         padding: 8px 10px;
@@ -889,14 +891,64 @@ ul.match_type_tabs li.active button {
         white-space: nowrap;
     }
 
-    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_backs_cell,
-    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_lays_cell {
-        padding: 0px 8px;
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_markets_cell {
+        padding: 6px 8px;
         vertical-align: middle;
     }
 
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_markets_cell .sports_grid_market_icons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_markets_cell .sports_grid_market_icon {
+        font-size: 9px;
+        padding: 2px 5px;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_scroll_cell {
+        padding: 0;
+        vertical-align: middle;
+        width: 1%;
+        white-space: nowrap;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_backs_cell,
     .sports_grid_table_wrap.mobile_view .sports_grid_mobile_lays_cell {
-        padding-left: 5px !important;
+        padding: 6px 8px;
+        vertical-align: middle;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_backs_cell .sports_grid_mobile_odds_list,
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_lays_cell .sports_grid_mobile_odds_list {
+        display: flex;
+        gap: 4px;
+        align-items: stretch;
+        justify-content: space-between;
+        flex-direction: row;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_scroll {
+        display: flex;
+        flex-direction: row;
+        gap: 6px;
+        align-items: stretch;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding: 6px 8px;
+        min-width: 0;
+        max-width: 280px;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_pair {
+        display: flex;
+        flex-shrink: 0;
+        gap: 4px;
+        align-items: stretch;
     }
 
     .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_list {
@@ -906,11 +958,12 @@ ul.match_type_tabs li.active button {
         justify-content: space-between;
     }
 
-    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_item {
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_pair .sports_grid_mobile_odds_item {
         display: flex;
         align-items: stretch;
         justify-content: center;
-        min-width: 50px;
+        min-width: 48px;
+        width: 48px;
         padding: 0;
         border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: 6px;
@@ -985,33 +1038,26 @@ ul.match_type_tabs li.active button {
 
 }
 
-/* 459px ke baad: sirf 3 Back + 3 Lay dikhao, aur puri value dikhane ke liye */
 @media (max-width: 459px) {
-
-    /* 460px se choti screen par Back/Lay mein sirf 3-3 values dikhao */
-    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_list .sports_grid_mobile_odds_item:nth-child(n+4) {
-        display: none;
-    }
 
     .sports_grid_table_wrap.mobile_view .sports_grid_header_row .sports_grid_match_cell,
     .sports_grid_table_wrap.mobile_view .sports_grid_row .sports_grid_match_cell {
-        min-width: 140px;
-        max-width: 160px;
-        width: 160px;
+        min-width: 120px;
+        max-width: 140px;
+        width: 140px;
+        gap:6px !important;
     }
 
-    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_backs_cell,
-    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_lays_cell {
-        min-width: 0;
-        width: auto;
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_scroll {
+        max-width: 220px;
     }
 
-    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_item {
-        min-width: 52px;
-        flex: 1 1 auto;
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_pair .sports_grid_mobile_odds_item {
+        min-width: 44px;
+        width: 44px;
     }
 
-    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_item .sports_grid_odds_btn {
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_pair .sports_grid_mobile_odds_item .sports_grid_odds_btn {
         min-width: 0;
         padding: 4px 6px;
     }
@@ -1020,7 +1066,7 @@ ul.match_type_tabs li.active button {
         white-space: nowrap;
         overflow: visible;
         min-width: 0;
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .sports_grid_table_wrap.mobile_view .sports_grid_odds_size {

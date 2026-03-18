@@ -19,6 +19,17 @@
     border-radius: 8px;
 }
 
+.market_no_yes_odds_container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.market_no_yes_limits_container.d-flex {
+    flex-direction: column;
+    align-items: end;
+    gap: 15px;
+}
+
 .match_vs_team_list ul li span {
     font-size: 12px;
     font-weight: 400;
@@ -2058,6 +2069,10 @@ span.quicktext {
 
     .cricket_info_inner h2 {
         font-size: 16px;
+    }
+
+    .market_no_yes_limits_container.d-flex {
+        width: 100%;
     }
 
     .right_content_side .container {

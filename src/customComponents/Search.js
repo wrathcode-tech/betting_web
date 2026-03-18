@@ -8,7 +8,6 @@ import './Search.css'
 const SEARCH_ITEM_WIDTH = 178 + 18
 const SEARCH_MIN_CHARS = 3
 const SEARCH_LIMIT = 15
-const TRENDING_LIMIT = 15
 const DEBOUNCE_MS = 350
 
 function gameToUrl(game) {
@@ -19,18 +18,11 @@ function gameToUrl(game) {
   return `/casino?provider=${encodeURIComponent(provider)}&category=${encodeURIComponent(cat)}&gameName=${encodeURIComponent(name)}`
 }
 
+/** Game image – same fields as Landing (thumb, thumbnail, image, icon, logo) so images match API data */
 function gameImage(game) {
-  return game?.thumbnail || game?.image || game?.icon || game?.logo || '/images/game_itemslider.png'
-}
-
-function parseTrendingResponse(res) {
-  const raw = res?.data ?? res
-  if (Array.isArray(raw)) return raw
-  if (Array.isArray(raw?.games)) return raw.games
-  if (Array.isArray(raw?.data)) return raw.data
-  if (Array.isArray(raw?.trending)) return raw.trending
-  if (Array.isArray(raw?.results)) return raw.results
-  return []
+  if (!game) return `${process.env.PUBLIC_URL || ''}/images/game_itemslider.png`
+  const url = game.thumb || game.thumbnail || game.thumbnailUrl || game.image || game.imageUrl || game.icon || game.logo
+  return url || `${process.env.PUBLIC_URL || ''}/images/game_itemslider.png`
 }
 
 function parseSearchResponse(res) {
@@ -53,28 +45,16 @@ function Search({ isOpen, onClose }) {
   const [searchLoading, setSearchLoading] = useState(false)
   const { handleMouseDown: handleSliderMouseDown, handleClickCapture: handleSliderClickCapture } = useSliderDrag()
 
+  // Use same source as Landing page Trending section (bettingGamesLanding) so Search shows same games
   const loadTrending = useCallback(async () => {
     setTrendingLoading(true)
     try {
-      let list = []
-      const res = await AuthService.searchTrending(TRENDING_LIMIT)
-      list = parseTrendingResponse(res)
-      if (!Array.isArray(list)) list = []
-      if (list.length === 0) {
-        const landingRes = await AuthService.bettingGamesLanding()
-        const data = landingRes?.data ?? landingRes
-        list = Array.isArray(data?.trending) ? data.trending : []
-      }
+      const landingRes = await AuthService.bettingGamesLanding()
+      const data = landingRes?.data ?? landingRes
+      const list = Array.isArray(data?.trending) ? data.trending : []
       setTrendingGames(list)
     } catch {
-      try {
-        const landingRes = await AuthService.bettingGamesLanding()
-        const data = landingRes?.data ?? landingRes
-        const list = Array.isArray(data?.trending) ? data.trending : []
-        setTrendingGames(list)
-      } catch {
-        setTrendingGames([])
-      }
+      setTrendingGames([])
     } finally {
       setTrendingLoading(false)
     }
@@ -197,7 +177,7 @@ function Search({ isOpen, onClose }) {
                               key={match?.id ?? match?._id ?? idx}
                               to={path}
                               state={state}
-                              className="search_result_item"
+                              className="search_result_item search_result_match"
                               onClick={onClose}
                             >
                               <span className="search_result_name">{name}</span>

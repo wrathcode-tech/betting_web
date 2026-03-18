@@ -190,238 +190,238 @@ function NewDeposit() {
             </div>
           ) : (
             <>
-          <div className="top_bar_hd">
-            <h2>Deposit</h2>
-            <p>
-              {step === 1
-                ? 'Select payment method, choose or enter amount, then click Next.'
-                : 'Pay to the account below and enter your payment details.'}
-            </p>
-          </div>
-
-          {/* Step indicator */}
-          
-
-          {/* 1. Method: Bank / UPI (Step 1 only) */}
-          {step === 1 && (
-            <>
-              {!optionsLoading && masterAccounts.length === 0 && (
-                <p className="text-white-50 mb-3">Using default options. Add accounts via API to see dynamic list.</p>
-              )}
-              {/* Desktop: buttons; Mobile: dropdown */}
-              <div className="payment_type_select_mobile">
-                <select
-                  className="payment_type_select deposit_btn_style"
-                  value={selectedPayment}
-                  onChange={(e) => handlePaymentTypeChange(e.target.value)}
-                  aria-label="Select payment method"
-                >
-                  <option value="bank">Bank Transfer</option>
-                  {upiAccounts.length > 0 && <option value="upi">Payment</option>}
-                </select>
-              </div>
-              <div className="payment_topbr payment_topbr_buttons">
-                <button
-                  type="button"
-                  className={selectedPayment === 'bank' ? 'active' : ''}
-                  onClick={() => handlePaymentTypeChange('bank')}
-                >
-                  Bank
-                </button>
-                {upiAccounts.length > 0 && (
-                  <button
-                    type="button"
-                    className={selectedPayment === 'upi' ? 'active' : ''}
-                    onClick={() => handlePaymentTypeChange('upi')}
-                  >
-                    UPI
-                  </button>
-                )}
+              <div className="top_bar_hd">
+                <h2>Deposit</h2>
+                <p>
+                  {step === 1
+                    ? 'Select payment method, choose or enter amount, then click Next.'
+                    : 'Pay to the account below and enter your payment details.'}
+                </p>
               </div>
 
-              {/* Option 1, Option 2, ... – API se jitne aaye utne, nahi to fallback 3 options */}
-              <div className="payment_topbr payment_topbr_options">
-                {currentOptionList.map((acc, idx) => (
-                  <button
-                    key={acc._id}
-                    type="button"
-                    className={safeOptionIndex === idx ? 'active' : ''}
-                    onClick={() => setSelectedOptionIndex(idx)}
-                  >
-                    Option {idx + 1}
-                  </button>
-                ))}
-              </div>
+              {/* Step indicator */}
 
-              {/* Predefined amount list */}
-              <div className="payment_selected_dl">
-                <ul>
-                  {AMOUNT_OPTIONS.map((value) => (
-                    <li key={value}>
-                      <button
-                        type="button"
-                        className={selectedAmount === value ? 'active' : ''}
-                        onClick={() => handleAmountOption(value)}
-                      >
-                        +{value.toLocaleString('en-IN')}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
 
-              {/* Amount input */}
-              <div className="enter_amount_deposit">
-                <h5>Enter Amount (INR)</h5>
-                {(minAllowed !== MIN_AMOUNT || maxAllowed !== MAX_AMOUNT || (transactionLimits?.bonusPercentage != null)) && (
-                  <p className="text-white-50 small mb-2">
-                    Limit: ₹{minAllowed.toLocaleString('en-IN')} – ₹{maxAllowed.toLocaleString('en-IN')}.
-                    {transactionLimits?.bonusPercentage != null && ` Bonus: ${Number(transactionLimits.bonusPercentage)}%.`}
-                  </p>
-                )}
-                <div className="enter_filed d-flex">
-                  <input
-                    type="text"
-                    placeholder="Enter Amount To Be Deposited"
-                    value={amountInput}
-                    onChange={(e) => setAmountInput(e.target.value)}
-                  />
-                  <button type="button" onClick={handleClearAmount}>
-                    Clear
-                  </button>
-                </div>
-              </div>
-
-              {/* Next button – Step 1 */}
-              <div className="payment_btn">
-                <button
-                  type="button"
-                  className="confirm_payment_btn next_btn"
-                  onClick={handleNext}
-                  disabled={optionsLoading}
-                >
-                  Next
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* Step 2: Bank/UPI details + Transfer type + UTR + Payment proof */}
-          {step === 2 && (
-            <div className="account_detail_payment deposit_step2">
-              <button type="button" className="deposit_back_btn" onClick={handleBack}>
-                Back
-              </button>
-
-              <h5>Pay to this {selectedAccount?.type === 'bank' ? 'bank' : 'UPI'} account</h5>
-              {selectedAccount?.type === 'bank' ? (
+              {/* 1. Method: Bank / UPI (Step 1 only) */}
+              {step === 1 && (
                 <>
-                  <ul>
-                    <li><span>Bank name</span>{selectedAccount.bankName || '—'}</li>
-                    <li><span>Account Holder Name</span><span className="text_uppercase">{selectedAccount.accountHolderName || '—'}</span></li>
-                    <li><span>Account Number</span>{selectedAccount.accountNumber || '—'}</li>
-                    <li><span>IFSC Code</span>{selectedAccount.ifscCode || '—'}</li>
-                  </ul>
-                  <div className="enter_amount_deposit">
-                    <h5>Transfer type (IMPS / NEFT / RTGS)</h5>
+                  {!optionsLoading && masterAccounts.length === 0 && (
+                    <p className="text-white-50 mb-3">Using default options. Add accounts via API to see dynamic list.</p>
+                  )}
+                  {/* Desktop: buttons; Mobile: dropdown */}
+                  <div className="payment_type_select_mobile">
                     <select
-                      className="premium_form_input"
-                      value={bankTransferMethod}
-                      onChange={(e) => setBankTransferMethod(e.target.value)}
-                      style={{ width: '100%', maxWidth: '320px', padding: '10px 12px' }}
+                      className="payment_type_select deposit_btn_style"
+                      value={selectedPayment}
+                      onChange={(e) => handlePaymentTypeChange(e.target.value)}
+                      aria-label="Select payment method"
                     >
-                      {BANK_TRANSFER_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
+                      <option value="bank">Bank Transfer</option>
+                      {upiAccounts.length > 0 && <option value="upi">UPI</option>}
                     </select>
                   </div>
-                </>
-              ) : selectedAccount?.type === 'upi' ? (
-                <div className="upi_details_capcha">
-                  <div className="upi_details_capcha_img upi_qr_wrapper">
-                    {selectedAccount.upiId ? (
-                      <QRCodeSVG
-                        value={buildUpiUri(selectedAccount.upiId, selectedAccount.upiName, amountInput)}
-                        size={280}
-                        level="M"
-                        includeMargin={true}
-                        aria-label="Scan to pay via UPI"
+                  <div className="payment_topbr payment_topbr_buttons">
+                    <button
+                      type="button"
+                      className={selectedPayment === 'bank' ? 'active' : ''}
+                      onClick={() => handlePaymentTypeChange('bank')}
+                    >
+                      Bank
+                    </button>
+                    {upiAccounts.length > 0 && (
+                      <button
+                        type="button"
+                        className={selectedPayment === 'upi' ? 'active' : ''}
+                        onClick={() => handlePaymentTypeChange('upi')}
+                      >
+                        UPI
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Option 1, Option 2, ... – API se jitne aaye utne, nahi to fallback 3 options */}
+                  <div className="payment_topbr payment_topbr_options">
+                    {currentOptionList.map((acc, idx) => (
+                      <button
+                        key={acc._id}
+                        type="button"
+                        className={safeOptionIndex === idx ? 'active' : ''}
+                        onClick={() => setSelectedOptionIndex(idx)}
+                      >
+                        Option {idx + 1}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Predefined amount list */}
+                  <div className="payment_selected_dl">
+                    <ul>
+                      {AMOUNT_OPTIONS.map((value) => (
+                        <li key={value}>
+                          <button
+                            type="button"
+                            className={selectedAmount === value ? 'active' : ''}
+                            onClick={() => handleAmountOption(value)}
+                          >
+                            +{value.toLocaleString('en-IN')}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Amount input */}
+                  <div className="enter_amount_deposit">
+                    <h5>Enter Amount (INR)</h5>
+                    {(minAllowed !== MIN_AMOUNT || maxAllowed !== MAX_AMOUNT || (transactionLimits?.bonusPercentage != null)) && (
+                      <p className="text-white-50 small mb-2">
+                        Limit: ₹{minAllowed.toLocaleString('en-IN')} – ₹{maxAllowed.toLocaleString('en-IN')}.
+                        {transactionLimits?.bonusPercentage != null && ` Bonus: ${Number(transactionLimits.bonusPercentage)}%.`}
+                      </p>
+                    )}
+                    <div className="enter_filed d-flex">
+                      <input
+                        type="text"
+                        placeholder="Enter Amount To Be Deposited"
+                        value={amountInput}
+                        onChange={(e) => setAmountInput(e.target.value)}
                       />
-                    ) : (
-                      <img src="images/upi_capcha.svg" alt="UPI" />
-                    )}
+                      <button type="button" onClick={handleClearAmount}>
+                        Clear
+                      </button>
+                    </div>
                   </div>
-                  <div className="capcha_text">
-                    UPI ID :
-                    <p> {selectedAccount.upiId || '—'}</p>
-                    {selectedAccount.upiName && (
-                      <small className="text-white-50 d-block">{selectedAccount.upiName}</small>
-                    )}
+
+                  {/* Next button – Step 1 */}
+                  <div className="payment_btn">
+                    <button
+                      type="button"
+                      className="confirm_payment_btn next_btn"
+                      onClick={handleNext}
+                      disabled={optionsLoading}
+                    >
+                      Next
+                    </button>
                   </div>
-                </div>
-              ) : (
-                <p className="text-white-50">No account selected.</p>
+                </>
               )}
 
-              <div className="enter_amount_deposit">
-                <h5>UTR Number / Reference ID (from your payment)</h5>
-                <div className="enter_filed d-flex">
-                  <input
-                    type="text"
-                    placeholder="Enter UTR / Reference ID"
-                    value={utrInput}
-                    onChange={(e) => setUtrInput(e.target.value)}
-                  />
-                  <button type="button" onClick={() => setUtrInput('')}>
-                    Clear
+              {/* Step 2: Bank/UPI details + Transfer type + UTR + Payment proof */}
+              {step === 2 && (
+                <div className="account_detail_payment deposit_step2">
+                  <button type="button" className="deposit_back_btn" onClick={handleBack}>
+                    Back
                   </button>
+
+                  <h5>Pay to this {selectedAccount?.type === 'bank' ? 'bank' : 'UPI'} account</h5>
+                  {selectedAccount?.type === 'bank' ? (
+                    <>
+                      <ul>
+                        <li><span>Bank name</span>{selectedAccount.bankName || '—'}</li>
+                        <li><span>Account Holder Name</span><span className="text_uppercase">{selectedAccount.accountHolderName || '—'}</span></li>
+                        <li><span>Account Number</span>{selectedAccount.accountNumber || '—'}</li>
+                        <li><span>IFSC Code</span>{selectedAccount.ifscCode || '—'}</li>
+                      </ul>
+                      <div className="enter_amount_deposit">
+                        <h5>Transfer type (IMPS / NEFT / RTGS)</h5>
+                        <select
+                          className="premium_form_input"
+                          value={bankTransferMethod}
+                          onChange={(e) => setBankTransferMethod(e.target.value)}
+                          style={{ width: '100%', maxWidth: '320px', padding: '10px 12px' }}
+                        >
+                          {BANK_TRANSFER_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  ) : selectedAccount?.type === 'upi' ? (
+                    <div className="upi_details_capcha">
+                      <div className="upi_details_capcha_img upi_qr_wrapper">
+                        {selectedAccount.upiId ? (
+                          <QRCodeSVG
+                            value={buildUpiUri(selectedAccount.upiId, selectedAccount.upiName, amountInput)}
+                            size={280}
+                            level="M"
+                            includeMargin={true}
+                            aria-label="Scan to pay via UPI"
+                          />
+                        ) : (
+                          <img src="images/upi_capcha.svg" alt="UPI" />
+                        )}
+                      </div>
+                      <div className="capcha_text">
+                        UPI ID :
+                        <p> {selectedAccount.upiId || '—'}</p>
+                        {selectedAccount.upiName && (
+                          <small className="text-white-50 d-block">{selectedAccount.upiName}</small>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-white-50">No account selected.</p>
+                  )}
+
+                  <div className="enter_amount_deposit">
+                    <h5>UTR Number / Reference ID (from your payment)</h5>
+                    <div className="enter_filed d-flex">
+                      <input
+                        type="text"
+                        placeholder="Enter UTR / Reference ID"
+                        value={utrInput}
+                        onChange={(e) => setUtrInput(e.target.value)}
+                      />
+                      <button type="button" onClick={() => setUtrInput('')}>
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="enter_amount_deposit file_upload_section">
+                    <h5>Screenshot (payment proof)</h5>
+                    <div
+                      className="file_upload_trigger"
+                      onClick={() => fileInputRef.current?.click()}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="file_upload_input"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          setPaymentProofFile(file || null);
+                          setSelectedFileName(file ? file.name : '');
+                        }}
+                        aria-label="Choose screenshot"
+                      />
+                      <i className="ri-upload-cloud-line file_upload_icon" aria-hidden />
+                      <span className="file_upload_text">
+                        {selectedFileName || 'Choose screenshot (optional)'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="note_text note_text_step2">
+                    Note: Please allow up to 30 mins for deposit to credit. For delay, contact support.
+                  </p>
+
+                  <div className="payment_btn">
+                    <button
+                      type="button"
+                      className="confirm_payment_btn"
+                      onClick={handleConfirmPayment}
+                      disabled={submitLoading}
+                    >
+                      {submitLoading ? 'Submitting...' : 'Confirm Payment'}
+                    </button>
+                  </div>
                 </div>
-              </div>
-
-              <div className="enter_amount_deposit file_upload_section">
-                <h5>Screenshot (payment proof)</h5>
-                <div
-                  className="file_upload_trigger"
-                  onClick={() => fileInputRef.current?.click()}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="file_upload_input"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      setPaymentProofFile(file || null);
-                      setSelectedFileName(file ? file.name : '');
-                    }}
-                    aria-label="Choose screenshot"
-                  />
-                  <i className="ri-upload-cloud-line file_upload_icon" aria-hidden />
-                  <span className="file_upload_text">
-                    {selectedFileName || 'Choose screenshot (optional)'}
-                  </span>
-                </div>
-              </div>
-
-              <p className="note_text note_text_step2">
-                Note: Please allow up to 30 mins for deposit to credit. For delay, contact support.
-              </p>
-
-              <div className="payment_btn">
-                <button
-                  type="button"
-                  className="confirm_payment_btn"
-                  onClick={handleConfirmPayment}
-                  disabled={submitLoading}
-                >
-                  {submitLoading ? 'Submitting...' : 'Confirm Payment'}
-                </button>
-              </div>
-            </div>
-          )}
+              )}
             </>
           )}
         </div>

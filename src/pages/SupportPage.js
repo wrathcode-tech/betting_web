@@ -473,7 +473,7 @@ const SupportPage = () => {
               </div>
             </div>
 
-            <div className="transactions_table_wrapper">
+            <div className="transactions_table_wrapper support_tickets_table_wrapper">
               <table className="transactions_table">
                 <thead>
                   <tr>
@@ -499,8 +499,8 @@ const SupportPage = () => {
                               : "issue_text"
                           }
                         >
-                          <td>{(ticketPage - 1) * TICKETS_PAGE_SIZE + index + 1}</td>
-                          <td>
+                          <td data-label="Sr No.">{(ticketPage - 1) * TICKETS_PAGE_SIZE + index + 1}</td>
+                          <td data-label="Ticket ID">
                             {tid || "N/A"}{" "}
                             <button
                               type="button"
@@ -511,16 +511,16 @@ const SupportPage = () => {
                               <i className="ri-file-copy-line" aria-hidden />
                             </button>
                           </td>
-                          <td className="text-capitalize">
+                          <td data-label="Category" className="text-capitalize">
                             {item?.category?.replace(/_/g, " ") || "N/A"}
                           </td>
-                          <td>{item?.subject || "N/A"}</td>
-                          <td>
+                          <td data-label="Subject">{item?.subject || "N/A"}</td>
+                          <td data-label="Priority">
                             <span className="support_priority_badge">
                               {item?.priority || "N/A"}
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Status">
                             <span className={`status_badge ${getStatusClass(item?.status)}`}>
                               {item?.status || "N/A"}
                             </span>
@@ -530,7 +530,7 @@ const SupportPage = () => {
                               </small>
                             )}
                           </td>
-                          <td>
+                          <td data-label="Action">
                             <button
                               type="button"
                               className="support_btn_view"
@@ -543,7 +543,7 @@ const SupportPage = () => {
                       );
                     })
                   ) : (
-                    <tr>
+                    <tr className="no-data-row">
                       <td colSpan="7">
                         <div
                           style={{ textAlign: "center" }}

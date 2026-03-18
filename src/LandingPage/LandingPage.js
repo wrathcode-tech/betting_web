@@ -137,11 +137,24 @@ function LandingPage() {
 
   const [topSportsIndex, setTopSportsIndex] = useState(0);
 
-  // TOP Matches from API (cricket) + socket for live updates
+  // TOP Matches from API (cricket, tennis, soccer) + socket for live updates
   const [topMatchesFromApi, setTopMatchesFromApi] = useState([]);
   const [topMatchesLoading, setTopMatchesLoading] = useState(true);
   const [topMatchesOddsByGameId, setTopMatchesOddsByGameId] = useState({});
   const topMatchesOddsSubscribedRef = useRef(new Set());
+
+  const [topTennisMatchesFromApi, setTopTennisMatchesFromApi] = useState([]);
+  const [topTennisMatchesLoading, setTopTennisMatchesLoading] = useState(true);
+  const [topTennisMatchesOddsByGameId, setTopTennisMatchesOddsByGameId] = useState({});
+  const topTennisMatchesOddsSubscribedRef = useRef(new Set());
+
+  const [topSoccerMatchesFromApi, setTopSoccerMatchesFromApi] = useState([]);
+  const [topSoccerMatchesLoading, setTopSoccerMatchesLoading] = useState(true);
+  const [topSoccerMatchesOddsByGameId, setTopSoccerMatchesOddsByGameId] = useState({});
+  const topSoccerMatchesOddsSubscribedRef = useRef(new Set());
+
+  /** id -> 'cricket'|'tennis'|'soccer' for odds callback to update correct state */
+  const topMatchesSubscribedIdToSportRef = useRef(new Map());
 
   // Landing API games (liveCasino, slots, trending, roulette, cardGames)
   const [landingGames, setLandingGames] = useState({
@@ -247,6 +260,71 @@ function LandingPage() {
     return () => { cancelled = true; };
   }, []);
 
+  // Fetch TOP Matches (tennis) from API
+  useEffect(() => {
+    let cancelled = false;
+    setTopTennisMatchesLoading(true);
+    AuthService.sportsbookMatches('tennis')
+      .then((res) => {
+        if (cancelled) return;
+        const list = parseMatchesFromResponse(res);
+        const eventTime = (m) => m.eventTime ?? m.event_time ?? m.startTime;
+        const mapped = list
+          .filter((m) => m.gameId ?? m.game_id ?? m.eventId ?? m.event_id)
+          .map((m) => {
+            const et = eventTime(m);
+            const id = m.gameId ?? m.game_id ?? m.eventId ?? m.event_id;
+            return {
+              id,
+              gameId: m.gameId ?? m.game_id ?? id,
+              eventId: m.eventId ?? m.event_id ?? id,
+              tournament: m.seriesName ?? m.series_name ?? 'Tennis',
+              teams: m.eventName ?? m.event_name ?? m.name ?? '—',
+              time: formatMatchTime(et),
+              eventTime: et,
+              inPlay: m.inPlay ?? m.in_play ?? false,
+            };
+          })
+          .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
+        setTopTennisMatchesFromApi(mapped);
+      })
+      .catch(() => { if (!cancelled) setTopTennisMatchesFromApi([]); })
+      .finally(() => { if (!cancelled) setTopTennisMatchesLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fetch TOP Matches (soccer/football) from API
+  useEffect(() => {
+    let cancelled = false;
+    setTopSoccerMatchesLoading(true);
+    AuthService.sportsbookMatches('soccer')
+      .then((res) => {
+        if (cancelled) return;
+        const list = parseMatchesFromResponse(res);
+        const eventTime = (m) => m.eventTime ?? m.event_time ?? m.startTime;
+        const mapped = list
+          .filter((m) => m.gameId ?? m.game_id)
+          .map((m) => {
+            const et = eventTime(m);
+            return {
+              id: m.gameId ?? m.game_id,
+              gameId: m.gameId ?? m.game_id,
+              eventId: m.eventId ?? m.event_id,
+              tournament: m.seriesName ?? m.series_name ?? 'Football',
+              teams: m.eventName ?? m.event_name ?? m.name ?? '—',
+              time: formatMatchTime(et),
+              eventTime: et,
+              inPlay: m.inPlay ?? m.in_play ?? false,
+            };
+          })
+          .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
+        setTopSoccerMatchesFromApi(mapped);
+      })
+      .catch(() => { if (!cancelled) setTopSoccerMatchesFromApi([]); })
+      .finally(() => { if (!cancelled) setTopSoccerMatchesLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
   // Socket: live matches for TOP Matches (when user has token)
   useEffect(() => {
     const token = sessionStorage.getItem('token');
@@ -277,49 +355,178 @@ function LandingPage() {
       setTopMatchesFromApi((prev) => (mapped.length > 0 ? mapped : prev));
       setTopMatchesLoading(false);
     };
+    const mapTennis = (list) => {
+      const arr = Array.isArray(list) ? list : (Array.isArray(list?.data) ? list.data : []);
+      return arr
+        .filter((m) => m.gameId ?? m.game_id ?? m.eventId ?? m.event_id)
+        .map((m) => {
+          const et = eventTime(m);
+          const id = m.gameId ?? m.game_id ?? m.eventId ?? m.event_id;
+          return {
+            id,
+            gameId: m.gameId ?? m.game_id ?? id,
+            eventId: m.eventId ?? m.event_id ?? id,
+            tournament: m.seriesName ?? m.series_name ?? 'Tennis',
+            teams: m.eventName ?? m.event_name ?? m.name ?? '—',
+            time: formatMatchTime(et),
+            eventTime: et,
+            inPlay: m.inPlay ?? m.in_play ?? false,
+          };
+        })
+        .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
+    };
+    const mapSoccer = (list) => {
+      const arr = Array.isArray(list) ? list : (Array.isArray(list?.data) ? list.data : []);
+      return arr
+        .filter((m) => m.gameId ?? m.game_id)
+        .map((m) => {
+          const et = eventTime(m);
+          return {
+            id: m.gameId ?? m.game_id,
+            gameId: m.gameId ?? m.game_id,
+            eventId: m.eventId ?? m.event_id,
+            tournament: m.seriesName ?? m.series_name ?? 'Football',
+            teams: m.eventName ?? m.event_name ?? m.name ?? '—',
+            time: formatMatchTime(et),
+            eventTime: et,
+            inPlay: m.inPlay ?? m.in_play ?? false,
+          };
+        })
+        .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
+    };
+    const onTennisMatches = (payload) => {
+      if (payload?.sport !== 'tennis') return;
+      const raw = payload.data ?? payload.matches;
+      const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : []);
+      const mapped = mapTennis(list);
+      if (mapped.length > 0) setTopTennisMatchesFromApi(mapped);
+      setTopTennisMatchesLoading(false);
+    };
+    const onSoccerMatches = (payload) => {
+      if (payload?.sport !== 'soccer') return;
+      const raw = payload.data ?? payload.matches;
+      const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : []);
+      const mapped = mapSoccer(list);
+      if (mapped.length > 0) setTopSoccerMatchesFromApi(mapped);
+      setTopSoccerMatchesLoading(false);
+    };
     addMatchesListener(onMatches);
+    addMatchesListener(onTennisMatches);
+    addMatchesListener(onSoccerMatches);
     subscribeMatches('cricket');
+    subscribeMatches('tennis');
+    subscribeMatches('soccer');
     return () => {
       removeMatchesListener(onMatches);
+      removeMatchesListener(onTennisMatches);
+      removeMatchesListener(onSoccerMatches);
       unsubscribeMatches('cricket');
-      topMatchesOddsSubscribedRef.current.forEach((gid) => unsubscribeOdds(gid));
+      unsubscribeMatches('tennis');
+      unsubscribeMatches('soccer');
+      topMatchesOddsSubscribedRef.current.forEach((gid) => unsubscribeOdds(gid, 'cricket'));
       topMatchesOddsSubscribedRef.current.clear();
+      topTennisMatchesOddsSubscribedRef.current.forEach((id) => unsubscribeOdds(id, 'tennis'));
+      topTennisMatchesOddsSubscribedRef.current.clear();
+      topSoccerMatchesOddsSubscribedRef.current.forEach((gid) => unsubscribeOdds(gid, 'soccer'));
+      topSoccerMatchesOddsSubscribedRef.current.clear();
+      topMatchesSubscribedIdToSportRef.current.clear();
     };
   }, []);
 
-  // Socket: live odds for TOP Matches
+  // Socket: live odds for TOP Matches (cricket, tennis, soccer – dispatch by subscribed id)
   useEffect(() => {
     const onOdds = (payload) => {
-      if (!payload?.gameId || payload?.data === undefined) return;
+      const id = payload?.gameId ?? payload?.eventId;
+      if (!id || payload?.data === undefined) return;
       const matchOdds = Array.isArray(payload.data?.matchOdds) ? payload.data.matchOdds : [];
-      setTopMatchesOddsByGameId((prev) => ({ ...prev, [payload.gameId]: { matchOdds } }));
+      const sport = topMatchesSubscribedIdToSportRef.current.get(String(id));
+      if (sport === 'tennis') {
+        setTopTennisMatchesOddsByGameId((prev) => ({ ...prev, [id]: { matchOdds } }));
+      } else if (sport === 'soccer') {
+        setTopSoccerMatchesOddsByGameId((prev) => ({ ...prev, [id]: { matchOdds } }));
+      } else {
+        setTopMatchesOddsByGameId((prev) => ({ ...prev, [id]: { matchOdds } }));
+      }
     };
     addOddsListener(onOdds);
     return () => removeOddsListener(onOdds);
   }, []);
 
-  // Subscribe/unsubscribe odds for visible TOP Matches (first 15 gameIds)
+  // Subscribe/unsubscribe odds for visible TOP Matches – cricket (first 15)
   useEffect(() => {
     const gameIds = topMatchesFromApi.slice(0, 15).map((m) => m.gameId).filter(Boolean);
     const prev = topMatchesOddsSubscribedRef.current;
+    const refMap = topMatchesSubscribedIdToSportRef.current;
     gameIds.forEach((gameId) => {
       if (!prev.has(gameId)) {
-        subscribeOdds(gameId);
+        subscribeOdds(gameId, 'cricket');
+        refMap.set(String(gameId), 'cricket');
         prev.add(gameId);
       }
     });
     prev.forEach((gameId) => {
       if (!gameIds.includes(gameId)) {
-        unsubscribeOdds(gameId);
+        unsubscribeOdds(gameId, 'cricket');
+        refMap.delete(String(gameId));
         prev.delete(gameId);
       }
     });
   }, [topMatchesFromApi]);
 
+  // Subscribe/unsubscribe odds for visible TOP Tennis Matches (first 15)
+  useEffect(() => {
+    const ids = topTennisMatchesFromApi.slice(0, 10).map((m) => m.gameId ?? m.eventId).filter(Boolean);
+    const prev = topTennisMatchesOddsSubscribedRef.current;
+    const refMap = topMatchesSubscribedIdToSportRef.current;
+    ids.forEach((id) => {
+      if (!prev.has(id)) {
+        subscribeOdds(id, 'tennis');
+        refMap.set(String(id), 'tennis');
+        prev.add(id);
+      }
+    });
+    prev.forEach((id) => {
+      if (!ids.includes(id)) {
+        unsubscribeOdds(id, 'tennis');
+        refMap.delete(String(id));
+        prev.delete(id);
+      }
+    });
+  }, [topTennisMatchesFromApi]);
+
+  // Subscribe/unsubscribe odds for visible TOP Soccer Matches (first 15)
+  useEffect(() => {
+    const gameIds = topSoccerMatchesFromApi.slice(0, 10).map((m) => m.gameId).filter(Boolean);
+    const prev = topSoccerMatchesOddsSubscribedRef.current;
+    const refMap = topMatchesSubscribedIdToSportRef.current;
+    gameIds.forEach((gameId) => {
+      if (!prev.has(gameId)) {
+        subscribeOdds(gameId, 'soccer');
+        refMap.set(String(gameId), 'soccer');
+        prev.add(gameId);
+      }
+    });
+    prev.forEach((gameId) => {
+      if (!gameIds.includes(gameId)) {
+        unsubscribeOdds(gameId, 'soccer');
+        refMap.delete(String(gameId));
+        prev.delete(gameId);
+      }
+    });
+  }, [topSoccerMatchesFromApi]);
+
   // Stable key: only re-fetch odds when the set of gameIds actually changes (avoids repeated calls on socket updates)
   const topMatchesOddsFetchKey = useMemo(
     () => topMatchesFromApi.slice(0, 8).map((m) => m.gameId).filter(Boolean).sort().join(','),
     [topMatchesFromApi]
+  );
+  const topTennisMatchesOddsFetchKey = useMemo(
+    () => topTennisMatchesFromApi.slice(0, 10).map((m) => m.gameId ?? m.eventId).filter(Boolean).sort().join(','),
+    [topTennisMatchesFromApi]
+  );
+  const topSoccerMatchesOddsFetchKey = useMemo(
+    () => topSoccerMatchesFromApi.slice(0, 10).map((m) => m.gameId).filter(Boolean).sort().join(','),
+    [topSoccerMatchesFromApi]
   );
 
   // Fetch odds for first 8 TOP Matches (for back/lay display) – REST fallback when no socket
@@ -351,6 +558,62 @@ function LandingPage() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-fetch when gameId set changes (topMatchesOddsFetchKey), not on every topMatchesFromApi ref change
   }, [topMatchesOddsFetchKey]);
+
+  useEffect(() => {
+    const ids = topTennisMatchesFromApi.slice(0, 10).map((m) => m.gameId ?? m.eventId).filter(Boolean);
+    if (ids.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      ids.map((id) =>
+        AuthService.sportsbookOdds('tennis', id).then((res) => ({ id, res }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      setTopTennisMatchesOddsByGameId((prev) => {
+        const next = { ...prev };
+        results.forEach(({ id, res }) => {
+          if (!res) return;
+          const raw = res.data ?? res;
+          const d = raw?.data ?? raw;
+          const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds
+            : Array.isArray(raw?.matchOdds) ? raw.matchOdds
+            : Array.isArray(res?.matchOdds) ? res.matchOdds
+            : [];
+          next[id] = { ...(next[id] || {}), matchOdds };
+        });
+        return next;
+      });
+    }).catch(() => { });
+    return () => { cancelled = true; };
+  }, [topTennisMatchesOddsFetchKey]);
+
+  useEffect(() => {
+    const gameIds = topSoccerMatchesFromApi.slice(0, 10).map((m) => m.gameId).filter(Boolean);
+    if (gameIds.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      gameIds.map((gameId) =>
+        AuthService.sportsbookOdds('soccer', gameId).then((res) => ({ gameId, res }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      setTopSoccerMatchesOddsByGameId((prev) => {
+        const next = { ...prev };
+        results.forEach(({ gameId, res }) => {
+          if (!res) return;
+          const raw = res.data ?? res;
+          const d = raw?.data ?? raw;
+          const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds
+            : Array.isArray(raw?.matchOdds) ? raw.matchOdds
+            : Array.isArray(res?.matchOdds) ? res.matchOdds
+            : [];
+          next[gameId] = { ...(next[gameId] || {}), matchOdds };
+        });
+        return next;
+      });
+    }).catch(() => { });
+    return () => { cancelled = true; };
+  }, [topSoccerMatchesOddsFetchKey]);
 
   // Hero 3D slider – 7 items, 5 visible at a time, infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);
@@ -414,8 +677,8 @@ function LandingPage() {
   const topSportsDisplayItems = useMemo(() => [...topSportsItems, { viewAll: true, to: '/sportsbook' }], [])
 
   // TOP Matches: grouped by day (Live, Today, Tomorrow, …) for table view
-  const topMatchesByDay = useMemo(() => {
-    const list = topMatchesFromApi.map((m) => {
+  const groupMatchesByDay = (matches) => {
+    const list = matches.map((m) => {
       let timeOnly = '';
       if (m.eventTime) {
         try {
@@ -441,12 +704,26 @@ function LandingPage() {
       return [{ day: 'Live', matches: liveMatches, isLiveSection: true }, ...daySections];
     }
     return daySections;
-  }, [topMatchesFromApi]);
+  };
+  const topMatchesByDay = useMemo(() => groupMatchesByDay(topMatchesFromApi), [topMatchesFromApi]);
+  const topTennisMatchesByDay = useMemo(() => groupMatchesByDay(topTennisMatchesFromApi.slice(0, 10)), [topTennisMatchesFromApi]);
+  const topSoccerMatchesByDay = useMemo(() => groupMatchesByDay(topSoccerMatchesFromApi.slice(0, 10)), [topSoccerMatchesFromApi]);
 
   const navigate = useNavigate();
   const handleTopMatchRowClick = (e, match) => {
     if (e.target.closest('button')) return;
     if (match?.gameId) navigate('/cricket', { state: { gameId: match.gameId, eventName: match.teams, sportName: 'cricket', inPlay: match.inPlay, seriesName: match.tournament } });
+    else navigate('/sports');
+  };
+  const handleTopTennisMatchRowClick = (e, match) => {
+    if (e.target.closest('button')) return;
+    const id = match?.gameId ?? match?.eventId;
+    if (id) navigate('/tennis', { state: { gameId: id, eventId: id, eventName: match.teams, sportName: 'tennis', inPlay: match.inPlay, seriesName: match.tournament } });
+    else navigate('/sports');
+  };
+  const handleTopSoccerMatchRowClick = (e, match) => {
+    if (e.target.closest('button')) return;
+    if (match?.gameId) navigate('/soccer', { state: { gameId: match.gameId, eventName: match.teams, sportName: 'soccer', inPlay: match.inPlay, seriesName: match.tournament } });
     else navigate('/sports');
   };
 
@@ -1354,20 +1631,22 @@ function LandingPage() {
                 </table>
               </div>
 
+              {/* Mobile: full data – MATCH | Markets (MC, BM, P, D, F) | Back | Lay */}
               <div className="sports_grid_table_wrap mobile_view">
                 <table className="sports_grid_table sports_grid_table_mobile">
                   <thead>
                     <tr className="sports_grid_header_row">
                       <th className="sports_grid_match_cell">MATCH</th>
+                      <th className="sports_grid_mobile_markets_header" aria-label="Markets"><span className="sports_grid_header_markets">Markets</span></th>
                       <th className="sports_grid_mobile_backs_header">Back</th>
                       <th className="sports_grid_mobile_lays_header">Lay</th>
                     </tr>
                   </thead>
                   <tbody>
                     {topMatchesLoading ? (
-                      <tr><td colSpan={3} className="sports_grid_loading">Loading cricket matches...</td></tr>
+                      <tr><td colSpan={4} className="sports_grid_loading">Loading cricket matches...</td></tr>
                     ) : topMatchesByDay.length === 0 ? (
-                      <tr><td colSpan={3} className="sports_grid_empty">No matches at the moment.</td></tr>
+                      <tr><td colSpan={4} className="sports_grid_empty">No matches at the moment.</td></tr>
                     ) : (
                       topMatchesByDay.map(({ day, matches }) =>
                         matches.map((match, idx) => {
@@ -1398,6 +1677,13 @@ function LandingPage() {
                                 </div>
                                 <div className="sports_grid_match_info">
                                   <div className="sports_grid_teams">{match.teams}</div>
+                                </div>
+                              </td>
+                              <td className="sports_grid_mobile_markets_cell">
+                                <div className="sports_grid_market_icons">
+                                  {MARKET_ICONS.map((icon) => (
+                                    <span key={icon} className="sports_grid_market_icon">{icon}</span>
+                                  ))}
                                 </div>
                               </td>
                               <td className="sports_grid_mobile_backs_cell">
@@ -1444,9 +1730,409 @@ function LandingPage() {
           </div>
         </div>
 
+        {/* Tennis Matches – same layout as Cricket */}
+        <div className="top_match_section sportsmatch_s">
+          <div className="container-fluid">
+            <div className="top_hd d-flex align-items-center justify-content-between">
+              <div className="sports_grid_title">
+                <img src="images/menu-icon20.svg" alt="" className="sports_grid_icon" />
+                <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Tennis Matches</h2></Link>
+              </div>
+              <div className="top_hd_right d-flex align-items-center gap-2">
+                <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
+              </div>
+            </div>
+            <div className="sports_grid_section">
+              <div className="sports_grid_table_wrap desktop_view">
+                <table className="sports_grid_table">
+                  <thead>
+                    <tr className="sports_grid_header_row">
+                      <th className="sports_grid_match_cell">MATCH</th>
+                      <th className="sports_grid_icons_cell" aria-label="Markets"><span className="sports_grid_header_markets">Markets</span></th>
+                      {[0, 1, 2].map((i) => (
+                        <React.Fragment key={i}>
+                          <th className="sports_grid_odds_cell">Back</th>
+                          <th className="sports_grid_odds_cell">Lay</th>
+                        </React.Fragment>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topTennisMatchesLoading ? (
+                      <tr><td colSpan={8} className="sports_grid_loading">Loading tennis matches...</td></tr>
+                    ) : topTennisMatchesByDay.length === 0 ? (
+                      <tr><td colSpan={8} className="sports_grid_empty">No matches at the moment.</td></tr>
+                    ) : (
+                      topTennisMatchesByDay.map(({ day, matches }) =>
+                        matches.map((match, idx) => {
+                          const oddsId = match.gameId ?? match.eventId;
+                          const oddsPayload = oddsId ? topTennisMatchesOddsByGameId[oddsId] : null;
+                          const matchOdds = oddsPayload?.matchOdds ?? [];
+                          const market = matchOdds[0];
+                          const oddList = market ? getMarketOddList(market) : [];
+                          const cardOdds = oddList.slice(0, 6).map((o) => ({
+                            back: o.b1 ?? o.back ?? '—',
+                            lay: o.l1 ?? o.lay ?? '—',
+                            sizeFormatted: formatOddsSize(o.bs1 ?? o.ls1 ?? o.size),
+                          }));
+                          return (
+                            <tr
+                              key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
+                              className="sports_grid_row"
+                              onClick={(e) => handleTopTennisMatchRowClick(e, match)}
+                            >
+                              <td className="sports_grid_match_cell d-flex align-items-center gap-3">
+                                <div className="sports_grid_match_cell_inner">
+                                  <span className="sports_grid_day_time">{match.dayGroup}{match.timeOnly ? ` ${match.timeOnly}` : ''}</span>
+                                  {match.inPlay && <span className="sports_grid_live">LIVE</span>}
+                                </div>
+                                <div className="sports_grid_match_info">
+                                  <div className="sports_grid_tournament">{match.tournament}</div>
+                                  <div className="sports_grid_teams">{match.teams}</div>
+                                </div>
+                              </td>
+                              <td className="sports_grid_icons_cell">
+                                <div className="sports_grid_market_icons">
+                                  {MARKET_ICONS.map((icon) => (
+                                    <span key={icon} className="sports_grid_market_icon">{icon}</span>
+                                  ))}
+                                </div>
+                              </td>
+                              {[0, 1, 2].map((i) => {
+                                const pair = cardOdds[i];
+                                const disabledClass = !pair ? 'sports_grid_odds_disabled' : '';
+                                return (
+                                  <React.Fragment key={i}>
+                                    <td className={`sports_grid_odds_cell sports_grid_back ${disabledClass}`}>
+                                      {pair ? (
+                                        <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopTennisMatchRowClick(e, match); }}>
+                                          <span className="sports_grid_odds_val">{pair.back}</span>
+                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                        </button>
+                                      ) : (
+                                        <span className="sports_grid_odds_dash"><i className="ri-lock-line" aria-hidden /></span>
+                                      )}
+                                    </td>
+                                    <td className={`sports_grid_odds_cell sports_grid_lay ${disabledClass}`}>
+                                      {pair ? (
+                                        <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopTennisMatchRowClick(e, match); }}>
+                                          <span className="sports_grid_odds_val">{pair.lay}</span>
+                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                        </button>
+                                      ) : (
+                                        <span className="sports_grid_odds_dash"><i className="ri-lock-line" aria-hidden /></span>
+                                      )}
+                                    </td>
+                                  </React.Fragment>
+                                );
+                              })}
+                            </tr>
+                          );
+                        })
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="sports_grid_table_wrap mobile_view">
+                <table className="sports_grid_table sports_grid_table_mobile">
+                  <thead>
+                    <tr className="sports_grid_header_row">
+                      <th className="sports_grid_match_cell">MATCH</th>
+                      <th className="sports_grid_mobile_markets_header" aria-label="Markets"><span className="sports_grid_header_markets">Markets</span></th>
+                      <th className="sports_grid_mobile_backs_header">Back</th>
+                      <th className="sports_grid_mobile_lays_header">Lay</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topTennisMatchesLoading ? (
+                      <tr><td colSpan={4} className="sports_grid_loading">Loading tennis matches...</td></tr>
+                    ) : topTennisMatchesByDay.length === 0 ? (
+                      <tr><td colSpan={4} className="sports_grid_empty">No matches at the moment.</td></tr>
+                    ) : (
+                      topTennisMatchesByDay.map(({ day, matches }) =>
+                        matches.map((match, idx) => {
+                          const oddsId = match.gameId ?? match.eventId;
+                          const oddsPayload = oddsId ? topTennisMatchesOddsByGameId[oddsId] : null;
+                          const matchOdds = oddsPayload?.matchOdds ?? [];
+                          const market = matchOdds[0];
+                          const oddList = market ? getMarketOddList(market) : [];
+                          const cardOdds = oddList.slice(0, 6).map((o) => ({
+                            back: o.b1 ?? o.back ?? '—',
+                            lay: o.l1 ?? o.lay ?? '—',
+                            sizeFormatted: formatOddsSize(o.bs1 ?? o.ls1 ?? o.size),
+                          }));
+                          const padTo3 = (arr) => { const a = [...arr]; while (a.length < 3) a.push(null); return a.slice(0, 3); };
+                          const sortByBack = (a, b) => { const na = a ? parseFloat(a.back) : NaN; const nb = b ? parseFloat(b.back) : NaN; if (Number.isNaN(na) && Number.isNaN(nb)) return 0; if (Number.isNaN(na)) return 1; if (Number.isNaN(nb)) return -1; return na - nb; };
+                          const sortByLay = (a, b) => { const na = a ? parseFloat(a.lay) : NaN; const nb = b ? parseFloat(b.lay) : NaN; if (Number.isNaN(na) && Number.isNaN(nb)) return 0; if (Number.isNaN(na)) return 1; if (Number.isNaN(nb)) return -1; return na - nb; };
+                          const backSorted = padTo3([...cardOdds].sort(sortByBack));
+                          const laySorted = padTo3([...cardOdds].sort(sortByLay));
+                          return (
+                            <tr
+                              key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
+                              className="sports_grid_row"
+                              onClick={(e) => handleTopTennisMatchRowClick(e, match)}
+                            >
+                              <td className="sports_grid_match_cell d-flex align-items-center gap-3">
+                                <div className="sports_grid_match_cell_inner">
+                                  <span className="sports_grid_day_time">{match.dayGroup}{match.timeOnly && <span className="sports_grid_time_only"> {match.timeOnly}</span>}</span>
+                                  {match.inPlay && <span className="sports_grid_live">LIVE</span>}
+                                </div>
+                                <div className="sports_grid_match_info">
+                                  <div className="sports_grid_teams">{match.teams}</div>
+                                </div>
+                              </td>
+                              <td className="sports_grid_mobile_markets_cell">
+                                <div className="sports_grid_market_icons">
+                                  {MARKET_ICONS.map((icon) => (
+                                    <span key={icon} className="sports_grid_market_icon">{icon}</span>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="sports_grid_mobile_backs_cell">
+                                <div className="sports_grid_mobile_odds_list">
+                                  {backSorted.map((pair, i) => (
+                                    <div key={i} className={`sports_grid_mobile_odds_item sports_grid_back ${!pair ? 'sports_grid_odds_disabled' : ''}`}>
+                                      {pair ? (
+                                        <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopTennisMatchRowClick(e, match); }}>
+                                          <span className="sports_grid_odds_val">{pair.back}</span>
+                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                        </button>
+                                      ) : (
+                                        <span className="sports_grid_odds_dash"><i className="ri-lock-line" aria-hidden /></span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="sports_grid_mobile_lays_cell">
+                                <div className="sports_grid_mobile_odds_list">
+                                  {laySorted.map((pair, i) => (
+                                    <div key={i} className={`sports_grid_mobile_odds_item sports_grid_lay ${!pair ? 'sports_grid_odds_disabled' : ''}`}>
+                                      {pair ? (
+                                        <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopTennisMatchRowClick(e, match); }}>
+                                          <span className="sports_grid_odds_val">{pair.lay}</span>
+                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                        </button>
+                                      ) : (
+                                        <span className="sports_grid_odds_dash"><i className="ri-lock-line" aria-hidden /></span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
 
-
-
+        {/* Football (Soccer) Matches – same layout as Cricket */}
+        <div className="top_match_section sportsmatch_s">
+          <div className="container-fluid">
+            <div className="top_hd d-flex align-items-center justify-content-between">
+              <div className="sports_grid_title">
+                <i className="ri-football-line sports_grid_icon" style={{ fontSize: '1.5rem' }} aria-hidden />
+                <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Football Matches</h2></Link>
+              </div>
+              <div className="top_hd_right d-flex align-items-center gap-2">
+                <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
+              </div>
+            </div>
+            <div className="sports_grid_section">
+              <div className="sports_grid_table_wrap desktop_view">
+                <table className="sports_grid_table">
+                  <thead>
+                    <tr className="sports_grid_header_row">
+                      <th className="sports_grid_match_cell">MATCH</th>
+                      <th className="sports_grid_icons_cell" aria-label="Markets"><span className="sports_grid_header_markets">Markets</span></th>
+                      {[0, 1, 2].map((i) => (
+                        <React.Fragment key={i}>
+                          <th className="sports_grid_odds_cell">Back</th>
+                          <th className="sports_grid_odds_cell">Lay</th>
+                        </React.Fragment>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topSoccerMatchesLoading ? (
+                      <tr><td colSpan={8} className="sports_grid_loading">Loading football matches...</td></tr>
+                    ) : topSoccerMatchesByDay.length === 0 ? (
+                      <tr><td colSpan={8} className="sports_grid_empty">No matches at the moment.</td></tr>
+                    ) : (
+                      topSoccerMatchesByDay.map(({ day, matches }) =>
+                        matches.map((match, idx) => {
+                          const oddsPayload = match.gameId ? topSoccerMatchesOddsByGameId[match.gameId] : null;
+                          const matchOdds = oddsPayload?.matchOdds ?? [];
+                          const market = matchOdds[0];
+                          const oddList = market ? getMarketOddList(market) : [];
+                          const cardOdds = oddList.slice(0, 6).map((o) => ({
+                            back: o.b1 ?? o.back ?? '—',
+                            lay: o.l1 ?? o.lay ?? '—',
+                            sizeFormatted: formatOddsSize(o.bs1 ?? o.ls1 ?? o.size),
+                          }));
+                          return (
+                            <tr
+                              key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
+                              className="sports_grid_row"
+                              onClick={(e) => handleTopSoccerMatchRowClick(e, match)}
+                            >
+                              <td className="sports_grid_match_cell d-flex align-items-center gap-3">
+                                <div className="sports_grid_match_cell_inner">
+                                  <span className="sports_grid_day_time">{match.dayGroup}{match.timeOnly ? ` ${match.timeOnly}` : ''}</span>
+                                  {match.inPlay && <span className="sports_grid_live">LIVE</span>}
+                                </div>
+                                <div className="sports_grid_match_info">
+                                  <div className="sports_grid_tournament">{match.tournament}</div>
+                                  <div className="sports_grid_teams">{match.teams}</div>
+                                </div>
+                              </td>
+                              <td className="sports_grid_icons_cell">
+                                <div className="sports_grid_market_icons">
+                                  {MARKET_ICONS.map((icon) => (
+                                    <span key={icon} className="sports_grid_market_icon">{icon}</span>
+                                  ))}
+                                </div>
+                              </td>
+                              {[0, 1, 2].map((i) => {
+                                const pair = cardOdds[i];
+                                const disabledClass = !pair ? 'sports_grid_odds_disabled' : '';
+                                return (
+                                  <React.Fragment key={i}>
+                                    <td className={`sports_grid_odds_cell sports_grid_back ${disabledClass}`}>
+                                      {pair ? (
+                                        <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopSoccerMatchRowClick(e, match); }}>
+                                          <span className="sports_grid_odds_val">{pair.back}</span>
+                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                        </button>
+                                      ) : (
+                                        <span className="sports_grid_odds_dash"><i className="ri-lock-line" aria-hidden /></span>
+                                      )}
+                                    </td>
+                                    <td className={`sports_grid_odds_cell sports_grid_lay ${disabledClass}`}>
+                                      {pair ? (
+                                        <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopSoccerMatchRowClick(e, match); }}>
+                                          <span className="sports_grid_odds_val">{pair.lay}</span>
+                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                        </button>
+                                      ) : (
+                                        <span className="sports_grid_odds_dash"><i className="ri-lock-line" aria-hidden /></span>
+                                      )}
+                                    </td>
+                                  </React.Fragment>
+                                );
+                              })}
+                            </tr>
+                          );
+                        })
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="sports_grid_table_wrap mobile_view">
+                <table className="sports_grid_table sports_grid_table_mobile">
+                  <thead>
+                    <tr className="sports_grid_header_row">
+                      <th className="sports_grid_match_cell">MATCH</th>
+                      <th className="sports_grid_mobile_markets_header" aria-label="Markets"><span className="sports_grid_header_markets">Markets</span></th>
+                      <th className="sports_grid_mobile_backs_header">Back</th>
+                      <th className="sports_grid_mobile_lays_header">Lay</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topSoccerMatchesLoading ? (
+                      <tr><td colSpan={4} className="sports_grid_loading">Loading football matches...</td></tr>
+                    ) : topSoccerMatchesByDay.length === 0 ? (
+                      <tr><td colSpan={4} className="sports_grid_empty">No matches at the moment.</td></tr>
+                    ) : (
+                      topSoccerMatchesByDay.map(({ day, matches }) =>
+                        matches.map((match, idx) => {
+                          const oddsPayload = match.gameId ? topSoccerMatchesOddsByGameId[match.gameId] : null;
+                          const matchOdds = oddsPayload?.matchOdds ?? [];
+                          const market = matchOdds[0];
+                          const oddList = market ? getMarketOddList(market) : [];
+                          const cardOdds = oddList.slice(0, 6).map((o) => ({
+                            back: o.b1 ?? o.back ?? '—',
+                            lay: o.l1 ?? o.lay ?? '—',
+                            sizeFormatted: formatOddsSize(o.bs1 ?? o.ls1 ?? o.size),
+                          }));
+                          const padTo3 = (arr) => { const a = [...arr]; while (a.length < 3) a.push(null); return a.slice(0, 3); };
+                          const sortByBack = (a, b) => { const na = a ? parseFloat(a.back) : NaN; const nb = b ? parseFloat(b.back) : NaN; if (Number.isNaN(na) && Number.isNaN(nb)) return 0; if (Number.isNaN(na)) return 1; if (Number.isNaN(nb)) return -1; return na - nb; };
+                          const sortByLay = (a, b) => { const na = a ? parseFloat(a.lay) : NaN; const nb = b ? parseFloat(b.lay) : NaN; if (Number.isNaN(na) && Number.isNaN(nb)) return 0; if (Number.isNaN(na)) return 1; if (Number.isNaN(nb)) return -1; return na - nb; };
+                          const backSorted = padTo3([...cardOdds].sort(sortByBack));
+                          const laySorted = padTo3([...cardOdds].sort(sortByLay));
+                          return (
+                            <tr
+                              key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
+                              className="sports_grid_row"
+                              onClick={(e) => handleTopSoccerMatchRowClick(e, match)}
+                            >
+                              <td className="sports_grid_match_cell d-flex align-items-center gap-3">
+                                <div className="sports_grid_match_cell_inner">
+                                  <span className="sports_grid_day_time">{match.dayGroup}{match.timeOnly && <span className="sports_grid_time_only"> {match.timeOnly}</span>}</span>
+                                  {match.inPlay && <span className="sports_grid_live">LIVE</span>}
+                                </div>
+                                <div className="sports_grid_match_info">
+                                  <div className="sports_grid_teams">{match.teams}</div>
+                                </div>
+                              </td>
+                              <td className="sports_grid_mobile_markets_cell">
+                                <div className="sports_grid_market_icons">
+                                  {MARKET_ICONS.map((icon) => (
+                                    <span key={icon} className="sports_grid_market_icon">{icon}</span>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="sports_grid_mobile_backs_cell">
+                                <div className="sports_grid_mobile_odds_list">
+                                  {backSorted.map((pair, i) => (
+                                    <div key={i} className={`sports_grid_mobile_odds_item sports_grid_back ${!pair ? 'sports_grid_odds_disabled' : ''}`}>
+                                      {pair ? (
+                                        <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopSoccerMatchRowClick(e, match); }}>
+                                          <span className="sports_grid_odds_val">{pair.back}</span>
+                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                        </button>
+                                      ) : (
+                                        <span className="sports_grid_odds_dash"><i className="ri-lock-line" aria-hidden /></span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="sports_grid_mobile_lays_cell">
+                                <div className="sports_grid_mobile_odds_list">
+                                  {laySorted.map((pair, i) => (
+                                    <div key={i} className={`sports_grid_mobile_odds_item sports_grid_lay ${!pair ? 'sports_grid_odds_disabled' : ''}`}>
+                                      {pair ? (
+                                        <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopSoccerMatchRowClick(e, match); }}>
+                                          <span className="sports_grid_odds_val">{pair.lay}</span>
+                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                        </button>
+                                      ) : (
+                                        <span className="sports_grid_odds_dash"><i className="ri-lock-line" aria-hidden /></span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className='container-fluid support_help_container'>
           <div className='support_help_card'>

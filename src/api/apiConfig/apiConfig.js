@@ -13,6 +13,7 @@ export const ApiConfig = {
   bettingSendOtp: "send-otp",
   bettingRegister: "register",
   bettingLogin: "login",
+  bettingDemoLogin: "demo-login",
   bettingRefreshToken: "refresh-token",
   bettingForgotPasswordSendOtp: "forgot-password/send-otp",
   bettingForgotPasswordReset: "forgot-password/reset", // body: mobile, otp, newPassword, confirmNewPassword

@@ -439,7 +439,32 @@
 
     .transactions_header_right {
         width: 100%;
-        flex-wrap: wrap;
+    }
+
+    /* Account Statement page only: search below, All + Export in one row full width */
+    .transactions_header_right.account_statement_header_right {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .transactions_header_right.account_statement_header_right .transactions_search_input {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        max-width: none;
+        width: 100%;
+    }
+
+    .transactions_header_right.account_statement_header_right .transactions_filter_select,
+    .transactions_header_right.account_statement_header_right .export_dropdown_wrapper {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .transactions_header_right.account_statement_header_right .export_dropdown_wrapper .btn_export {
+        width: 100%;
     }
 
     .date_range_picker {
@@ -590,6 +615,16 @@
 
     .transaction_card {
         padding: 14px;
+    }
+
+    .transactions_table {
+        min-width: 100%;
+    }
+
+    .support_tickets_table_wrapper .transactions_table td{ width: 100%; overflow: scroll; }
+    .support_tickets_table_wrapper tbody {
+        width: 100%;
+        display: block;
     }
 
     .transaction_card_title h3 {

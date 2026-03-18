@@ -36,12 +36,28 @@ export default function HistoryTable({ columns = [], data = [], loading = false,
                 {columns.map((col) => {
                   const value = row[col.key];
                   const cell = col.render ? col.render(value, row) : (value != null ? String(value) : '—');
-                  return <td key={col.key}>{cell}</td>;
+                  return <td key={col.key} data-label={col.label}>{cell}</td>;
                 })}
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="history_cards_wrapper" aria-hidden="true">
+        {data.map((row, idx) => (
+          <div key={row.id ?? row._id ?? idx} className="history_card">
+            {columns.map((col) => {
+              const value = row[col.key];
+              const cell = col.render ? col.render(value, row) : (value != null ? String(value) : '—');
+              return (
+                <div key={col.key} className="history_card_row">
+                  <span className="history_card_label">{col.label}</span>
+                  <span className="history_card_value">{cell}</span>
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
     </div>
   );

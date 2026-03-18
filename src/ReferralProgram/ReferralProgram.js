@@ -453,7 +453,7 @@ function ReferralProgram() {
                                 )}
 
                                 <div className="referral_table_block">
-                                    <div className="transactions_header">
+                                    <div className="transactions_header align-items-center">
                                         <h3>Recent Commission / Profit</h3>
                                         <div className="referral_filters_row">
                                             <input
@@ -493,7 +493,7 @@ function ReferralProgram() {
                                 </div>
 
                                 <div className="referral_table_block">
-                                    <div className="transactions_header">
+                                    <div className="transactions_header align-items-center">
                                         <h3>Rewards History</h3>
                                         <div className="referral_filters_row">
                                             <input type="date" value={rewardsFrom} onChange={(e) => setRewardsFrom(e.target.value)} className="referral_date_input" placeholder="From" />
@@ -540,7 +540,7 @@ function ReferralProgram() {
 
                         {activeTab === 'referrals' && (
                             <div className="referral_referrals_content">
-                                <div className="transactions_header">
+                                <div className="transactions_header align-items-center">
                                     <h3>Referrals History</h3>
                                     <div className="referral_filters_row">
                                         <input type="date" value={referralFrom} onChange={(e) => setReferralFrom(e.target.value)} className="referral_date_input" placeholder="From" />

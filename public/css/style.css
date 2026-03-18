@@ -3301,8 +3301,9 @@ ul.mobile-menu li.active:before {
         min-width: 260px;
     }
 
+    /* Sidebar overlay: show when sidebar open so backdrop blocks clicks behind */
     .sidebar_overlay.active {
-        display: none !important;
+        display: block !important;
     }
 
     .sidebar.sidebar_open {
@@ -3563,6 +3564,9 @@ ul.mobile-menu li.active:before {
     button.deposit_btn.mobile {
         display: block;
     }
+
+    .sports_grid_back{ border-radius: 6px; }
+    .sports_grid_lay{ border-radius: 6px; }
 
     .slider_view_all_text {
         font-size: 12px;
@@ -4077,6 +4081,21 @@ ul.mobile-menu li.active:before {
     .playbtn {
         width: 48px;
     }
+
+.mytransactions_header_bl {
+        flex-direction: column;
+        align-items: start !important;
+    }
+
+    .mytransactions_header_bl .transactions_search_input {
+        min-width: 100%;
+        max-width: 100%; }
+
+        .transactions_filter_select_wrapper.d-flex{
+            width: 100%;
+        }
+
+        .mytransactions_header_bl .transactions_filter_select.deposit_btn_style{ width: 100%; }
 
     .slider3d_card_overlay_title {
         font-size: 13px;

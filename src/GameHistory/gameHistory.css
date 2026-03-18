@@ -293,6 +293,23 @@
   flex-direction: column;
 }
 
+@media (max-width:991px) {
+  .game_history_filter_wrapper_row.d-flex {
+    width: 100%;
+}
+
+.game_history_filter_wrapper_row .game_history_filter_wrapper {
+  width: 100%;
+  flex-direction: column;
+  align-items: start;
+}
+
+.game_history_filter_wrapper_row .game_history_filter_select {
+  min-width: 100%; }
+
+
+}
+
 @media (max-width: 768px) {
   .game_history_header_right {
     gap: 12px;

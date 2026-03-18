@@ -80,26 +80,36 @@
 .search_results_list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    max-height: 220px;
+    gap: 10px;
+    max-height: 280px;
     overflow-y: auto;
 }
 
+/* List in boxes: each result is a rounded box with clear background */
 .search_result_item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.06);
+    padding: 12px 14px;
+    background: #252d38;
     border-radius: 10px;
     color: #fff;
     text-decoration: none;
-    transition: background 0.2s;
+    transition: background 0.2s, border-color 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .search_result_item:hover {
-    background: rgba(249, 122, 49, 0.2);
+    background: #2d3744;
+    border-color: rgba(249, 122, 49, 0.3);
     color: #fff;
+}
+
+/* Games: thumbnail + name */
+.search_result_item .search_result_img {
+    flex-shrink: 0;
 }
 
 .search_result_img {
@@ -112,9 +122,15 @@
 .search_result_name {
     font-size: 14px;
     flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Matches: text-only box, same card style */
+.search_result_item.search_result_match {
+    padding: 12px 14px;
 }
 
 .search_view_all_link {

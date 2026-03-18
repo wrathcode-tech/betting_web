@@ -7,12 +7,28 @@ import { BalanceProvider } from "./context/BalanceContext";
 import { BetSlipProvider } from "./context/BetSlipContext";
 import { SportsbookStoreProvider } from "./context/SportsbookStore";
 import { PlatformConfigProvider } from "./context/PlatformConfigContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import Layout from "./Layout";
+
+// Demo users: view-only. Block mutation routes (play, bet, wallet operations).
+const DEMO_BLOCKED_PATHS = [
+  '/deposit', '/withdrawal', '/game',
+  '/add-account', '/add-bank',
+];
 
 function ProtectedRoute() {
   const location = useLocation();
   const isLoggedIn = !!(sessionStorage.getItem("token"));
   if (!isLoggedIn) return <Navigate to="/login" replace state={{ returnTo: location.pathname + location.search }} />;
+  return <Outlet />;
+}
+
+function DemoBlockRoute() {
+  const location = useLocation();
+  const { isDemo } = useAuth();
+  if (isDemo && DEMO_BLOCKED_PATHS.includes(location.pathname)) {
+    return <Navigate to="/" replace state={{ demoBlocked: true, message: 'Demo users can only explore the platform' }} />;
+  }
   return <Outlet />;
 }
 
@@ -55,6 +71,7 @@ const ReferralRewards = lazy(() => import("./pages/ReferralRewards"));
 const Routing = memo(function Routing() {
   return (
     <Router>
+      <AuthProvider>
       <SidebarProvider>
         <PlatformConfigProvider>
         <CasinoProvidersProvider>
@@ -79,8 +96,9 @@ const Routing = memo(function Routing() {
               <Route path="/promotions" element={<Promotions />} />
               <Route path="/game-rules" element={<GameRules />} />
               <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-              {/* Protected routes – redirect to /login if not logged in */}
+              {/* Protected routes – redirect to /login if not logged in; demo users blocked from deposit/withdrawal/game */}
               <Route element={<ProtectedRoute />}>
+                <Route element={<DemoBlockRoute />}>
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/game" element={<GamePlay />} />
                 <Route path="/game-history" element={<GameHistory />} />
@@ -105,6 +123,7 @@ const Routing = memo(function Routing() {
                 <Route path="/add-account" element={<AddAccount />} />
                 <Route path="/add-bank" element={<AddBank />} />
                 <Route path="/support" element={<SupportPage />} />
+                </Route>
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
@@ -116,6 +135,7 @@ const Routing = memo(function Routing() {
         </CasinoProvidersProvider>
         </PlatformConfigProvider>
       </SidebarProvider>
+      </AuthProvider>
     </Router>
   );
 });

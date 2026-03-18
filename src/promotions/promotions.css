@@ -145,6 +145,10 @@
         font-size: 18px;
     }
 
+    .promotions_grid {
+        padding-bottom: 80px;
+    }
+
     .promotions_top_hd {
         margin-top: 0px;
     }

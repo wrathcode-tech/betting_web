@@ -7,6 +7,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import * as sportsbookApi from '../api/services/sportsbookApi';
 import { useBalance } from './BalanceContext';
+import { useAuth } from './AuthContext';
 
 const BetSlipContext = createContext(null);
 
@@ -36,6 +37,7 @@ const defaultSlip = {
 
 export function BetSlipProvider({ children }) {
   const { setBalance } = useBalance();
+  const { isDemo } = useAuth();
   const [slip, setSlip] = useState(defaultSlip);
   const placingRef = useRef(false);
 
@@ -76,6 +78,10 @@ export function BetSlipProvider({ children }) {
   }, []);
 
   const placeBet = useCallback(async () => {
+    if (isDemo) {
+      setSlip((prev) => ({ ...prev, placeError: 'Login to play and place bets' }));
+      return { success: false, message: 'Login to play and place bets' };
+    }
     if (placingRef.current) return { success: false, message: 'Already placing' };
     const { selections, stake } = slip;
     const stakeNum = Number(stake);
@@ -129,7 +135,7 @@ export function BetSlipProvider({ children }) {
     } finally {
       placingRef.current = false;
     }
-  }, [slip, setBalance]);
+  }, [slip, setBalance, isDemo]);
 
   const value = {
     selections: slip.selections,

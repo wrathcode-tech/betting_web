@@ -7,3 +7,73 @@
 .history_table_loading, .history_table_empty { padding: 40px 20px; text-align: center; color: rgba(255,255,255,0.7); }
 .history_spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.2); border-top-color: #f97a31; border-radius: 50%; animation: history_spin 0.8s linear infinite; margin-right: 10px; vertical-align: middle; }
 @keyframes history_spin { to { transform: rotate(360deg); } }
+
+/* Cards: hidden on desktop */
+.history_cards_wrapper {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.history_card {
+  background: #16202c;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.history_card:hover {
+  border-color: rgba(249, 122, 49, 0.25);
+  box-shadow: 0 4px 12px rgba(249, 122, 49, 0.08);
+}
+
+.history_card_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+}
+
+.history_card_row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.history_card_label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+  min-width: 100px;
+}
+
+.history_card_value {
+  color: #fff;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Mobile: hide table, show cards */
+@media (max-width: 768px) {
+  .history_table_scroll {
+    display: none !important;
+  }
+
+  .history_cards_wrapper {
+    display: flex !important;
+  }
+
+  .history_card {
+    padding: 12px 14px;
+  }
+
+  .history_card_label,
+  .history_card_value {
+    font-size: 13px;
+  }
+}

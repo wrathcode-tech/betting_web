@@ -37,7 +37,7 @@ function formatStatus(s) {
 }
 
 const COLUMNS = [
-  { key: 'transactionId', label: 'Transaction ID' },
+  { key: 'id', label: 'Transaction ID', render: (v) => (v != null && v !== '') ? `Transaction #${v}` : '—' },
   { key: 'amount', label: 'Amount', render: function (v) { return formatAmount(v); } },
   { key: 'status', label: 'Status', render: function (v) { return formatStatus(v); } },
   { key: 'createdAt', label: 'Date', render: function (v) { return formatDate(v); } },
@@ -62,7 +62,7 @@ export default function WithdrawalHistory() {
     getWithdrawalTransactions(params)
       .then(function (res) {
         if (res && res.success && Array.isArray(res.data)) {
-          setData(res.data);
+          setData(res.data.map((t) => ({ ...t, id: t.id ?? t._id ?? t.transactionId })));
           setPagination(res.pagination || { page: 1, limit: LIMIT, totalPages: 1 });
         } else {
           setData([]);

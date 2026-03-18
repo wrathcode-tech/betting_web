@@ -136,7 +136,7 @@ function ProfileTransactions() {
     const searchFiltered = searchLower
       ? statusFiltered.filter((t) => {
         const time = formatTime(t.createdAt) || ''
-        const id = (t.transactionId || t._id || '') + ''
+        const id = (t.id || t.transactionId || t._id || '') + ''
         const type = (t.type || '') + ''
         const amount = formatAmount(t.amount, t.currency) || ''
         const status = formatStatus(t.status) || ''
@@ -146,11 +146,11 @@ function ProfileTransactions() {
       })
       : statusFiltered
     return searchFiltered.map((t, idx) => {
-      const rowId = t._id ?? t.id ?? t.transactionId
+      const rowId = t.id ?? t._id ?? t.transactionId
       return {
         id: rowId != null ? String(rowId) : `row-${idx}`,
         time: formatTime(t.createdAt),
-        transactionId: t.transactionId || t._id || t.id,
+        transactionId: t.id ?? t.transactionId ?? t._id,
         type: t.type === 'deposit' ? 'Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : (t.type || '—'),
         amount: formatAmount(t.amount, t.currency),
         approvedAmount: t.status === 'approved' || t.status === 'completed' ? formatAmount(t.amount, t.currency) : '—',
@@ -179,7 +179,7 @@ function ProfileTransactions() {
           <div className='profile_transactions_section'>
             <div className='transactions_header'>
               <h1>My Transactions</h1>
-              <div className='transactions_header_right'>
+              <div className='transactions_header_right mytransactions_header_bl'>
                 <input
                   type="text"
                   placeholder="Search ID, type, amount..."
@@ -191,6 +191,7 @@ function ProfileTransactions() {
                   }}
                   aria-label="Search"
                 />
+                <div className='transactions_filter_select_wrapper d-flex gap-3'>
                 <select
                   id="txn-type-filter"
                   className='transactions_filter_select deposit_btn_style'
@@ -211,6 +212,7 @@ function ProfileTransactions() {
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
+                </div>
               </div>
             </div>
 
@@ -240,7 +242,7 @@ function ProfileTransactions() {
                       {list.map((tx) => (
                         <tr key={tx.id}>
                           <td>{tx.time}</td>
-                          <td>{tx.transactionId}</td>
+                          <td>Transaction #{tx.id}</td>
                           <td>{tx.type}</td>
                           <td>{tx.amount}</td>
                           <td>{tx.balanceBefore}</td>
@@ -285,7 +287,7 @@ function ProfileTransactions() {
                         </div>
                         <div className='transaction_card_row'>
                           <span className='transaction_label'>Transaction ID</span>
-                          <span className='transaction_value'>{tx.transactionId}</span>
+                          <span className='transaction_value'>Transaction #{tx.id}</span>
                         </div>
                         <div className='transaction_card_row'>
                           <span className='transaction_label'>Amount</span>

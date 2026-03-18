@@ -150,7 +150,7 @@ function GameHistory() {
     ? transactions.filter((tx) => {
         if (filter === FILTER_CASINO && casinoView === VIEW_LEDGER) {
           const remark = (tx.remark || '').toLowerCase();
-          const txId = (tx.transactionId || '').toLowerCase();
+          const txId = (tx.id || tx.transactionId || '').toLowerCase();
           return remark.includes(searchLower) || txId.includes(searchLower);
         }
         if (filter === FILTER_CASINO && casinoView === VIEW_SESSIONS) {
@@ -174,9 +174,11 @@ function GameHistory() {
           <div className="profile_transactions_section">
             <div className="transactions_header game_history_header">
               <h1>Game History</h1>
-              <div className="transactions_header_right game_history_header_right">
+              <div className="transactions_header_right game_history_header_right d-flex">
                 {filter === FILTER_CASINO && (
                   <>
+<div className="game_history_filter_wrapper_row d-flex gap-3">
+
                     <div className="game_history_filter_wrapper">
                       <label className="game_history_filter_label">View</label>
                       <select
@@ -193,6 +195,24 @@ function GameHistory() {
                         <option value={VIEW_LEDGER}>Ledger</option>
                       </select>
                     </div>
+                    <div className="game_history_filter_wrapper">
+                  <label htmlFor="game-history-type-filter" className="game_history_filter_label">Type</label>
+                  <select
+                    id="game-history-type-filter"
+                    className="game_history_filter_select"
+                    value={filter}
+                    onChange={(e) => {
+                      setFilter(e.target.value);
+                      setSelectedTransaction(null);
+                    }}
+                    aria-label="Filter by Casino or SportsBook"
+                  >
+                    <option value={FILTER_CASINO}>Casino</option>
+                    <option value={FILTER_SPORTSBOOK}>SportsBook</option>
+                  </select>
+                </div>
+                </div>
+
                     {(casinoView === VIEW_SESSIONS || casinoView === VIEW_LEDGER) && (
                       <div className="game_history_date_group">
                         <input type="date" className="game_history_date_input" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} aria-label="From date" title="From date" />
@@ -210,22 +230,7 @@ function GameHistory() {
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label="Search"
                 />
-                <div className="game_history_filter_wrapper">
-                  <label htmlFor="game-history-type-filter" className="game_history_filter_label">Type</label>
-                  <select
-                    id="game-history-type-filter"
-                    className="game_history_filter_select"
-                    value={filter}
-                    onChange={(e) => {
-                      setFilter(e.target.value);
-                      setSelectedTransaction(null);
-                    }}
-                    aria-label="Filter by Casino or SportsBook"
-                  >
-                    <option value={FILTER_CASINO}>Casino</option>
-                    <option value={FILTER_SPORTSBOOK}>SportsBook</option>
-                  </select>
-                </div>
+               
               </div>
             </div>
 
@@ -279,12 +284,12 @@ function GameHistory() {
                     <tbody>
                       {filter === FILTER_CASINO && casinoView === VIEW_LEDGER
                         ? filteredTransactions.map((tx, idx) => (
-                            <tr key={tx.transactionId || idx}>
+                            <tr key={tx.id || tx.transactionId || idx}>
                               <td>{formatDateTime(tx.date)}</td>
                               <td className="amount_positive">₹{Number(tx.credit ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                               <td className="amount_negative">₹{Number(tx.debit ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                               <td>₹{Number(tx.balance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                              <td>{tx.transactionId || '—'}</td>
+                              <td>{tx.id != null ? `Transaction #${tx.id}` : (tx.transactionId || '—')}</td>
                               <td>{tx.remark || '—'}</td>
                             </tr>
                           ))

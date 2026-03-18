@@ -16,6 +16,7 @@ import {
 } from '../socket/sportsbookSocket'
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
+import { useAuth } from '../context/AuthContext'
 import LossCutIndicator from '../customComponents/LossCutIndicator'
 import { BackPriceCell, LayPriceCell } from './OddsMarketComponents'
 
@@ -24,6 +25,7 @@ const CASHOUT_COMMISSION = 0.05 // 5% of total bet (stake)
 function CricketDetail() {
     const location = useLocation()
     const { config: platformConfig } = usePlatformConfig()
+    const { isDemo } = useAuth()
     const scrollContainerRef = useRef(null)
     const betslipContentRef = useRef(null)
     const marketsSectionRef = useRef(null)
@@ -131,6 +133,7 @@ function CricketDetail() {
     const [oddsData, setOddsData] = useState(null)
     const [oddsLoading, setOddsLoading] = useState(false)
     const [liveScore, setLiveScore] = useState(null)
+    // eslint-disable-next-line no-unused-vars -- used in commented-out Live TV iframe
     const [streamUrl, setStreamUrl] = useState(null)
 
     // Guest (no token): fetch matches via REST and set first match so odds load without login
@@ -152,7 +155,7 @@ function CricketDetail() {
                     seriesName: first.seriesName ?? first.series_name ?? first.tournamentName ?? first.tournament ?? first.competitionName ?? null,
                 })
             })
-            .catch(() => {})
+            .catch(() => { })
         return () => { cancelled = true }
     }, [gameIdFromState, sportName])
 
@@ -212,7 +215,7 @@ function CricketDetail() {
                 const url = res?.tvUrl ?? res?.response?.tvUrl ?? res?.response?.tv_url ?? null
                 if (url) setStreamUrl(url)
             })
-            .catch(() => {})
+            .catch(() => { })
         return () => { cancelled = true }
     }, [oddsId])
 
@@ -235,7 +238,7 @@ function CricketDetail() {
             .catch(() => {
                 if (!cancelled) {
                     setOddsData(null)
-                    try { alertErrorMessage('Failed to load odds') } catch (_) {}
+                    try { alertErrorMessage('Failed to load odds') } catch (_) { }
                 }
             })
             .finally(() => { if (!cancelled) setOddsLoading(false) })
@@ -509,6 +512,10 @@ function CricketDetail() {
     const cashoutInProgressRef = useRef(false)
     const handleCashoutBetslip = async (betId) => {
         if (!betId) return
+        if (isDemo) {
+            alertErrorMessage('Demo mode: View only. Login to play.')
+            return
+        }
         if (cashoutInProgressRef.current) return
         cashoutInProgressRef.current = true
         setCashoutId(betId)
@@ -575,8 +582,8 @@ function CricketDetail() {
                         ) : suspended ? (
                             <span className='betslip_cashout_suspended'>CASH OUT NOT AVAILABLE</span>
                         ) : (
-                            <button type='button' className='betslip_cashout_btn' onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleCashoutBetslip(bid); }} disabled={isCashingOut}>
-                                {isCashingOut ? 'CASHING OUT...' : (netCashout != null ? `CASH OUT ₹${netCashout.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'CASH OUT')}
+                            <button type='button' className='betslip_cashout_btn' onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleCashoutBetslip(bid); }} disabled={isCashingOut || isDemo}>
+                                {isCashingOut ? 'CASHING OUT...' : isDemo ? 'Login to play' : (netCashout != null ? `CASH OUT ₹${netCashout.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'CASH OUT')}
                             </button>
                         )}
                     </div>
@@ -729,8 +736,10 @@ function CricketDetail() {
                                     type="button"
                                     className="odds_section_cashout_btn"
                                     onClick={handleCashoutClick}
+                                    disabled={isDemo}
+                                    title={isDemo ? 'Demo mode: View only' : undefined}
                                 >
-                                    {`Cashout : ₹${sectionCashoutTotal.toLocaleString()}`}
+                                    {isDemo ? 'Cashout (Login to play)' : `Cashout : ₹${sectionCashoutTotal.toLocaleString()}`}
                                 </button>
                                 {openCashoutSection === sectionKey && hasMultipleBets && (
                                     <div className="odds_section_cashout_inline">
@@ -756,8 +765,8 @@ function CricketDetail() {
                                                             {suspended ? (
                                                                 <span className="odds_section_popover_suspended">Not available</span>
                                                             ) : (
-                                                                <button type="button" className="odds_section_popover_cashout_btn" onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleCashoutBetslip(bid); }} disabled={isCashingOut}>
-                                                                    {isCashingOut ? '...' : (netCashout != null && netCashout > 0 ? `Cashout ₹${netCashout.toLocaleString()}` : 'Cashout')}
+                                                                <button type="button" className="odds_section_popover_cashout_btn" onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleCashoutBetslip(bid); }} disabled={isCashingOut || isDemo}>
+                                                                    {isCashingOut ? '...' : isDemo ? 'Login to play' : (netCashout != null && netCashout > 0 ? `Cashout ₹${netCashout.toLocaleString()}` : 'Cashout')}
                                                                 </button>
                                                             )}
                                                         </div>
@@ -996,9 +1005,9 @@ function CricketDetail() {
                                                                     <button
                                                                         className="betslip_place_bet_btn"
                                                                         onClick={handlePlaceBet}
-                                                                        disabled={placeBetLoading || lossLimitReached}
+                                                                        disabled={placeBetLoading || lossLimitReached || isDemo}
                                                                     >
-                                                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
+                                                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : isDemo ? 'Login to play' : 'Place Bet'}
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -1114,9 +1123,9 @@ function CricketDetail() {
                                 <button
                                     className="betslip_place_bet_btn"
                                     onClick={handlePlaceBet}
-                                    disabled={placeBetLoading || lossLimitReached}
+                                    disabled={placeBetLoading || lossLimitReached || isDemo}
                                 >
-                                    {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
+                                    {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : isDemo ? 'Login to play' : 'Place Bet'}
                                 </button>
                             </div>
                         </div>
@@ -1239,34 +1248,41 @@ function CricketDetail() {
                         return (
                             <div key={rIdx} className="market_no_yes_row">
                                 <div className="market_no_yes_label">{row.label}</div>
-                                <button type="button" className="market_no_yes_book_btn" title="Book">Book</button>
-                                <div className="market_no_yes_odds">
-                                    <span className="market_no_yes_lbl">No</span>
-                                    <button type="button" className={`market_no_yes_btn market_no_btn ${noLocked ? 'locked' : ''}`} disabled>
-                                        {noLocked ? (
-                                            <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
-                                        ) : (
-                                            <>
-                                                <span className="odds_val">{row.noOdds}</span>
-                                                <span className="odds_size">{formatOddsSize(row.noSize)}</span>
-                                            </>
-                                        )}
-                                    </button>
+                              
+                                <div className="market_no_yes_limits_container d-flex justify-content-between">
+                                    <div className="market_no_yes_limits">MIN: 100 MAX: {row.max}</div>
+                                    <div className="market_no_yes_odds_container">
+                                    <button type="button" className="market_no_yes_book_btn" title="Book">Book</button>
+                                        <div className="market_no_yes_odds">
+                                            <span className="market_no_yes_lbl">Yes</span>
+                                            <button type="button" className={`market_no_yes_btn market_yes_btn ${yesLocked ? 'locked' : ''}`} disabled>
+                                                {yesLocked ? (
+                                                    <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
+                                                ) : (
+                                                    <>
+                                                        <span className="odds_val">{row.yesOdds}</span>
+                                                        <span className="odds_size">{formatOddsSize(row.yesSize)}</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                        <div className="market_no_yes_odds">
+                                            <span className="market_no_yes_lbl">No</span>
+                                            <button type="button" className={`market_no_yes_btn market_no_btn ${noLocked ? 'locked' : ''}`} disabled>
+                                                {noLocked ? (
+                                                    <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
+                                                ) : (
+                                                    <>
+                                                        <span className="odds_val">{row.noOdds}</span>
+                                                        <span className="odds_size">{formatOddsSize(row.noSize)}</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+
+                                    </div>
                                 </div>
-                                <div className="market_no_yes_odds">
-                                    <span className="market_no_yes_lbl">Yes</span>
-                                    <button type="button" className={`market_no_yes_btn market_yes_btn ${yesLocked ? 'locked' : ''}`} disabled>
-                                        {yesLocked ? (
-                                            <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
-                                        ) : (
-                                            <>
-                                                <span className="odds_val">{row.yesOdds}</span>
-                                                <span className="odds_size">{formatOddsSize(row.yesSize)}</span>
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                                <div className="market_no_yes_limits">MIN: 100 MAX: {row.max}</div>
+
                             </div>
                         )
                     }) : <div className="market_no_yes_row market_empty_msg">No data at the moment.</div>}
@@ -1436,9 +1452,9 @@ function CricketDetail() {
                         </div>
                     )}
                     {(platformConfig.sportsBookServiceStatus && platformConfig.inPlayServiceStatus) && (
-                    <>
-                    <div className='cricket_detail_section'>
-                        {/* <div className='sports_top_tabs'>
+                        <>
+                            <div className='cricket_detail_section'>
+                                {/* <div className='sports_top_tabs'>
                             <ul>
                                 <li className='active'><button><img src="images/menu-icon.svg" alt="sports" /></button></li>
                                 <li><button><img src="images/menu-icon2.svg" alt="sports" /></button></li>
@@ -1470,7 +1486,7 @@ function CricketDetail() {
                             </ul>
                         </div> */}
 
-                        {/* <div className='match_vs_team_list d-flex align-items-center justify-content-between gap-2'>
+                                {/* <div className='match_vs_team_list d-flex align-items-center justify-content-between gap-2'>
                             <div className='selected_match_country'>
                                 <button><i className="ri-arrow-down-s-line"></i></button>
                             </div>
@@ -1530,9 +1546,9 @@ function CricketDetail() {
                             </div>
                         </div> */}
 
-                        <div className='match_info_section_wrapper'>
+                                <div className='match_info_section_wrapper'>
 
-                            {/* Live streaming – commented out
+                                    {/* Live streaming – commented out
                             {(sportName === 'soccer' || sportName === 'tennis' || sportName === 'cricket') && (
                                 <div className='match_tv_iframe_wrap'>
                                     <div className='match_tv_iframe_header'>Live TV</div>
@@ -1553,10 +1569,10 @@ function CricketDetail() {
                             )}
                             */}
 
-                            <div className='series_name_row'>
-                                <p>{seriesOrTournamentName || '—'}</p>
-                            </div>
-                            {/* <div className='cricket_info_inner'>
+                                    <div className='series_name_row'>
+                                        <p>{seriesOrTournamentName || '—'}</p>
+                                    </div>
+                                    {/* <div className='cricket_info_inner'>
                                 <div className='cricket_vector_icon'>
                                     <img src="images/t20_vector.svg" alt="cricket" width="48" height="48" decoding="async" fetchPriority="high" />
                                 </div>
@@ -1619,126 +1635,126 @@ function CricketDetail() {
                             </div> */}
 
 
-                            <div className='cricket_scorecard cricket_live_scoreboard'>
-                                {(() => {
-                                    const hasLiveScore = liveScore && !liveScore.error && liveScore.ScoreData?.Score?.[0]
-                                    const s = hasLiveScore ? liveScore.ScoreData.Score[0] : null
-                                    const eventName = eventNameFromState || 'Premier League, Women'
-                                    const parts = (eventName || '').split(/\s+v\s+/i)
-                                    const teamA = s?.Team1Name ?? (parts.length >= 2 ? parts[0].trim() : eventName)
-                                    const teamB = s?.Team2Name ?? (parts.length >= 2 ? parts[1].trim() : '')
-                                    if (liveScore?.error === true || (liveScore !== null && !hasLiveScore)) {
-                                        return (
-                                            <div className='cricket_live_unavailable' style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary, #888)' }}>
-                                                Live score unavailable
-                                            </div>
-                                        )
-                                    }
-                                    if (!hasLiveScore) {
-                                        return (
-                                            <>
-                                                <div className='cricket_live_top_panel'>
-                                                    <div className='cricket_live_team_left'>
-                                                        <div className='cricket_live_team_name'>{teamA}</div>
-                                                        <div className='cricket_live_score_row'>
-                                                            <span className='cricket_live_score_box'>—</span>
-                                                            <span className='cricket_live_crr'>CRR: —</span>
+                                    <div className='cricket_scorecard cricket_live_scoreboard'>
+                                        {(() => {
+                                            const hasLiveScore = liveScore && !liveScore.error && liveScore.ScoreData?.Score?.[0]
+                                            const s = hasLiveScore ? liveScore.ScoreData.Score[0] : null
+                                            const eventName = eventNameFromState || 'Premier League, Women'
+                                            const parts = (eventName || '').split(/\s+v\s+/i)
+                                            const teamA = s?.Team1Name ?? (parts.length >= 2 ? parts[0].trim() : eventName)
+                                            const teamB = s?.Team2Name ?? (parts.length >= 2 ? parts[1].trim() : '')
+                                            if (liveScore?.error === true || (liveScore !== null && !hasLiveScore)) {
+                                                return (
+                                                    <div className='cricket_live_unavailable' style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary, #888)' }}>
+                                                        Live score unavailable
+                                                    </div>
+                                                )
+                                            }
+                                            if (!hasLiveScore) {
+                                                return (
+                                                    <>
+                                                        <div className='cricket_live_top_panel'>
+                                                            <div className='cricket_live_team_left'>
+                                                                <div className='cricket_live_team_name'>{teamA}</div>
+                                                                <div className='cricket_live_score_row'>
+                                                                    <span className='cricket_live_score_box'>—</span>
+                                                                    <span className='cricket_live_crr'>CRR: —</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className='cricket_live_center'><span className='cricket_live_toss'>—</span></div>
+                                                            <div className='cricket_live_team_right'>
+                                                                <div className='cricket_live_team_name'>{teamB}</div>
+                                                                <div className='cricket_live_score_row'>
+                                                                    <span className='cricket_live_rrr'>RRR: —</span>
+                                                                    <span className='cricket_live_score_box'>—</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className='cricket_live_unavailable' style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-secondary, #888)', fontSize: '13px' }}>Live score will appear when available</div>
+                                                    </>
+                                                )
+                                            }
+                                            const crr = s.CRR ?? '—'
+                                            const rrr = s.RRR ?? '—'
+                                            const rawBalls = [s.CurrentOverBalls1, s.CurrentOverBalls2, s.CurrentOverBalls3, s.CurrentOverBalls4, s.CurrentOverBalls5, s.CurrentOverBalls6].filter(Boolean)
+                                            const isPlaceholder = rawBalls.length === 1 && /^\d{5,6}$/.test(String(rawBalls[0]).trim())
+                                            const overBalls = isPlaceholder ? [] : rawBalls
+                                            const overStr = overBalls.length > 0 ? overBalls.join(' ') : '—'
+                                            const team1Flag = s.Team1Flag || s.team1Flag
+                                            const team2Flag = s.Team2Flag || s.team2Flag
+                                            const statusText = [s.ScoreStatus, s.LiveCommentary, s.Message].filter(Boolean).join(' · ') || '—'
+                                            return (
+                                                <>
+                                                    <div className='cricket_live_center'>
+                                                        <span className='cricket_live_toss'>{statusText}</span>
+                                                    </div>
+                                                    <div className='cricket_live_top_panel'>
+                                                        <div className='cricket_live_team_left'>
+                                                            <div className='cricket_live_team_name'>
+                                                                {team1Flag ? <img src={team1Flag} alt="" className="cricket_live_team_flag" /> : null}
+                                                                {teamA}
+                                                            </div>
+                                                            <div className='cricket_live_score_row'>
+                                                                <span className='cricket_live_score_box'>{s.Team1OnlyScore || s.Team1Score || '—'}</span>
+                                                                <span className='cricket_live_crr'>CRR: {crr}</span>
+                                                            </div>
+                                                            <div className='cricket_live_over_box desktop_view'>{overStr}</div>
+                                                        </div>
+
+                                                        <div className='cricket_live_team_right'>
+                                                            <div className='cricket_live_team_name'>
+                                                                {team2Flag ? <img src={team2Flag} alt="" className="cricket_live_team_flag" /> : null}
+                                                                {teamB}
+                                                            </div>
+                                                            <div className='cricket_live_score_row'>
+                                                                <span className='cricket_live_rrr'>RRR: {rrr}</span>
+                                                                <span className='cricket_live_score_box'>{s.Team2OnlyScore || s.Team2Score || '—'}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className='cricket_live_center'><span className='cricket_live_toss'>—</span></div>
-                                                    <div className='cricket_live_team_right'>
-                                                        <div className='cricket_live_team_name'>{teamB}</div>
-                                                        <div className='cricket_live_score_row'>
-                                                            <span className='cricket_live_rrr'>RRR: —</span>
-                                                            <span className='cricket_live_score_box'>—</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className='cricket_live_unavailable' style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-secondary, #888)', fontSize: '13px' }}>Live score will appear when available</div>
-                                            </>
-                                        )
-                                    }
-                                    const crr = s.CRR ?? '—'
-                                    const rrr = s.RRR ?? '—'
-                                    const rawBalls = [s.CurrentOverBalls1, s.CurrentOverBalls2, s.CurrentOverBalls3, s.CurrentOverBalls4, s.CurrentOverBalls5, s.CurrentOverBalls6].filter(Boolean)
-                                    const isPlaceholder = rawBalls.length === 1 && /^\d{5,6}$/.test(String(rawBalls[0]).trim())
-                                    const overBalls = isPlaceholder ? [] : rawBalls
-                                    const overStr = overBalls.length > 0 ? overBalls.join(' ') : '—'
-                                    const team1Flag = s.Team1Flag || s.team1Flag
-                                    const team2Flag = s.Team2Flag || s.team2Flag
-                                    const statusText = [s.ScoreStatus, s.LiveCommentary, s.Message].filter(Boolean).join(' · ') || '—'
-                                    return (
-                                        <>
-                                            <div className='cricket_live_center'>
-                                                <span className='cricket_live_toss'>{statusText}</span>
-                                            </div>
-                                            <div className='cricket_live_top_panel'>
-                                                <div className='cricket_live_team_left'>
-                                                    <div className='cricket_live_team_name'>
-                                                        {team1Flag ? <img src={team1Flag} alt="" className="cricket_live_team_flag" /> : null}
-                                                        {teamA}
-                                                    </div>
-                                                    <div className='cricket_live_score_row'>
-                                                        <span className='cricket_live_score_box'>{s.Team1OnlyScore || s.Team1Score || '—'}</span>
-                                                        <span className='cricket_live_crr'>CRR: {crr}</span>
-                                                    </div>
-                                                    <div className='cricket_live_over_box desktop_view'>{overStr}</div>
-                                                </div>
 
-                                                <div className='cricket_live_team_right'>
-                                                    <div className='cricket_live_team_name'>
-                                                        {team2Flag ? <img src={team2Flag} alt="" className="cricket_live_team_flag" /> : null}
-                                                        {teamB}
+                                                    <div className='cricket_live_batsmen_section'>
+                                                        <table className='cricket_live_table'>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th className='cricket_live_th_name'><i className='ri-cricket-line' aria-hidden /> Batsmen</th>
+                                                                    <th className='cricket_live_th_num'>R</th>
+                                                                    <th className='cricket_live_th_num'>B</th>
+                                                                    <th className='cricket_live_th_num'>4s</th>
+                                                                    <th className='cricket_live_th_num'>6s</th>
+                                                                    <th className='cricket_live_th_num'>SR</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td className='cricket_live_td_name'>
+                                                                        <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
+                                                                        {s.Player1 || '—'}
+                                                                    </td>
+                                                                    <td className='cricket_live_td_num'>{s.Player1Run ?? '—'}</td>
+                                                                    <td className='cricket_live_td_num'>{s.Player1Balls ?? '—'}</td>
+                                                                    <td className='cricket_live_td_num'>{s.Player1Fours ?? '—'}</td>
+                                                                    <td className='cricket_live_td_num'>{s.Player1Sixes ?? '—'}</td>
+                                                                    <td className='cricket_live_td_num'>{s.Player1StrikeRate ?? '—'}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td className='cricket_live_td_name'>
+                                                                        <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
+                                                                        {s.Player2 || '—'}
+                                                                    </td>
+                                                                    <td className='cricket_live_td_num'>{s.Player2Run ?? '—'}</td>
+                                                                    <td className='cricket_live_td_num'>{s.Player2Balls ?? '—'}</td>
+                                                                    <td className='cricket_live_td_num'>{s.Player2Fours ?? '—'}</td>
+                                                                    <td className='cricket_live_td_num'>{s.Player2Sixes ?? '—'}</td>
+                                                                    <td className='cricket_live_td_num'>{s.Player2StrikeRate ?? '—'}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
                                                     </div>
-                                                    <div className='cricket_live_score_row'>
-                                                        <span className='cricket_live_rrr'>RRR: {rrr}</span>
-                                                        <span className='cricket_live_score_box'>{s.Team2OnlyScore || s.Team2Score || '—'}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
 
-                                            <div className='cricket_live_batsmen_section'>
-                                                <table className='cricket_live_table'>
-                                                    <thead>
-                                                        <tr>
-                                                            <th className='cricket_live_th_name'><i className='ri-cricket-line' aria-hidden /> Batsmen</th>
-                                                            <th className='cricket_live_th_num'>R</th>
-                                                            <th className='cricket_live_th_num'>B</th>
-                                                            <th className='cricket_live_th_num'>4s</th>
-                                                            <th className='cricket_live_th_num'>6s</th>
-                                                            <th className='cricket_live_th_num'>SR</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td className='cricket_live_td_name'>
-                                                                <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
-                                                                {s.Player1 || '—'}
-                                                            </td>
-                                                            <td className='cricket_live_td_num'>{s.Player1Run ?? '—'}</td>
-                                                            <td className='cricket_live_td_num'>{s.Player1Balls ?? '—'}</td>
-                                                            <td className='cricket_live_td_num'>{s.Player1Fours ?? '—'}</td>
-                                                            <td className='cricket_live_td_num'>{s.Player1Sixes ?? '—'}</td>
-                                                            <td className='cricket_live_td_num'>{s.Player1StrikeRate ?? '—'}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td className='cricket_live_td_name'>
-                                                                <i className='ri-cricket-line cricket_live_bat_icon' aria-hidden />
-                                                                {s.Player2 || '—'}
-                                                            </td>
-                                                            <td className='cricket_live_td_num'>{s.Player2Run ?? '—'}</td>
-                                                            <td className='cricket_live_td_num'>{s.Player2Balls ?? '—'}</td>
-                                                            <td className='cricket_live_td_num'>{s.Player2Fours ?? '—'}</td>
-                                                            <td className='cricket_live_td_num'>{s.Player2Sixes ?? '—'}</td>
-                                                            <td className='cricket_live_td_num'>{s.Player2StrikeRate ?? '—'}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                                    <div className='cricket_live_over_box mobile_view'>{overStr}</div>
 
-                                            <div className='cricket_live_over_box mobile_view'>{overStr}</div>
-
-                                            {/* <div className='cricket_live_bowler_section'>
+                                                    {/* <div className='cricket_live_bowler_section'>
                                     <table className='cricket_live_table'>
                                         <thead>
                                             <tr>
@@ -1765,136 +1781,136 @@ function CricketDetail() {
                                         </tbody>
                                     </table>
                                 </div> */}
-                                        </>
-                                    )
-                                })()}
-                            </div>
-
-                        </div>
-
-                        <div className={`cricket_summary_details_wrapper ${sportName === 'soccer' ? 'soccer_odds_page' : ''}`} ref={marketsSectionRef}>
-                            {showMarketsSection ? (
-                                <>
-                                    <div className='top_tabs_cricket top_tabs_markets'>
-                                        <ul>
-                                            <li className={activeTab === 'all' ? 'active' : ''}>
-                                                <button onClick={() => setActiveTab('all')}>ALL</button>
-                                            </li>
-                                            {sportName === 'cricket' && (
-                                                <>
-                                                    <li className={activeTab === 'sessions' ? 'active' : ''}>
-                                                        <button onClick={() => setActiveTab('sessions')}>SESSIONS</button>
-                                                    </li>
-                                                    <li className={activeTab === 'wp-market' ? 'active' : ''}>
-                                                        <button onClick={() => setActiveTab('wp-market')}>W/P MARKET</button>
-                                                    </li>
-                                                    <li className={activeTab === 'extra-market' ? 'active' : ''}>
-                                                        <button onClick={() => setActiveTab('extra-market')}>EXTRA MARKET</button>
-                                                    </li>
-                                                    <li className={activeTab === 'odd-even' ? 'active' : ''}>
-                                                        <button onClick={() => setActiveTab('odd-even')}>ODD/EVEN</button>
-                                                    </li>
                                                 </>
-                                            )}
-                                            <li className={`open_bets_tab ${activeTab === 'open-bets' ? 'active' : ''}`}>
-                                                <button onClick={() => setActiveTab('open-bets')}>(OPEN BETS) ({openBetsCount})</button>
-                                            </li>
-                                        </ul>
+                                            )
+                                        })()}
                                     </div>
 
-                                    <div className='match_summary_content_tabs'>
-                                        {activeTab === 'all' && (
-                                            <>
-                                                {oddsLoading && gameId && (
-                                                    <div className='match_block' style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
-                                                )}
-                                                {!oddsLoading && oddsData && (oddsData.marketClosed || !oddsData.matchOdds?.length) && (
-                                                    <div className='match_block odds_market_closed' style={{ padding: '1rem', color: 'var(--text-secondary, #888)', textAlign: 'center' }}>Market closed</div>
-                                                )}
-                                                {!oddsLoading && oddsData && !oddsData.marketClosed && oddsData.matchOdds?.length > 0 && (sportName === 'soccer' || sportName === 'tennis') ? (
-                                                    <>
-                                                        {oddsData?.matchOdds?.[0] && renderOddsSection('match_odds_0', oddsData.matchOdds[0].marketName || oddsData.matchOdds[0].market || 'MATCH ODDS', 'ri-settings-3-line', oddsData.matchOdds[0].minMax || 'MIN: 100 MAX: 25K', [oddsData.matchOdds[0]], 'match_odds')}
-                                                        {oddsData?.bookMakerOdds?.length > 0
-                                                            ? renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-settings-3-line', 'MIN: 100 MAX: 1000K', oddsData.bookMakerOdds, 'bookmaker')
-                                                            : (() => {
-                                                                const firstMarket = oddsData?.matchOdds?.[0]
-                                                                const runners = (firstMarket && (Array.isArray(firstMarket.runners) ? firstMarket.runners : toOddDatasArray(firstMarket.oddDatas))) || []
-                                                                const lockedRunners = runners.length
-                                                                    ? runners.map((r) => ({ ...r, rname: r.rname ?? r.selectionName ?? r.name ?? '—', b1: null, b2: null, b3: null, l1: null, l2: null, l3: null }))
-                                                                    : [{ rname: '—', selectionName: '—', b1: null, l1: null }, { rname: '—', selectionName: '—', b1: null, l1: null }, { rname: '—', selectionName: '—', b1: null, l1: null }]
-                                                                const dummyMarket = { mid: 'bookmaker-empty', marketId: 'bookmaker-empty', market: 'BOOKMAKER', status: 'CLOSED', runners: lockedRunners }
-                                                                return renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-settings-3-line', 'MIN: 100 MAX: 1000K', [dummyMarket], 'bookmaker')
-                                                            })()}
-                                                        {/* Tennis: API se aaye extra markets – Set Betting, Total Games, etc. */}
-                                                        {sportName === 'tennis' && (() => {
-                                                            const extra = [
-                                                                ...(oddsData?.matchOdds?.length > 1 ? oddsData.matchOdds.slice(1) : []),
-                                                                ...(oddsData?.otherMarketOdds ?? []),
-                                                            ]
-                                                            return extra.map((m, idx) => {
-                                                                const title = m.marketName || m.market || `Market ${idx + 1}`
-                                                                const minMax = m.minMax || 'MIN: 100 MAX: 25K'
-                                                                return renderOddsSection(`tennis_extra_${idx}`, title, 'ri-settings-3-line', minMax, [m], 'match_odds')
-                                                            })
-                                                        })()}
-                                                        {/* Soccer only: First Half Goals, Half Time, Over/Under – tennis pe ye nahi */}
-                                                        {sportName === 'soccer' && (() => {
-                                                            const allBelow = [
-                                                                ...(oddsData?.matchOdds?.length > 1 ? oddsData.matchOdds.slice(1) : []),
-                                                                ...(oddsData?.otherMarketOdds ?? []),
-                                                            ]
-                                                            const firstMarketRunners = (() => {
-                                                                const m = oddsData?.matchOdds?.[0]
-                                                                if (!m) return []
-                                                                return getMarketOddList(m)
-                                                            })()
-                                                            return SOCCER_MARKETS_BELOW.map((def, idx) => {
-                                                                const apiMarket = findSoccerMarketByTitle(def.title, allBelow)
-                                                                if (apiMarket) {
-                                                                    return renderOddsSection(
-                                                                        `soccer_below_${idx}`,
-                                                                        apiMarket.marketName || apiMarket.market || def.title,
-                                                                        'ri-settings-3-line',
-                                                                        apiMarket.minMax || def.minMax,
-                                                                        [apiMarket],
-                                                                        'match_odds'
-                                                                    )
-                                                                }
-                                                                const runnerLabels = def.runnerLabels || (firstMarketRunners.length >= 3
-                                                                    ? firstMarketRunners.slice(0, 3).map((r) => r.rname ?? r.selectionName ?? r.name ?? '—')
-                                                                    : ['—', '—', 'The Draw'])
-                                                                const lockedRunners = runnerLabels.map((label) => ({
-                                                                    rname: label,
-                                                                    selectionName: label,
-                                                                    b1: null, b2: null, b3: null,
-                                                                    l1: null, l2: null, l3: null,
-                                                                }))
-                                                                const dummyMarket = { mid: `soccer-placeholder-${idx}`, marketId: `soccer-placeholder-${idx}`, market: def.title, status: 'CLOSED', runners: lockedRunners }
-                                                                return renderOddsSection(`soccer_below_${idx}`, def.title, 'ri-settings-3-line', def.minMax, [dummyMarket], 'match_odds')
-                                                            })
-                                                        })()}
-                                                        {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        {!oddsData?.marketClosed && oddsData?.matchOdds?.length > 0 && renderOddsSection('match_odds', 'MATCH ODDS', 'ri-rocket-line', 'MIN: 100 MAX: 10K', oddsData.matchOdds, 'match_odds')}
-                                                        {!oddsData?.marketClosed && oddsData?.bookMakerOdds?.length > 0 && renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 300K', oddsData.bookMakerOdds, 'bookmaker')}
-                                                        {!oddsData?.marketClosed && (oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
-                                                    </>
-                                                )}
+                                </div>
 
-                                                {/* Neeche: SESSIONS, W/P MARKET, EXTRA MARKET, ODD/EVEN – cricket only */}
-                                                {sportName === 'cricket' && (
-                                                <div className="markets_below_wrap">
-                                                    {renderNoYesSection('below_sessions', 'SESSIONS', sessionsRows)}
-                                                    {renderNoYesSection('below_wp', 'W/P MARKET', wpMarketRows)}
-                                                    {renderNoYesSection('below_extra', 'EXTRA MARKET', extraMarketRows)}
-                                                    {renderNoYesSection('below_odd_even', 'ODD/EVEN', oddEvenRows)}
-                                                    {backOnlyBlocks.map((block) => renderBackOnlySection(block))}
-                                                </div>
-                                                )}
+                                <div className={`cricket_summary_details_wrapper ${sportName === 'soccer' ? 'soccer_odds_page' : ''}`} ref={marketsSectionRef}>
+                                    {showMarketsSection ? (
+                                        <>
+                                            <div className='top_tabs_cricket top_tabs_markets'>
+                                                <ul>
+                                                    <li className={activeTab === 'all' ? 'active' : ''}>
+                                                        <button onClick={() => setActiveTab('all')}>ALL</button>
+                                                    </li>
+                                                    {sportName === 'cricket' && (
+                                                        <>
+                                                            <li className={activeTab === 'sessions' ? 'active' : ''}>
+                                                                <button onClick={() => setActiveTab('sessions')}>SESSIONS</button>
+                                                            </li>
+                                                            <li className={activeTab === 'wp-market' ? 'active' : ''}>
+                                                                <button onClick={() => setActiveTab('wp-market')}>W/P MARKET</button>
+                                                            </li>
+                                                            <li className={activeTab === 'extra-market' ? 'active' : ''}>
+                                                                <button onClick={() => setActiveTab('extra-market')}>EXTRA MARKET</button>
+                                                            </li>
+                                                            <li className={activeTab === 'odd-even' ? 'active' : ''}>
+                                                                <button onClick={() => setActiveTab('odd-even')}>ODD/EVEN</button>
+                                                            </li>
+                                                        </>
+                                                    )}
+                                                    <li className={`open_bets_tab ${activeTab === 'open-bets' ? 'active' : ''}`}>
+                                                        <button onClick={() => setActiveTab('open-bets')}>(OPEN BETS) ({openBetsCount})</button>
+                                                    </li>
+                                                </ul>
+                                            </div>
 
-                                                {/* {oddsData?.matchOdds?.map((market, mIdx) => {
+                                            <div className='match_summary_content_tabs'>
+                                                {activeTab === 'all' && (
+                                                    <>
+                                                        {oddsLoading && gameId && (
+                                                            <div className='match_block' style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
+                                                        )}
+                                                        {!oddsLoading && oddsData && (oddsData.marketClosed || !oddsData.matchOdds?.length) && (
+                                                            <div className='match_block odds_market_closed' style={{ padding: '1rem', color: 'var(--text-secondary, #888)', textAlign: 'center' }}>Market closed</div>
+                                                        )}
+                                                        {!oddsLoading && oddsData && !oddsData.marketClosed && oddsData.matchOdds?.length > 0 && (sportName === 'soccer' || sportName === 'tennis') ? (
+                                                            <>
+                                                                {oddsData?.matchOdds?.[0] && renderOddsSection('match_odds_0', oddsData.matchOdds[0].marketName || oddsData.matchOdds[0].market || 'MATCH ODDS', 'ri-settings-3-line', oddsData.matchOdds[0].minMax || 'MIN: 100 MAX: 25K', [oddsData.matchOdds[0]], 'match_odds')}
+                                                                {oddsData?.bookMakerOdds?.length > 0
+                                                                    ? renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-settings-3-line', 'MIN: 100 MAX: 1000K', oddsData.bookMakerOdds, 'bookmaker')
+                                                                    : (() => {
+                                                                        const firstMarket = oddsData?.matchOdds?.[0]
+                                                                        const runners = (firstMarket && (Array.isArray(firstMarket.runners) ? firstMarket.runners : toOddDatasArray(firstMarket.oddDatas))) || []
+                                                                        const lockedRunners = runners.length
+                                                                            ? runners.map((r) => ({ ...r, rname: r.rname ?? r.selectionName ?? r.name ?? '—', b1: null, b2: null, b3: null, l1: null, l2: null, l3: null }))
+                                                                            : [{ rname: '—', selectionName: '—', b1: null, l1: null }, { rname: '—', selectionName: '—', b1: null, l1: null }, { rname: '—', selectionName: '—', b1: null, l1: null }]
+                                                                        const dummyMarket = { mid: 'bookmaker-empty', marketId: 'bookmaker-empty', market: 'BOOKMAKER', status: 'CLOSED', runners: lockedRunners }
+                                                                        return renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-settings-3-line', 'MIN: 100 MAX: 1000K', [dummyMarket], 'bookmaker')
+                                                                    })()}
+                                                                {/* Tennis: API se aaye extra markets – Set Betting, Total Games, etc. */}
+                                                                {sportName === 'tennis' && (() => {
+                                                                    const extra = [
+                                                                        ...(oddsData?.matchOdds?.length > 1 ? oddsData.matchOdds.slice(1) : []),
+                                                                        ...(oddsData?.otherMarketOdds ?? []),
+                                                                    ]
+                                                                    return extra.map((m, idx) => {
+                                                                        const title = m.marketName || m.market || `Market ${idx + 1}`
+                                                                        const minMax = m.minMax || 'MIN: 100 MAX: 25K'
+                                                                        return renderOddsSection(`tennis_extra_${idx}`, title, 'ri-settings-3-line', minMax, [m], 'match_odds')
+                                                                    })
+                                                                })()}
+                                                                {/* Soccer only: First Half Goals, Half Time, Over/Under – tennis pe ye nahi */}
+                                                                {sportName === 'soccer' && (() => {
+                                                                    const allBelow = [
+                                                                        ...(oddsData?.matchOdds?.length > 1 ? oddsData.matchOdds.slice(1) : []),
+                                                                        ...(oddsData?.otherMarketOdds ?? []),
+                                                                    ]
+                                                                    const firstMarketRunners = (() => {
+                                                                        const m = oddsData?.matchOdds?.[0]
+                                                                        if (!m) return []
+                                                                        return getMarketOddList(m)
+                                                                    })()
+                                                                    return SOCCER_MARKETS_BELOW.map((def, idx) => {
+                                                                        const apiMarket = findSoccerMarketByTitle(def.title, allBelow)
+                                                                        if (apiMarket) {
+                                                                            return renderOddsSection(
+                                                                                `soccer_below_${idx}`,
+                                                                                apiMarket.marketName || apiMarket.market || def.title,
+                                                                                'ri-settings-3-line',
+                                                                                apiMarket.minMax || def.minMax,
+                                                                                [apiMarket],
+                                                                                'match_odds'
+                                                                            )
+                                                                        }
+                                                                        const runnerLabels = def.runnerLabels || (firstMarketRunners.length >= 3
+                                                                            ? firstMarketRunners.slice(0, 3).map((r) => r.rname ?? r.selectionName ?? r.name ?? '—')
+                                                                            : ['—', '—', 'The Draw'])
+                                                                        const lockedRunners = runnerLabels.map((label) => ({
+                                                                            rname: label,
+                                                                            selectionName: label,
+                                                                            b1: null, b2: null, b3: null,
+                                                                            l1: null, l2: null, l3: null,
+                                                                        }))
+                                                                        const dummyMarket = { mid: `soccer-placeholder-${idx}`, marketId: `soccer-placeholder-${idx}`, market: def.title, status: 'CLOSED', runners: lockedRunners }
+                                                                        return renderOddsSection(`soccer_below_${idx}`, def.title, 'ri-settings-3-line', def.minMax, [dummyMarket], 'match_odds')
+                                                                    })
+                                                                })()}
+                                                                {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                {!oddsData?.marketClosed && oddsData?.matchOdds?.length > 0 && renderOddsSection('match_odds', 'MATCH ODDS', 'ri-rocket-line', 'MIN: 100 MAX: 10K', oddsData.matchOdds, 'match_odds')}
+                                                                {!oddsData?.marketClosed && oddsData?.bookMakerOdds?.length > 0 && renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 300K', oddsData.bookMakerOdds, 'bookmaker')}
+                                                                {!oddsData?.marketClosed && (oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
+                                                            </>
+                                                        )}
+
+                                                        {/* Neeche: SESSIONS, W/P MARKET, EXTRA MARKET, ODD/EVEN – cricket only */}
+                                                        {sportName === 'cricket' && (
+                                                            <div className="markets_below_wrap">
+                                                                {renderNoYesSection('below_sessions', 'SESSIONS', sessionsRows)}
+                                                                {renderNoYesSection('below_wp', 'W/P MARKET', wpMarketRows)}
+                                                                {renderNoYesSection('below_extra', 'EXTRA MARKET', extraMarketRows)}
+                                                                {renderNoYesSection('below_odd_even', 'ODD/EVEN', oddEvenRows)}
+                                                                {backOnlyBlocks.map((block) => renderBackOnlySection(block))}
+                                                            </div>
+                                                        )}
+
+                                                        {/* {oddsData?.matchOdds?.map((market, mIdx) => {
                                                     const marketId = market.mid || market.marketId
                                                     const oddList = Array.isArray(market.oddDatas) ? market.oddDatas : (market.oddDatas ? Object.values(market.oddDatas).filter(Boolean) : [])
                                                     return (
@@ -2174,234 +2190,234 @@ function CricketDetail() {
                                                         </div>
                                                     </div>
                                                 </div> */}
-                                            </>
-                                        )}
-
-                                        {activeTab === 'sessions' && (
-                                            <div className="markets_below_wrap">
-                                                {oddsLoading && gameId && (
-                                                    <div className="match_block" style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
+                                                    </>
                                                 )}
-                                                {renderNoYesSection('below_sessions', 'SESSIONS', sessionsRows)}
-                                            </div>
-                                        )}
 
-                                        {activeTab === 'wp-market' && (
-                                            <div className="markets_below_wrap">
-                                                {oddsLoading && gameId && (
-                                                    <div className="match_block" style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
+                                                {activeTab === 'sessions' && (
+                                                    <div className="markets_below_wrap">
+                                                        {oddsLoading && gameId && (
+                                                            <div className="match_block" style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
+                                                        )}
+                                                        {renderNoYesSection('below_sessions', 'SESSIONS', sessionsRows)}
+                                                    </div>
                                                 )}
-                                                {renderNoYesSection('below_wp', 'W/P MARKET', wpMarketRows)}
-                                            </div>
-                                        )}
 
-                                        {activeTab === 'extra-market' && (
-                                            <div className="markets_below_wrap">
-                                                {oddsLoading && gameId && (
-                                                    <div className="match_block" style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
+                                                {activeTab === 'wp-market' && (
+                                                    <div className="markets_below_wrap">
+                                                        {oddsLoading && gameId && (
+                                                            <div className="match_block" style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
+                                                        )}
+                                                        {renderNoYesSection('below_wp', 'W/P MARKET', wpMarketRows)}
+                                                    </div>
                                                 )}
-                                                {renderNoYesSection('below_extra', 'EXTRA MARKET', extraMarketRows)}
-                                            </div>
-                                        )}
 
-                                        {activeTab === 'odd-even' && (
-                                            <div className="markets_below_wrap">
-                                                {oddsLoading && gameId && (
-                                                    <div className="match_block" style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
+                                                {activeTab === 'extra-market' && (
+                                                    <div className="markets_below_wrap">
+                                                        {oddsLoading && gameId && (
+                                                            <div className="match_block" style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
+                                                        )}
+                                                        {renderNoYesSection('below_extra', 'EXTRA MARKET', extraMarketRows)}
+                                                    </div>
                                                 )}
-                                                {renderNoYesSection('below_odd_even', 'ODD/EVEN', oddEvenRows)}
-                                                {backOnlyBlocks.map((block) => renderBackOnlySection(block))}
-                                            </div>
-                                        )}
 
-                                        {activeTab === 'open-bets' && (
-                                            <div className="page_open_bets_wrap">
-                                                <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
-                                                {openBetsLoading ? (
-                                                    <p className='betslip_empty'>Loading open bets...</p>
-                                                ) : openBetsList.length === 0 ? (
-                                                    <div className='betslip_empty'><p>No open bets.</p></div>
-                                                ) : (
-                                                    <div className='betslip_open_bets betdel_sl'>{renderOpenBetsContent()}</div>
+                                                {activeTab === 'odd-even' && (
+                                                    <div className="markets_below_wrap">
+                                                        {oddsLoading && gameId && (
+                                                            <div className="match_block" style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
+                                                        )}
+                                                        {renderNoYesSection('below_odd_even', 'ODD/EVEN', oddEvenRows)}
+                                                        {backOnlyBlocks.map((block) => renderBackOnlySection(block))}
+                                                    </div>
+                                                )}
+
+                                                {activeTab === 'open-bets' && (
+                                                    <div className="page_open_bets_wrap">
+                                                        <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
+                                                        {openBetsLoading ? (
+                                                            <p className='betslip_empty'>Loading open bets...</p>
+                                                        ) : openBetsList.length === 0 ? (
+                                                            <div className='betslip_empty'><p>No open bets.</p></div>
+                                                        ) : (
+                                                            <div className='betslip_open_bets betdel_sl'>{renderOpenBetsContent()}</div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {activeTab === 'player-props' && (
+                                                    <div className='match_block'>
+                                                        <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('player-props-1')}>
+                                                            <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>Player Props Content</h6>
+                                                            <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('player-props-1') ? 'rotated' : ''}`}></i></button>
+                                                        </div>
+                                                        <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('player-props-1') ? 'hidden' : ''}`}>
+                                                            <div className={`team_cricket_bl_name ${isBetSelected('Player Props', 'Player Props Content', '1.75', 'player-props-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('Player Props', 'Player Props Content', '1.75', 'player-props-1-left')}>
+                                                                Player Props <span>1.75</span>
+                                                            </div>
+                                                            <div className={`team_cricket_bl_name ${isBetSelected('Player Props', 'Player Props Content', '1.75', 'player-props-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('Player Props', 'Player Props Content', '1.75', 'player-props-1-right')}>
+                                                                Player Props <span>1.75</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {activeTab === 'innings' && (
+                                                    <>
+                                                        <div className='match_block'>
+                                                            <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('innings-1')}>
+                                                                <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings overs 0 to 10 - Royal
+                                                                    Challengers Bengaluru total</h6>
+                                                                <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('innings-1') ? 'rotated' : ''}`}></i></button>
+                                                            </div>
+                                                            <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('innings-1') ? 'hidden' : ''}`}>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('over 78.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'innings-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 78.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'innings-1-left')}>
+                                                                    over 78.5<span>1.75</span>
+                                                                </div>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('over 80.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'innings-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('over 80.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'innings-1-right')}>
+                                                                    over 80.5 <span>1.75</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className='match_block'>
+                                                            <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('innings-2')}>
+                                                                <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings overs 0 to 12 - Delhi
+                                                                    Capitals total</h6>
+                                                                <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('innings-2') ? 'rotated' : ''}`}></i></button>
+                                                            </div>
+                                                            <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('innings-2') ? 'hidden' : ''}`}>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('over 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'innings-2-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'innings-2-left')}>
+                                                                    over 91.5 <span>1.75</span>
+                                                                </div>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('under 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'innings-2-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'innings-2-right')}>
+                                                                    under 91.5 <span>1.75</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className='match_block'>
+                                                            <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('innings-3')}>
+                                                                <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings over 1 - Royal Challengers
+                                                                    Bengaluru total</h6>
+                                                                <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('innings-3') ? 'rotated' : ''}`}></i></button>
+                                                            </div>
+                                                            <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('innings-3') ? 'hidden' : ''}`}>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('over 6.5', 'First innings over 1 - Royal Challengers Bengaluru total', '1.75', 'innings-3-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 6.5', 'First innings over 1 - Royal Challengers Bengaluru total', '1.75', 'innings-3-left')}>
+                                                                    over 6.5 <span>1.75</span>
+                                                                </div>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('under 6.5', 'First innings over 1 - Royal Challengers Bengaluru total', '1.75', 'innings-3-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 6.5', 'First innings over 1 - Royal Challengers Bengaluru total', '1.75', 'innings-3-right')}>
+                                                                    under 6.5 <span>1.75</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className='match_block'>
+                                                            <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('innings-4')}>
+                                                                <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings over 1 - Delhi Capitals total</h6>
+                                                                <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('innings-4') ? 'rotated' : ''}`}></i></button>
+                                                            </div>
+                                                            <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('innings-4') ? 'hidden' : ''}`}>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('over 6.5', 'First innings over 1 - Delhi Capitals total', '1.75', 'innings-4-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 6.5', 'First innings over 1 - Delhi Capitals total', '1.75', 'innings-4-left')}>
+                                                                    over 6.5 <span>1.75</span>
+                                                                </div>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('under 6.5', 'First innings over 1 - Delhi Capitals total', '1.75', 'innings-4-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 6.5', 'First innings over 1 - Delhi Capitals total', '1.75', 'innings-4-right')}>
+                                                                    under 6.5 <span>1.75</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )}
+
+                                                {activeTab === 'overs' && (
+                                                    <>
+                                                        <div className='match_block'>
+                                                            <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('overs-1')}>
+                                                                <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings overs 0 to 10 - Royal
+                                                                    Challengers Bengaluru total</h6>
+                                                                <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('overs-1') ? 'rotated' : ''}`}></i></button>
+                                                            </div>
+                                                            <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('overs-1') ? 'hidden' : ''}`}>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('over 78.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'overs-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 78.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'overs-1-left')}>
+                                                                    over 78.5<span>1.75</span>
+                                                                </div>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('over 80.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'overs-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('over 80.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'overs-1-right')}>
+                                                                    over 80.5 <span>1.75</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className='match_block'>
+                                                            <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('overs-2')}>
+                                                                <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings overs 0 to 12 - Delhi
+                                                                    Capitals total</h6>
+                                                                <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('overs-2') ? 'rotated' : ''}`}></i></button>
+                                                            </div>
+                                                            <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('overs-2') ? 'hidden' : ''}`}>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('over 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'overs-2-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'overs-2-left')}>
+                                                                    over 91.5 <span>1.75</span>
+                                                                </div>
+                                                                <div className={`team_cricket_bl_name ${isBetSelected('under 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'overs-2-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'overs-2-right')}>
+                                                                    under 91.5 <span>1.75</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )}
+
+                                                {activeTab === 'deliveries' && (
+                                                    <div className='match_block'>
+                                                        <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('deliveries-1')}>
+                                                            <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>Deliveries Content</h6>
+                                                            <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('deliveries-1') ? 'rotated' : ''}`}></i></button>
+                                                        </div>
+                                                        <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('deliveries-1') ? 'hidden' : ''}`}>
+                                                            <div className={`team_cricket_bl_name ${isBetSelected('Deliveries', 'Deliveries Content', '1.75', 'deliveries-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('Deliveries', 'Deliveries Content', '1.75', 'deliveries-1-left')}>
+                                                                Deliveries <span>1.75</span>
+                                                            </div>
+                                                            <div className={`team_cricket_bl_name ${isBetSelected('Deliveries', 'Deliveries Content', '1.75', 'deliveries-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('Deliveries', 'Deliveries Content', '1.75', 'deliveries-1-right')}>
+                                                                Deliveries <span>1.75</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {activeTab === 'wickets' && (
+                                                    <div className='match_block'>
+                                                        <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('wickets-1')}>
+                                                            <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>Total dismissals</h6>
+                                                            <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('wickets-1') ? 'rotated' : ''}`}></i></button>
+                                                        </div>
+                                                        <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('wickets-1') ? 'hidden' : ''}`}>
+                                                            <div className={`team_cricket_bl_name ${isBetSelected('over 37.5', 'Total dismissals', '1.75', 'wickets-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 37.5', 'Total dismissals', '1.75', 'wickets-1-left')}>
+                                                                over 37.5 <span>1.75</span>
+                                                            </div>
+                                                            <div className={`team_cricket_bl_name ${isBetSelected('under 37.5', 'Total dismissals', '1.75', 'wickets-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 37.5', 'Total dismissals', '1.75', 'wickets-1-right')}>
+                                                                under 37.5 <span>1.75</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {activeTab === 'extras' && (
+                                                    <div className='match_block'>
+                                                        <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('extras-1')}>
+                                                            <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>Total extras</h6>
+                                                            <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('extras-1') ? 'rotated' : ''}`}></i></button>
+                                                        </div>
+                                                        <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('extras-1') ? 'hidden' : ''}`}>
+                                                            <div className={`team_cricket_bl_name ${isBetSelected('over 37.5', 'Total extras', '1.75', 'extras-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 37.5', 'Total extras', '1.75', 'extras-1-left')}>
+                                                                over 37.5 <span>1.75</span>
+                                                            </div>
+                                                            <div className={`team_cricket_bl_name ${isBetSelected('under 37.5', 'Total extras', '1.75', 'extras-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 37.5', 'Total extras', '1.75', 'extras-1-right')}>
+                                                                under 37.5 <span>1.75</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
-                                        )}
+                                        </>
+                                    ) : (
+                                        <div className="cricket_markets_placeholder" aria-hidden="true" />
+                                    )}
+                                </div>
 
-                                        {activeTab === 'player-props' && (
-                                            <div className='match_block'>
-                                                <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('player-props-1')}>
-                                                    <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>Player Props Content</h6>
-                                                    <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('player-props-1') ? 'rotated' : ''}`}></i></button>
-                                                </div>
-                                                <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('player-props-1') ? 'hidden' : ''}`}>
-                                                    <div className={`team_cricket_bl_name ${isBetSelected('Player Props', 'Player Props Content', '1.75', 'player-props-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('Player Props', 'Player Props Content', '1.75', 'player-props-1-left')}>
-                                                        Player Props <span>1.75</span>
-                                                    </div>
-                                                    <div className={`team_cricket_bl_name ${isBetSelected('Player Props', 'Player Props Content', '1.75', 'player-props-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('Player Props', 'Player Props Content', '1.75', 'player-props-1-right')}>
-                                                        Player Props <span>1.75</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {activeTab === 'innings' && (
-                                            <>
-                                                <div className='match_block'>
-                                                    <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('innings-1')}>
-                                                        <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings overs 0 to 10 - Royal
-                                                            Challengers Bengaluru total</h6>
-                                                        <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('innings-1') ? 'rotated' : ''}`}></i></button>
-                                                    </div>
-                                                    <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('innings-1') ? 'hidden' : ''}`}>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('over 78.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'innings-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 78.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'innings-1-left')}>
-                                                            over 78.5<span>1.75</span>
-                                                        </div>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('over 80.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'innings-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('over 80.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'innings-1-right')}>
-                                                            over 80.5 <span>1.75</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className='match_block'>
-                                                    <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('innings-2')}>
-                                                        <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings overs 0 to 12 - Delhi
-                                                            Capitals total</h6>
-                                                        <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('innings-2') ? 'rotated' : ''}`}></i></button>
-                                                    </div>
-                                                    <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('innings-2') ? 'hidden' : ''}`}>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('over 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'innings-2-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'innings-2-left')}>
-                                                            over 91.5 <span>1.75</span>
-                                                        </div>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('under 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'innings-2-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'innings-2-right')}>
-                                                            under 91.5 <span>1.75</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className='match_block'>
-                                                    <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('innings-3')}>
-                                                        <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings over 1 - Royal Challengers
-                                                            Bengaluru total</h6>
-                                                        <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('innings-3') ? 'rotated' : ''}`}></i></button>
-                                                    </div>
-                                                    <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('innings-3') ? 'hidden' : ''}`}>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('over 6.5', 'First innings over 1 - Royal Challengers Bengaluru total', '1.75', 'innings-3-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 6.5', 'First innings over 1 - Royal Challengers Bengaluru total', '1.75', 'innings-3-left')}>
-                                                            over 6.5 <span>1.75</span>
-                                                        </div>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('under 6.5', 'First innings over 1 - Royal Challengers Bengaluru total', '1.75', 'innings-3-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 6.5', 'First innings over 1 - Royal Challengers Bengaluru total', '1.75', 'innings-3-right')}>
-                                                            under 6.5 <span>1.75</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className='match_block'>
-                                                    <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('innings-4')}>
-                                                        <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings over 1 - Delhi Capitals total</h6>
-                                                        <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('innings-4') ? 'rotated' : ''}`}></i></button>
-                                                    </div>
-                                                    <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('innings-4') ? 'hidden' : ''}`}>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('over 6.5', 'First innings over 1 - Delhi Capitals total', '1.75', 'innings-4-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 6.5', 'First innings over 1 - Delhi Capitals total', '1.75', 'innings-4-left')}>
-                                                            over 6.5 <span>1.75</span>
-                                                        </div>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('under 6.5', 'First innings over 1 - Delhi Capitals total', '1.75', 'innings-4-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 6.5', 'First innings over 1 - Delhi Capitals total', '1.75', 'innings-4-right')}>
-                                                            under 6.5 <span>1.75</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
-
-                                        {activeTab === 'overs' && (
-                                            <>
-                                                <div className='match_block'>
-                                                    <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('overs-1')}>
-                                                        <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings overs 0 to 10 - Royal
-                                                            Challengers Bengaluru total</h6>
-                                                        <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('overs-1') ? 'rotated' : ''}`}></i></button>
-                                                    </div>
-                                                    <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('overs-1') ? 'hidden' : ''}`}>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('over 78.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'overs-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 78.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'overs-1-left')}>
-                                                            over 78.5<span>1.75</span>
-                                                        </div>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('over 80.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'overs-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('over 80.5', 'First innings overs 0 to 10 - Royal Challengers Bengaluru total', '1.75', 'overs-1-right')}>
-                                                            over 80.5 <span>1.75</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className='match_block'>
-                                                    <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('overs-2')}>
-                                                        <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>First innings overs 0 to 12 - Delhi
-                                                            Capitals total</h6>
-                                                        <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('overs-2') ? 'rotated' : ''}`}></i></button>
-                                                    </div>
-                                                    <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('overs-2') ? 'hidden' : ''}`}>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('over 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'overs-2-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'overs-2-left')}>
-                                                            over 91.5 <span>1.75</span>
-                                                        </div>
-                                                        <div className={`team_cricket_bl_name ${isBetSelected('under 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'overs-2-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 91.5', 'First innings overs 0 to 12 - Delhi Capitals total', '1.75', 'overs-2-right')}>
-                                                            under 91.5 <span>1.75</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
-
-                                        {activeTab === 'deliveries' && (
-                                            <div className='match_block'>
-                                                <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('deliveries-1')}>
-                                                    <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>Deliveries Content</h6>
-                                                    <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('deliveries-1') ? 'rotated' : ''}`}></i></button>
-                                                </div>
-                                                <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('deliveries-1') ? 'hidden' : ''}`}>
-                                                    <div className={`team_cricket_bl_name ${isBetSelected('Deliveries', 'Deliveries Content', '1.75', 'deliveries-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('Deliveries', 'Deliveries Content', '1.75', 'deliveries-1-left')}>
-                                                        Deliveries <span>1.75</span>
-                                                    </div>
-                                                    <div className={`team_cricket_bl_name ${isBetSelected('Deliveries', 'Deliveries Content', '1.75', 'deliveries-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('Deliveries', 'Deliveries Content', '1.75', 'deliveries-1-right')}>
-                                                        Deliveries <span>1.75</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {activeTab === 'wickets' && (
-                                            <div className='match_block'>
-                                                <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('wickets-1')}>
-                                                    <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>Total dismissals</h6>
-                                                    <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('wickets-1') ? 'rotated' : ''}`}></i></button>
-                                                </div>
-                                                <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('wickets-1') ? 'hidden' : ''}`}>
-                                                    <div className={`team_cricket_bl_name ${isBetSelected('over 37.5', 'Total dismissals', '1.75', 'wickets-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 37.5', 'Total dismissals', '1.75', 'wickets-1-left')}>
-                                                        over 37.5 <span>1.75</span>
-                                                    </div>
-                                                    <div className={`team_cricket_bl_name ${isBetSelected('under 37.5', 'Total dismissals', '1.75', 'wickets-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 37.5', 'Total dismissals', '1.75', 'wickets-1-right')}>
-                                                        under 37.5 <span>1.75</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {activeTab === 'extras' && (
-                                            <div className='match_block'>
-                                                <div className='d-flex align-items-center justify-content-between top_hd' onClick={() => toggleBlock('extras-1')}>
-                                                    <h6><span><img src="images/pinmarket.svg" alt="cricket" /></span>Total extras</h6>
-                                                    <button className='toggleup_btn'><i className={`ri-arrow-up-s-fill ${closedBlocks.has('extras-1') ? 'rotated' : ''}`}></i></button>
-                                                </div>
-                                                <div className={`d-flex align-items-center mt-2 justify-content-between gap-2 ${closedBlocks.has('extras-1') ? 'hidden' : ''}`}>
-                                                    <div className={`team_cricket_bl_name ${isBetSelected('over 37.5', 'Total extras', '1.75', 'extras-1-left') ? 'selected' : ''}`} onClick={() => handleBetClick('over 37.5', 'Total extras', '1.75', 'extras-1-left')}>
-                                                        over 37.5 <span>1.75</span>
-                                                    </div>
-                                                    <div className={`team_cricket_bl_name ${isBetSelected('under 37.5', 'Total extras', '1.75', 'extras-1-right') ? 'selected' : ''}`} onClick={() => handleBetClick('under 37.5', 'Total extras', '1.75', 'extras-1-right')}>
-                                                        under 37.5 <span>1.75</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="cricket_markets_placeholder" aria-hidden="true" />
-                            )}
-                        </div>
-
-                    </div>
-                    </>
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
@@ -2546,8 +2562,8 @@ function CricketDetail() {
                                         <button type='button' className='betslip_clear_all_btn' onClick={clearAllBets}>Clear all bets</button>
                                     </p> */}
                                     {placeBetError && <p className='betslip_error'>{placeBetError}</p>}
-                                    <button className='betslip_place_bet_btn' onClick={handlePlaceBet} disabled={placeBetLoading || lossLimitReached}>
-                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
+                                    <button className='betslip_place_bet_btn' onClick={handlePlaceBet} disabled={placeBetLoading || lossLimitReached || isDemo}>
+                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : isDemo ? 'Login to play' : 'Place Bet'}
                                     </button>
                                 </>
                             ) : (

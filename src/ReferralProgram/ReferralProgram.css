@@ -888,6 +888,10 @@ table {
         font-size: 22px;
         margin-bottom: 20px;
     }
+
+.transactions_header.align-items-center{
+        align-items: start !important;
+    }
     
     .referral_program_content {
         padding: 15px;
@@ -2166,9 +2170,20 @@ html {
     }
 }
 
-@media (max-width:480px) {
+@media (max-width:667px) {
 
 .referral_invite_card .notification_icon {
     max-width: 70px; }
+
+
+    .referral_date_input {
+        width: 100%; }
+
+        .referral_filters_row {
+            justify-content: space-between;
+        }
+
+        .referral_table_block .transactions_search_input {
+            min-width: 220px; }
 
 }
