@@ -123,7 +123,7 @@ function formatOddsSize(size) {
 }
 
 function LandingPage() {
-  // Auth token – sync with sessionStorage so button updates instantly after login (no refresh)
+  // Auth token – sync with localStorageso button updates instantly after login (no refresh)
   const [token, setToken] = useState(() => sessionStorage.getItem('token'));
   const { config: platformConfig } = usePlatformConfig();
   useEffect(() => {

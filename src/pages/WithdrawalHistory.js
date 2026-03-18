@@ -62,7 +62,7 @@ export default function WithdrawalHistory() {
     getWithdrawalTransactions(params)
       .then(function (res) {
         if (res && res.success && Array.isArray(res.data)) {
-          setData(res.data.map((t) => ({ ...t, id: t.id ?? t._id ?? t.transactionId })));
+          setData(res.data.map((t) => ({ ...t, id: t.id })));
           setPagination(res.pagination || { page: 1, limit: LIMIT, totalPages: 1 });
         } else {
           setData([]);

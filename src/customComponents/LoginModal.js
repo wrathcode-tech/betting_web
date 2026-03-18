@@ -440,6 +440,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
                     >
                       Sign up
                     </button>
+
                   </div>
 
                   <form className="premium_login_form" onSubmit={activeTab === 'login' ? handleLogin : handleSignup}>
@@ -493,7 +494,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
                           autoComplete={activeTab === 'login' ? 'current-password' : 'new-password'}
                           value={password}
                           onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); if (activeTab === 'signup') clearFieldError('confirmPassword') }}
-                          // disabled={true}
+                        // disabled={true}
                         />
                         <button
                           type="button"
@@ -572,15 +573,18 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
                     <button type="submit" className="premium_submit_btn" disabled={loading}>
                       {loading ? 'Please wait...' : activeTab === 'login' ? 'Log in' : 'Sign up & play'}
                     </button>
-                    <div className="premium_demo_divider">— or —</div>
-                    <button
-                      type="button"
-                      className="premium_demo_btn"
-                      onClick={handleDemoLogin}
-                      disabled={loading}
-                    >
-                      Demo account login
-                    </button>
+                    {activeTab === 'login' && (
+                      <div className="premium_demo_divider">— or —</div>
+                    )}
+                    {activeTab === 'login' && (
+                      <button
+                        type="button"
+                        className="premium_demo_btn"
+                        onClick={handleDemoLogin}
+                        disabled={loading}>
+                        Demo account login
+                      </button>
+                    )}
                   </form>
                 </>
               )}

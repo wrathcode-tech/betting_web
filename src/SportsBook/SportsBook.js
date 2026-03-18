@@ -48,7 +48,7 @@ function SportsBook() {
       });
   }, [navigate, setBalance]);
 
-  const token = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('token') : null;
+  const token = typeof localStorage!== 'undefined' ? sessionStorage.getItem('token') : null;
   if (!token) return null;
 
   if (error) {

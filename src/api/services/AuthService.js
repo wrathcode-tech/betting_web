@@ -1,6 +1,19 @@
 import { ApiConfig } from "../apiConfig/apiConfig";
 import { ApiCallGet, ApiCallPost, ApiCallPostFormData, ApiCallPut, ApiCallPutFormData, ApiCallPatch, ApiCallDelete } from "../apiConfig/apiCall";
 
+// Read token from sessionStorage OR localStorage (for backward compatibility)
+const getStoredToken = () => {
+  try {
+    return sessionStorage.getItem("token") || localStorage.getItem("token");
+  } catch {
+    try {
+      return sessionStorage.getItem("token");
+    } catch {
+      return null;
+    }
+  }
+};
+
 const AuthService = {
 
 
@@ -408,7 +421,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/{sportName}/matches – Public. sportName: cricket | soccer | tennis. Query: fresh=1. Response: { success, data: { data: [...], count }, message }. */
   sportsbookMatches: async (sportName, options = {}) => {
-    const token = sessionStorage.getItem("token");
+    const token = getStoredToken();
     const { baseBettingSportsbook } = ApiConfig;
     const params = new URLSearchParams();
     if (options.fresh) params.set("fresh", "1");
@@ -423,7 +436,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/{sportName}/odds?gameId={gameId} or ?eventId={eventId} for tennis. Public; no auth. */
   sportsbookOdds: async (sportName, gameIdOrEventId) => {
-    const token = sessionStorage.getItem("token");
+    const token = getStoredToken();
     const { baseBettingSportsbook } = ApiConfig;
     const isTennis = String(sportName).toLowerCase() === "tennis";
     const param = isTennis ? "eventId" : "gameId";
@@ -449,7 +462,7 @@ const AuthService = {
   /** GET /api/v1/sportsbook/event/config?eventId=<gameId> – tvUrl for live stream (Berlin). Response: { response: { tvUrl, eventId, minStack, maxStack, ... } }. */
   sportsbookEventConfig: async (eventId) => {
     if (!eventId) return { tvUrl: null };
-    const token = sessionStorage.getItem("token");
+    const token = getStoredToken();
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/event/config?eventId=${encodeURIComponent(eventId)}`;
     const headers = {

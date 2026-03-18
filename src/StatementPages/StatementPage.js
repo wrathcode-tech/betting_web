@@ -45,7 +45,17 @@ function exportToPDF(columns, data, title, filename = 'export') {
   doc.save(`${filename}.pdf`)
 }
 
-function StatementPage({ title, columns, data, emptyMessage = 'No data to display.', filterColumnKey, enableExport = false, exportFileName = 'statement', headerRightClassName = '' }) {
+function StatementPage({
+  title,
+  columns,
+  data,
+  emptyMessage = 'No data to display.',
+  filterColumnKey,
+  enableExport = false,
+  exportFileName = 'statement',
+  headerRightClassName = '',
+  headerExtra = null,
+}) {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [filterValue, setFilterValue] = useState('all')
@@ -114,6 +124,7 @@ function StatementPage({ title, columns, data, emptyMessage = 'No data to displa
             <div className="transactions_header">
               <h1>{title}</h1>
               <div className={`transactions_header_right ${headerRightClassName || ''}`.trim()}>
+                {headerExtra}
                 <input
                   type="text"
                   placeholder="Search..."

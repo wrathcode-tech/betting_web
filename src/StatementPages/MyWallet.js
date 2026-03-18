@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import StatementPage from './StatementPage'
 import { getAccountStatement } from '../api/historyApi'
+import AuthService from '../api/services/AuthService'
 
 const COLUMNS = [
   { key: 'time', label: 'Time' },
@@ -40,7 +41,7 @@ function formatStatus(s) {
 }
 
 function mapStatementToRow(item, index) {
-  const id = item.id ?? item._id ?? index
+  const id = item.id ?? index
   const statusRaw = (item.status || '').toLowerCase()
   const type = item.type ?? item.transactionType ?? '—'
   const amount = item.amount != null ? formatAmount(item.amount, item.currency) : '—'
@@ -48,19 +49,26 @@ function mapStatementToRow(item, index) {
   return {
     id: String(id),
     time: formatTime(item.createdAt ?? item.date ?? item.transactionDate),
-    txnId: item.id ?? item.transactionId ?? item._id ?? '—',
+    txnId: item.id ?? '—',
     type: String(type).charAt(0).toUpperCase() + String(type).slice(1).toLowerCase(),
     amount,
     balanceAfter,
     status: formatStatus(item.status),
     statusRaw,
-    cardTitle: item.id != null ? `Transaction #${item.id}` : (item.transactionId ?? item._id ?? String(id)),
+    cardTitle: `Transaction #${item.id != null ? item.id : id}`,
   }
 }
 
 export default function MyWallet() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
+  const [summary, setSummary] = useState(null)
+
+  const formatSummaryAmount = (val) => {
+    if (val == null) return '—'
+    const n = Number(val)
+    return `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
 
   const fetchStatement = useCallback(async (page = 1, limit = 100, from, to, type, sort) => {
     const token = sessionStorage.getItem('token')
@@ -89,16 +97,49 @@ export default function MyWallet() {
     fetchStatement(1, 100)
   }, [fetchStatement])
 
+  useEffect(() => {
+    const token = sessionStorage.getItem('token')
+    if (!token) return
+    AuthService.bettingGetBalance()
+      .then((res) => {
+        const raw = res?.data ?? res
+        const wallet = raw?.wallet ?? raw
+        if (!wallet || typeof wallet !== 'object') return
+        setSummary({
+          balance: wallet.balance ?? 0,
+          totalWinnings: wallet.totalWinnings ?? 0,
+          currency: wallet.currency ?? 'INR',
+        })
+      })
+      .catch(() => {})
+  }, [])
+
+  const title = 'My Wallet'
+
+  const headerExtra = summary ? (
+    <div className="wallet_summary">
+      <div className="wallet_summary_item">
+        <span className="wallet_summary_label">Main Balance</span>
+        <span className="wallet_summary_value">{formatSummaryAmount(summary.balance)}</span>
+      </div>
+      <div className="wallet_summary_item">
+        <span className="wallet_summary_label">Total Winnings</span>
+        <span className="wallet_summary_value">{formatSummaryAmount(summary.totalWinnings)}</span>
+      </div>
+    </div>
+  ) : null
+
   if (loading) {
     return (
       <>
         <StatementPage
-          title="My Wallet"
+          title={title}
           columns={COLUMNS}
           data={[]}
           emptyMessage="Loading..."
           filterColumnKey="type"
           dateColumnKey="time"
+          headerExtra={headerExtra}
         />
       </>
     )
@@ -106,12 +147,13 @@ export default function MyWallet() {
 
   return (
     <StatementPage
-      title="My Wallet"
+      title={title}
       columns={COLUMNS}
       data={data}
       emptyMessage="No wallet transactions yet."
       filterColumnKey="type"
       dateColumnKey="time"
+      headerExtra={headerExtra}
     />
   )
 }

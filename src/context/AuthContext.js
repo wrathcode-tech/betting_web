@@ -1,6 +1,6 @@
 /**
  * Auth context: token + user (including isDemo for view-only mode).
- * - user stored in sessionStorage when logged in (key: 'user').
+ * - user stored in localStoragewhen logged in (key: 'user').
  * - isDemo === true → view only: allow view matches/odds/dashboard/wallet; block place bet, deposit, withdraw, etc.
  * - Demo expiry: if user.expiresAt is past, logout and redirect to login.
  */

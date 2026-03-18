@@ -136,7 +136,7 @@ function ProfileTransactions() {
     const searchFiltered = searchLower
       ? statusFiltered.filter((t) => {
         const time = formatTime(t.createdAt) || ''
-        const id = (t.id || t.transactionId || t._id || '') + ''
+        const id = (t.id || '') + ''
         const type = (t.type || '') + ''
         const amount = formatAmount(t.amount, t.currency) || ''
         const status = formatStatus(t.status) || ''
@@ -146,11 +146,11 @@ function ProfileTransactions() {
       })
       : statusFiltered
     return searchFiltered.map((t, idx) => {
-      const rowId = t.id ?? t._id ?? t.transactionId
+      const rowId = t.id ?? idx
       return {
         id: rowId != null ? String(rowId) : `row-${idx}`,
         time: formatTime(t.createdAt),
-        transactionId: t.id ?? t.transactionId ?? t._id,
+        transactionId: t.id,
         type: t.type === 'deposit' ? 'Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : (t.type || '—'),
         amount: formatAmount(t.amount, t.currency),
         approvedAmount: t.status === 'approved' || t.status === 'completed' ? formatAmount(t.amount, t.currency) : '—',

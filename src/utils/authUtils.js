@@ -12,7 +12,7 @@ export function isDemoUser(user) {
 }
 
 /**
- * Get stored user from sessionStorage (for use outside React, e.g. apiCall).
+ * Get stored user from localStorage(for use outside React, e.g. apiCall).
  * @returns {object | null}
  */
 export function getStoredUserForGuard() {
