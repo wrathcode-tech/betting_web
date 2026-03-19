@@ -1564,7 +1564,7 @@ function LandingPage() {
         </div> */}
 
 
-        <div className="top_match_section sportsmatch_s">
+        <div className="top_match_section sportsmatch_s cricket_matches_section">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <div className="sports_grid_title">
@@ -1709,23 +1709,45 @@ function LandingPage() {
                               className="sports_grid_row"
                               onClick={(e) => handleTopMatchRowClick(e, match)}
                             >
-                              <td className="sports_grid_match_cell d-flex align-items-center gap-3">
-                                <div className="sports_grid_match_cell_inner">
-                                  <span className="sports_grid_day_time">{match.dayGroup}{match.timeOnly && <span className="sports_grid_time_only"> {match.timeOnly}</span>}</span>
-                                  {match.inPlay && <span className="sports_grid_live">LIVE</span>}
-                                </div>
-                                <div className="sports_grid_match_info">
-                                  <div className="sports_grid_teams">{match.teams}</div>
+                              <td className="sports_grid_match_cell sports_grid_mobile_single_cell">
+                                <div className="sports_grid_mobile_row">
+                                  <div className="sports_grid_mobile_match_block">
+                                    <div className="sports_grid_mobile_time_live">
+                                      <span className="sports_grid_day_time">{match.dayGroup}{match.timeOnly && <span className="sports_grid_time_only"> {match.timeOnly}</span>}</span>
+                                      {match.inPlay && <span className="sports_grid_live">LIVE</span>}
+                                    </div>
+                                    <div className="sports_grid_mobile_match_info">
+                                      <div className="sports_grid_mobile_match_icons">
+                                        <span className="sports_grid_market_icon">P</span>
+                                        <i className="ri-play-circle-line sports_grid_mobile_video_icon" aria-hidden />
+                                      </div>
+                                      <div className="sports_grid_teams">{match.teams}</div>
+                                    </div>
+                                  </div>
+                                  <div className="sports_grid_mobile_odds_block">
+                                    {backSorted.slice(0, 3).map((pair, i) => (
+                                      <div key={i} className={`sports_grid_mobile_odds_cell ${!pair ? 'sports_grid_odds_empty' : ''}`}>
+                                        {pair ? (
+                                          <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopMatchRowClick(e, match); }}>
+                                            <span className="sports_grid_odds_val">{pair.back}</span>
+                                            <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                          </button>
+                                        ) : (
+                                          <span className="sports_grid_odds_dash">-</span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               </td>
-                              <td className="sports_grid_mobile_markets_cell">
+                              <td className="sports_grid_mobile_markets_cell sports_grid_mobile_hide_td">
                                 <div className="sports_grid_market_icons">
                                   {MARKET_ICONS.map((icon) => (
                                     <span key={icon} className="sports_grid_market_icon">{icon}</span>
                                   ))}
                                 </div>
                               </td>
-                              <td className="sports_grid_mobile_backs_cell">
+                              <td className="sports_grid_mobile_backs_cell sports_grid_mobile_hide_td">
                                 <div className="sports_grid_mobile_odds_list">
                                   {backSorted.map((pair, i) => (
                                     <div key={i} className={`sports_grid_mobile_odds_item sports_grid_back ${!pair ? 'sports_grid_odds_disabled' : ''}`}>
@@ -1741,7 +1763,7 @@ function LandingPage() {
                                   ))}
                                 </div>
                               </td>
-                              <td className="sports_grid_mobile_lays_cell">
+                              <td className="sports_grid_mobile_lays_cell sports_grid_mobile_hide_td">
                                 <div className="sports_grid_mobile_odds_list">
                                   {laySorted.map((pair, i) => (
                                     <div key={i} className={`sports_grid_mobile_odds_item sports_grid_lay ${!pair ? 'sports_grid_odds_disabled' : ''}`}>

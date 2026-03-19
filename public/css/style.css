@@ -3572,6 +3572,16 @@ ul.mobile-menu li.active:before {
         font-size: 12px;
     }
 
+    .top_match_section.sportsmatch_s.cricket_matches_section {
+        margin-left: -20px;
+        margin-right: -20px;
+        width: calc(100% + 40px);
+    }
+
+    .top_match_section.sportsmatch_s.cricket_matches_section .top_hd.d-flex.align-items-center.justify-content-between {
+        padding: 0px 15px;
+    }
+
     img.hero_left_vector {
         width: 120px;
         bottom: 120px;

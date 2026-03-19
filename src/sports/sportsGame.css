@@ -809,7 +809,17 @@ ul.match_type_tabs li.active button {
     }
 
     .sports_grid_match_cell_inner {
-        min-width: auto;
+        min-width: 55px;
+        flex-direction: column-reverse;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        border-right: 1px solid #363636;
+        height: 100%;
+        min-height: 100px;
+        padding-right: 5px;
+        align-items: center;
+        justify-content: center;
     }
 
     .sports_grid_table tbody tr {
@@ -841,6 +851,190 @@ ul.match_type_tabs li.active button {
         display: block;
     }
 
+    /* Cricket/sports section: hide table header (MATCH, MARKETS, BACK) on mobile */
+    .sports_grid_table_wrap.mobile_view .sports_grid_table thead,
+    .sports_grid_table.sports_grid_table_mobile thead {
+        display: none;
+    }
+
+    /* Mobile: odds inside match_info – hide separate columns */
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_hide_td {
+        display: none;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_single_cell {
+        display: table-cell !important;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        position: static;
+        box-shadow: none;
+        padding: 0;
+        vertical-align: top;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_row .sports_grid_match_cell {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+
+    /* Reference layout: left white match block, right 3 light-blue columns */
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_row {
+        display: flex;
+        align-items: stretch;
+        min-height: 60px;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_match_block {
+        flex: 1 1 auto;
+        min-width: 0;
+        background: rgb(30 30 34);
+        padding: 0px 8px;
+        color: #fff;
+        display: flex;
+        /* flex-direction: column; */
+        gap: 8px;
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    /* Time + LIVE in one class */
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_time_live {
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: center;
+        justify-content: center;
+        padding:3px 6px 3px 0px;
+        gap: 10px;
+        border-right: 1px solid #303030;
+        padding-right: 6px;
+        min-width: 55px;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_time_live .sports_grid_day_time {
+        color: rgb(255, 255, 255);
+        font-size: 9px;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_time_live .sports_grid_live {
+        margin: 0;
+        font-size: 7px;
+        padding: 0px 4px;
+        border-radius: 2px;
+        background: #c62828;
+        color: #fff;
+        align-self: end;
+    }
+
+    /* Icons + teams in one class */
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_match_info {
+        display: flex;
+        flex-direction: column;
+        padding:7px 0px;
+        gap: 4px;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_match_info .sports_grid_mobile_match_icons {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        justify-content: end;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_match_info .sports_grid_market_icon {
+        font-size: 9px;
+        padding: 0px 3px;
+        background: rgb(0 0 0 / 7%);
+        border-radius: 3px;
+        color: #b5b5b5;
+        min-width: 20px;
+        height: 20px;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_match_info .sports_grid_mobile_video_icon {
+        font-size: 18px;
+        color: #626262;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_match_info .sports_grid_teams {
+        font-size: 11px;
+        font-weight: 500;
+        color: #fff;
+        line-height: 1.35;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_block {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        flex: 0 0 auto;
+        min-width: 120px;
+        width: 140px;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_cell {
+        background: #b3e5fc;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-right: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 60px;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_cell:last-child {
+        border-right: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_cell.sports_grid_odds_empty {
+        background: #e1f5fe;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_cell .sports_grid_odds_btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        width: 100%;
+        min-height: 58px;
+        padding: 4px 6px;
+        background: transparent;
+        border: none;
+        color: #000;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_cell .sports_grid_odds_val {
+        font-size: 15px;
+        line-height: 1.2;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_cell .sports_grid_odds_size {
+        font-size: 10px;
+        font-weight: 500;
+        opacity: 0.8;
+    }
+
+    .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_cell .sports_grid_odds_dash {
+        font-size: 18px;
+        color: rgba(0, 0, 0, 0.5);
+        font-weight: 600;
+    }
+
+    .sports_grid_match_info_odds {
+        display: none;
+    }
+
+    .sports_grid_match_info_odds_grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 4px;
+    }
+
     .sports_hero_section {
         margin: 0px 0px 20px;
     }
@@ -870,7 +1064,7 @@ ul.match_type_tabs li.active button {
         background: #1e1e22 !important;
         min-width: 260px;
         max-width: 260px;
-        padding: 3px 12px;
+        padding: 0px 8px;
         width: 200px;
         box-shadow: 6px 0 12px rgba(0, 0, 0, 0.35);
     }
@@ -999,7 +1193,9 @@ ul.match_type_tabs li.active button {
 
     .sports_grid_day_time+.sports_grid_live {
         margin-left: 0px;
-        font-size: 9px;
+        font-size: 7px;
+        border-radius: 2px;
+        padding: 0px 2px;
     }
 
     .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_item.sports_grid_back {
@@ -1054,10 +1250,10 @@ ul.match_type_tabs li.active button {
 
     .sports_grid_table_wrap.mobile_view .sports_grid_header_row .sports_grid_match_cell,
     .sports_grid_table_wrap.mobile_view .sports_grid_row .sports_grid_match_cell {
-        min-width: 120px;
-        max-width: 140px;
-        width: 140px;
-        gap:6px !important;
+        min-width: 194px;
+        max-width: 194px;
+        width: 194px;
+        gap: 6px !important;
     }
 
     .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_scroll {
