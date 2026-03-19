@@ -418,15 +418,22 @@ function CricketDetail() {
     const [placeBetLoading, setPlaceBetLoading] = useState(false)
     const [placeBetError, setPlaceBetError] = useState(null)
     const [placeBetSuccessMessage, setPlaceBetSuccessMessage] = useState(null)
+    const [lastPlacedBetDetails, setLastPlacedBetDetails] = useState(null)
 
     useEffect(() => {
         if (!placeBetSuccessMessage) return
-        const t = setTimeout(() => setPlaceBetSuccessMessage(null), 4000)
+        const t = setTimeout(() => {
+            setPlaceBetSuccessMessage(null)
+            setLastPlacedBetDetails(null)
+        }, 8000)
         return () => clearTimeout(t)
     }, [placeBetSuccessMessage])
 
     useEffect(() => {
-        if (selectedBets.length > 0) setPlaceBetSuccessMessage(null)
+        if (selectedBets.length > 0) {
+            setPlaceBetSuccessMessage(null)
+            setLastPlacedBetDetails(null)
+        }
     }, [selectedBets.length])
 
     const handlePlaceBet = async () => {
@@ -483,6 +490,20 @@ function CricketDetail() {
                 const backendMsg = res?.data?.message ?? res?.message
                 if (res && res.success === false) throw new Error(backendMsg)
             }
+            const stakeNumFinal = stakeNum
+            const details = toPlace.map((b) => {
+                const oddsVal = b === toPlace[0] && slipOdds != null && slipOdds >= 1.01 ? slipOdds : (b.oddsDisplay ?? b.odds)
+                const betType = (b.placePayload?.betType ?? b.betType ?? 'back').toLowerCase()
+                const profit = betType === 'lay' ? stakeNumFinal : (stakeNumFinal * (Number(oddsVal) - 1))
+                return {
+                    betName: b.betName,
+                    odds: Number(oddsVal) || 0,
+                    betType,
+                    stake: stakeNumFinal,
+                    profit: profit.toFixed(2),
+                }
+            })
+            setLastPlacedBetDetails({ bets: details, eventName: eventNameFromState || 'Match' })
             setSelectedBets([])
             setStake(100)
             const successMsg = lastRes?.data?.message ?? lastRes?.message
@@ -1014,9 +1035,10 @@ function CricketDetail() {
                                                                     <button
                                                                         className="betslip_place_bet_btn"
                                                                         onClick={handlePlaceBet}
-                                                                        disabled={placeBetLoading || lossLimitReached || isDemo}
+                                                                        disabled={placeBetLoading || lossLimitReached}
+                                                                        title={isDemo ? 'Login to enable this feature' : undefined}
                                                                     >
-                                                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : isDemo ? 'Login to play' : 'Place Bet'}
+                                                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -1132,9 +1154,10 @@ function CricketDetail() {
                                 <button
                                     className="betslip_place_bet_btn"
                                     onClick={handlePlaceBet}
-                                    disabled={placeBetLoading || lossLimitReached || isDemo}
+                                    disabled={placeBetLoading || lossLimitReached}
+                                    title={isDemo ? 'Login to enable this feature' : undefined}
                                 >
-                                    {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : isDemo ? 'Login to play' : 'Place Bet'}
+                                    {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
                                 </button>
                             </div>
                         </div>
@@ -1722,9 +1745,15 @@ function CricketDetail() {
                                             }
                                             const crr = s.CRR ?? '—'
                                             const rrr = s.RRR ?? '—'
-                                            const rawBalls = [s.CurrentOverBalls1, s.CurrentOverBalls2, s.CurrentOverBalls3, s.CurrentOverBalls4, s.CurrentOverBalls5, s.CurrentOverBalls6].filter(Boolean)
+                                            const rawBalls = [s.CurrentOverBalls1, s.CurrentOverBalls2, s.CurrentOverBalls3, s.CurrentOverBalls4, s.CurrentOverBalls5, s.CurrentOverBalls6]
                                             const isPlaceholder = rawBalls.length === 1 && /^\d{5,6}$/.test(String(rawBalls[0]).trim())
-                                            const overBalls = isPlaceholder ? [] : rawBalls
+                                            let overBalls = isPlaceholder ? [] : rawBalls.map((b) => (b === undefined || b === null || b === '' ? '—' : String(b).trim()))
+                                            const scoreStr = s.Team1OnlyScore || s.Team1Score || s.Over || ''
+                                            const overMatch = String(scoreStr).match(/\((\d+)\.(\d+)\)/) || String(s.Over || '').match(/^(\d+)\.(\d+)$/)
+                                            const ballsInCurrentOver = overMatch ? Math.min(6, Math.max(0, parseInt(overMatch[2], 10))) : 6
+                                            if (overBalls.length > 0 && ballsInCurrentOver >= 0) {
+                                                overBalls = overBalls.slice(0, ballsInCurrentOver)
+                                            }
                                             const overStr = overBalls.length > 0 ? overBalls.join(' ') : '—'
                                             const team1Flag = s.Team1Flag || s.team1Flag
                                             const team2Flag = s.Team2Flag || s.team2Flag
@@ -2531,7 +2560,29 @@ function CricketDetail() {
                                     <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
                                     <div className='betslip_success'>
                                         <p className='betslip_success_title'>Bet placed</p>
-                                        <p className='betslip_success_msg'>{placeBetSuccessMessage}</p>
+                                        {lastPlacedBetDetails?.bets?.length > 0 ? (
+                                            lastPlacedBetDetails.bets.map((placed, idx) => {
+                                                const isBack = placed.betType === 'back'
+                                                const cardClass = `betslip_card_light betslip_card_${isBack ? 'back' : 'lay'} betslip_placed_card`
+                                                return (
+                                                    <div key={idx} className={cardClass}>
+                                                        <div className='betslip_card_header'>
+                                                            <span className='betslip_match_title'>{lastPlacedBetDetails.eventName}</span>
+                                                            <span className='betslip_placed_badge' aria-hidden>✓</span>
+                                                        </div>
+                                                        <div className='betslip_selection'>
+                                                            {placed.betName} @ {placed.odds.toFixed(2)}
+                                                        </div>
+                                                        <div className='betslip_placed_footer'>
+                                                            <span>Stake: ₹{Number(placed.stake).toLocaleString('en-IN')}</span>
+                                                            <span className='betslip_placed_profit'>Profit: ₹{placed.profit}</span>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })
+                                        ) : (
+                                            <p className='betslip_success_msg'>{placeBetSuccessMessage}</p>
+                                        )}
                                     </div>
                                 </>
                             ) : selectedBets.length > 0 ? (
@@ -2624,8 +2675,8 @@ function CricketDetail() {
                                         <button type='button' className='betslip_clear_all_btn' onClick={clearAllBets}>Clear all bets</button>
                                     </p> */}
                                     {placeBetError && <p className='betslip_error'>{placeBetError}</p>}
-                                    <button className='betslip_place_bet_btn' onClick={handlePlaceBet} disabled={placeBetLoading || lossLimitReached || isDemo}>
-                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : isDemo ? 'Login to play' : 'Place Bet'}
+                                    <button className='betslip_place_bet_btn' onClick={handlePlaceBet} disabled={placeBetLoading || lossLimitReached} title={isDemo ? 'Login to enable this feature' : undefined}>
+                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
                                     </button>
                                 </>
                             ) : (

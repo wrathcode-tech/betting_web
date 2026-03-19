@@ -78,7 +78,7 @@ export default function CasinoCategoryPage() {
                       <Link
                         key={`${g.providerCode}-${g.gameCode}`}
                         to="/game"
-                        state={{ gameCode: g.gameCode, providerCode: g.providerCode, gameName: g.name }}
+                        state={{ gameCode: g.gameCode, providerCode: g.providerCode, gameName: g.name, providerName: g.providerName || g.provider }}
                         className="game_items_inner casino_api_game_card"
                         style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
                       >

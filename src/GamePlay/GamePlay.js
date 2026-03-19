@@ -28,6 +28,7 @@ function saveSession(data) {
         sessionId: data.sessionId,
         gameCode: data.gameCode,
         providerCode: data.providerCode,
+        providerName: data.providerName || '',
         gameName: data.gameName || '',
         balance: data.balance != null ? data.balance : null,
       }));
@@ -45,7 +46,7 @@ function GamePlay() {
   const location = useLocation();
   const navigate = useNavigate();
   const stateGame = location.state || {};
-  const { gameCode: stateGameCode, providerCode: stateProviderCode, gameName: stateGameName } = stateGame;
+  const { gameCode: stateGameCode, providerCode: stateProviderCode, gameName: stateGameName, providerName: stateProviderName } = stateGame;
 
   // sessionStorage me session sirf page refresh pe use hoga (casino se navigate = already cleared)
   const restored = useMemo(() => getStoredSession(), []);
@@ -72,50 +73,82 @@ function GamePlay() {
   const [popularGames, setPopularGames] = useState([]);
   const [gamesLoading, setGamesLoading] = useState(true);
 
+  const providerForList = providerCode || stateProviderCode;
+  const providerDisplayName = stateProviderName || restored?.providerName || providerForList || '';
+
   const bestGamesDisplayItems = useMemo(() => {
-    if (!featuredGames.length) return [{ viewAll: true, to: '/casino' }];
+    if (!featuredGames.length) return [{ viewAll: true, to: providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino' }];
     return [
       ...featuredGames.map((g) => ({ ...g, viewAll: false })),
-      { viewAll: true, to: '/casino' },
+      { viewAll: true, to: providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino' },
     ];
-  }, [featuredGames]);
+  }, [featuredGames, providerForList]);
 
   const topSlotsDisplayItems = useMemo(() => {
-    if (!popularGames.length) return [{ viewAll: true, to: '/casino' }];
+    if (!popularGames.length) return [{ viewAll: true, to: providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino' }];
     return [
       ...popularGames.map((g) => ({ ...g, viewAll: false })),
-      { viewAll: true, to: '/casino' },
+      { viewAll: true, to: providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino' },
     ];
-  }, [popularGames]);
+  }, [popularGames, providerForList]);
 
   useEffect(() => {
     let cancelled = false;
     setGamesLoading(true);
-    Promise.all([
-      AuthService.bettingGamesFeatured(20),
-      AuthService.bettingGamesPopular(20),
-    ])
-      .then(([featuredRes, popularRes]) => {
-        if (cancelled) return;
-        const toList = (res) => {
-          if (!res?.data) return [];
-          const d = Array.isArray(res.data) ? res.data : res.data?.data ?? res.data?.games ?? [];
-          return Array.isArray(d) ? d : [];
-        };
-        setFeaturedGames(toList(featuredRes));
-        setPopularGames(toList(popularRes));
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setFeaturedGames([]);
-          setPopularGames([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setGamesLoading(false);
-      });
+    const toList = (res) => {
+      if (!res) return [];
+      if (Array.isArray(res)) return res;
+      if (Array.isArray(res.data)) return res.data;
+      if (Array.isArray(res.games)) return res.games;
+      if (Array.isArray(res.response?.games)) return res.response.games;
+      if (Array.isArray(res.response?.data)) return res.response.data;
+      const d = res.data?.data ?? res.data?.games ?? res.data?.list ?? res.data;
+      return Array.isArray(d) ? d : [];
+    };
+
+    if (providerForList) {
+      Promise.all([
+        AuthService.bettingGamesList(providerForList, 'all', 1, 20),
+        AuthService.bettingGamesList(providerForList, 'all', 2, 20),
+      ])
+        .then(([page1Res, page2Res]) => {
+          if (cancelled) return;
+          const list1 = toList(page1Res);
+          const list2 = toList(page2Res);
+          setFeaturedGames(list1);
+          setPopularGames(list2.length > 0 ? list2 : list1);
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setFeaturedGames([]);
+            setPopularGames([]);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setGamesLoading(false);
+        });
+    } else {
+      Promise.all([
+        AuthService.bettingGamesFeatured(20),
+        AuthService.bettingGamesPopular(20),
+      ])
+        .then(([featuredRes, popularRes]) => {
+          if (cancelled) return;
+          setFeaturedGames(toList(featuredRes));
+          setPopularGames(toList(popularRes));
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setFeaturedGames([]);
+            setPopularGames([]);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setGamesLoading(false);
+        });
+    }
     return () => { cancelled = true; };
-  }, []);
+  }, [providerForList]);
 
   const handleSliderClickCapture = (e) => {
     if (justDraggedRef.current) {
@@ -216,6 +249,7 @@ function GamePlay() {
             sessionId: d.sessionId,
             gameCode: d.gameCode ?? stateGameCode,
             providerCode: d.providerCode ?? stateProviderCode,
+            providerName: stateProviderName || '',
             gameName: stateGameName || d?.game?.name || '',
             balance: d.balance,
           });
@@ -315,9 +349,9 @@ function GamePlay() {
       <div className="top_slot_outer top_slot_outer_casino">
         <div className="container-fluid">
           <div className="top_hd d-flex align-items-center justify-content-between">
-            <h2 className="heading_h2">Best Pragmatic Play games</h2>
+            <h2 className="heading_h2">{providerDisplayName ? `Best ${providerDisplayName} games` : 'Best Pragmatic Play games'}</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <Link to="/casino"><button type="button" className="slotbtn">View All</button></Link>
+              <Link to={providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino'}><button type="button" className="slotbtn">View All</button></Link>
             </div>
           </div>
           {gamesLoading ? (
@@ -340,7 +374,7 @@ function GamePlay() {
                     <Link key={item.code || index} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
                       {item.badge && <div className="top_ads">{item.badge}</div>}
-                      <img loading="lazy" alt="game" src={item.thumb || item.image} />
+                      <img loading="lazy" alt="game" src={item.thumb || item.thumbnail || item.image} />
                     </Link>
                   )
                 )}
@@ -353,9 +387,9 @@ function GamePlay() {
       <div className="top_slot_outer most_popular_games_outer_casino">
         <div className="container-fluid">
           <div className="top_hd d-flex align-items-center justify-content-between">
-            <h2 className="heading_h2">Most popular games</h2>
+            <h2 className="heading_h2">{providerDisplayName ? `Most popular ${providerDisplayName} games` : 'Most popular games'}</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <Link to="/casino"><button type="button" className="slotbtn">View All</button></Link>
+              <Link to={providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino'}><button type="button" className="slotbtn">View All</button></Link>
             </div>
           </div>
           {gamesLoading ? (
@@ -378,7 +412,7 @@ function GamePlay() {
                     <Link key={item.code || index} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
                       {item.badge && <div className="top_ads">{item.badge}</div>}
-                      <img loading="lazy" alt="game" src={item.thumb || item.image} />
+                      <img loading="lazy" alt="game" src={item.thumb || item.thumbnail || item.image} />
                     </Link>
                   )
                 )}

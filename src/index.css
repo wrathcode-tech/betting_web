@@ -14,6 +14,23 @@
   white-space: nowrap;
 }
 
+.demo_logout_btn {
+  margin-left: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.demo_logout_btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
 /* Main content wrapper: header outside; left = sidebar, right = content */
 .main_content_wrapper {
   display: flex;

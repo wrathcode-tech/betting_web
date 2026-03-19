@@ -16,10 +16,11 @@ const tokenExpire = (isDemo = false) => {
   window.location.href = '/login';
 };
 
-/** If current user is demo, block mutation (POST/PUT/PATCH/DELETE). GET is allowed. Skip for demo-login URL. */
+/** If current user is demo, block mutation (POST/PUT/PATCH/DELETE). GET is allowed. Skip for demo-login and bet/place (demo hits API, we show message from response). */
 const guardDemoUser = (url) => {
   if (!url || typeof url !== 'string') return null;
   if (url.includes(ApiConfig.bettingDemoLogin)) return null; // allow demo-login itself
+  if (url.includes('/bet/place')) return null; // allow demo to call place-bet; response handled in BetSlipContext
   const user = getStoredUserForGuard();
   if (!isDemoUser(user)) return null;
   return { success: false, message: DEMO_BLOCKED_ACTION_MSG };
@@ -98,7 +99,7 @@ const handleApiError = (error) => {
   }
   if (status === 403) {
     const isDemo = isDemoUser(getStoredUserForGuard());
-    const msg = isDemo ? DEMO_BLOCKED_ACTION_MSG : (message || 'Access denied.');
+    const msg = isDemo ? 'Register to play with real money' : (message || 'Access denied.');
     alertErrorMessage(msg);
     return { success: false, message: msg, errorCode };
   }

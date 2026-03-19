@@ -122,8 +122,9 @@ function CasinoGame() {
             return;
         }
         try { sessionStorage.removeItem('wcoGameSession'); } catch (_) {}
-        navigate('/game', { state: { gameCode: game.gameCode, providerCode: game.providerCode, gameName: game.name } });
-    }, [navigate, isDemo]);
+        const providerName = providers.find((p) => p.code === game.providerCode)?.name || game.providerName || game.providerCode;
+        navigate('/game', { state: { gameCode: game.gameCode, providerCode: game.providerCode, gameName: game.name, providerName } });
+    }, [navigate, isDemo, providers]);
 
     const selectedProvider = useMemo(
         () =>

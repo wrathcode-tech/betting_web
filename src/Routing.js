@@ -11,10 +11,11 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { getToken } from "./utils/authStorage";
 import Layout from "./Layout";
 
-// Demo users: view-only. Block mutation routes (play, bet, wallet operations).
+// Demo users: view-only. Block deposit, withdraw, wallet actions, game play.
 const DEMO_BLOCKED_PATHS = [
-  '/deposit', '/withdrawal', '/game',
-  '/add-account', '/add-bank',
+  '/deposit', '/withdrawal', '/withdraw',
+  '/game', '/add-account', '/add-bank',
+  '/my-wallet', '/wallet/actions',
 ];
 
 function ProtectedRoute() {
@@ -28,7 +29,7 @@ function DemoBlockRoute() {
   const location = useLocation();
   const { isDemo } = useAuth();
   if (isDemo && DEMO_BLOCKED_PATHS.includes(location.pathname)) {
-    return <Navigate to="/" replace state={{ demoBlocked: true, message: 'Demo users can only explore the platform' }} />;
+    return <Navigate to="/" replace state={{ demoBlocked: true, message: 'Login required to access this feature' }} />;
   }
   return <Outlet />;
 }

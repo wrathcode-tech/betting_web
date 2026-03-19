@@ -14,11 +14,11 @@ function Layout() {
   const navigate = useNavigate()
   const demoBlockedShownRef = useRef(false)
 
-  // When demo user hits blocked route, they are redirected to / with state.demoBlocked; show message once
+  // When demo user hits blocked route, redirect to home + show toast once
   useEffect(() => {
     if (pathname !== '/' || !state?.demoBlocked || demoBlockedShownRef.current) return
     demoBlockedShownRef.current = true
-    alertErrorMessage(state.message || 'Demo users can only explore the platform.')
+    alertErrorMessage(state.message || 'Login required to access this feature')
     navigate('/', { replace: true, state: {} })
   }, [pathname, state?.demoBlocked, state?.message, navigate])
 

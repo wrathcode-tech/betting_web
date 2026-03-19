@@ -238,27 +238,30 @@ function SportsGame() {
         return () => removeOddsListener(onOdds)
     }, [])
 
+    // Socket odds: subscribe only for active tab so msg me sport sahi jaye (cricket → cricket, tennis → tennis, football → soccer)
     useEffect(() => {
-        const cricketEntries = (cricketMatches || []).map(getMatchGameId).filter(Boolean).slice(0, 15).map((id) => ({ id, sport: 'cricket' }))
-        const tennisEntries = (tennisMatches || []).map(getMatchEventId).filter(Boolean).slice(0, 10).map((id) => ({ id, sport: 'tennis' }))
-        const soccerEntries = (soccerMatches || []).map(getMatchGameId).filter(Boolean).slice(0, 10).map((id) => ({ id, sport: 'soccer' }))
-        const entries = [...cricketEntries, ...tennisEntries, ...soccerEntries]
+        const sport = activeTab === 'tennis' ? 'tennis' : activeTab === 'soccer' ? 'soccer' : 'cricket'
+        const entries =
+            sport === 'cricket'
+                ? (cricketMatches || []).map(getMatchGameId).filter(Boolean).slice(0, 15).map((id) => ({ id, sport }))
+                : sport === 'tennis'
+                    ? (tennisMatches || []).map(getMatchEventId).filter(Boolean).slice(0, 10).map((id) => ({ id, sport }))
+                    : (soccerMatches || []).map(getMatchGameId).filter(Boolean).slice(0, 10).map((id) => ({ id, sport }))
         const prev = subscribedOddsRef.current
-        const idToSport = new Map(entries.map((e) => [e.id, e.sport]))
-        entries.forEach(({ id, sport }) => {
-            if (!prev.has(id)) {
-                subscribeOdds(id, sport)
-                prev.add(id)
-            }
-        })
         const currentIds = new Set(entries.map((e) => e.id))
         prev.forEach((id) => {
             if (!currentIds.has(id)) {
-                unsubscribeOdds(id, idToSport.get(id) || 'cricket')
+                unsubscribeOdds(id)
                 prev.delete(id)
             }
         })
-    }, [cricketMatches, tennisMatches, soccerMatches])
+        entries.forEach(({ id, sport: s }) => {
+            if (!prev.has(id)) {
+                subscribeOdds(id, s)
+                prev.add(id)
+            }
+        })
+    }, [activeTab, cricketMatches, tennisMatches, soccerMatches])
 
     const totalSlides = GALLERY_SLIDES.length
     const mapToDisplayMatch = useCallback((m, defaultTournament, defaultIcon) => {

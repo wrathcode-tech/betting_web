@@ -78,10 +78,6 @@ export function BetSlipProvider({ children }) {
   }, []);
 
   const placeBet = useCallback(async () => {
-    if (isDemo) {
-      setSlip((prev) => ({ ...prev, placeError: 'Login to play and place bets' }));
-      return { success: false, message: 'Login to play and place bets' };
-    }
     if (placingRef.current) return { success: false, message: 'Already placing' };
     const { selections, stake } = slip;
     const stakeNum = Number(stake);
@@ -116,15 +112,20 @@ export function BetSlipProvider({ children }) {
         return res;
       }
 
+      const errorMsg = isDemo
+        ? 'Demo account cannot place bets. Please login with mobile/email to continue.'
+        : (res?.message || 'Insufficient balance');
       setSlip((prev) => ({
         ...prev,
         placing: false,
-        placeError: res?.message || 'Bet failed',
+        placeError: errorMsg,
         lastResult: res,
       }));
-      return res;
+      return { success: false, message: errorMsg, ...res };
     } catch (e) {
-      const msg = e?.message || 'Failed to place bet';
+      const msg = isDemo
+        ? 'Demo account cannot place bets. Please login with mobile/email to continue.'
+        : (e?.message || 'Failed to place bet');
       setSlip((prev) => ({
         ...prev,
         placing: false,

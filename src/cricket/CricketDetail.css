@@ -1645,6 +1645,41 @@ button.toggleup_btn {
     margin: 0;
 }
 
+.betslip_placed_card {
+    margin-top: 12px;
+    text-align: left;
+}
+.betslip_placed_card .betslip_match_title {
+    color: inherit;
+}
+.betslip_placed_badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #4caf50;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+.betslip_placed_footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+}
+.betslip_placed_card .betslip_placed_footer span {
+    color: #000;
+}
+.betslip_placed_profit {
+    font-weight: 600;
+    color: #2e7d32 !important;
+}
+
 .betslip_place_bet_btn {
 
     width: 100%;
