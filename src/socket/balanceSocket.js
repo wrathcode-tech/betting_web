@@ -52,6 +52,7 @@ function ensureHandlers() {
 
   socket.on('disconnect', (reason) => {
     console.log('Balance socket disconnected:', reason);
+    lastBalance = null;
   });
 
   socket.on('connect_error', (err) => {
@@ -94,6 +95,7 @@ export function disconnectBalanceSocket() {
     socket.removeAllListeners();
     socket = null;
   }
+  lastBalance = null;
   balanceListeners.clear();
 }
 

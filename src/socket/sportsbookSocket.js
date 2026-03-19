@@ -47,6 +47,12 @@ const subscribedSports = new Set();
 const subscribedOddsMap = new Map();
 const subscribedScoreboardMap = new Map();
 
+const MAX_SUBSCRIPTIONS = 20;
+
+function getTotalSubscriptionCount() {
+  return subscribedSports.size + subscribedOddsMap.size + subscribedScoreboardMap.size;
+}
+
 function reemitSubscriptions() {
   if (!socket?.connected) return;
   subscribedSports.forEach((sport) => {
@@ -54,19 +60,11 @@ function reemitSubscriptions() {
   });
   subscribedOddsMap.forEach((sport, id) => {
     const s = sport || 'cricket';
-    if (s === 'tennis') {
-      socket.emit('subscribe:odds', { eventId: String(id), sport: s });
-    } else {
-      socket.emit('subscribe:odds', { gameId: String(id), sport: s });
-    }
+    socket.emit('subscribe:odds', { gameId: String(id), sport: s });
   });
   subscribedScoreboardMap.forEach((sport, id) => {
     const s = sport || 'cricket';
-    if (s === 'tennis') {
-      socket.emit('subscribe:scoreboard', { eventId: String(id), sport: s });
-    } else {
-      socket.emit('subscribe:scoreboard', { gameId: String(id), sport: s });
-    }
+    socket.emit('subscribe:scoreboard', { gameId: String(id), sport: s });
   });
 }
 
@@ -85,6 +83,11 @@ function ensureHandlers() {
   socket.off('error');
 
   socket.on('error', (err) => {
+    const msg = err?.message || (typeof err === 'string' ? err : '');
+    const code = err?.code ?? err?.errorCode;
+    if (code === 'RATE_LIMIT' || (msg && String(msg).toUpperCase().includes('RATE_LIMIT'))) {
+      console.warn('Sportsbook socket: rate limit', err);
+    }
     errorListeners.forEach((fn) => {
       try {
         fn(err);
@@ -239,6 +242,7 @@ export function getSportsbookSocket() {
 
 export function subscribeMatches(sport) {
   if (!sport) return;
+  if (getTotalSubscriptionCount() >= MAX_SUBSCRIPTIONS) return;
   subscribedSports.add(sport);
   if (socket?.connected) {
     socket.emit('subscribe:matches', { sport });
@@ -255,57 +259,41 @@ export function unsubscribeMatches(sport) {
 
 export function subscribeOdds(gameIdOrEventId, sport) {
   if (!gameIdOrEventId) return;
+  if (getTotalSubscriptionCount() >= MAX_SUBSCRIPTIONS) return;
   const id = String(gameIdOrEventId);
   const s = sport || 'cricket';
   subscribedOddsMap.set(id, s);
   if (socket?.connected) {
-    if (s === 'tennis') {
-      socket.emit('subscribe:odds', { eventId: id, sport: s });
-    } else {
-      socket.emit('subscribe:odds', { gameId: id, sport: s });
-    }
+    socket.emit('subscribe:odds', { gameId: id, sport: s });
   }
 }
 
 export function unsubscribeOdds(gameIdOrEventId, sport) {
   if (!gameIdOrEventId) return;
   const id = String(gameIdOrEventId);
-  const s = sport || 'cricket';
   subscribedOddsMap.delete(id);
   if (socket?.connected) {
-    if (s === 'tennis') {
-      socket.emit('unsubscribe:odds', { eventId: id });
-    } else {
-      socket.emit('unsubscribe:odds', { gameId: id });
-    }
+    socket.emit('unsubscribe:odds', { gameId: id });
   }
 }
 
 export function subscribeScoreboard(gameIdOrEventId, sport) {
   if (!gameIdOrEventId) return;
+  if (getTotalSubscriptionCount() >= MAX_SUBSCRIPTIONS) return;
   const id = String(gameIdOrEventId);
   const s = sport || 'cricket';
   subscribedScoreboardMap.set(id, s);
   if (socket?.connected) {
-    if (s === 'tennis') {
-      socket.emit('subscribe:scoreboard', { eventId: id, sport: s });
-    } else {
-      socket.emit('subscribe:scoreboard', { gameId: id, sport: s });
-    }
+    socket.emit('subscribe:scoreboard', { gameId: id, sport: s });
   }
 }
 
 export function unsubscribeScoreboard(gameIdOrEventId, sport) {
   if (!gameIdOrEventId) return;
   const id = String(gameIdOrEventId);
-  const s = sport || 'cricket';
   subscribedScoreboardMap.delete(id);
   if (socket?.connected) {
-    if (s === 'tennis') {
-      socket.emit('unsubscribe:scoreboard', { eventId: id });
-    } else {
-      socket.emit('unsubscribe:scoreboard', { gameId: id });
-    }
+    socket.emit('unsubscribe:scoreboard', { gameId: id });
   }
 }
 

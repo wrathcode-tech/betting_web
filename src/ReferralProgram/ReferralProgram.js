@@ -66,6 +66,10 @@ function ReferralProgram() {
         try {
             LoaderHelper.show()
             const res = await AuthService.referralDashboard()
+            if (res?.success === false) {
+                if (res?.message) alertErrorMessage(res.message)
+                return
+            }
             const data = res?.data ?? res
             if (data && typeof data === 'object') {
                 setDashboard(data)
@@ -80,7 +84,7 @@ function ReferralProgram() {
                 }
             }
         } catch (e) {
-            alertErrorMessage('Failed to load referral dashboard.')
+            alertErrorMessage(e?.message || 'Failed to load referral dashboard.')
         } finally {
             LoaderHelper.hide()
         }
@@ -117,15 +121,22 @@ function ReferralProgram() {
             if (referralTo) params.to = referralTo
             if (referralSearchQuery.trim()) params.search = referralSearchQuery.trim()
             const res = await AuthService.referralList(params)
+            if (res?.success === false) {
+                setReferralList([])
+                setReferralPagination({ page: 1, total: 0, totalPages: 0 })
+                if (res?.message) alertErrorMessage(res.message)
+                return
+            }
             const data = res?.data ?? res
             const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.referrals) ? data.referrals : Array.isArray(data) ? data : []
             setReferralList(list)
             const total = data?.total ?? data?.totalCount ?? data?.pagination?.totalRecords ?? list.length
-            const totalPages = data?.totalPages ?? data?.pagination?.totalPages ?? Math.max(1, Math.ceil(total / REFERRALS_PAGE_SIZE))
-            setReferralPagination({ page, total, totalPages })
-        } catch {
+            const totalPages = data?.totalPages ?? data?.pagination?.totalPages ?? Math.max(1, Math.ceil(Number(total) / REFERRALS_PAGE_SIZE))
+            setReferralPagination({ page, total: Number(total) || 0, totalPages })
+        } catch (e) {
             setReferralList([])
             setReferralPagination({ page: 1, total: 0, totalPages: 0 })
+            if (e?.message) alertErrorMessage(e.message)
         } finally {
             LoaderHelper.hide()
         }
@@ -139,16 +150,23 @@ function ReferralProgram() {
             if (rewardsTo) params.to = rewardsTo
             if (rewardSearchQuery.trim()) params.search = rewardSearchQuery.trim()
             const res = await AuthService.referralRewardsHistory(params)
+            if (res?.success === false) {
+                setRewardsHistory([])
+                setRewardsPagination({ page: 1, total: 0, totalPages: 0 })
+                if (res?.message) alertErrorMessage(res.message)
+                return
+            }
             const data = res?.data ?? res
             const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.rewards) ? data.rewards : Array.isArray(data) ? data : []
             setRewardsHistory(list)
             const pag = data?.pagination ?? data
             const total = pag?.totalRecords ?? data?.total ?? data?.totalCount ?? list.length
-            const totalPages = pag?.totalPages ?? data?.totalPages ?? Math.max(1, Math.ceil(total / REWARDS_PAGE_SIZE))
-            setRewardsPagination({ page, total, totalPages })
-        } catch {
+            const totalPages = pag?.totalPages ?? data?.totalPages ?? Math.max(1, Math.ceil(Number(total) / REWARDS_PAGE_SIZE))
+            setRewardsPagination({ page, total: Number(total) || 0, totalPages })
+        } catch (e) {
             setRewardsHistory([])
-            setRewardsPagination({ page: 1, totalPages: 0 })
+            setRewardsPagination({ page: 1, total: 0, totalPages: 0 })
+            if (e?.message) alertErrorMessage(e.message)
         } finally {
             LoaderHelper.hide()
         }
@@ -160,15 +178,22 @@ function ReferralProgram() {
             const params = { page, limit: PROFIT_PAGE_SIZE }
             if (profitSearchQuery.trim()) params.search = profitSearchQuery.trim()
             const res = await AuthService.referralProfit(params)
+            if (res?.success === false) {
+                setProfitList([])
+                setProfitPagination({ page: 1, total: 0, totalPages: 0 })
+                if (res?.message) alertErrorMessage(res.message)
+                return
+            }
             const data = res?.data ?? res
             const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.profit) ? data.profit : Array.isArray(data) ? data : []
             setProfitList(list)
             const total = data?.total ?? data?.totalCount ?? data?.pagination?.totalRecords ?? list.length
-            const totalPages = data?.totalPages ?? data?.pagination?.totalPages ?? Math.max(1, Math.ceil(total / PROFIT_PAGE_SIZE))
-            setProfitPagination({ page, total, totalPages })
-        } catch {
+            const totalPages = data?.totalPages ?? data?.pagination?.totalPages ?? Math.max(1, Math.ceil(Number(total) / PROFIT_PAGE_SIZE))
+            setProfitPagination({ page, total: Number(total) || 0, totalPages })
+        } catch (e) {
             setProfitList([])
-            setProfitPagination({ page: 1, totalPages: 0 })
+            setProfitPagination({ page: 1, total: 0, totalPages: 0 })
+            if (e?.message) alertErrorMessage(e.message)
         } finally {
             LoaderHelper.hide()
         }
@@ -177,6 +202,7 @@ function ReferralProgram() {
     const loadRewardsLive = async () => {
         try {
             const res = await AuthService.referralRewardsLive(10)
+            if (res?.success === false) return
             const data = res?.data ?? res
             const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.rewards) ? data.rewards : Array.isArray(data) ? data : []
             setRewardsLive(list)
@@ -216,6 +242,10 @@ function ReferralProgram() {
             if (referralFrom) params.from = referralFrom
             if (referralTo) params.to = referralTo
             const res = await AuthService.referralExport(params)
+            if (res?.success === false) {
+                alertErrorMessage(res?.message || 'Export failed.')
+                return
+            }
             const raw = res?.data ?? res
             const blob = raw?.data ?? raw?.csv ?? raw
             if (blob instanceof Blob) {

@@ -8,6 +8,7 @@ import { BetSlipProvider } from "./context/BetSlipContext";
 import { SportsbookStoreProvider } from "./context/SportsbookStore";
 import { PlatformConfigProvider } from "./context/PlatformConfigContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { getToken } from "./utils/authStorage";
 import Layout from "./Layout";
 
 // Demo users: view-only. Block mutation routes (play, bet, wallet operations).
@@ -18,7 +19,7 @@ const DEMO_BLOCKED_PATHS = [
 
 function ProtectedRoute() {
   const location = useLocation();
-  const isLoggedIn = !!(sessionStorage.getItem("token"));
+  const isLoggedIn = !!getToken();
   if (!isLoggedIn) return <Navigate to="/login" replace state={{ returnTo: location.pathname + location.search }} />;
   return <Outlet />;
 }

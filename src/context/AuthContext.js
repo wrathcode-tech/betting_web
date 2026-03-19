@@ -7,28 +7,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import AuthService from '../api/services/AuthService';
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage';
-
-const USER_STORAGE_KEY = 'user';
-
-function getStoredUser() {
-  try {
-    const raw = sessionStorage.getItem(USER_STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-function setStoredUser(user) {
-  try {
-    if (user == null) {
-      sessionStorage.removeItem(USER_STORAGE_KEY);
-    } else {
-      sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-    }
-  } catch (_) {}
-}
+import { clearAuth, getStoredUser, getToken, setStoredUser } from '../utils/authStorage';
 
 const AuthContext = createContext({
   user: null,
@@ -38,7 +17,7 @@ const AuthContext = createContext({
 });
 
 export function AuthProvider({ children }) {
-  const [user, setUserState] = useState(getStoredUser);
+  const [user, setUserState] = useState(() => getStoredUser());
 
   const setUser = useCallback((nextUser) => {
     setUserState(nextUser);
@@ -52,7 +31,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const onLoginChange = () => {
-      const token = sessionStorage.getItem('token');
+      const token = getToken();
       if (!token) {
         clearUser();
         return;
@@ -65,7 +44,7 @@ export function AuthProvider({ children }) {
   }, [clearUser]);
 
   // When token exists but no user (e.g. normal login), fetch getMe and set user (isDemo: false)
-  const token = typeof window !== 'undefined' ? sessionStorage.getItem('token') : null;
+  const token = typeof window !== 'undefined' ? getToken() : null;
   useEffect(() => {
     if (!token || user != null) return;
     let cancelled = false;
@@ -105,10 +84,8 @@ export function AuthProvider({ children }) {
       if (Date.now() >= expiresMs) {
         if (expiryCheckIntervalRef.current) clearInterval(expiryCheckIntervalRef.current);
         alertErrorMessage('Demo session expired. Please login again.');
+        clearAuth();
         setUserState(null);
-        setStoredUser(null);
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('refreshToken');
         window.dispatchEvent(new CustomEvent('loginStateChange'));
         window.location.href = '/login';
       }

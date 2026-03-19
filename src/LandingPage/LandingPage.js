@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, lazy, Suspense, useMemo } from 'rea
 import { Link, useNavigate } from 'react-router-dom'
 import AuthService from '../api/services/AuthService'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
+import { getToken } from '../utils/authStorage'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import {
   connectSportsbookSocket,
@@ -124,10 +125,10 @@ function formatOddsSize(size) {
 
 function LandingPage() {
   // Auth token – sync with localStorageso button updates instantly after login (no refresh)
-  const [token, setToken] = useState(() => sessionStorage.getItem('token'));
+  const [token, setToken] = useState(() => getToken());
   const { config: platformConfig } = usePlatformConfig();
   useEffect(() => {
-    const onLoginChange = () => setToken(sessionStorage.getItem('token'));
+    const onLoginChange = () => setToken(getToken());
     window.addEventListener('loginStateChange', onLoginChange);
     return () => window.removeEventListener('loginStateChange', onLoginChange);
   }, []);
@@ -190,6 +191,18 @@ function LandingPage() {
   }, []);
 
   const trendingSectionRef = useRef(null);
+  const [showTrendingVideos, setShowTrendingVideos] = useState(false);
+
+  useEffect(() => {
+    const el = trendingSectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) setShowTrendingVideos(true); },
+      { rootMargin: '200px', threshold: 0 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   // Fetch landing games (no auth). API returns { data: { liveCasino, slots, trending, roulette, cardGames } } or same keys at top level
   useEffect(() => {
@@ -327,7 +340,7 @@ function LandingPage() {
 
   // Socket: live matches & odds for TOP Matches (connect even without login so odds keep coming)
   useEffect(() => {
-    const token = sessionStorage.getItem('token');
+    const token = getToken();
     const eventTime = (m) => m.eventTime ?? m.event_time ?? m.startTime;
     connectSportsbookSocket(token || null);
     const onMatches = (payload) => {
@@ -547,8 +560,8 @@ function LandingPage() {
           const d = raw?.data ?? raw;
           const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds
             : Array.isArray(raw?.matchOdds) ? raw.matchOdds
-            : Array.isArray(res?.matchOdds) ? res.matchOdds
-            : [];
+              : Array.isArray(res?.matchOdds) ? res.matchOdds
+                : [];
           next[gameId] = { ...(next[gameId] || {}), matchOdds };
         });
         return next;
@@ -576,8 +589,8 @@ function LandingPage() {
           const d = raw?.data ?? raw;
           const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds
             : Array.isArray(raw?.matchOdds) ? raw.matchOdds
-            : Array.isArray(res?.matchOdds) ? res.matchOdds
-            : [];
+              : Array.isArray(res?.matchOdds) ? res.matchOdds
+                : [];
           next[id] = { ...(next[id] || {}), matchOdds };
         });
         return next;
@@ -604,8 +617,8 @@ function LandingPage() {
           const d = raw?.data ?? raw;
           const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds
             : Array.isArray(raw?.matchOdds) ? raw.matchOdds
-            : Array.isArray(res?.matchOdds) ? res.matchOdds
-            : [];
+              : Array.isArray(res?.matchOdds) ? res.matchOdds
+                : [];
           next[gameId] = { ...(next[gameId] || {}), matchOdds };
         });
         return next;
@@ -1055,10 +1068,38 @@ function LandingPage() {
         </div>
       </div>
 
-
-      {landingTrendingDisplayItems.length > 0 && (
-        <div className='trending_games_section' ref={trendingSectionRef}>
-          <h2 className='heading_h2'>Trending Games</h2>
+      <div className='trending_games_section' ref={trendingSectionRef}>
+        <h2 className='heading_h2'>Trending Games</h2>
+        <div className='game_items_video'>
+          {(() => {
+            const trendingVideos = [
+              'images/freepik_create-a-bold-and-highenergy-animated-promo-video-_minimax_768p_16-9_24fps_68689.mp4',
+              'images/freepik_create-a-highintensity-animated-promo-video-using-_minimax_768p_16-9_24fps_68694.mp4',
+              'images/freepik_create-a-fun-and-energetic-animated-promo-video-us_kling_1080p_16-9_24fps_68693.mp4',
+              'images/freepik_create-a-glamorous-and-highend-animated-promo-vide_minimax_768p_16-9_24fps_68690.mp4',
+              'images/freepik_create-a-vibrant-animated-promo-video-using-this-c_kling_1080p_16-9_24fps_68692.mp4',
+              'images/freepik_create-a-stylish-and-engaging-animated-promo-video_kling_1080p_16-9_24fps_68691.mp4',
+            ];
+            const trendingCategories = ['Aviator', 'Dragon Tiger', 'Chicken Road', 'Baccarat', 'Roulette', 'Teen Patti'];
+            const base = process.env.PUBLIC_URL || '';
+            if (!showTrendingVideos) {
+              return trendingVideos.map((_, i) => <div key={i} className='game_video_bl' aria-hidden="true" />);
+            }
+            return trendingVideos.map((src, i) => {
+              const category = trendingCategories[i] ?? 'lobby';
+              const to = `/casino?provider=all&category=${encodeURIComponent(category)}`;
+              return (
+                <Link key={i} to={to} className='game_video_bl' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                  <video width="100%" height="auto" autoPlay muted loop playsInline loading="lazy">
+                    <source src={`${base}/${src}`} type="video/mp4" />
+                  </video>
+                  <span className='game_video_bl_title'>{category}</span>
+                </Link>
+              );
+            });
+          })()}
+        </div>
+        {landingTrendingDisplayItems.length > 0 && (
           <div
             className="game_items_slider_wrapper"
             onMouseDown={(e) => handleSliderMouseDown(e, { sliderRef: trendingTopRef, getItemWidth: landingItemWidth, itemsPerSet: landingTrendingItemsPerSet, currentIndex: trendingTopIndex, setIndex: setTrendingTopIndex })}
@@ -1083,9 +1124,8 @@ function LandingPage() {
               )}
             </div>
           </div>
-        </div>
-      )}
-
+        )}
+      </div>
 
       <div className="landing_page_content">
 

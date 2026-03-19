@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import { useBalance } from '../context/BalanceContext'
 import { connectBalanceSocket, addBalanceListener, removeBalanceListener } from '../socket/balanceSocket'
+import { getToken } from '../utils/authStorage'
 
 function CasinoGame() {
     const navigate = useNavigate();
@@ -20,7 +21,7 @@ function CasinoGame() {
 
     // Casino pe balance socket connect – balance live update ke liye (header + koi bhi balance UI)
     useEffect(() => {
-        const token = sessionStorage.getItem('token');
+        const token = getToken();
         if (!token) return;
         connectBalanceSocket(token);
         const onBalance = (payload) => {

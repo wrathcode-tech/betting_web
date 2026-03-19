@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AuthService from '../api/services/AuthService'
 import { ApiConfig } from '../api/apiConfig/apiConfig'
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import './profile.css'
 import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
+import { clearAuth, getToken } from '../utils/authStorage'
 
 function ProfilePage() {
+  const navigate = useNavigate()
   const [profileData, setProfileData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -15,6 +18,12 @@ function ProfilePage() {
   const [editProfileImageFile, setEditProfileImageFile] = useState(null)
   const [editProfileImagePreview, setEditProfileImagePreview] = useState(null)
   const [saveLoading, setSaveLoading] = useState(false)
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false)
+  const [changeCurrentPassword, setChangeCurrentPassword] = useState('')
+  const [changeNewPassword, setChangeNewPassword] = useState('')
+  const [changeConfirmPassword, setChangeConfirmPassword] = useState('')
+  const [changePasswordLoading, setChangePasswordLoading] = useState(false)
+  const [logoutAllLoading, setLogoutAllLoading] = useState(false)
 
   const data = profileData ?? {}
   const user = data?.user ?? data
@@ -32,7 +41,7 @@ function ProfilePage() {
   const safeUser = user ?? {}
 
   const fetchProfile = async (keepPreviousExtra = false) => {
-    const token = sessionStorage.getItem('token')
+    const token = getToken()
     if (!token) {
       setLoading(false)
       return
@@ -131,7 +140,48 @@ function ProfilePage() {
       if (updatedUser) setProfileData((prev) => (prev ? { ...prev, user: { ...(prev.user || {}), ...updatedUser } } : prev))
     } else {
       alertErrorMessage(result?.message || 'Failed to update profile')
+      return
     }
+  }
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault()
+    if (!changeCurrentPassword.trim()) {
+      alertErrorMessage('Enter your current password')
+      return
+    }
+    if (!changeNewPassword || changeNewPassword.length < 6) {
+      alertErrorMessage('New password must be at least 6 characters')
+      return
+    }
+    if (changeNewPassword !== changeConfirmPassword) {
+      alertErrorMessage('New password and confirm password do not match')
+      return
+    }
+    setChangePasswordLoading(true)
+    const result = await AuthService.bettingChangePassword(changeCurrentPassword, changeNewPassword, changeConfirmPassword)
+    setChangePasswordLoading(false)
+    if (result?.success) {
+      alertSuccessMessage(result?.message || 'Password changed successfully')
+      setShowChangePasswordModal(false)
+      setChangeCurrentPassword('')
+      setChangeNewPassword('')
+      setChangeConfirmPassword('')
+    } else {
+      alertErrorMessage(result?.message || 'Failed to change password')
+    }
+  }
+
+  const handleLogoutAll = async () => {
+    if (!window.confirm('Log out from all devices? You will need to log in again on this device.')) return
+    setLogoutAllLoading(true)
+    try {
+      await AuthService.bettingLogoutAll()
+    } catch (_) {}
+    setLogoutAllLoading(false)
+    clearAuth()
+    window.dispatchEvent(new CustomEvent('loginStateChange'))
+    navigate('/login', { replace: true })
   }
 
   if (!profileData && !loading) {
@@ -213,6 +263,14 @@ function ProfilePage() {
                       <li><span>Last Login</span><strong className="profile_stat_small">{session?.lastLoginAt ? new Date(session.lastLoginAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}</strong></li>
                       <li><span>Login Count</span><strong>{Number(session?.loginCount ?? 0).toLocaleString('en-IN')}</strong></li>
                     </ul>
+                    <div className="d-flex flex-wrap gap-2 mt-2">
+                      <button type="button" className="btn profilebtn" onClick={() => setShowChangePasswordModal(true)}>
+                        Change password
+                      </button>
+                      <button type="button" className="btn profilebtn btn-outline-secondary" onClick={handleLogoutAll} disabled={logoutAllLoading}>
+                        {logoutAllLoading ? 'Logging out...' : 'Logout from all devices'}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="statistics_profile top_played_games">
@@ -308,6 +366,70 @@ function ProfilePage() {
                       </button>
                       <button type="submit" className="premium_submit_btn" disabled={saveLoading}>
                         {saveLoading ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showChangePasswordModal && (
+        <div
+          className="login_modal_backdrop premium_login_backdrop"
+          onClick={() => setShowChangePasswordModal(false)}
+          onKeyDown={(e) => e.key === 'Escape' && setShowChangePasswordModal(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="login_modal_dialog premium_login_dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="login_modal_content premium_login_content">
+              <button type="button" className="login_modal_close premium_login_close" onClick={() => setShowChangePasswordModal(false)} aria-label="Close">
+                <i className="ri-close-line" />
+              </button>
+              <div className="premium_login_inner">
+                <div className="premium_login_right">
+                  <h3 className="premium_login_title">Change password</h3>
+                  <form className="premium_login_form" onSubmit={handleChangePassword}>
+                    <div className="premium_form_group">
+                      <label className="premium_form_label">Current password</label>
+                      <input
+                        type="password"
+                        className="premium_form_input"
+                        placeholder="Current password"
+                        value={changeCurrentPassword}
+                        onChange={(e) => setChangeCurrentPassword(e.target.value)}
+                        autoComplete="current-password"
+                      />
+                    </div>
+                    <div className="premium_form_group">
+                      <label className="premium_form_label">New password</label>
+                      <input
+                        type="password"
+                        className="premium_form_input"
+                        placeholder="New password (min 6 characters)"
+                        value={changeNewPassword}
+                        onChange={(e) => setChangeNewPassword(e.target.value)}
+                        autoComplete="new-password"
+                      />
+                    </div>
+                    <div className="premium_form_group">
+                      <label className="premium_form_label">Confirm new password</label>
+                      <input
+                        type="password"
+                        className="premium_form_input"
+                        placeholder="Confirm new password"
+                        value={changeConfirmPassword}
+                        onChange={(e) => setChangeConfirmPassword(e.target.value)}
+                        autoComplete="new-password"
+                      />
+                    </div>
+                    <div className="d-flex gap-2 mt-3">
+                      <button type="button" className="premium_submit_btn" onClick={() => setShowChangePasswordModal(false)}>Cancel</button>
+                      <button type="submit" className="premium_submit_btn" disabled={changePasswordLoading}>
+                        {changePasswordLoading ? 'Updating...' : 'Update password'}
                       </button>
                     </div>
                   </form>

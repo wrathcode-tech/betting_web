@@ -2,6 +2,7 @@
  * Auth helpers for demo (view-only) mode.
  * Use with centralized auth context and API layer.
  */
+import { getStoredUser } from './authStorage';
 
 /**
  * @param {object | null} user - User from auth context / storage
@@ -12,15 +13,9 @@ export function isDemoUser(user) {
 }
 
 /**
- * Get stored user from localStorage(for use outside React, e.g. apiCall).
+ * Get stored user (for use outside React, e.g. apiCall guard).
  * @returns {object | null}
  */
 export function getStoredUserForGuard() {
-  try {
-    const raw = sessionStorage.getItem('user');
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  return getStoredUser();
 }

@@ -17,6 +17,7 @@ import {
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { useAuth } from '../context/AuthContext'
+import { getToken } from '../utils/authStorage'
 import LossCutIndicator from '../customComponents/LossCutIndicator'
 import { BackPriceCell, LayPriceCell } from './OddsMarketComponents'
 
@@ -80,8 +81,13 @@ function CricketDetail() {
             .finally(() => setOpenBetsLoading(false))
     }, [openCashoutSection])
 
-    // Fetch cashout-value from GET /bet/:betId/cashout-value for each open bet
+    // Fetch cashout-value only when user is viewing cashout UI (popover or betslip Open Bets tab). Avoids calling API on every openBetsList change.
+    const needCashoutValues = !!openCashoutSection || (isBetslipOpen && betslipView === 'openbets')
+    const openBetsForCashout = (openBetsList || []).filter((b) => (b.status || 'open').toLowerCase() === 'open')
+    const cashoutBetIdsKey = openBetsForCashout.map((b) => b._id ?? b.id).filter(Boolean).sort().join(',')
+
     useEffect(() => {
+        if (!needCashoutValues) return
         const openBets = (openBetsList || []).filter((b) => (b.status || 'open').toLowerCase() === 'open')
         if (openBets.length === 0) {
             setCashoutValuesMap({})
@@ -110,7 +116,8 @@ function CricketDetail() {
         }
         fetchAll()
         return () => { cancelled = true }
-    }, [openBetsList])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when needCashoutValues or bet set (cashoutBetIdsKey) changes; openBetsList read from closure
+    }, [needCashoutValues, cashoutBetIdsKey])
 
     const [defaultMatch, setDefaultMatch] = useState(null)
     const gameIdFromState = location.state?.gameId
@@ -139,7 +146,7 @@ function CricketDetail() {
     // Guest (no token): fetch matches via REST and set first match so odds load without login
     useEffect(() => {
         if (gameIdFromState) return
-        const token = sessionStorage.getItem('token')
+        const token = getToken()
         if (token) return
         let cancelled = false
         AuthService.sportsbookMatches(sportName)
@@ -159,12 +166,10 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [gameIdFromState, sportName])
 
-    // Socket (doc): subscribe:matches { sport } when need default match; on('matches') { sport, data, timestamp }. Leave → unsubscribe:matches.
+    // Socket: subscribe:matches { sport }. Works as guest (no token) or with token. Leave → unsubscribe:matches.
     useEffect(() => {
         if (gameIdFromState) return
-        const token = sessionStorage.getItem('token')
-        if (!token) return
-        connectSportsbookSocket(token)
+        connectSportsbookSocket(getToken() || null)
         const onMatches = (payload) => {
             if (payload?.sport !== sportName || payload.data === undefined) return
             const list = Array.isArray(payload.data) ? payload.data : []
@@ -185,14 +190,15 @@ function CricketDetail() {
     }, [gameIdFromState, sportName])
 
     const normalizeOdds = (d) => {
-        const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds : (Array.isArray(d?.match_odds) ? d.match_odds : [])
-        const firstMarket = matchOdds?.[0]
+        const matchOdds = d?.matchOdds ?? d?.match_odds ?? []
+        const arrMatchOdds = Array.isArray(matchOdds) ? matchOdds : []
+        const firstMarket = arrMatchOdds?.[0]
         const otherMarketOdds = Array.isArray(d?.otherMarketOdds) ? d.otherMarketOdds : (Array.isArray(d?.other_market_odds) ? d.other_market_odds : [])
         const totalGoalsOdds = Array.isArray(d?.totalGoalsOdds) ? d.totalGoalsOdds : (Array.isArray(d?.total_goals_odds) ? d.total_goals_odds : [])
         const overUnderOdds = Array.isArray(d?.overUnderOdds) ? d.overUnderOdds : (Array.isArray(d?.over_under_odds) ? d.over_under_odds : [])
         return {
-            matchOdds,
-            marketClosed: d?.marketClosed === true,
+            matchOdds: arrMatchOdds,
+            marketClosed: d?.marketClosed ?? true,
             tvUrl: d?.tv_url ?? d?.tvUrl ?? firstMarket?.tv_url ?? firstMarket?.tvUrl ?? null,
             isTv: d?.IsTv ?? d?.isTv ?? firstMarket?.IsTv ?? firstMarket?.isTv ?? false,
             fancyOdds: Array.isArray(d?.fancyOdds) ? d.fancyOdds : (Array.isArray(d?.fancy_odds) ? d.fancy_odds : []),
@@ -227,8 +233,13 @@ function CricketDetail() {
         AuthService.sportsbookOdds(sportName, oddsId)
             .then((res) => {
                 if (cancelled || !res) return
-                const raw = res.data ?? res
-                const d = raw?.data ?? raw
+                if (res?.success === false) {
+                    setOddsData(null)
+                    return
+                }
+                const raw = res?.data ?? res
+                let d = raw?.data ?? raw ?? raw?.odds
+                if (Array.isArray(d)) d = { matchOdds: d }
                 if (d && typeof d === 'object') {
                     setOddsData(normalizeOdds(d))
                     const tvUrl = d?.tvUrl ?? d?.tv_url ?? null
@@ -245,13 +256,11 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [oddsId, sportName])
 
-    // 2) Phir socket – live updates (token ho to). Tennis uses eventId in payload. Update odds, liveScore, streamUrl (tvUrl may appear later).
+    // 2) Socket – live odds (guest + logged-in, same as /sports). Tennis uses eventId in payload.
     useEffect(() => {
         if (!oddsId) return
-        const token = sessionStorage.getItem('token')
-        if (!token) return
         const currentOddsKey = oddsId
-        connectSportsbookSocket(token)
+        connectSportsbookSocket(getToken() || null)
         const onOdds = (payload) => {
             const payloadKey = payload?.eventId ?? payload?.gameId
             if (payloadKey !== currentOddsKey || payload?.data === undefined) return
@@ -273,7 +282,7 @@ function CricketDetail() {
     // Guests: fetch live score via REST (no Socket)
     useEffect(() => {
         if (!eventId && !gameId) return
-        const token = sessionStorage.getItem('token')
+        const token = getToken()
         if (token) return
         let cancelled = false
         AuthService.sportsbookScore(eventId || gameId)
@@ -421,7 +430,7 @@ function CricketDetail() {
     }, [selectedBets.length])
 
     const handlePlaceBet = async () => {
-        if (!sessionStorage.getItem('token')) {
+        if (!getToken()) {
             window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'login' }))
             return
         }
@@ -1152,6 +1161,43 @@ function CricketDetail() {
         return Number.isNaN(n) || n <= 0
     }
 
+    const getMarketDisplayName = (m) => (m?.marketName ?? m?.market ?? m?.mname ?? m?.name ?? 'Market').trim() || 'Market'
+
+    const buildNoYesRowsFromSingleMarket = (m) => {
+        if (!m) return []
+        const oddList = toOddDatasArray(m.oddDatas)
+        if (oddList.length >= 2) {
+            const noSel = oddList[0]
+            const yesSel = oddList[1]
+            return [{
+                label: m.market || m.name || 'Market',
+                noOdds: noSel?.l1 ?? noSel?.b1 ?? '—',
+                noSize: noSel?.ls1 ?? noSel?.bs1 ?? '—',
+                yesOdds: yesSel?.b1 ?? yesSel?.l1 ?? '—',
+                yesSize: yesSel?.bs1 ?? yesSel?.ls1 ?? '—',
+                max: '100K',
+                marketId: m.mid || m.marketId,
+                noSid: noSel?.sid,
+                yesSid: yesSel?.sid,
+            }]
+        }
+        if (oddList.length === 1) {
+            const o = oddList[0]
+            return [{
+                label: o.rname ?? o.selectionName ?? m.market ?? 'Market',
+                noOdds: o.l1 ?? '—',
+                noSize: o.ls1 ?? '—',
+                yesOdds: o.b1 ?? '—',
+                yesSize: o.bs1 ?? '—',
+                max: '100K',
+                marketId: m.mid || m.marketId,
+                noSid: o.sid,
+                yesSid: o.sid,
+            }]
+        }
+        return []
+    }
+
     // Neeche: SESSIONS / W/P MARKET / EXTRA MARKET – API se (fancyOdds / otherMarketOdds). Static data nahi.
     const buildNoYesRowsFromMarkets = (markets) => {
         if (!markets?.length) return []
@@ -1210,15 +1256,15 @@ function CricketDetail() {
         return markets.map((m) => {
             const oddList = toOddDatasArray(m.oddDatas)
             const rows = oddList.map((o) => ({
-                label: o.rname ?? o.selectionName ?? '—',
+                label: o.rname ?? o.selectionName ?? o.description ?? '—',
                 backOdds: o.b1 ?? '—',
                 backSize: o.bs1 ?? '—',
             }))
             const allLocked = rows.every((r) => isOddsLocked(r.backOdds))
             return {
-                key: m.mid || m.marketId || m.market,
-                title: m.market || m.name || 'Market',
-                minMax: 'MIN:100 MAX:50K',
+                key: m.mid || m.marketId || m.market || `backonly-${markets.indexOf(m)}`,
+                title: getMarketDisplayName(m),
+                minMax: m.minMax ?? 'MIN:100 MAX:10K',
                 rows,
                 isLocked: allLocked,
             }
@@ -1824,8 +1870,8 @@ function CricketDetail() {
                                                         {oddsLoading && gameId && (
                                                             <div className='match_block' style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
                                                         )}
-                                                        {!oddsLoading && oddsData && (oddsData.marketClosed || !oddsData.matchOdds?.length) && (
-                                                            <div className='match_block odds_market_closed' style={{ padding: '1rem', color: 'var(--text-secondary, #888)', textAlign: 'center' }}>Market closed</div>
+                                                        {!oddsLoading && oddsData && !oddsData.matchOdds?.length && (
+                                                            <div className='match_block odds_market_closed' style={{ padding: '1rem', color: 'var(--text-secondary, #888)', textAlign: 'center' }}>{oddsData.marketClosed ? 'Market closed' : 'No match odds available'}</div>
                                                         )}
                                                         {!oddsLoading && oddsData && !oddsData.marketClosed && oddsData.matchOdds?.length > 0 && (sportName === 'soccer' || sportName === 'tennis') ? (
                                                             <>
@@ -1889,26 +1935,42 @@ function CricketDetail() {
                                                                         return renderOddsSection(`soccer_below_${idx}`, def.title, 'ri-settings-3-line', def.minMax, [dummyMarket], 'match_odds')
                                                                     })
                                                                 })()}
-                                                                {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
+                                                                {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', getMarketDisplayName((oddsData.fancyOdds || oddsData.premiumFancy || [])[0]) || 'Fancy', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
                                                             </>
                                                         ) : (
                                                             <>
-                                                                {!oddsData?.marketClosed && oddsData?.matchOdds?.length > 0 && renderOddsSection('match_odds', 'MATCH ODDS', 'ri-rocket-line', 'MIN: 100 MAX: 10K', oddsData.matchOdds, 'match_odds')}
-                                                                {!oddsData?.marketClosed && oddsData?.bookMakerOdds?.length > 0 && renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 300K', oddsData.bookMakerOdds, 'bookmaker')}
-                                                                {!oddsData?.marketClosed && (oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
+                                                                {oddsData?.matchOdds?.length > 0 && renderOddsSection('match_odds', getMarketDisplayName(oddsData.matchOdds[0]) || 'Match Odds', 'ri-rocket-line', oddsData.matchOdds[0]?.minMax || 'MIN: 100 MAX: 10K', oddsData.matchOdds, 'match_odds')}
+                                                                {oddsData?.bookMakerOdds?.length > 0 && oddsData.bookMakerOdds.map((bm, bmIdx) => (
+                                                                    <React.Fragment key={bm.mid || bm.marketId || `bookmaker-${bmIdx}`}>
+                                                                        {renderOddsSection(`bookmaker_${bmIdx}`, getMarketDisplayName(bm) || 'Bookmaker', 'ri-tools-line', bm.minMax || 'MIN: 100 MAX: 300K', [bm], 'bookmaker')}
+                                                                    </React.Fragment>
+                                                                ))}
+                                                                {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', getMarketDisplayName((oddsData.fancyOdds || oddsData.premiumFancy || [])[0]) || 'Fancy', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
+                                                                {/* Genie Combo / Back-only: same level as Match Odds, Bookmaker, Toss (reference UI) */}
+                                                                {backOnlyBlocks.map((block) => renderBackOnlySection(block))}
                                                             </>
                                                         )}
 
-                                                        {/* Neeche: SESSIONS, W/P MARKET, EXTRA MARKET, ODD/EVEN – cricket only */}
-                                                        {sportName === 'cricket' && (
-                                                            <div className="markets_below_wrap">
-                                                                {renderNoYesSection('below_sessions', 'SESSIONS', sessionsRows)}
-                                                                {renderNoYesSection('below_wp', 'W/P MARKET', wpMarketRows)}
-                                                                {renderNoYesSection('below_extra', 'EXTRA MARKET', extraMarketRows)}
-                                                                {renderNoYesSection('below_odd_even', 'ODD/EVEN', oddEvenRows)}
-                                                                {backOnlyBlocks.map((block) => renderBackOnlySection(block))}
-                                                            </div>
-                                                        )}
+                                                        {/* Neeche: Fancy – API market names (SESSIONS, W/P MARKET, Toss, Genie combo, ODD/EVEN, etc.) */}
+                                                        {sportName === 'cricket' && (() => {
+                                                            const fancyNoYesMarkets = [
+                                                                ...(oddsData?.fancyOdds ?? []),
+                                                                ...(oddsData?.otherMarketOdds ?? []),
+                                                                ...(oddsData?.oddEvenOdds ?? []),
+                                                                ...extraNoYesMarkets,
+                                                            ].filter((m) => buildNoYesRowsFromSingleMarket(m).length > 0)
+                                                            return (
+                                                                <div className="markets_below_wrap MuiTab-wrapper fancy_wrapper">
+                                                                    <div className="fancy_section_label"><i className="ri-price-tag-3-line" aria-hidden /> Fancy</div>
+                                                                    {fancyNoYesMarkets.map((m, idx) => {
+                                                                        const key = m.mid || m.marketId || `fancy-${idx}`
+                                                                        const title = getMarketDisplayName(m)
+                                                                        const rows = buildNoYesRowsFromSingleMarket(m)
+                                                                        return rows.length ? renderNoYesSection(key, title, rows) : null
+                                                                    })}
+                                                                </div>
+                                                            )
+                                                        })()}
 
                                                         {/* {oddsData?.matchOdds?.map((market, mIdx) => {
                                                     const marketId = market.mid || market.marketId

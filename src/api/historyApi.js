@@ -1,8 +1,9 @@
 import { ApiCallGet } from './apiConfig/apiCall';
 import { ApiConfig } from './apiConfig/apiConfig';
+import { getToken } from '../utils/authStorage';
 
 const authHeaders = () => {
-  const token = sessionStorage.getItem('token');
+  const token = getToken();
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

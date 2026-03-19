@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import LoginModal from '../customComponents/LoginModal'
+import { getToken } from '../utils/authStorage'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -11,7 +12,7 @@ export default function LoginPage() {
   const isSignupPath = location.pathname === '/signup'
   const initialTab = isSignupPath ? 'signup' : 'login'
 
-  const isLoggedIn = !!(sessionStorage.getItem('token'))
+  const isLoggedIn = !!(getToken())
 
   useEffect(() => {
     if (isLoggedIn) {

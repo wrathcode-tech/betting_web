@@ -50,15 +50,23 @@ export default function OpenBets() {
       .then(function (res) {
         if (res && res.success && Array.isArray(res.data)) {
           setData(res.data);
-          setPagination(res.pagination || { page: 1, limit: 20, totalPages: 1 });
+          const pag = res.pagination || {};
+          const total = pag.total ?? pag.totalRecords ?? 0;
+          const limit = 20;
+          setPagination({
+            page: pag.page ?? page,
+            limit: pag.limit ?? limit,
+            totalPages: pag.totalPages ?? (limit && total ? Math.ceil(total / limit) : 1),
+          });
         } else {
           setData([]);
           setPagination({ page: 1, limit: 20, totalPages: 1 });
+          if (res?.success === false && res?.message) toast.error(res.message);
         }
       })
-      .catch(function () {
+      .catch(function (err) {
         setData([]);
-        toast.error('Failed to load history');
+        toast.error(err?.message || 'Failed to load history');
       })
       .finally(function () {
         setLoading(false);

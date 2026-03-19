@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
+import { getToken } from '../utils/authStorage';
 import '../newDeposit/NewDeposit.css';
 import './AddAccount.css';
 
@@ -32,7 +33,7 @@ function AddAccount() {
   });
 
   const fetchAccounts = async () => {
-    const token = sessionStorage.getItem('token');
+    const token = getToken();
     if (!token) {
       setLoading(false);
       return;

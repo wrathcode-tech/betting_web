@@ -98,6 +98,13 @@ const SupportPage = () => {
       if (searchQuery?.trim()) params.search = searchQuery.trim();
       if (statusFilter) params.status = statusFilter;
       const result = await AuthService.getUserTickets(params);
+      if (result?.success === false) {
+        setIssueList([]);
+        setTicketTotalPages(0);
+        setTicketPage(1);
+        if (result?.message) alertErrorMessage(result.message);
+        return;
+      }
       const raw = result?.data ?? result;
       const list = Array.isArray(raw)
         ? raw
@@ -107,8 +114,8 @@ const SupportPage = () => {
             ? raw.data
             : [];
       setIssueList(list);
-      const total = raw?.total ?? raw?.totalCount ?? list.length;
-      setTicketTotalPages(Math.max(1, Math.ceil(total / TICKETS_PAGE_SIZE)));
+      const total = raw?.total ?? raw?.totalCount ?? raw?.pagination?.totalRecords ?? list.length;
+      setTicketTotalPages(Math.max(1, Math.ceil(Number(total) / TICKETS_PAGE_SIZE)));
       setTicketPage(page);
       if (ticketIdToSelect) {
         const found = list.find(
@@ -120,9 +127,6 @@ const SupportPage = () => {
           setMessageQuery(msgs);
           setStatus(found?.status || "");
         }
-      }
-      if (result?.success === false && result?.message) {
-        alertErrorMessage(result.message);
       }
     } catch (err) {
       alertErrorMessage(err?.message || "An error occurred while fetching tickets");

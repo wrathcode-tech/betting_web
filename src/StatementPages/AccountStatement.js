@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import StatementPage from './StatementPage'
 import { getAccountStatementFromAccount } from '../api/historyApi'
+import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 
 const COLUMNS = [
   { key: 'date', label: 'Date' },
@@ -52,11 +53,17 @@ export default function AccountStatement() {
     setLoading(true)
     try {
       const res = await getAccountStatementFromAccount({ page: 1, limit: 100 })
+      if (res?.success === false) {
+        setData([])
+        if (res?.message) alertErrorMessage(res.message)
+        return
+      }
       const raw = res?.data ?? res
       const list = Array.isArray(raw) ? raw : (raw?.statement ?? raw?.transactions ?? raw?.data ?? raw?.records ?? [])
       setData(Array.isArray(list) ? list.map(mapStatementToRow) : [])
-    } catch {
+    } catch (e) {
       setData([])
+      if (e?.message) alertErrorMessage(e.message)
     } finally {
       setLoading(false)
     }

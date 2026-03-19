@@ -413,6 +413,18 @@ button.btn.betnow {
     color: var(--text-secondary, #888);
 }
 
+.sports_grid_section_header {
+    padding: 12px 16px !important;
+    font-weight: 600;
+    color: var(--text-primary, #fff);
+    background: rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sports_grid_section_header .sports_grid_live {
+    margin-right: 6px;
+}
+
 .sports_grid_row {
     cursor: pointer;
     transition: background 0.2s, box-shadow 0.2s;

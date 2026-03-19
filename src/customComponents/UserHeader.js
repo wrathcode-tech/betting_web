@@ -15,6 +15,7 @@ import {
 } from '../socket/sportsbookSocket'
 import { disconnectBalanceSocket } from '../socket/balanceSocket'
 import AuthService from '../api/services/AuthService'
+import { clearAuth, getToken } from '../utils/authStorage'
 
 const CURRENCY_LIST = [
   { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹', icon: 'images/digital_currency.svg' },
@@ -68,7 +69,7 @@ export default function UserHeader() {
   );
 
   const fetchUserDisplayName = () => {
-    const token = sessionStorage.getItem('token');
+    const token = getToken();
     if (!token) {
       setUserDisplayName('');
       return;
@@ -99,7 +100,7 @@ export default function UserHeader() {
   // Sportsbook socket for matches/odds (balance updates via BalanceContext). Guest = no token, still connect for odds.
   useEffect(() => {
     const sync = () => {
-      const t = sessionStorage.getItem('token');
+      const t = getToken();
       connectSportsbookSocket(t || null);
     };
     sync();
@@ -304,9 +305,7 @@ export default function UserHeader() {
                 className="dropdown_logout_btn"
                 onClick={() => {
                   disconnectBalanceSocket();
-                  sessionStorage.removeItem('token');
-                  sessionStorage.removeItem('refreshToken');
-                  sessionStorage.removeItem('user');
+                  clearAuth();
                   setUserDisplayName('');
                   window.dispatchEvent(new CustomEvent('loginStateChange'));
                   setIsProfileDropdownOpen(false);

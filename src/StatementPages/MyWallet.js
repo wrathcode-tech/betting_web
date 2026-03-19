@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react'
 import StatementPage from './StatementPage'
 import { getAccountStatement } from '../api/historyApi'
 import AuthService from '../api/services/AuthService'
+import { getToken } from '../utils/authStorage'
+import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 
 const COLUMNS = [
   { key: 'time', label: 'Time' },
@@ -71,7 +73,7 @@ export default function MyWallet() {
   }
 
   const fetchStatement = useCallback(async (page = 1, limit = 100, from, to, type, sort) => {
-    const token = sessionStorage.getItem('token')
+    const token = getToken()
     if (!token) {
       setLoading(false)
       return
@@ -79,15 +81,17 @@ export default function MyWallet() {
     setLoading(true)
     try {
       const res = await getAccountStatement({ page, limit, from, to, type, sort })
-      const raw = res?.data
-      const list = Array.isArray(raw) ? raw : (raw?.statement ?? raw?.transactions ?? raw?.data ?? [])
-      if (!Array.isArray(list)) {
+      if (res?.success === false) {
         setData([])
+        if (res?.message) alertErrorMessage(res.message)
         return
       }
-      setData(list.map(mapStatementToRow))
-    } catch {
+      const raw = res?.data ?? res
+      const list = Array.isArray(raw) ? raw : (raw?.statement ?? raw?.transactions ?? raw?.data ?? [])
+      setData(Array.isArray(list) ? list.map(mapStatementToRow) : [])
+    } catch (e) {
       setData([])
+      if (e?.message) alertErrorMessage(e.message)
     } finally {
       setLoading(false)
     }
@@ -98,7 +102,7 @@ export default function MyWallet() {
   }, [fetchStatement])
 
   useEffect(() => {
-    const token = sessionStorage.getItem('token')
+    const token = getToken()
     if (!token) return
     AuthService.bettingGetBalance()
       .then((res) => {

@@ -2,6 +2,7 @@ import axios from "axios";
 import { alertErrorMessage } from "../../customComponents/CustomAlertMessage";
 import { ApiConfig } from "../apiConfig/apiConfig";
 import { getStoredUserForGuard, isDemoUser } from "../../utils/authUtils";
+import { clearAuth, getRefreshToken, getToken, setToken } from "../../utils/authStorage";
 
 // Default timeout of 30 seconds
 const TIMEOUT = 30000;
@@ -10,9 +11,7 @@ const DEMO_BLOCKED_ACTION_MSG = 'Demo users are not allowed to perform this acti
 
 const tokenExpire = (isDemo = false) => {
   alertErrorMessage(isDemo ? 'Demo session expired. Please login again.' : 'Token is Expired Please Login Again');
-  sessionStorage.removeItem('token');
-  sessionStorage.removeItem('refreshToken');
-  sessionStorage.removeItem('user');
+  clearAuth();
   window.dispatchEvent(new CustomEvent('loginStateChange'));
   window.location.href = '/login';
 };
@@ -41,7 +40,7 @@ axios.interceptors.response.use(
       tokenExpire(isDemoUser(user));
       return Promise.reject(error);
     }
-    const refreshToken = sessionStorage.getItem('refreshToken');
+    const refreshToken = getRefreshToken();
     if (!refreshToken) {
       if (originalRequest?.headers?.Authorization) {
         const user = getStoredUserForGuard();
@@ -57,7 +56,7 @@ axios.interceptors.response.use(
         tokenExpire(isDemoUser(user));
         return Promise.reject(error);
       }
-      sessionStorage.setItem('token', newToken);
+      setToken(newToken);
       originalRequest.__retried = true;
       originalRequest.headers = originalRequest.headers || {};
       originalRequest.headers.Authorization = `Bearer ${newToken}`;
@@ -78,8 +77,9 @@ const handleApiError = (error) => {
   if (!error.response) {
     return { success: false, message: 'Network error. Please check your connection.' };
   }
-  if (error?.response?.data?.message === "Token is expired" && sessionStorage.getItem('token')) {
-    tokenExpire();
+  if (error?.response?.data?.message === "Token is expired" && getToken()) {
+    const isDemo = isDemoUser(getStoredUserForGuard());
+    tokenExpire(isDemo);
     return { success: false, message: 'Token expired.' };
   }
 
