@@ -28,6 +28,7 @@
     flex-direction: column;
     align-items: end;
     gap: 15px;
+    width: 100%;
 }
 
 .match_vs_team_list ul li span {
@@ -929,12 +930,13 @@ img.team_bg_img {
 
 .market_no_yes_row {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 12px;
     padding: 10px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     background: rgba(255, 255, 255, 0.03);
+    min-height: 72px;
 }
 
 .market_no_yes_row:last-child {
@@ -942,11 +944,40 @@ img.team_bg_img {
 }
 
 .market_no_yes_label {
-    flex: 1 1 160px;
-    min-width: 0;
+    flex: 0 0 380px;
+    width: 380px;
+    min-width: 380px;
     font-size: 12px;
     font-weight: 500;
     color: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.market_no_yes_left.match_left {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #1a2332;
+    padding-right: 10px;
+}
+
+.market_no_yes_right.match_right {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+    touch-action: pan-x;
+}
+
+.market_no_yes_right_inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: max-content;
+    width: max-content;
 }
 
 .market_no_yes_book_btn {
@@ -984,10 +1015,12 @@ img.team_bg_img {
     align-items: center;
     justify-content: center;
     min-width: 56px;
+    min-width: 84px;
+    width: 100px;
     min-height: 44px;
     padding: 6px 14px;
     border: none;
-    border-radius: 20px;
+    border-radius: 5px;
     cursor: pointer;
     font-weight: 600;
     color: #0d0d0d;
@@ -2124,8 +2157,18 @@ span.quicktext {
     }
 
     .market_no_yes_limits_container.d-flex {
-        width: 100%;
+        /* width: max-content; */
+        /* min-width: max-content; */
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+     align-items: start;
     }
+
+    .market_no_yes_label {
+        min-width: 150px;
+        max-width: 150px;
+        width: 150px; }
 
     .right_content_side .container {
         padding: 0px;
@@ -2150,26 +2193,46 @@ span.quicktext {
         -webkit-overflow-scrolling: touch;
     }
 
-    .odds_section_block .odds_section_table thead th:first-child {
-        position: sticky;
-        left: 0;
-        z-index: 3;
-        background: #1e2a38 !important;
-        min-width: 120px;
-        max-width: 160px;
-        width: 160px;
-        box-shadow: 6px 0 12px rgba(0, 0, 0, 0.35);
+    .odds_section_block .odds_section_table thead th:first-child,
+    .odds_section_block .odds_section_table td.odds_section_market_name {
+        min-width: 170px;
+        max-width: 170px;
+        width: 170px;
     }
 
-    .odds_section_block .odds_section_table td.odds_section_market_name {
-        position: sticky;
-        left: 0;
-        z-index: 2;
-        background: #1a2332 !important;
-        min-width: 148px;
-        max-width: 160px;
-        width: 160px;
-        box-shadow: 6px 0 12px rgba(0, 0, 0, 0.3);
+    .market_no_yes_row.match_row {
+        gap: 10px;
+        padding: 10px 10px;
+    }
+
+    .market_no_yes_label.market_no_yes_left.match_left {
+        flex: 0 0 170px;
+        max-width: 170px;
+        min-width: 170px;
+    }
+
+    .market_no_yes_right.match_right {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+    }
+
+    .market_no_yes_limits_container.d-flex {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .market_no_yes_odds_container {
+        flex-wrap: nowrap;
+        overflow: auto;
+    }
+
+    .market_no_yes_odds_container>* {
+        flex: 0 0 auto;
     }
 
     .series_name_row p {
@@ -2518,17 +2581,20 @@ span.quicktext {
 
 .odds_section_table_wrap {
     overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 .odds_section_table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     font-size: 13px;
 }
 
 .odds_section_table th,
 .odds_section_table td {
-    padding: 8px 3px;
+    padding: 6px 2px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     text-align: center;
 }
@@ -2545,6 +2611,10 @@ span.quicktext {
     padding: 10px 10px;
 }
 
+.odds_section_table th[colspan] {
+    text-align: center;
+}
+
 .odds_section_table tbody tr:hover {
     background: rgba(255, 255, 255, 0.04);
 }
@@ -2553,7 +2623,23 @@ span.quicktext {
     text-align: left !important;
     color: #fff;
     font-weight: 500;
-    min-width: 120px;
+    min-width: 380px;
+    width: 380px;
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: #1a2332;
+    box-shadow: 6px 0 12px rgba(0, 0, 0, 0.25);
+}
+
+.odds_section_table thead th:first-child {
+    min-width: 380px;
+    width: 380px;
+    position: sticky;
+    left: 0;
+    z-index: 4;
+    background: #1e2a38;
+    box-shadow: 6px 0 12px rgba(0, 0, 0, 0.25);
 }
 
 .odds_section_pl_header {
@@ -2576,12 +2662,14 @@ span.quicktext {
     min-width: 72px;
     padding: 6px 8px;
     vertical-align: middle;
+    display: none;
 }
 
 .odds_section_indicator_cell {
     padding: 6px 8px;
     vertical-align: middle;
     white-space: nowrap;
+    display: none;
 }
 
 .odds_section_pl_dual {
@@ -2639,8 +2727,8 @@ span.quicktext {
 }
 
 .odds_section_cell {
-    min-width: 52px;
-    width: 80px;
+    min-width: 84px;
+    width: 100px;
 }
 
 .odds_section_btn {
@@ -2649,10 +2737,10 @@ span.quicktext {
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 32px;
-    padding: 3px 8px;
+    min-height: 38px;
+    padding: 4px 8px;
     border: none;
-    border-radius: 8px;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
     font-weight: 600;
@@ -2720,11 +2808,11 @@ span.quicktext {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 36px;
+    min-height: 38px;
     width: 100%;
     background: #252d38;
     color: rgba(255, 255, 255, 0.6);
-    border-radius: 8px;
+    border-radius: 4px;
     font-size: 18px;
 }
 

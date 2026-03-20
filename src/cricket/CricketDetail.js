@@ -1288,7 +1288,7 @@ function CricketDetail() {
                                     <div className="market_no_yes_odds_container">
                                     <button type="button" className="market_no_yes_book_btn" title="Book">Book</button>
                                         <div className="market_no_yes_odds">
-                                            <span className="market_no_yes_lbl">Yes</span>
+                                            {/* <span className="market_no_yes_lbl">Yes</span> */}
                                             <button
                                                 type="button"
                                                 className={`market_no_yes_btn market_yes_btn ${yesLocked ? 'locked' : ''} ${isBetSelected(row.label, row.marketName, yesOddsStr, yesElementId) ? 'selected' : ''}`}
@@ -1306,7 +1306,7 @@ function CricketDetail() {
                                             </button>
                                         </div>
                                         <div className="market_no_yes_odds">
-                                            <span className="market_no_yes_lbl">No</span>
+                                            {/* <span className="market_no_yes_lbl">No</span> */}
                                             <button
                                                 type="button"
                                                 className={`market_no_yes_btn market_no_btn ${noLocked ? 'locked' : ''} ${isBetSelected(row.label, row.marketName, noOddsStr, noElementId) ? 'selected' : ''}`}
