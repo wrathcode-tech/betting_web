@@ -70,6 +70,7 @@ function CricketDetail() {
     // Refetch open bets when Cashout popover opens so list is fresh
     useEffect(() => {
         if (!openCashoutSection) return
+        if (isDemo) return
         setOpenBetsLoading(true)
         AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
             .then((res) => {
@@ -78,7 +79,7 @@ function CricketDetail() {
             })
             .catch(() => { })
             .finally(() => setOpenBetsLoading(false))
-    }, [openCashoutSection])
+    }, [openCashoutSection, isDemo])
 
     // Fetch cashout-value from GET /bet/:betId/cashout-value for each open bet
     useEffect(() => {
@@ -136,11 +137,11 @@ function CricketDetail() {
     // eslint-disable-next-line no-unused-vars -- used in commented-out Live TV iframe
     const [streamUrl, setStreamUrl] = useState(null)
 
-    // Guest (no token): fetch matches via REST and set first match so odds load without login
+    // Guest (no token) or demo: fetch matches via REST and set first match (demo JWT must not hit public GETs with Bearer)
     useEffect(() => {
         if (gameIdFromState) return
         const token = sessionStorage.getItem('token')
-        if (token) return
+        if (token && !isDemo) return
         let cancelled = false
         AuthService.sportsbookMatches(sportName)
             .then((res) => {
@@ -157,13 +158,13 @@ function CricketDetail() {
             })
             .catch(() => { })
         return () => { cancelled = true }
-    }, [gameIdFromState, sportName])
+    }, [gameIdFromState, sportName, isDemo])
 
     // Socket (doc): subscribe:matches { sport } when need default match; on('matches') { sport, data, timestamp }. Leave → unsubscribe:matches.
     useEffect(() => {
         if (gameIdFromState) return
         const token = sessionStorage.getItem('token')
-        if (!token) return
+        if (!token || isDemo) return
         connectSportsbookSocket(token)
         const onMatches = (payload) => {
             if (payload?.sport !== sportName || payload.data === undefined) return
@@ -182,7 +183,7 @@ function CricketDetail() {
             removeMatchesListener(onMatches)
             unsubscribeMatches(sportName)
         }
-    }, [gameIdFromState, sportName])
+    }, [gameIdFromState, sportName, isDemo])
 
     const normalizeOdds = (d) => {
         const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds : (Array.isArray(d?.match_odds) ? d.match_odds : [])
@@ -245,13 +246,13 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [oddsId, sportName])
 
-    // 2) Phir socket – live updates (token ho to). Tennis uses eventId in payload. Update odds, liveScore, streamUrl (tvUrl may appear later).
+    // 2) Socket live updates. Demo uses guest connection (no JWT) — avoids "Token is expired" on sportsbook socket.
     useEffect(() => {
         if (!oddsId) return
         const token = sessionStorage.getItem('token')
-        if (!token) return
+        if (!isDemo && !token) return
         const currentOddsKey = oddsId
-        connectSportsbookSocket(token)
+        connectSportsbookSocket(isDemo ? null : token)
         const onOdds = (payload) => {
             const payloadKey = payload?.eventId ?? payload?.gameId
             if (payloadKey !== currentOddsKey || payload?.data === undefined) return
@@ -268,13 +269,13 @@ function CricketDetail() {
             removeOddsListener(onOdds)
             unsubscribeOdds(oddsId, sportName)
         }
-    }, [oddsId, sportName])
+    }, [oddsId, sportName, isDemo])
 
-    // Guests: fetch live score via REST (no Socket)
+    // Guests + demo: fetch live score via REST (no Socket score polling when logged-in real user)
     useEffect(() => {
         if (!eventId && !gameId) return
         const token = sessionStorage.getItem('token')
-        if (token) return
+        if (token && !isDemo) return
         let cancelled = false
         AuthService.sportsbookScore(eventId || gameId)
             .then((res) => {
@@ -288,10 +289,15 @@ function CricketDetail() {
                 .catch(() => { })
         }, 15000)
         return () => { cancelled = true; clearInterval(t) }
-    }, [eventId, gameId])
+    }, [eventId, gameId, isDemo])
 
     // Fetch open bets on page load so (OPEN BETS) count and cashout list show as soon as user lands on page
     useEffect(() => {
+        if (isDemo) {
+            setOpenBetsList([])
+            setOpenBetsLoading(false)
+            return
+        }
         let cancelled = false
         setOpenBetsLoading(true)
         AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
@@ -308,11 +314,11 @@ function CricketDetail() {
                 if (!cancelled) setOpenBetsLoading(false)
             })
         return () => { cancelled = true }
-    }, [])
+    }, [isDemo])
 
     // Refresh open bets when gameId changes (e.g. navigated to another match)
     useEffect(() => {
-        if (!gameId) return
+        if (!gameId || isDemo) return
         AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
             .then((res) => {
                 const data = res?.data ?? res
@@ -320,7 +326,7 @@ function CricketDetail() {
                 setOpenBetsList(Array.isArray(list) ? list : [])
             })
             .catch(() => { })
-    }, [gameId])
+    }, [gameId, isDemo])
 
     const toggleBlock = (blockId) => {
         setClosedBlocks(prev => {
@@ -421,6 +427,10 @@ function CricketDetail() {
     }, [selectedBets.length])
 
     const handlePlaceBet = async () => {
+        if (isDemo) {
+            alertErrorMessage('Demo mode: Sportsbook betting is disabled. Log in with a real account to place bets.')
+            return
+        }
         if (!sessionStorage.getItem('token')) {
             window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'login' }))
             return
@@ -621,6 +631,10 @@ function CricketDetail() {
     }
 
     const handleSetLossLimit = useCallback(async (dailyLossLimit) => {
+        if (isDemo) {
+            alertErrorMessage('Demo mode: Log in to manage loss limits.')
+            return
+        }
         const res = await AuthService.sportsbookSetLossLimit(dailyLossLimit)
         const ok = res?.success === true || (res && res.success !== false && !res?.message)
         if (ok) {
@@ -631,7 +645,7 @@ function CricketDetail() {
             const errMsg = res?.data?.message ?? res?.message
             if (errMsg) alertErrorMessage(errMsg)
         }
-    }, [])
+    }, [isDemo])
 
     // Sync slip odds when first bet changes
     useEffect(() => {
@@ -1425,6 +1439,12 @@ function CricketDetail() {
 
     // Fetch loss limit and exposure on page load so Open Bets tab has data as soon as it renders
     useEffect(() => {
+        if (isDemo) {
+            setBetslipLossLimit(null)
+            setBetslipExposure(null)
+            setBetslipCurrentLoss(null)
+            return
+        }
         let cancelled = false
         Promise.all([
             AuthService.sportsbookGetLossLimit(),
@@ -1445,10 +1465,11 @@ function CricketDetail() {
                 setBetslipCurrentLoss(null)
             })
         return () => { cancelled = true }
-    }, [])
+    }, [isDemo])
 
     // Refetch loss limit and exposure when betslip opens or Open Bets tab is selected (e.g. after placing bet)
     useEffect(() => {
+        if (isDemo) return
         if (!isBetslipOpen && activeTab !== 'open-bets') return
         let cancelled = false
         Promise.all([
@@ -1470,7 +1491,7 @@ function CricketDetail() {
                 setBetslipCurrentLoss(null)
             })
         return () => { cancelled = true }
-    }, [isBetslipOpen, activeTab])
+    }, [isBetslipOpen, activeTab, isDemo])
 
     useEffect(() => {
         if (platformConfig.sportsBookServiceStatus === false || platformConfig.inPlayServiceStatus === false) {
@@ -1480,7 +1501,7 @@ function CricketDetail() {
 
     // Refresh open bets when popup opens or Open Bets tab – use same parsing as mount; on error don’t clear list so existing data stays
     useEffect(() => {
-        if (!shouldFetchOpenBets) return
+        if (!shouldFetchOpenBets || isDemo) return
         setOpenBetsLoading(true)
         AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
             .then((res) => {
@@ -1490,7 +1511,7 @@ function CricketDetail() {
             })
             .catch(() => { /* keep previous openBetsList so "No open bets" doesn’t replace real data */ })
             .finally(() => setOpenBetsLoading(false))
-    }, [shouldFetchOpenBets])
+    }, [shouldFetchOpenBets, isDemo])
 
     // Defer heavy markets section until in view for faster FCP/LCP
     useEffect(() => {

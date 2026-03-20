@@ -82,7 +82,7 @@ const handleApiError = (error) => {
     return { success: false, message: 'Network error. Please check your connection.' };
   }
   if (error?.response?.data?.message === "Token is expired" && sessionStorage.getItem('token')) {
-    tokenExpire();
+    tokenExpire(isDemoUser(getStoredUserForGuard()));
     return { success: false, message: 'Token expired.' };
   }
 

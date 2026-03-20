@@ -447,30 +447,23 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/{sportName}/matches – Public. sportName: cricket | soccer | tennis. Query: fresh=1. Response: { success, data: { data: [...], count }, message }. */
   sportsbookMatches: async (sportName, options = {}) => {
-    const token = getStoredToken();
     const { baseBettingSportsbook } = ApiConfig;
     const params = new URLSearchParams();
     if (options.fresh) params.set("fresh", "1");
     const q = params.toString();
     const url = `${baseBettingSportsbook}/${encodeURIComponent(sportName)}/matches${q ? `?${q}` : ""}`;
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
+    // Public endpoint — do not send Bearer (demo JWT is rejected by some gateways as "Token is expired")
+    const headers = { "Content-Type": "application/json" };
     return ApiCallGet(url, headers);
   },
 
   /** GET /api/v1/sportsbook/{sportName}/odds?gameId={gameId} or ?eventId={eventId} for tennis. Public; no auth. */
   sportsbookOdds: async (sportName, gameIdOrEventId) => {
-    const token = getStoredToken();
     const { baseBettingSportsbook } = ApiConfig;
     const isTennis = String(sportName).toLowerCase() === "tennis";
     const param = isTennis ? "eventId" : "gameId";
     const url = `${baseBettingSportsbook}/${encodeURIComponent(sportName)}/odds?${param}=${encodeURIComponent(gameIdOrEventId)}`;
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
+    const headers = { "Content-Type": "application/json" };
     return ApiCallGet(url, headers);
   },
 
@@ -488,13 +481,9 @@ const AuthService = {
   /** GET /api/v1/sportsbook/event/config?eventId=<gameId> – tvUrl for live stream (Berlin). Response: { response: { tvUrl, eventId, minStack, maxStack, ... } }. */
   sportsbookEventConfig: async (eventId) => {
     if (!eventId) return { tvUrl: null };
-    const token = getStoredToken();
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/event/config?eventId=${encodeURIComponent(eventId)}`;
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
+    const headers = { "Content-Type": "application/json" };
     const res = await ApiCallGet(url, headers);
     const response = res?.response ?? res?.data ?? res;
     const tvUrl = response?.tvUrl ?? response?.tv_url ?? null;
