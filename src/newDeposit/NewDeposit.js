@@ -45,11 +45,14 @@ function NewDeposit() {
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [step, setStep] = useState(1);
   const [selectedPayment, setSelectedPayment] = useState('bank');
+  const [selectedCryptoCurrency, setSelectedCryptoCurrency] = useState('USDT');
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(0);
   const [bankTransferMethod, setBankTransferMethod] = useState('imps');
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [amountInput, setAmountInput] = useState('');
   const [utrInput, setUtrInput] = useState('');
+  const [cryptoDepositAddress, setCryptoDepositAddress] = useState('');
+  const [cryptoAddressLoading, setCryptoAddressLoading] = useState(false);
   const [paymentProofFile, setPaymentProofFile] = useState(null);
   const [selectedFileName, setSelectedFileName] = useState('');
 
@@ -76,9 +79,9 @@ function NewDeposit() {
       if (res?.success && res?.data?.accounts) {
         const accounts = res.data.accounts;
         setMasterAccounts(accounts);
-        const banks = accounts.filter((a) => a.type === 'bank');
-        const upis = accounts.filter((a) => a.type === 'upi');
-        if (banks.length === 0 && upis.length > 0) setSelectedPayment('upi');
+        const types = [...new Set(accounts.map((a) => a.type).filter(Boolean))];
+        if (types.length > 0 && !types.includes('bank')) setSelectedPayment(types[0]);
+        else if (accounts.filter((a) => a.type === 'bank').length === 0 && accounts.filter((a) => a.type === 'upi').length > 0) setSelectedPayment('upi');
       }
     };
     fetchAccounts();
@@ -94,11 +97,26 @@ function NewDeposit() {
 
   const bankAccounts = masterAccounts.filter((a) => a.type === 'bank');
   const upiAccounts = masterAccounts.filter((a) => a.type === 'upi');
+  // Unique payment types from backend (e.g. ['bank', 'upi']); fallback to ['bank'] when no accounts
+  const paymentTypesFromBackend = React.useMemo(() => {
+    const types = [...new Set(masterAccounts.map((a) => a.type).filter(Boolean))];
+    return types.length > 0 ? types : ['bank'];
+  }, [masterAccounts]);
+  const typeToLabel = (type) => (type === 'bank' ? 'Bank' : type === 'upi' ? 'UPI' : String(type).charAt(0).toUpperCase() + String(type).slice(1).toLowerCase());
+
+  // Keep selectedPayment in sync with backend types
+  useEffect(() => {
+    if (paymentTypesFromBackend.length > 0 && !paymentTypesFromBackend.includes(selectedPayment)) {
+      setSelectedPayment(paymentTypesFromBackend[0]);
+      setSelectedOptionIndex(0);
+    }
+  }, [paymentTypesFromBackend, selectedPayment]);
+
   // API se accounts na aaye to fallback – Option 1, 2, 3 hamesha dikhenge (Bank)
   const currentOptionList =
     selectedPayment === 'bank'
       ? (bankAccounts.length > 0 ? bankAccounts : FALLBACK_BANK_ACCOUNTS)
-      : upiAccounts;
+      : masterAccounts.filter((a) => a.type === selectedPayment);
   const safeOptionIndex = currentOptionList.length > 0 && selectedOptionIndex >= currentOptionList.length ? 0 : selectedOptionIndex;
   const selectedAccount = currentOptionList[safeOptionIndex] || currentOptionList[0] || null;
   const usingFallback = selectedPayment === 'bank' && bankAccounts.length === 0 && FALLBACK_BANK_ACCOUNTS.length > 0;
@@ -128,7 +146,7 @@ function NewDeposit() {
   const minAllowed = limitMin != null ? limitMin : accountMin;
   const maxAllowed = limitMax != null ? limitMax : accountMax;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!platformConfig.depositServiceStatus) return;
     const amount = Number(amountInput?.replace(/,/g, '')) || 0;
     if (amount < minAllowed) {
@@ -138,6 +156,19 @@ function NewDeposit() {
     if (amount > maxAllowed) {
       alertErrorMessage(`Maximum deposit amount is ₹${maxAllowed.toLocaleString('en-IN')}`);
       return;
+    }
+    if (selectedPayment === 'crypto') {
+      setCryptoAddressLoading(true);
+      const res = await AuthService.walletGenerateAddress();
+      setCryptoAddressLoading(false);
+      const address = typeof res?.data === 'string'
+        ? res.data
+        : (res?.data?.address ?? res?.address ?? '');
+      if (!address) {
+        alertErrorMessage(res?.message || 'Failed to fetch address');
+        return;
+      }
+      setCryptoDepositAddress(String(address));
     }
     setStep(2);
   };
@@ -158,17 +189,31 @@ function NewDeposit() {
       alertErrorMessage(`Maximum deposit amount is ₹${maxAllowed.toLocaleString('en-IN')}`);
       return;
     }
-    if (utr.length < MIN_UTR_LENGTH) {
+    if (selectedPayment !== 'crypto' && utr.length < MIN_UTR_LENGTH) {
       alertErrorMessage('Please enter UTR / Reference ID (at least 6 characters)');
       return;
     }
 
-    const paymentMethod = selectedAccount?.type === 'bank' ? bankTransferMethod : 'upi';
+    if (selectedPayment === 'crypto') {
+      setSubmitLoading(true);
+      const result = await AuthService.walletVerifyUsdtDeposit();
+      setSubmitLoading(false);
+      if (result?.success) {
+        alertSuccessMessage(result?.message || 'USDT deposit verification completed');
+        // Refresh wallet when backend reports check success (new tx or no new tx).
+        window.dispatchEvent(new CustomEvent('walletBalanceUpdate'));
+      } else {
+        alertErrorMessage(result?.message || 'Failed to verify USDT deposit');
+      }
+      return;
+    }
+
+    const paymentMethod = selectedAccount?.type === 'bank' ? bankTransferMethod : selectedPayment;
 
     setSubmitLoading(true);
     const payload = {
       amount,
-      utrNumber: utr,
+      utrNumber: selectedPayment === 'crypto' ? '' : utr,
       paymentMethod,
       adminDetailId: currentDetailId || null,
     };
@@ -226,42 +271,52 @@ function NewDeposit() {
                       onChange={(e) => handlePaymentTypeChange(e.target.value)}
                       aria-label="Select payment method"
                     >
-                      <option value="bank">Bank Transfer</option>
-                      {upiAccounts.length > 0 && <option value="upi">UPI</option>}
+                      {paymentTypesFromBackend.map((type) => (
+                        <option key={type} value={type}>{typeToLabel(type)}</option>
+                      ))}
                     </select>
                   </div>
                   <div className="payment_topbr payment_topbr_buttons">
-                    <button
-                      type="button"
-                      className={selectedPayment === 'bank' ? 'active' : ''}
-                      onClick={() => handlePaymentTypeChange('bank')}
-                    >
-                      Bank
-                    </button>
-                    {upiAccounts.length > 0 && (
+                    {paymentTypesFromBackend.map((type) => (
                       <button
+                        key={type}
                         type="button"
-                        className={selectedPayment === 'upi' ? 'active' : ''}
-                        onClick={() => handlePaymentTypeChange('upi')}
+                        className={selectedPayment === type ? 'active' : ''}
+                        onClick={() => handlePaymentTypeChange(type)}
                       >
-                        UPI
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Option 1, Option 2, ... – API se jitne aaye utne, nahi to fallback 3 options */}
-                  <div className="payment_topbr payment_topbr_options">
-                    {currentOptionList.map((acc, idx) => (
-                      <button
-                        key={acc._id}
-                        type="button"
-                        className={safeOptionIndex === idx ? 'active' : ''}
-                        onClick={() => setSelectedOptionIndex(idx)}
-                      >
-                        Option {idx + 1}
+                        {typeToLabel(type)}
                       </button>
                     ))}
                   </div>
+
+                  {selectedPayment === 'crypto' ? (
+                    <div className="enter_amount_deposit">
+                      <h5>Select Currency</h5>
+                      <select
+                        className="premium_form_input"
+                        value={selectedCryptoCurrency}
+                        onChange={(e) => setSelectedCryptoCurrency(e.target.value)}
+                        style={{ width: '100%', maxWidth: '320px', padding: '10px 12px' }}
+                        aria-label="Select crypto currency"
+                      >
+                        <option value="USDT">USDT</option>
+                      </select>
+                    </div>
+                  ) : (
+                    /* Option 1, Option 2, ... – API se jitne aaye utne, nahi to fallback 3 options */
+                    <div className="payment_topbr payment_topbr_options">
+                      {currentOptionList.map((acc, idx) => (
+                        <button
+                          key={acc._id}
+                          type="button"
+                          className={safeOptionIndex === idx ? 'active' : ''}
+                          onClick={() => setSelectedOptionIndex(idx)}
+                        >
+                          Option {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Predefined amount list */}
                   <div className="payment_selected_dl">
@@ -308,9 +363,9 @@ function NewDeposit() {
                       type="button"
                       className="confirm_payment_btn next_btn"
                       onClick={handleNext}
-                      disabled={optionsLoading}
+                      disabled={optionsLoading || cryptoAddressLoading}
                     >
-                      Next
+                      {cryptoAddressLoading ? 'Fetching address...' : 'Next'}
                     </button>
                   </div>
                 </>
@@ -323,7 +378,11 @@ function NewDeposit() {
                     Back
                   </button>
 
-                  <h5>Pay to this {selectedAccount?.type === 'bank' ? 'bank' : 'UPI'} account</h5>
+                  <h5>
+                    {selectedPayment === 'crypto'
+                      ? 'Deposit to this crypto address'
+                      : `Pay to this ${selectedAccount?.type === 'bank' ? 'bank' : 'UPI'} account`}
+                  </h5>
                   {selectedAccount?.type === 'bank' ? (
                     <>
                       <ul>
@@ -369,52 +428,95 @@ function NewDeposit() {
                         )}
                       </div>
                     </div>
+                  ) : selectedPayment === 'crypto' ? (
+                    <div className="enter_amount_deposit">
+                      <h5>Deposit Address (BEP20)</h5>
+                      <div className="upi_details_capcha">
+                        <div className="upi_details_capcha_img upi_qr_wrapper">
+                          {cryptoDepositAddress ? (
+                            <QRCodeSVG
+                              value={cryptoDepositAddress}
+                              size={280}
+                              level="M"
+                              includeMargin={true}
+                              aria-label="Scan to deposit crypto"
+                            />
+                          ) : (
+                            <p className="text-white-50">Address unavailable</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="enter_filed d-flex">
+                        <input
+                          type="text"
+                          value={cryptoDepositAddress || '—'}
+                          readOnly
+                          aria-label="Crypto deposit address"
+                        />
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!cryptoDepositAddress) return;
+                            try {
+                              await navigator.clipboard.writeText(cryptoDepositAddress);
+                              alertSuccessMessage('Address copied');
+                            } catch (_) { }
+                          }}
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     <p className="text-white-50">No account selected.</p>
                   )}
 
-                  <div className="enter_amount_deposit">
-                    <h5>UTR Number / Reference ID (from your payment)</h5>
-                    <div className="enter_filed d-flex">
-                      <input
-                        type="text"
-                        placeholder="Enter UTR / Reference ID"
-                        value={utrInput}
-                        onChange={(e) => setUtrInput(e.target.value)}
-                      />
-                      <button type="button" onClick={() => setUtrInput('')}>
-                        Clear
-                      </button>
-                    </div>
-                  </div>
+                  {selectedPayment !== 'crypto' && (
+                    <>
+                      <div className="enter_amount_deposit">
+                        <h5>UTR Number / Reference ID (from your payment)</h5>
+                        <div className="enter_filed d-flex">
+                          <input
+                            type="text"
+                            placeholder="Enter UTR / Reference ID"
+                            value={utrInput}
+                            onChange={(e) => setUtrInput(e.target.value)}
+                          />
+                          <button type="button" onClick={() => setUtrInput('')}>
+                            Clear
+                          </button>
+                        </div>
+                      </div>
 
-                  <div className="enter_amount_deposit file_upload_section">
-                    <h5>Screenshot (payment proof)</h5>
-                    <div
-                      className="file_upload_trigger"
-                      onClick={() => fileInputRef.current?.click()}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
-                    >
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="file_upload_input"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          setPaymentProofFile(file || null);
-                          setSelectedFileName(file ? file.name : '');
-                        }}
-                        aria-label="Choose screenshot"
-                      />
-                      <i className="ri-upload-cloud-line file_upload_icon" aria-hidden />
-                      <span className="file_upload_text">
-                        {selectedFileName || 'Choose screenshot (optional)'}
-                      </span>
-                    </div>
-                  </div>
+                      <div className="enter_amount_deposit file_upload_section">
+                        <h5>Screenshot (payment proof)</h5>
+                        <div
+                          className="file_upload_trigger"
+                          onClick={() => fileInputRef.current?.click()}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+                        >
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="file_upload_input"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              setPaymentProofFile(file || null);
+                              setSelectedFileName(file ? file.name : '');
+                            }}
+                            aria-label="Choose screenshot"
+                          />
+                          <i className="ri-upload-cloud-line file_upload_icon" aria-hidden />
+                          <span className="file_upload_text">
+                            {selectedFileName || 'Choose screenshot (optional)'}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                   <p className="note_text note_text_step2">
                     Note: Please allow up to 30 mins for deposit to credit. For delay, contact support.

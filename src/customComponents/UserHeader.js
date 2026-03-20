@@ -200,7 +200,7 @@ export default function UserHeader() {
           </div>
           )}
         </div>
-        {platformConfig.depositServiceStatus ? (
+        {isDemo ? null : platformConfig.depositServiceStatus ? (
           <button className="deposit_btn" onClick={() => navigate('/deposit')} aria-label="Deposit">
             <i className="ri-add-line deposit_btn_icon" aria-hidden />
             <span className="deposit_btn_text">Deposit</span>

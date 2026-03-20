@@ -38,6 +38,8 @@ export const ApiConfig = {
   bettingDepositTransactions: "deposit-transactions",
   bettingWithdrawalTransactions: "withdrawal-transactions",
   bettingWithdrawal: "withdrawal",
+  bettingGenerateAddress: "generate-address",
+  bettingVerifyUsdtDeposit: "verify-usdt-deposit",
   bettingSendWithdrawalOtp: "send-withdrawal-otp",
   /** GET /wallet/transactions/:id – single transaction (Section 2). */
   bettingWalletTransactions: "transactions",
