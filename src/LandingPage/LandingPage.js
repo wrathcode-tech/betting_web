@@ -15,6 +15,10 @@ import {
   addOddsListener,
   removeOddsListener,
 } from '../socket/sportsbookSocket'
+import {
+  getMarketPillsFromSources,
+  getMatchStreamVisible,
+} from '../utils/matchMarketPills'
 import '../customComponents/Footer.css'
 import '../sports/sportsGame.css'
 
@@ -83,7 +87,15 @@ function getDayGroup(isoStr) {
   }
 }
 
-const MARKET_ICONS = ['MC', 'BM', 'P', 'D', 'F']
+/** Pass-through from sportsbook match list API / socket for TV + market badges */
+function pickMatchListMediaFields(m) {
+  if (!m || typeof m !== 'object') return {}
+  return {
+    tvUrl: m.tv_url ?? m.tvUrl,
+    isTv: !!(m.IsTv ?? m.isTv),
+    marketBadges: m.marketBadges ?? m.market_badges ?? m.marketPills ?? m.market_pills,
+  }
+}
 
 /** Landing/API game item – image can be in thumb, thumbnail, image, icon, logo */
 function getLandingGameImage(item) {
@@ -132,8 +144,10 @@ function getOddsScrollKey(sport, match, day, idx) {
 }
 
 /** Landing desktop row – left block matches exchange-style layout (time, teams, market tools). */
-function DesktopTopMatchBlock({ match }) {
+function DesktopTopMatchBlock({ match, oddsPayload = null }) {
   const teamLines = splitTeamNamesForDesktop(match.teams)
+  const marketPills = getMarketPillsFromSources(match, oddsPayload)
+  const showStream = getMatchStreamVisible(match)
   return (
     <div className="sports_grid_desktop_match">
       <div className="sports_grid_desktop_time_block">
@@ -157,12 +171,14 @@ function DesktopTopMatchBlock({ match }) {
         </div>
       </div>
       <div className="sports_grid_desktop_match_tools">
-        <i className="ri-play-circle-line sports_grid_desktop_tool_icon" aria-hidden />
-        <div className="sports_grid_desktop_pills">
-          {MARKET_ICONS.map((icon) => (
-            <span key={icon} className="sports_grid_desktop_pill">{icon}</span>
-          ))}
-        </div>
+        {showStream ? <i className="ri-play-circle-line sports_grid_desktop_tool_icon" aria-hidden /> : null}
+        {marketPills.length > 0 ? (
+          <div className="sports_grid_desktop_pills">
+            {marketPills.map((icon, pillIdx) => (
+              <span key={`${icon}-${pillIdx}`} className="sports_grid_desktop_pill">{icon}</span>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       </div>
@@ -309,6 +325,7 @@ function LandingPage() {
               time: formatMatchTime(et),
               eventTime: et,
               inPlay: m.inPlay ?? m.in_play ?? false,
+              ...pickMatchListMediaFields(m),
             };
           })
           .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
@@ -342,6 +359,7 @@ function LandingPage() {
               time: formatMatchTime(et),
               eventTime: et,
               inPlay: m.inPlay ?? m.in_play ?? false,
+              ...pickMatchListMediaFields(m),
             };
           })
           .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
@@ -374,6 +392,7 @@ function LandingPage() {
               time: formatMatchTime(et),
               eventTime: et,
               inPlay: m.inPlay ?? m.in_play ?? false,
+              ...pickMatchListMediaFields(m),
             };
           })
           .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
@@ -411,6 +430,7 @@ function LandingPage() {
             time: formatMatchTime(et),
             eventTime: et,
             inPlay: m.inPlay ?? m.in_play ?? false,
+            ...pickMatchListMediaFields(m),
           };
         })
         .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
@@ -433,6 +453,7 @@ function LandingPage() {
             time: formatMatchTime(et),
             eventTime: et,
             inPlay: m.inPlay ?? m.in_play ?? false,
+            ...pickMatchListMediaFields(m),
           };
         })
         .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
@@ -452,6 +473,7 @@ function LandingPage() {
             time: formatMatchTime(et),
             eventTime: et,
             inPlay: m.inPlay ?? m.in_play ?? false,
+            ...pickMatchListMediaFields(m),
           };
         })
         .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
@@ -1677,7 +1699,7 @@ function LandingPage() {
                             onClick={(e) => handleTopMatchRowClick(e, match)}
                           >
                             <div className="leftside_matchlist">
-                              <DesktopTopMatchBlock match={match} />
+                              <DesktopTopMatchBlock match={match} oddsPayload={oddsPayload} />
                             </div>
                             <div
                               className="rightside_odds"
@@ -1854,7 +1876,7 @@ function LandingPage() {
                             onClick={(e) => handleTopSoccerMatchRowClick(e, match)}
                           >
                             <div className="leftside_matchlist">
-                              <DesktopTopMatchBlock match={match} />
+                              <DesktopTopMatchBlock match={match} oddsPayload={oddsPayload} />
                             </div>
                             <div
                               className="rightside_odds"

@@ -1,24 +1,15 @@
 /**
- * Sportsbook Socket – per backend API doc.
+ * Sportsbook Socket — singleton manager (Socket.IO).
  *
- * Base: wss://YOUR_API_HOST/sportsbook (namespace). Auth: JWT access token
- * via auth: { token: accessToken } or query: { token: accessToken }.
+ * - Single connection per app; auth change forces reconnect.
+ * - Reference-counted subscriptions (React Strict Mode / duplicate mounts safe).
+ * - Re-subscribes all active streams on connect/reconnect.
+ * - Optional payload dedupe (timestamp or JSON) before fan-out to listeners.
+ * - Exponential-style backoff via socket.io reconnectionDelay + reconnectionDelayMax.
  *
- * EMIT (client → server):
- *   subscribe:matches     { sport: 'cricket' | 'soccer' | 'tennis' }
- *   unsubscribe:matches   { sport }
- *   subscribe:odds        { gameId: string, sport?: string }  – pass sport for soccer/tennis so live score uses correct API
- *   unsubscribe:odds      { gameId }
- *   subscribe:scoreboard  { gameId: string, sport?: string }
- *   unsubscribe:scoreboard { gameId }
- *
- * LISTEN (server → client):
- *   matches    { sport, data: Match[], timestamp }
- *   odds       { gameId, data: { ...odds, liveScore? }, timestamp }
- *   scoreboard { gameId, data: { inPlay, ... }, timestamp }  – data.inPlay === false when not in-play
- *   betUpdate  { betId, status: 'open'|'settled'|'cancelled'|'cashed_out', balanceAfter?, bet?, ... }
- *   balance    { balance: number, userId }
+ * @see sportsbookRealtimeStore for normalized UI state
  */
+
 import { io } from 'socket.io-client';
 
 const getSportsbookBaseUrl = () =>
@@ -29,42 +20,78 @@ const SOCKET_CONFIG = {
   transports: ['websocket'],
   upgrade: false,
   reconnection: true,
-  reconnectionAttempts: 5,
+  reconnectionAttempts: Infinity,
   reconnectionDelay: 1000,
-  reconnectionDelayMax: 10000,
+  reconnectionDelayMax: 30000,
   timeout: 20000,
+  /** Exponential backoff capped by reconnectionDelayMax */
+  randomizationFactor: 0.5,
 };
 
 let socket = null;
+
+/** @type {Map<string, number>} sport -> refcount */
+const matchRefCounts = new Map();
+/** @type {Map<string, { count: number, sport: string }>} */
+const oddsRefCounts = new Map();
+/** @type {Map<string, { count: number, sport: string }>} */
+const scoreboardRefCounts = new Map();
+
 const matchesListeners = new Set();
 const oddsListeners = new Set();
 const scoreboardListeners = new Set();
 const betUpdateListeners = new Set();
 const balanceListeners = new Set();
 const errorListeners = new Set();
-const subscribedSports = new Set();
-/** gameId -> sport (cricket|tennis|soccer) for reemit and correct score API */
-const subscribedOddsMap = new Map();
-const subscribedScoreboardMap = new Map();
 
-const MAX_SUBSCRIPTIONS = 20;
+const MAX_SUBSCRIPTIONS = 40;
 
-function getTotalSubscriptionCount() {
-  return subscribedSports.size + subscribedOddsMap.size + subscribedScoreboardMap.size;
+/** Dedupe before notifying listeners (backend may throttle; identical payloads skipped). */
+const lastMatchesSig = new Map();
+const lastOddsSig = new Map();
+const lastScoreboardSig = new Map();
+
+function countActiveSubscriptionSlots() {
+  let n = 0;
+  matchRefCounts.forEach((c) => {
+    if (c > 0) n += 1;
+  });
+  oddsRefCounts.forEach((v) => {
+    if (v.count > 0) n += 1;
+  });
+  scoreboardRefCounts.forEach((v) => {
+    if (v.count > 0) n += 1;
+  });
+  return n;
 }
 
-function reemitSubscriptions() {
+function payloadSignature(payload, dataKey = 'data') {
+  const ts = payload?.timestamp;
+  if (ts != null && ts !== '') return `t:${ts}`;
+  const d = payload?.[dataKey] ?? payload;
+  try {
+    return `j:${JSON.stringify(d)}`;
+  } catch {
+    return `s:${String(d)}`;
+  }
+}
+
+export function reemitSubscriptions() {
   if (!socket?.connected) return;
-  subscribedSports.forEach((sport) => {
-    socket.emit('subscribe:matches', { sport });
+  matchRefCounts.forEach((count, sport) => {
+    if (count > 0) socket.emit('subscribe:matches', { sport });
   });
-  subscribedOddsMap.forEach((sport, id) => {
-    const s = sport || 'cricket';
-    socket.emit('subscribe:odds', { gameId: String(id), sport: s });
+  oddsRefCounts.forEach((v, id) => {
+    if (v.count > 0) {
+      const s = v.sport || 'cricket';
+      socket.emit('subscribe:odds', { gameId: String(id), sport: s });
+    }
   });
-  subscribedScoreboardMap.forEach((sport, id) => {
-    const s = sport || 'cricket';
-    socket.emit('subscribe:scoreboard', { gameId: String(id), sport: s });
+  scoreboardRefCounts.forEach((v, id) => {
+    if (v.count > 0) {
+      const s = v.sport || 'cricket';
+      socket.emit('subscribe:scoreboard', { gameId: String(id), sport: s });
+    }
   });
 }
 
@@ -98,6 +125,11 @@ function ensureHandlers() {
   });
 
   socket.on('matches', (payload) => {
+    const sport = payload?.sport;
+    if (!sport) return;
+    const sig = payloadSignature(payload, 'data');
+    if (lastMatchesSig.get(sport) === sig) return;
+    lastMatchesSig.set(sport, sig);
     matchesListeners.forEach((fn) => {
       try {
         fn(payload);
@@ -108,6 +140,12 @@ function ensureHandlers() {
   });
 
   socket.on('odds', (payload) => {
+    const key = payload?.eventId != null ? String(payload.eventId) : payload?.gameId != null ? String(payload.gameId) : null;
+    if (!key || payload?.data === undefined) return;
+    const sig = payloadSignature(payload, 'data');
+    const dedupeKey = key;
+    if (lastOddsSig.get(dedupeKey) === sig) return;
+    lastOddsSig.set(dedupeKey, sig);
     oddsListeners.forEach((fn) => {
       try {
         fn(payload);
@@ -118,6 +156,11 @@ function ensureHandlers() {
   });
 
   socket.on('scoreboard', (payload) => {
+    const key = payload?.eventId != null ? String(payload.eventId) : payload?.gameId != null ? String(payload.gameId) : null;
+    if (!key || payload?.data === undefined) return;
+    const sig = payloadSignature(payload, 'data');
+    if (lastScoreboardSig.get(key) === sig) return;
+    lastScoreboardSig.set(key, sig);
     scoreboardListeners.forEach((fn) => {
       try {
         fn(payload);
@@ -180,7 +223,6 @@ export function connectSportsbookSocket(token) {
     ? { token: token.startsWith('Bearer ') ? token : `Bearer ${token}` }
     : {};
 
-  // If already connected with same auth, reuse
   if (socket?.connected) {
     const hadToken = !!socket.auth?.token;
     const hasToken = !!authPayload.token;
@@ -188,7 +230,6 @@ export function connectSportsbookSocket(token) {
       if (hasToken) socket.auth = authPayload;
       return socket;
     }
-    // Auth changed (guest→logged-in or logged-in→guest): reconnect
     socket.disconnect();
     socket.removeAllListeners();
     socket = null;
@@ -201,7 +242,6 @@ export function connectSportsbookSocket(token) {
     return socket;
   }
 
-  // Connect with or without token (guest: matches/odds only; logged-in: full)
   socket = io(namespaceUrl, {
     ...SOCKET_CONFIG,
     auth: authPayload,
@@ -217,9 +257,12 @@ export function disconnectSportsbookSocket() {
     socket.removeAllListeners();
     socket = null;
   }
-  subscribedSports.clear();
-  subscribedOddsMap.clear();
-  subscribedScoreboardMap.clear();
+  matchRefCounts.clear();
+  oddsRefCounts.clear();
+  scoreboardRefCounts.clear();
+  lastMatchesSig.clear();
+  lastOddsSig.clear();
+  lastScoreboardSig.clear();
   matchesListeners.clear();
   oddsListeners.clear();
   scoreboardListeners.clear();
@@ -242,58 +285,96 @@ export function getSportsbookSocket() {
 
 export function subscribeMatches(sport) {
   if (!sport) return;
-  if (getTotalSubscriptionCount() >= MAX_SUBSCRIPTIONS) return;
-  subscribedSports.add(sport);
-  if (socket?.connected) {
-    socket.emit('subscribe:matches', { sport });
+  const s = String(sport);
+  const prev = matchRefCounts.get(s) || 0;
+  if (prev === 0 && countActiveSubscriptionSlots() >= MAX_SUBSCRIPTIONS) {
+    console.warn('[sportsbookSocket] MAX_SUBSCRIPTIONS reached; skip subscribe:matches', s);
+    return;
+  }
+  matchRefCounts.set(s, prev + 1);
+  if (prev === 0 && socket?.connected) {
+    socket.emit('subscribe:matches', { sport: s });
   }
 }
 
 export function unsubscribeMatches(sport) {
   if (!sport) return;
-  subscribedSports.delete(sport);
-  if (socket?.connected) {
-    socket.emit('unsubscribe:matches', { sport });
+  const s = String(sport);
+  const prev = matchRefCounts.get(s) || 0;
+  if (prev <= 0) return;
+  const next = prev - 1;
+  if (next <= 0) {
+    matchRefCounts.delete(s);
+    lastMatchesSig.delete(s);
+    if (socket?.connected) socket.emit('unsubscribe:matches', { sport: s });
+  } else {
+    matchRefCounts.set(s, next);
   }
 }
 
 export function subscribeOdds(gameIdOrEventId, sport) {
   if (!gameIdOrEventId) return;
-  if (getTotalSubscriptionCount() >= MAX_SUBSCRIPTIONS) return;
   const id = String(gameIdOrEventId);
-  const s = sport || 'cricket';
-  subscribedOddsMap.set(id, s);
-  if (socket?.connected) {
-    socket.emit('subscribe:odds', { gameId: id, sport: s });
+  const sp = sport || 'cricket';
+  const existing = oddsRefCounts.get(id);
+  if (!existing) {
+    if (countActiveSubscriptionSlots() >= MAX_SUBSCRIPTIONS) {
+      console.warn('[sportsbookSocket] MAX_SUBSCRIPTIONS reached; skip subscribe:odds', id);
+      return;
+    }
+    oddsRefCounts.set(id, { count: 1, sport: sp });
+    if (socket?.connected) {
+      socket.emit('subscribe:odds', { gameId: id, sport: sp });
+    }
+  } else {
+    existing.count += 1;
+    existing.sport = sp;
   }
 }
 
-export function unsubscribeOdds(gameIdOrEventId, sport) {
+export function unsubscribeOdds(gameIdOrEventId, _sportIgnored) {
   if (!gameIdOrEventId) return;
   const id = String(gameIdOrEventId);
-  subscribedOddsMap.delete(id);
-  if (socket?.connected) {
-    socket.emit('unsubscribe:odds', { gameId: id });
+  const existing = oddsRefCounts.get(id);
+  if (!existing) return;
+  existing.count -= 1;
+  if (existing.count <= 0) {
+    oddsRefCounts.delete(id);
+    lastOddsSig.delete(id);
+    if (socket?.connected) socket.emit('unsubscribe:odds', { gameId: id });
   }
 }
 
 export function subscribeScoreboard(gameIdOrEventId, sport) {
   if (!gameIdOrEventId) return;
-  if (getTotalSubscriptionCount() >= MAX_SUBSCRIPTIONS) return;
   const id = String(gameIdOrEventId);
-  const s = sport || 'cricket';
-  subscribedScoreboardMap.set(id, s);
-  if (socket?.connected) {
-    socket.emit('subscribe:scoreboard', { gameId: id, sport: s });
+  const sp = sport || 'cricket';
+  const existing = scoreboardRefCounts.get(id);
+  if (!existing) {
+    if (countActiveSubscriptionSlots() >= MAX_SUBSCRIPTIONS) {
+      console.warn('[sportsbookSocket] MAX_SUBSCRIPTIONS reached; skip subscribe:scoreboard', id);
+      return;
+    }
+    scoreboardRefCounts.set(id, { count: 1, sport: sp });
+    if (socket?.connected) {
+      socket.emit('subscribe:scoreboard', { gameId: id, sport: sp });
+    }
+  } else {
+    existing.count += 1;
+    existing.sport = sp;
   }
 }
 
-export function unsubscribeScoreboard(gameIdOrEventId, sport) {
+export function unsubscribeScoreboard(gameIdOrEventId, _sportIgnored) {
   if (!gameIdOrEventId) return;
   const id = String(gameIdOrEventId);
-  subscribedScoreboardMap.delete(id);
-  if (socket?.connected) {
-    socket.emit('unsubscribe:scoreboard', { gameId: id });
+  const existing = scoreboardRefCounts.get(id);
+  if (!existing) return;
+  existing.count -= 1;
+  if (existing.count <= 0) {
+    scoreboardRefCounts.delete(id);
+    lastScoreboardSig.delete(id);
+    if (socket?.connected) socket.emit('unsubscribe:scoreboard', { gameId: id });
   }
 }
 
@@ -335,4 +416,15 @@ export function addBalanceListener(fn) {
 
 export function removeBalanceListener(fn) {
   balanceListeners.delete(fn);
+}
+
+/** Introspection for debugging / UI caps */
+export function getSportsbookSubscriptionStats() {
+  return {
+    matches: [...matchRefCounts.entries()].filter(([, c]) => c > 0),
+    odds: [...oddsRefCounts.entries()].filter(([, v]) => v.count > 0),
+    scoreboard: [...scoreboardRefCounts.entries()].filter(([, v]) => v.count > 0),
+    totalSlots: countActiveSubscriptionSlots(),
+    max: MAX_SUBSCRIPTIONS,
+  };
 }

@@ -679,6 +679,7 @@ function CricketDetail() {
     const renderOddsSection = (sectionKey, title, icon, minMax, markets, marketTypeApi) => {
         if (!markets?.length) return null
         const market = markets[0]
+        const marketTitle = market?.marketName || market?.market || market?.name || title
         const marketId = market.mid || market.marketId
         const oddList = getMarketOddList(market)
         if (!oddList.length) return null
@@ -718,7 +719,7 @@ function CricketDetail() {
         return (
             <div key={sectionKey} className="odds_section_block">
                 <div className="odds_section_header">
-                    <span className="odds_section_title"><i className={icon} aria-hidden /> {title}</span>
+                    <span className="odds_section_title"><i className={icon} aria-hidden /> {marketTitle}</span>
                     <div className="odds_section_header_right d-flex align-items-center gap-2 flex-wrap">
 
                         <span className="odds_section_limits">{minMax}</span>
@@ -1153,11 +1154,13 @@ function CricketDetail() {
     }
 
     // Neeche: SESSIONS / W/P MARKET / EXTRA MARKET – API se (fancyOdds / otherMarketOdds). Static data nahi.
-    const buildNoYesRowsFromMarkets = (markets) => {
+    const buildNoYesRowsFromMarkets = (markets, marketType = 'fancy') => {
         if (!markets?.length) return []
         const rows = []
         markets.forEach((m) => {
             const oddList = toOddDatasArray(m.oddDatas)
+            const marketId = m.mid || m.marketId
+            const marketName = m.marketName || m.market || m.name || 'Market'
             if (oddList.length >= 2) {
                 const noSel = oddList[0]
                 const yesSel = oddList[1]
@@ -1166,26 +1169,30 @@ function CricketDetail() {
                 const noSize = noSel?.ls1 ?? noSel?.bs1
                 const yesSize = yesSel?.bs1 ?? yesSel?.ls1
                 rows.push({
-                    label: m.market || m.name || 'Market',
+                    label: marketName,
                     noOdds: noOdds ?? '—',
                     noSize: noSize ?? '—',
                     yesOdds: yesOdds ?? '—',
                     yesSize: yesSize ?? '—',
                     max: '100K',
-                    marketId: m.mid || m.marketId,
+                    marketId,
+                    marketName,
+                    marketType,
                     noSid: noSel?.sid,
                     yesSid: yesSel?.sid,
                 })
             } else if (oddList.length === 1) {
                 const o = oddList[0]
                 rows.push({
-                    label: o.rname ?? o.selectionName ?? m.market ?? 'Market',
+                    label: o.rname ?? o.selectionName ?? marketName,
                     noOdds: o.l1 ?? '—',
                     noSize: o.ls1 ?? '—',
                     yesOdds: o.b1 ?? '—',
                     yesSize: o.bs1 ?? '—',
                     max: '100K',
-                    marketId: m.mid || m.marketId,
+                    marketId,
+                    marketName,
+                    marketType,
                     noSid: o.sid,
                     yesSid: o.sid,
                 })
@@ -1208,16 +1215,21 @@ function CricketDetail() {
     const buildBackOnlyBlocksFromMarkets = (markets) => {
         if (!markets?.length) return []
         return markets.map((m) => {
+            const marketId = m.mid || m.marketId
+            const marketName = m.marketName || m.market || m.name || 'Market'
             const oddList = toOddDatasArray(m.oddDatas)
             const rows = oddList.map((o) => ({
                 label: o.rname ?? o.selectionName ?? '—',
                 backOdds: o.b1 ?? '—',
                 backSize: o.bs1 ?? '—',
+                selectionId: o.sid ?? o.selectionId,
             }))
             const allLocked = rows.every((r) => isOddsLocked(r.backOdds))
             return {
-                key: m.mid || m.marketId || m.market,
-                title: m.market || m.name || 'Market',
+                key: marketId || marketName,
+                marketId,
+                title: marketName,
+                marketType: 'fancy',
                 minMax: 'MIN:100 MAX:50K',
                 rows,
                 isLocked: allLocked,
@@ -1225,26 +1237,48 @@ function CricketDetail() {
         })
     }
 
-    const sessionsRows = buildNoYesRowsFromMarkets(oddsData?.fancyOdds)
-    const wpMarketRows = buildNoYesRowsFromMarkets(oddsData?.otherMarketOdds)
-    const extraMarketRows = buildNoYesRowsFromMarkets(extraNoYesMarkets)
-    const oddEvenRows = buildNoYesRowsFromMarkets(oddsData?.oddEvenOdds)
+    const sessionsRows = buildNoYesRowsFromMarkets(oddsData?.fancyOdds, 'fancy')
+    const wpMarketRows = buildNoYesRowsFromMarkets(oddsData?.otherMarketOdds, 'fancy')
+    const extraMarketRows = buildNoYesRowsFromMarkets(extraNoYesMarkets, 'fancy')
+    const oddEvenRows = buildNoYesRowsFromMarkets(oddsData?.oddEvenOdds, 'fancy')
     const backOnlyBlocks = buildBackOnlyBlocksFromMarkets(backOnlyMarkets)
 
-    const renderNoYesSection = (sectionKey, title, rows) => {
-        const isClosed = closedBlocks.has(sectionKey)
+    const renderNoYesSection = (sectionKey, _title, rows) => {
+        if (!rows?.length) return null
         return (
             <div key={sectionKey} className="market_no_yes_block">
-                <div className="market_no_yes_header" onClick={() => toggleBlock(sectionKey)}>
-                    <h6>
-                        <i className={`market_no_yes_chevron ${isClosed ? 'ri-arrow-right-s-line' : 'ri-arrow-down-s-line'}`} aria-hidden />
-                        {title}
-                    </h6>
-                </div>
-                <div className={`market_no_yes_body ${isClosed ? 'hidden' : ''}`}>
-                    {rows?.length ? rows.map((row, rIdx) => {
+                <div className="market_no_yes_body">
+                    {rows.map((row, rIdx) => {
                         const noLocked = isOddsLocked(row.noOdds)
                         const yesLocked = isOddsLocked(row.yesOdds)
+                        const yesOddsStr = String(row.yesOdds ?? '')
+                        const noOddsStr = String(row.noOdds ?? '')
+                        const yesElementId = `${sectionKey}-${row.marketId || rIdx}-yes`
+                        const noElementId = `${sectionKey}-${row.marketId || rIdx}-no`
+                        const canPlaceYes = !yesLocked && gameId && eventNameFromState && row.marketId && row.yesSid != null
+                        const canPlaceNo = !noLocked && gameId && eventNameFromState && row.marketId && row.noSid != null
+                        const yesPayload = canPlaceYes ? {
+                            sport: sportName,
+                            gameId,
+                            eventName: eventNameFromState,
+                            marketType: row.marketType || 'fancy',
+                            marketId: String(row.marketId),
+                            selectionId: String(row.yesSid),
+                            selectionName: row.label,
+                            betType: 'back',
+                            odds: parseFloat(yesOddsStr) || 0,
+                        } : null
+                        const noPayload = canPlaceNo ? {
+                            sport: sportName,
+                            gameId,
+                            eventName: eventNameFromState,
+                            marketType: row.marketType || 'fancy',
+                            marketId: String(row.marketId),
+                            selectionId: String(row.noSid),
+                            selectionName: row.label,
+                            betType: 'lay',
+                            odds: parseFloat(noOddsStr) || 0,
+                        } : null
                         return (
                             <div key={rIdx} className="market_no_yes_row">
                                 <div className="market_no_yes_label">{row.label}</div>
@@ -1255,7 +1289,12 @@ function CricketDetail() {
                                     <button type="button" className="market_no_yes_book_btn" title="Book">Book</button>
                                         <div className="market_no_yes_odds">
                                             <span className="market_no_yes_lbl">Yes</span>
-                                            <button type="button" className={`market_no_yes_btn market_yes_btn ${yesLocked ? 'locked' : ''}`} disabled>
+                                            <button
+                                                type="button"
+                                                className={`market_no_yes_btn market_yes_btn ${yesLocked ? 'locked' : ''} ${isBetSelected(row.label, row.marketName, yesOddsStr, yesElementId) ? 'selected' : ''}`}
+                                                disabled={yesLocked}
+                                                onClick={() => !yesLocked && handleBetClick(row.label, row.marketName, yesOddsStr, yesElementId, yesPayload)}
+                                            >
                                                 {yesLocked ? (
                                                     <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
                                                 ) : (
@@ -1268,7 +1307,12 @@ function CricketDetail() {
                                         </div>
                                         <div className="market_no_yes_odds">
                                             <span className="market_no_yes_lbl">No</span>
-                                            <button type="button" className={`market_no_yes_btn market_no_btn ${noLocked ? 'locked' : ''}`} disabled>
+                                            <button
+                                                type="button"
+                                                className={`market_no_yes_btn market_no_btn ${noLocked ? 'locked' : ''} ${isBetSelected(row.label, row.marketName, noOddsStr, noElementId) ? 'selected' : ''}`}
+                                                disabled={noLocked}
+                                                onClick={() => !noLocked && handleBetClick(row.label, row.marketName, noOddsStr, noElementId, noPayload)}
+                                            >
                                                 {noLocked ? (
                                                     <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
                                                 ) : (
@@ -1285,14 +1329,14 @@ function CricketDetail() {
 
                             </div>
                         )
-                    }) : <div className="market_no_yes_row market_empty_msg">No data at the moment.</div>}
+                    })}
                 </div>
             </div>
         )
     }
 
     const renderBackOnlySection = (block) => {
-        const { key, title, minMax, rows, isLocked } = block
+        const { key, title, minMax, rows, isLocked, marketId, marketType } = block
         const isClosed = closedBlocks.has(`backonly-${key}`)
         return (
             <div key={key} className="market_back_only_block">
@@ -1314,6 +1358,20 @@ function CricketDetail() {
                     </div>
                     {rows?.length ? rows.map((row, rIdx) => {
                         const backLocked = isOddsLocked(row.backOdds)
+                        const backOddsStr = String(row.backOdds ?? '')
+                        const backElementId = `backonly-${key}-${rIdx}-back`
+                        const canPlaceBack = !backLocked && gameId && eventNameFromState && marketId && row.selectionId != null
+                        const backPayload = canPlaceBack ? {
+                            sport: sportName,
+                            gameId,
+                            eventName: eventNameFromState,
+                            marketType: marketType || 'fancy',
+                            marketId: String(marketId),
+                            selectionId: String(row.selectionId),
+                            selectionName: row.label,
+                            betType: 'back',
+                            odds: parseFloat(backOddsStr) || 0,
+                        } : null
                         return (
                             <div key={rIdx} className="market_back_only_row">
                                 <span className="market_back_only_label">{row.label}</span>
@@ -1321,7 +1379,11 @@ function CricketDetail() {
                                     {backLocked ? (
                                         <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
                                     ) : (
-                                        <button type="button" className="market_no_yes_btn market_yes_btn" disabled>
+                                        <button
+                                            type="button"
+                                            className={`market_no_yes_btn market_yes_btn ${isBetSelected(row.label, title, backOddsStr, backElementId) ? 'selected' : ''}`}
+                                            onClick={() => handleBetClick(row.label, title, backOddsStr, backElementId, backPayload)}
+                                        >
                                             <span className="odds_val">{row.backOdds}</span>
                                             <span className="odds_size">{formatOddsSize(row.backSize)}</span>
                                         </button>

@@ -18,6 +18,11 @@ import {
     removeOddsListener,
 } from '../socket/sportsbookSocket'
 import { getToken } from '../utils/authStorage'
+import {
+    getMarketPillsFromSources,
+    getMatchStreamVisible,
+    getOddsStorageKeyForMatch,
+} from '../utils/matchMarketPills'
 
 const GALLERY_SLIDES = ['images/sports_slider_img2.png', 'images/sports_slider_img.png', 'images/sports_slider_img3.png']
 const GALLERY_SLIDES_MOBILE = ['images/sports_bnr_mobile2.jpg', 'images/sports_bnr_mobile.jpg', 'images/sports_bnr_mobile3.jpg']
@@ -75,8 +80,6 @@ function formatOddsSize(size) {
     if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 2)}K`
     return n % 1 === 0 ? String(n) : n.toFixed(2)
 }
-
-const MARKET_ICONS = ['MC', 'BM', 'P', 'D', 'F']
 
 function getSportsOddsScrollKey(tab, match, day, idx) {
     return `${tab}-${match.eventId ?? match.gameId ?? `${day}-${idx}`}`
@@ -292,6 +295,9 @@ function SportsGame() {
             marketId: m.marketId ?? m.market_id,
             inPlay,
             seriesId: m.seriesId ?? m.series_id,
+            tvUrl: m.tv_url ?? m.tvUrl,
+            isTv: !!(m.IsTv ?? m.isTv),
+            marketBadges: m.marketBadges ?? m.market_badges ?? m.marketPills ?? m.market_pills,
         }
     }, [])
 
@@ -401,8 +407,8 @@ function SportsGame() {
             eventName: match.teams,
             sportName,
             seriesName: match.tournament ?? match.seriesName ?? match.series_name,
-            tv_url: match.tv_url ?? match.tvUrl,
-            IsTv: match.IsTv ?? match.isTv,
+            tv_url: match.tvUrl ?? match.tv_url,
+            IsTv: match.isTv ?? match.IsTv,
         } : undefined
         navigate(path, { state })
     }, [navigate, activeTab])
@@ -452,6 +458,9 @@ function SportsGame() {
     }, [oddsByGameId, activeTab, isOddsValid])
 
     const renderMatchCard = useCallback((match, index) => {
+        const oddsKey = getOddsStorageKeyForMatch(activeTab, match)
+        const oddsPayload = oddsKey != null ? oddsByGameId[oddsKey] : null
+        const marketPills = getMarketPillsFromSources(match, oddsPayload)
         const cardOdds = getCardOdds(match)
         const o1 = cardOdds[0]
         const o2 = cardOdds[1]
@@ -485,11 +494,13 @@ function SportsGame() {
                                 </span>
                             )}
                         </div>
-                        <ul>
-                            <li>MO</li>
-                            <li>BM</li>
-                            <li>F</li>
-                        </ul>
+                        {marketPills.length > 0 ? (
+                            <ul>
+                                {marketPills.map((pill, pi) => (
+                                    <li key={`${pill}-${pi}`}>{pill}</li>
+                                ))}
+                            </ul>
+                        ) : null}
                     </div>
                     <p>{match.tournament}</p>
                     <div className='match_info'>
@@ -530,7 +541,7 @@ function SportsGame() {
                 </div>
             </div>
         )
-    }, [handleMatchCardClick, getCardOdds])
+    }, [handleMatchCardClick, getCardOdds, activeTab, oddsByGameId])
 
     return (
         <>
@@ -643,8 +654,12 @@ function SportsGame() {
                                                         ) : (
                                                             matchesByDay.map(({ day, matches, isLiveSection }) => (
                                                                 <React.Fragment key={day}>
-                                                                    {matches.map((match, idx) => {
+                                                                    {                                                                    matches.map((match, idx) => {
                                                                         const cardOdds = getCardOdds(match)
+                                                                        const oddsKeyRow = getOddsStorageKeyForMatch(activeTab, match)
+                                                                        const oddsPayloadRow = oddsKeyRow != null ? oddsByGameId[oddsKeyRow] : null
+                                                                        const rowPills = getMarketPillsFromSources(match, oddsPayloadRow)
+                                                                        const rowShowStream = getMatchStreamVisible(match)
                                                                         return (
                                                                             <div
                                                                                 key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
@@ -670,12 +685,16 @@ function SportsGame() {
                                                                                                 </div>
                                                                                             </div>
                                                                                             <div className='sports_grid_desktop_match_tools'>
-                                                                                                <i className='ri-play-circle-line sports_grid_desktop_tool_icon' aria-hidden />
-                                                                                                <div className='sports_grid_desktop_pills'>
-                                                                                                    {MARKET_ICONS.map((icon) => (
-                                                                                                        <span key={icon} className='sports_grid_desktop_pill'>{icon}</span>
-                                                                                                    ))}
-                                                                                                </div>
+                                                                                                {rowShowStream ? (
+                                                                                                    <i className='ri-play-circle-line sports_grid_desktop_tool_icon' aria-hidden />
+                                                                                                ) : null}
+                                                                                                {rowPills.length > 0 ? (
+                                                                                                    <div className='sports_grid_desktop_pills'>
+                                                                                                        {rowPills.map((icon, pillIdx) => (
+                                                                                                            <span key={`${icon}-${pillIdx}`} className='sports_grid_desktop_pill'>{icon}</span>
+                                                                                                        ))}
+                                                                                                    </div>
+                                                                                                ) : null}
                                                                                             </div>
                                                                                         </div>
                                                                                     </div>
@@ -750,6 +769,10 @@ function SportsGame() {
                                                                     <React.Fragment key={day}>
                                                                         {matches.map((match, idx) => {
                                                                             const cardOdds = getCardOdds(match)
+                                                                            const oddsKeyM = getOddsStorageKeyForMatch(activeTab, match)
+                                                                            const oddsPayloadM = oddsKeyM != null ? oddsByGameId[oddsKeyM] : null
+                                                                            const rowPillsM = getMarketPillsFromSources(match, oddsPayloadM)
+                                                                            const rowShowStreamM = getMatchStreamVisible(match)
                                                                             const padTo3 = (arr) => { const a = [...arr]; while (a.length < 3) a.push(null); return a.slice(0, 3) }
                                                                             const sortByBack = (a, b) => { const na = a ? parseFloat(a.back) : NaN; const nb = b ? parseFloat(b.back) : NaN; if (Number.isNaN(na) && Number.isNaN(nb)) return 0; if (Number.isNaN(na)) return 1; if (Number.isNaN(nb)) return -1; return na - nb }
                                                                             const sortByLay = (a, b) => { const na = a ? parseFloat(a.lay) : NaN; const nb = b ? parseFloat(b.lay) : NaN; if (Number.isNaN(na) && Number.isNaN(nb)) return 0; if (Number.isNaN(na)) return 1; if (Number.isNaN(nb)) return -1; return na - nb }
@@ -769,8 +792,10 @@ function SportsGame() {
                                                                                             </div>
                                                                                             <div className='sports_grid_mobile_match_info'>
                                                                                                 <div className='sports_grid_mobile_match_icons'>
-                                                                                                    <span className='sports_grid_market_icon'>P</span>
-                                                                                                    <i className='ri-play-circle-line sports_grid_mobile_video_icon' aria-hidden />
+                                                                                                    {rowPillsM.slice(0, 1).map((pill, pi) => (
+                                                                                                        <span key={pi} className='sports_grid_market_icon'>{pill}</span>
+                                                                                                    ))}
+                                                                                                    {rowShowStreamM ? <i className='ri-play-circle-line sports_grid_mobile_video_icon' aria-hidden /> : null}
                                                                                                 </div>
                                                                                                 <div className='sports_grid_teams'>{match.teams}</div>
                                                                                             </div>
@@ -806,8 +831,8 @@ function SportsGame() {
                                                                                     </td>
                                                                                     <td className='sports_grid_mobile_markets_cell sports_grid_mobile_hide_td'>
                                                                                         <div className='sports_grid_market_icons'>
-                                                                                            {MARKET_ICONS.map((icon) => (
-                                                                                                <span key={icon} className='sports_grid_market_icon'>{icon}</span>
+                                                                                            {rowPillsM.map((icon, pillIdx) => (
+                                                                                                <span key={`${icon}-${pillIdx}`} className='sports_grid_market_icon'>{icon}</span>
                                                                                             ))}
                                                                                         </div>
                                                                                     </td>
