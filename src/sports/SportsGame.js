@@ -703,15 +703,15 @@ function SportsGame() {
                                                 </div>
 
 
-                                                {/* Mobile: same as landing – MATCH | Markets | Back | Lay */}
-                                                <div className='sports_grid_table_wrap mobile_view'>
+                                                {/* Mobile: first column sticky (match), second column scroll (odds) – iPhone friendly */}
+                                                <div className='sports_grid_table_wrap mobile_view sports_grid_sticky_scroll'>
                                                     <table className='sports_grid_table sports_grid_table_mobile'>
                                                         <thead>
                                                             <tr className='sports_grid_header_row'>
                                                                 <th className='sports_grid_match_cell'>MATCH</th>
-                                                                <th className='sports_grid_mobile_markets_header' aria-label="Markets"><span className='sports_grid_header_markets'>Markets</span></th>
-                                                                <th className='sports_grid_mobile_backs_header'>Back</th>
-                                                                <th className='sports_grid_mobile_lays_header'>Lay</th>
+                                                                <th className='sports_grid_mobile_odds_header' aria-label='Odds'>ODDS</th>
+                                                                <th className='sports_grid_mobile_hide_td' aria-hidden />
+                                                                <th className='sports_grid_mobile_hide_td' aria-hidden />
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -738,35 +738,47 @@ function SportsGame() {
                                                                                     className='sports_grid_row'
                                                                                     onClick={(e) => !e.target.closest('button') && handleMatchCardClick(e, match)}
                                                                                 >
-                                                                                    <td className='sports_grid_match_cell sports_grid_mobile_single_cell'>
-                                                                                        <div className='sports_grid_mobile_row'>
-                                                                                            <div className='sports_grid_mobile_match_block'>
-                                                                                                <div className='sports_grid_mobile_time_live'>
-                                                                                                    <span className='sports_grid_day_time'>{match.dayGroup}{match.timeOnly && <span className='sports_grid_time_only'> {match.timeOnly}</span>}</span>
-                                                                                                    {match.inPlay && <span className='sports_grid_live'>LIVE</span>}
-                                                                                                </div>
-                                                                                                <div className='sports_grid_mobile_match_info'>
-                                                                                                    <div className='sports_grid_mobile_match_icons'>
-                                                                                                        <span className='sports_grid_market_icon'>P</span>
-                                                                                                        <i className='ri-play-circle-line sports_grid_mobile_video_icon' aria-hidden />
-                                                                                                    </div>
-                                                                                                    <div className='sports_grid_teams'>{match.teams}</div>
-                                                                                                </div>
+                                                                                    <td className='sports_grid_match_cell sports_grid_sticky_cell'>
+                                                                                        <div className='sports_grid_mobile_match_block'>
+                                                                                            <div className='sports_grid_mobile_time_live'>
+                                                                                                <span className='sports_grid_day_time'>{match.dayGroup}{match.timeOnly && <span className='sports_grid_time_only'> {match.timeOnly}</span>}</span>
+                                                                                                {match.inPlay && <span className='sports_grid_live'>LIVE</span>}
                                                                                             </div>
-                                                                                            <div className='sports_grid_mobile_odds_block'>
-                                                                                                {backSorted.slice(0, 3).map((pair, i) => (
-                                                                                                    <div key={i} className={`sports_grid_mobile_odds_cell ${!pair ? 'sports_grid_odds_empty' : ''}`}>
-                                                                                                        {pair ? (
-                                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
-                                                                                                                <span className='sports_grid_odds_val'>{pair.back}</span>
-                                                                                                                <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
-                                                                                                            </button>
-                                                                                                        ) : (
-                                                                                                            <span className='sports_grid_odds_dash'>-</span>
-                                                                                                        )}
-                                                                                                    </div>
-                                                                                                ))}
+                                                                                            <div className='sports_grid_mobile_match_info'>
+                                                                                                <div className='sports_grid_mobile_match_icons'>
+                                                                                                    <span className='sports_grid_market_icon'>P</span>
+                                                                                                    <i className='ri-play-circle-line sports_grid_mobile_video_icon' aria-hidden />
+                                                                                                </div>
+                                                                                                <div className='sports_grid_teams'>{match.teams}</div>
                                                                                             </div>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className='sports_grid_mobile_odds_scroll_cell'>
+                                                                                        <div className='sports_grid_mobile_odds_block'>
+                                                                                            {backSorted.slice(0, 3).map((pair, i) => (
+                                                                                                <div key={`b-${i}`} className={`sports_grid_mobile_odds_cell sports_grid_back ${!pair ? 'sports_grid_odds_empty' : ''}`}>
+                                                                                                    {pair ? (
+                                                                                                        <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                            <span className='sports_grid_odds_val'>{pair.back}</span>
+                                                                                                            <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
+                                                                                                        </button>
+                                                                                                    ) : (
+                                                                                                        <span className='sports_grid_odds_dash'>-</span>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            ))}
+                                                                                            {laySorted.slice(0, 3).map((pair, i) => (
+                                                                                                <div key={`l-${i}`} className={`sports_grid_mobile_odds_cell sports_grid_lay ${!pair ? 'sports_grid_odds_empty' : ''}`}>
+                                                                                                    {pair ? (
+                                                                                                        <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                            <span className='sports_grid_odds_val'>{pair.lay}</span>
+                                                                                                            <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
+                                                                                                        </button>
+                                                                                                    ) : (
+                                                                                                        <span className='sports_grid_odds_dash'>-</span>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            ))}
                                                                                         </div>
                                                                                     </td>
                                                                                     <td className='sports_grid_mobile_markets_cell sports_grid_mobile_hide_td'>

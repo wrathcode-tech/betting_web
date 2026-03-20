@@ -1726,10 +1726,22 @@ function LandingPage() {
                                   </div>
                                   <div className="sports_grid_mobile_odds_block">
                                     {backSorted.slice(0, 3).map((pair, i) => (
-                                      <div key={i} className={`sports_grid_mobile_odds_cell ${!pair ? 'sports_grid_odds_empty' : ''}`}>
+                                      <div key={`b-${i}`} className={`sports_grid_mobile_odds_cell sports_grid_back ${!pair ? 'sports_grid_odds_empty' : ''}`}>
                                         {pair ? (
                                           <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopMatchRowClick(e, match); }}>
                                             <span className="sports_grid_odds_val">{pair.back}</span>
+                                            <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                          </button>
+                                        ) : (
+                                          <span className="sports_grid_odds_dash">-</span>
+                                        )}
+                                      </div>
+                                    ))}
+                                    {laySorted.slice(0, 3).map((pair, i) => (
+                                      <div key={`l-${i}`} className={`sports_grid_mobile_odds_cell sports_grid_lay ${!pair ? 'sports_grid_odds_empty' : ''}`}>
+                                        {pair ? (
+                                          <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopMatchRowClick(e, match); }}>
+                                            <span className="sports_grid_odds_val">{pair.lay}</span>
                                             <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
                                           </button>
                                         ) : (
