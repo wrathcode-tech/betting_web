@@ -277,21 +277,23 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
       const token = data?.token ?? data?.accessToken ?? data?.access_token
       const userPayload = data?.user ?? data
       if (token && userPayload && typeof userPayload === 'object') {
+        const demoPlayBal = Number(userPayload.demoPlayBalance ?? userPayload.demo_play_balance ?? 0);
         const user = {
+          ...userPayload,
           id: userPayload.id ?? userPayload._id,
           username: userPayload.username ?? userPayload.mobile ?? 'Guest',
-          balance: userPayload.balance ?? 0,
+          balance: 0,
+          demoPlayBalance: Number.isFinite(demoPlayBal) ? demoPlayBal : 0,
           currency: userPayload.currency ?? 'INR',
           isDemo: true,
           expiresAt: userPayload.expiresAt ?? userPayload.expires_at,
-          ...userPayload,
         }
         sessionStorage.setItem('token', token)
         const refresh = data?.refreshToken ?? data?.refresh_token
         if (refresh) sessionStorage.setItem('refreshToken', refresh)
         setUser(user)
         window.dispatchEvent(new CustomEvent('loginStateChange'))
-        alertSuccessMessage('Demo mode – view only. Login to place bets.')
+        alertSuccessMessage('Demo mode: wallet ₹0 · use demo credits for casino · sportsbook betting disabled.')
         onHide()
         navigate(redirectTo, { replace: true })
       } else {

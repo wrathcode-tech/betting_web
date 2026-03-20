@@ -26,6 +26,8 @@ const SOCKET_CONFIG = {
 
 let socket = null;
 let lastBalance = null;
+/** Last demo casino play balance (demo users only). */
+let lastDemoPlayBalance = null;
 const balanceListeners = new Set();
 
 function ensureHandlers() {
@@ -37,6 +39,8 @@ function ensureHandlers() {
 
   socket.on('balance', (payload) => {
     if (payload?.balance != null) lastBalance = payload.balance;
+    const dpb = payload?.demoPlayBalance ?? payload?.demo_play_balance;
+    if (dpb != null) lastDemoPlayBalance = Number(dpb);
     balanceListeners.forEach((fn) => {
       try {
         fn(payload);
@@ -53,6 +57,7 @@ function ensureHandlers() {
   socket.on('disconnect', (reason) => {
     console.log('Balance socket disconnected:', reason);
     lastBalance = null;
+    lastDemoPlayBalance = null;
   });
 
   socket.on('connect_error', (err) => {
@@ -101,6 +106,10 @@ export function disconnectBalanceSocket() {
 
 export function getLastBalance() {
   return lastBalance;
+}
+
+export function getLastDemoPlayBalance() {
+  return lastDemoPlayBalance;
 }
 
 export function getBalanceSocket() {

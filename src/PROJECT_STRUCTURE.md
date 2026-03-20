@@ -53,3 +53,9 @@ src/
 | `footer.js` | `Footer.js` |
 
 All imports have been updated to use the new names.
+
+## GamePlay route & save conflict (Windows / Cursor)
+
+- **Canonical file:** `src/GamePlay/GamePlay.js` (PascalCase — matches Git). Do not rely on a tab titled `gamePlay.js`; on Windows it is the same path and can confuse the editor.
+- **Lazy import:** `import("./GamePlay")` resolves to `src/GamePlay/index.js`, which re-exports `GamePlay.js`.
+- If you see **“The content of the file is newer”** when saving: use **Compare** to merge, or close the tab **without saving** and reopen **`GamePlay.js`** from the file tree, then re-apply edits. Use **Overwrite** only if you intend to replace what is on disk.

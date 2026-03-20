@@ -4,7 +4,8 @@ import './GamePlay.css';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { useBalance } from '../context/BalanceContext';
-import { getLastBalance } from '../socket/balanceSocket';
+import { useAuth } from '../context/AuthContext';
+import { getLastBalance, getLastDemoPlayBalance } from '../socket/balanceSocket';
 
 const GAME_SESSION_KEY = 'wcoGameSession';
 
@@ -31,6 +32,7 @@ function saveSession(data) {
         providerName: data.providerName || '',
         gameName: data.gameName || '',
         balance: data.balance != null ? data.balance : null,
+        demoPlayBalance: data.demoPlayBalance != null ? data.demoPlayBalance : null,
       }));
     }
   } catch (_) {}
@@ -42,6 +44,32 @@ function clearStoredSession() {
   } catch (_) {}
 }
 
+/** Normalize launch API body (different backends use success/status and nested data). */
+function extractLaunchPayload(res) {
+  if (!res || typeof res !== 'object') return null;
+  if (res.success === false || res.status === 'error') return null;
+  const d = res.data ?? res.response?.data ?? res.result ?? res;
+  if (!d || typeof d !== 'object') return null;
+  const launchURL =
+    d.launchURL ||
+    d.launchUrl ||
+    d.url ||
+    d.gameUrl ||
+    d.gameURL ||
+    d.iframeUrl ||
+    (typeof d === 'string' ? d : null);
+  if (!launchURL || typeof launchURL !== 'string') return null;
+  return {
+    launchURL,
+    sessionId: d.sessionId ?? d.session_id,
+    gameCode: d.gameCode ?? d.code,
+    providerCode: d.providerCode ?? d.provider,
+    balance: d.balance,
+    demoPlayBalance: d.demoPlayBalance ?? d.demo_play_balance ?? res?.demoPlayBalance ?? res?.data?.demoPlayBalance,
+    game: d.game,
+  };
+}
+
 function GamePlay() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -50,7 +78,8 @@ function GamePlay() {
 
   // sessionStorage me session sirf page refresh pe use hoga (casino se navigate = already cleared)
   const restored = useMemo(() => getStoredSession(), []);
-  const { balance, setBalance } = useBalance();
+  const { balance, setBalance, setDemoPlayBalance } = useBalance();
+  const { isDemo } = useAuth();
 
   const [launchURL, setLaunchURL] = useState(restored?.launchURL ?? null);
   const [gameName, setGameName] = useState(restored?.gameName ?? stateGameName ?? '');
@@ -219,10 +248,16 @@ function GamePlay() {
       setGameName(restored.gameName || stateGameName || '');
       setGameCode(restored.gameCode);
       setProviderCode(restored.providerCode);
-      const initialBalance = getLastBalance() ?? restored.balance ?? null;
-      if (typeof initialBalance === 'number') {
-        setBalance(initialBalance);
-        saveSession({ ...restored, balance: initialBalance });
+      if (isDemo) {
+        setBalance(0);
+        const dpb = restored.demoPlayBalance ?? getLastDemoPlayBalance();
+        if (dpb != null && Number.isFinite(Number(dpb))) setDemoPlayBalance(Number(dpb));
+      } else {
+        const initialBalance = getLastBalance() ?? restored.balance ?? null;
+        if (typeof initialBalance === 'number') {
+          setBalance(initialBalance);
+          saveSession({ ...restored, balance: initialBalance });
+        }
       }
       return;
     }
@@ -238,23 +273,39 @@ function GamePlay() {
     setProviderCode(stateProviderCode);
     setGameName(stateGameName || '');
 
-    AuthService.bettingGamesLaunch(stateGameCode, stateProviderCode, 'desktop')
+    const platform = typeof window !== 'undefined' && window.innerWidth < 768 ? 'mobile' : 'desktop';
+    AuthService.bettingGamesLaunch(stateGameCode, stateProviderCode, platform)
       .then((res) => {
-        if (res?.success && res?.data?.launchURL) {
-          const d = res.data;
-          setLaunchURL(d.launchURL);
-          if (d.balance != null) setBalance(d.balance);
+        const payload = extractLaunchPayload(res);
+        const explicitFail =
+          res?.success === false ||
+          res?.status === 'error' ||
+          res?.status === 'failed' ||
+          res?.code === 'ERROR';
+        if (explicitFail) {
+          setError(res?.message || res?.msg || 'Could not launch game');
+          return;
+        }
+        if (payload?.launchURL) {
+          setLaunchURL(payload.launchURL);
+          if (isDemo) {
+            setBalance(0);
+            if (payload.demoPlayBalance != null) setDemoPlayBalance(Number(payload.demoPlayBalance));
+          } else if (payload.balance != null) {
+            setBalance(payload.balance);
+          }
           saveSession({
-            launchURL: d.launchURL,
-            sessionId: d.sessionId,
-            gameCode: d.gameCode ?? stateGameCode,
-            providerCode: d.providerCode ?? stateProviderCode,
+            launchURL: payload.launchURL,
+            sessionId: payload.sessionId,
+            gameCode: payload.gameCode ?? stateGameCode,
+            providerCode: payload.providerCode ?? stateProviderCode,
             providerName: stateProviderName || '',
-            gameName: stateGameName || d?.game?.name || '',
-            balance: d.balance,
+            gameName: stateGameName || payload?.game?.name || '',
+            balance: isDemo ? 0 : payload.balance,
+            demoPlayBalance: isDemo ? payload.demoPlayBalance : null,
           });
         } else {
-          setError(res?.message || 'Could not launch game');
+          setError(res?.message || res?.msg || 'Could not launch game — invalid response from server');
         }
       })
       .catch((err) => {
@@ -263,7 +314,7 @@ function GamePlay() {
       .finally(() => {
         setLoading(false);
       });
-  }, [stateGameCode, stateProviderCode, stateGameName, restored?.launchURL, setBalance]);
+  }, [stateGameCode, stateProviderCode, stateGameName, stateProviderName, restored?.launchURL, restored?.demoPlayBalance, isDemo, setBalance, setDemoPlayBalance]);
 
   // Persist context balance to session when it changes (e.g. socket update)
   useEffect(() => {
@@ -334,15 +385,20 @@ function GamePlay() {
           </div>
         </div> */}
         <div ref={gameplayIframeWrapRef} className="gameplay_iframe_wrap">
-          {launchURL && (
+          {loading && !launchURL ? (
+            <div className="gameplay_iframe_loading" role="status" aria-live="polite">
+              <p>Loading game…</p>
+            </div>
+          ) : null}
+          {launchURL ? (
             <iframe
               title="Game"
               src={launchURL}
               className="gameplay_iframe"
               allowFullScreen
-              allow="payment; fullscreen; autoplay"
+              allow="payment; fullscreen; autoplay; geolocation; microphone; camera"
             />
-          )}
+          ) : null}
         </div>
       </div>
 

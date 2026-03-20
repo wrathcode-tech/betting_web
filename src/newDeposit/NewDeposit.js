@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
 import { usePlatformConfig } from '../context/PlatformConfigContext';
+import { useAuth } from '../context/AuthContext';
 import '../customComponents/Deposit.css';
 import './NewDeposit.css';
 
@@ -36,6 +38,8 @@ const FALLBACK_BANK_ACCOUNTS = [
 ];
 
 function NewDeposit() {
+  const navigate = useNavigate();
+  const { isDemo } = useAuth();
   const { config: platformConfig } = usePlatformConfig();
   const [masterAccounts, setMasterAccounts] = useState([]);
   const [optionsLoading, setOptionsLoading] = useState(true);
@@ -48,6 +52,12 @@ function NewDeposit() {
   const [utrInput, setUtrInput] = useState('');
   const [paymentProofFile, setPaymentProofFile] = useState(null);
   const [selectedFileName, setSelectedFileName] = useState('');
+
+  useEffect(() => {
+    if (!isDemo) return;
+    alertErrorMessage('Deposit is disabled in demo mode.');
+    navigate('/', { replace: true });
+  }, [isDemo, navigate]);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [transactionLimits, setTransactionLimits] = useState(null);
   const fileInputRef = useRef(null);

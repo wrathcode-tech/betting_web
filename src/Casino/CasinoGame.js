@@ -7,28 +7,13 @@ import { useCasinoProviders } from '../context/CasinoProvidersContext'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { useAuth } from '../context/AuthContext'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
-import { useBalance } from '../context/BalanceContext'
-import { connectBalanceSocket, addBalanceListener, removeBalanceListener } from '../socket/balanceSocket'
 
 function CasinoGame() {
     const navigate = useNavigate();
     const { config: platformConfig } = usePlatformConfig();
     const { isDemo } = useAuth();
-    const { setBalance } = useBalance();
     const [searchParams, setSearchParams] = useSearchParams();
     const { providers } = useCasinoProviders();
-
-    // Casino pe balance socket connect – balance live update ke liye (header + koi bhi balance UI)
-    useEffect(() => {
-        const token = sessionStorage.getItem('token');
-        if (!token) return;
-        connectBalanceSocket(token);
-        const onBalance = (payload) => {
-            if (payload?.balance != null) setBalance(payload.balance);
-        };
-        addBalanceListener(onBalance);
-        return () => removeBalanceListener(onBalance);
-    }, [setBalance]);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [selectedProviderCode, setSelectedProviderCode] = useState('all');
     const [selectedCategoryCode, setSelectedCategoryCode] = useState('lobby');
@@ -116,13 +101,9 @@ function CasinoGame() {
 
     const handlePlayGame = useCallback((game) => {
         if (!game?.gameCode || !game?.providerCode) return;
-        if (isDemo) {
-            alertErrorMessage('Demo mode: View only. Login to play.');
-            return;
-        }
         try { sessionStorage.removeItem('wcoGameSession'); } catch (_) {}
         navigate('/game', { state: { gameCode: game.gameCode, providerCode: game.providerCode, gameName: game.name } });
-    }, [navigate, isDemo]);
+    }, [navigate]);
 
     const selectedProvider = useMemo(
         () =>
@@ -469,8 +450,7 @@ function CasinoGame() {
                                                             type="button"
                                                             className="game_items_inner casino_api_game_card"
                                                             onClick={() => handlePlayGame({ gameCode, providerCode, name })}
-                                                            disabled={isDemo}
-                                                            title={isDemo ? 'Demo mode: View only. Login to play.' : undefined}
+                                                            title={isDemo ? 'Demo credits (casino play money)' : undefined}
                                                         >
                                                             <div className="playbtn"><img loading="lazy" alt="play" src={`${process.env.PUBLIC_URL || ''}/images/playbtn.png`} /></div>
                                                             <img

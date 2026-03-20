@@ -1,61 +1,70 @@
-# Demo Mode (Guest Login) – Behavior
+# Demo Mode – Dual Balance & Permissions
 
-Demo users can explore the app but cannot perform real-money actions. All restrictions are driven by `user.isDemo === true` from auth state.
+Demo users (`user.isDemo === true`) get **wallet = ₹0** (real money) and **`demoPlayBalance`** (WCO casino play money). These must **never** be mixed in UI or state.
 
-## 1. Auth state
+## Central helpers (`src/utils/demoPermissions.js`, re-exported from `authUtils`)
 
-- **Storage:** User + token are stored globally (AuthContext + authStorage).
-- **Control:** `user.isDemo` controls UI and actions. Use `useAuth()` for `user` and `isDemo`, and `isDemoUser(user)` from `utils/authUtils` outside React (e.g. API layer).
+- `isDemoUser(user)`
+- `canBetSportsbook(user)` → `false` for demo
+- `canUseWallet(user)` → `false` for demo  
+- `canPlayCasino(user)` → `true` (always; casino uses demo credits)
+- `getDisplayWalletBalance(user, liveWallet)` → **0** for demo
+- `getDemoPlayBalanceFromUser(user)` → number or `null`
+- `isDemoMutationUrlAllowed(url)` → allowlist for POST (demo-login, refresh-token, logout, **`/games/launch`**)
 
-## 2. Header (when `user.isDemo === true`)
+## Auth (`AuthContext`)
 
-- Show label: **"Demo Mode"** (tooltip: "Login to enable this feature").
-- Hide **Deposit** button.
-- Wallet/balance shows "View only – ₹0.00".
-- Profile dropdown is hidden for demo.
+- `user` persisted in **sessionStorage** (`user` key).
+- `isDemo = user?.isDemo === true`.
+- On demo login, `balance` stored as **0**; **`demoPlayBalance`** from API.
 
-## 3. Demo user permissions
+## Balance (`BalanceContext`)
 
-**ALLOW**
+- **Real user:** `balance` from socket; `demoPlayBalance` = `null`.
+- **Demo user:** `balance` state forced to **0** on every balance event; **`demoPlayBalance`** from socket payload (`demoPlayBalance` / `demo_play_balance`) or profile.
+- Sportsbook bet socket updates **do not** move wallet for demo (wallet stays 0).
 
-- View matches, odds, dashboard, wallet (balance = 0).
+## API (`apiCall.js`)
 
-**BLOCK**
+- Demo users: block POST/PUT/PATCH/DELETE except **`isDemoMutationUrlAllowed`** (includes **`/games/launch`**).
+- Message: `Demo users are not allowed to perform this action`.
 
-- Deposit / Withdraw.
-- Cashout, Cancel bet (buttons disabled with tooltip).
+## Routes (`Routing.js`)
 
-## 4. Bet placement
+Demo blocked paths (redirect home + toast):
 
-- **Place Bet** is **enabled** for demo so the user can click.
-- Request is sent to the API; API may respond with insufficient balance or 403.
-- **If `user.isDemo === true`:**
-  - Show: *"Demo account cannot place bets. Please login with mobile/email to continue."*
-- **Else:**
-  - Show normal error (e.g. *"Insufficient balance"*).
+- `/deposit`, `/withdrawal`
+- `/add-account`, `/add-bank`
 
-## 5. Route protection
+**Not blocked:** `/game` (WCO iframe).
 
-When `user.isDemo`, these routes are blocked and user is redirected home with a toast:
+**Pages:** `NewDeposit` / `NewWithdrawal` also redirect if `isDemo` (belt & suspenders).
 
-- `/deposit`, `/withdrawal`, `/withdraw`
-- `/game`, `/add-account`, `/add-bank`
-- `/my-wallet`, `/wallet/actions`
+## Header (`UserHeader`)
 
-Toast message: **"Login required to access this feature"**.
+- **Demo Mode** badge.
+- **Wallet ₹0.00** + line **Demo credits ₹…** (from `useBalance().demoPlayBalance`).
+- **Deposit** = disabled button (not hidden), withdrawal link hidden as before.
 
-## 6. Global UI
+## Sportsbook
 
-- For disabled actions use: `disabled={user?.isDemo}` or `disabled={isDemo}`.
-- Add tooltip where useful: `title={isDemo ? 'Login to enable this feature' : undefined}`.
+- **BetSlip `placeBet`:** immediate toast *"Demo mode — sportsbook betting is disabled…"* (no API call).
+- Cricket / other UIs: keep **Place Bet** disabled for demo where already wired.
 
-## 7. Error handling (API layer)
+## Casino
 
-- **403** and `user.isDemo`: show **"Register to play with real money"**.
-- **401:** logout and redirect to login (existing interceptor).
+- **CasinoGame:** play navigates to `/game`; no demo block.
+- Duplicate balance listener removed (only `BalanceContext` drives balances).
 
-## 8. Clean usage
+## Hook
 
-- **useAuth()** – `const { user, isDemo, setUser, clearUser } = useAuth();`
-- **isDemoUser(user)** – `utils/authUtils.js` (for API/guard use).
-- Avoid duplicate checks; prefer `isDemo` or `isDemoUser(user)` consistently.
+- `useDemoBalance()` in `src/hooks/useDemoBalance.js` → `{ isDemo, walletBalance, demoPlayBalance }`.
+
+## Socket (`balanceSocket`)
+
+- Listens for `demoPlayBalance` / `demo_play_balance` on `balance` event; `getLastDemoPlayBalance()`.
+
+## Refresh / edge cases
+
+- On `loginStateChange`, balances re-sync from storage + socket helpers.
+- Switching demo ↔ real clears appropriate state via token effect in `BalanceProvider`.

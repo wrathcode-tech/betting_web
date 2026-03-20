@@ -1,8 +1,9 @@
 /**
- * Auth context: token + user (including isDemo for view-only mode).
- * - user stored in localStoragewhen logged in (key: 'user').
- * - isDemo === true → view only: allow view matches/odds/dashboard/wallet; block place bet, deposit, withdraw, etc.
- * - Demo expiry: if user.expiresAt is past, logout and redirect to login.
+ * Auth context: token + user (including isDemo).
+ * - User in sessionStorage key `user`.
+ * - Demo: wallet is always 0; casino uses `demoPlayBalance` (see BalanceContext + utils/demoPermissions.js).
+ * - Sportsbook view/odds OK; bets blocked in BetSlip + UI. Deposit/withdraw routes blocked.
+ * - Demo expiry: user.expiresAt → logout.
  */
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import AuthService from '../api/services/AuthService';

@@ -2813,6 +2813,14 @@ button.deposit_btn {
     cursor: pointer;
 }
 
+button.deposit_btn:disabled,
+button.deposit_btn.deposit_btn_disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    filter: grayscale(0.35);
+    box-shadow: none;
+}
+
 button.deposit_btn .deposit_btn_icon {
     display: none;
 }

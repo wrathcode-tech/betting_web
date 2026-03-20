@@ -1,18 +1,18 @@
 /**
- * Auth helpers for demo (view-only) mode.
- * Use with centralized auth context and API layer.
+ * Auth helpers for demo mode + storage (used by api guard, BalanceContext).
  */
+export {
+  isDemoUser,
+  canBetSportsbook,
+  canUseWallet,
+  canPlayCasino,
+  getDisplayWalletBalance,
+  getDemoPlayBalanceFromUser,
+  isDemoMutationUrlAllowed,
+} from './demoPermissions';
 
 /**
- * @param {object | null} user - User from auth context / storage
- * @returns {boolean} true if user is in demo (view-only) mode
- */
-export function isDemoUser(user) {
-  return user?.isDemo === true;
-}
-
-/**
- * Get stored user from localStorage(for use outside React, e.g. apiCall).
+ * Get stored user from sessionStorage (for use outside React, e.g. apiCall).
  * @returns {object | null}
  */
 export function getStoredUserForGuard() {

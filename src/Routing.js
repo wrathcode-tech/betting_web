@@ -10,9 +10,9 @@ import { PlatformConfigProvider } from "./context/PlatformConfigContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Layout from "./Layout";
 
-// Demo users: view-only. Block mutation routes (play, bet, wallet operations).
+// Demo: block real wallet & bank routes. Casino /game allowed (WCO uses demoPlayBalance).
 const DEMO_BLOCKED_PATHS = [
-  '/deposit', '/withdrawal', '/game',
+  '/deposit', '/withdrawal',
   '/add-account', '/add-bank',
 ];
 
@@ -37,7 +37,7 @@ const LandingPage = lazy(() => import("./LandingPage/LandingPage"));
 const ProfilePage = lazy(() => import("./ProfilePage"));
 const CasinoGame = lazy(() => import("./Casino/CasinoGame"));
 const CasinoCategoryPage = lazy(() => import("./Casino/CasinoCategoryPage"));
-const GamePlay = lazy(() => import("./GamePlay/GamePlay"));
+const GamePlay = lazy(() => import("./GamePlay"));
 const GameHistory = lazy(() => import("./GameHistory/GameHistory"));
 const SportsGame = lazy(() => import("./sports/SportsGame"));
 const SportsBook = lazy(() => import("./SportsBook/SportsBook"));
@@ -96,7 +96,7 @@ const Routing = memo(function Routing() {
               <Route path="/promotions" element={<Promotions />} />
               <Route path="/game-rules" element={<GameRules />} />
               <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-              {/* Protected routes – redirect to /login if not logged in; demo users blocked from deposit/withdrawal/game */}
+              {/* Protected routes – demo blocked from deposit/withdrawal (not /game – casino play money) */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<DemoBlockRoute />}>
                 <Route path="/profile" element={<ProfilePage />} />

@@ -15,6 +15,7 @@ import {
 } from '../socket/sportsbookSocket'
 import { disconnectBalanceSocket } from '../socket/balanceSocket'
 import AuthService from '../api/services/AuthService'
+import { getDisplayWalletBalance } from '../utils/authUtils'
 
 const CURRENCY_LIST = [
   { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹', icon: 'images/digital_currency.svg' },
@@ -44,17 +45,14 @@ export default function UserHeader() {
   const [currencySearch, setCurrencySearch] = useState('');
   const { balance: balanceFromContext } = useBalance();
   const { config: platformConfig } = usePlatformConfig();
-  const { isDemo } = useAuth();
+  const { isDemo, user } = useAuth();
   const [userDisplayName, setUserDisplayName] = useState('');
   const dropdownRef = useRef(null);
   const casinoDropdownRef = useRef(null);
 
-  const balance = balanceFromContext != null ? Number(balanceFromContext) : 0;
-
-  // Balance from socket only (INR) – no external rates API; demo mode shows "View only – ₹0"
-  const balanceDisplay = isDemo
-    ? `View only – ${INR_SYMBOL}0.00`
-    : `${INR_SYMBOL}${balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  /** Real wallet (header wallet UI hidden entirely for demo — only "Demo Mode" badge). */
+  const walletAmount = getDisplayWalletBalance(user, balanceFromContext);
+  const balanceDisplay = `${INR_SYMBOL}${walletAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const currencies = useMemo(() => {
     return CURRENCY_LIST.map((c) => ({
       ...c,
@@ -151,14 +149,18 @@ export default function UserHeader() {
       
     
         <div className="header_right">
-        {isDemo && (
-          <span className="demo_mode_badge" title="View only – login to place bets">Demo Mode (View Only)</span>
-        )}
+        {isDemo ? (
+          <span className="demo_mode_badge" title="Explore the app with a demo account. Use real login for wallet & sports bets.">
+            Demo Mode
+          </span>
+        ) : (
         <div className='d-flex align-items-center gap-2 depositheader'>
         <div className="currency_balance_wrapper currency_balance_inr_only">
-          <div className='d-flex align-items-center gap-2 currency_balance'>
-            <span className="currency_flag_emoji" aria-hidden>🇮🇳</span>
-            <span>{balanceDisplay}</span>
+          <div className='d-flex flex-column align-items-start currency_balance'>
+            <div className='d-flex align-items-center gap-2'>
+              <span className="currency_flag_emoji" aria-hidden>🇮🇳</span>
+              <span>{balanceDisplay}</span>
+            </div>
           </div>
           {currencyDropdownOpen && (
           <div className="currency_dropdown">
@@ -198,9 +200,7 @@ export default function UserHeader() {
           </div>
           )}
         </div>
-        {isDemo ? (
-          <span className="deposit_disabled_banner" aria-live="polite">Login to play and place bets</span>
-        ) : platformConfig.depositServiceStatus ? (
+        {platformConfig.depositServiceStatus ? (
           <button className="deposit_btn" onClick={() => navigate('/deposit')} aria-label="Deposit">
             <i className="ri-add-line deposit_btn_icon" aria-hidden />
             <span className="deposit_btn_text">Deposit</span>
@@ -209,6 +209,7 @@ export default function UserHeader() {
           <span className="deposit_disabled_banner" aria-live="polite">Deposits temporarily unavailable</span>
         )}
       </div>
+        )}
      
           <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>
             <img src="/images/search-icon.svg" alt="search" />

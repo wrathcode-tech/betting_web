@@ -5,6 +5,7 @@ import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
 import { useBalance } from '../context/BalanceContext';
 import { usePlatformConfig } from '../context/PlatformConfigContext';
+import { useAuth } from '../context/AuthContext';
 import '../newDeposit/NewDeposit.css';
 import '../BankDetails/AddAccount.css';
 import './NewWithdrawal.css';
@@ -19,6 +20,7 @@ const DEFAULT_MAX_WITHDRAWAL = 50000;
 
 function NewWithdrawal() {
   const navigate = useNavigate();
+  const { isDemo } = useAuth();
   const { config: platformConfig } = usePlatformConfig();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +32,12 @@ function NewWithdrawal() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [transactionLimits, setTransactionLimits] = useState(null);
   const { balance } = useBalance();
+
+  useEffect(() => {
+    if (!isDemo) return;
+    alertErrorMessage('Withdrawal is disabled in demo mode.');
+    navigate('/', { replace: true });
+  }, [isDemo, navigate]);
 
   const fetchAccounts = async () => {
     const token = sessionStorage.getItem('token');

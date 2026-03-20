@@ -1,7 +1,7 @@
 import axios from "axios";
 import { alertErrorMessage } from "../../customComponents/CustomAlertMessage";
 import { ApiConfig } from "../apiConfig/apiConfig";
-import { getStoredUserForGuard, isDemoUser } from "../../utils/authUtils";
+import { getStoredUserForGuard, isDemoUser, isDemoMutationUrlAllowed } from "../../utils/authUtils";
 
 // Default timeout of 30 seconds
 const TIMEOUT = 30000;
@@ -17,10 +17,13 @@ const tokenExpire = (isDemo = false) => {
   window.location.href = '/login';
 };
 
-/** If current user is demo, block mutation (POST/PUT/PATCH/DELETE). GET is allowed. Skip for demo-login URL. */
+/**
+ * Demo users: block wallet/sportsbook mutations. Allow WCO launch, auth refresh/logout, demo-login.
+ * See utils/demoPermissions.js — isDemoMutationUrlAllowed.
+ */
 const guardDemoUser = (url) => {
   if (!url || typeof url !== 'string') return null;
-  if (url.includes(ApiConfig.bettingDemoLogin)) return null; // allow demo-login itself
+  if (isDemoMutationUrlAllowed(url)) return null;
   const user = getStoredUserForGuard();
   if (!isDemoUser(user)) return null;
   return { success: false, message: DEMO_BLOCKED_ACTION_MSG };

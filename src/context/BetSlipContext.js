@@ -8,6 +8,7 @@ import React, { createContext, useContext, useState, useCallback, useRef } from 
 import * as sportsbookApi from '../api/services/sportsbookApi';
 import { useBalance } from './BalanceContext';
 import { useAuth } from './AuthContext';
+import { alertErrorMessage } from '../customComponents/CustomAlertMessage';
 
 const BetSlipContext = createContext(null);
 
@@ -78,6 +79,12 @@ export function BetSlipProvider({ children }) {
   }, []);
 
   const placeBet = useCallback(async () => {
+    if (isDemo) {
+      const msg = 'Demo mode — sportsbook betting is disabled. Login with a real account to place bets.';
+      alertErrorMessage(msg);
+      setSlip((prev) => ({ ...prev, placeError: msg }));
+      return { success: false, message: msg };
+    }
     if (placingRef.current) return { success: false, message: 'Already placing' };
     const { selections, stake } = slip;
     const stakeNum = Number(stake);
