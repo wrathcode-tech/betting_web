@@ -8,7 +8,6 @@ import FilterBar from '../components/FilterBar';
 import { getOpenBets } from '../api/historyApi';
 import '../ProfileTransactions/ProfileTransactions.css';
 
-const LIMIT = 20;
 const SPORT_OPTIONS = [
   { value: 'cricket', label: 'Cricket' },
   { value: 'soccer', label: 'Football' },

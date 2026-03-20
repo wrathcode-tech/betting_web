@@ -1,6 +1,5 @@
 import React, { useState, Suspense, lazy } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
-import { useSidebar } from '../context/SidebarContext'
+import { Link } from 'react-router-dom'
 import './Footer.css'
 
 const Chat = lazy(() => import('../cricket/Chat'))
@@ -48,8 +47,6 @@ const FOOTER_MOBILE_MENU = [
 ];
 
 function Footer() {
-    const location = useLocation();
-    const { sidebarOpen, setSidebarOpen } = useSidebar();
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [openSection, setOpenSection] = useState(null);
 

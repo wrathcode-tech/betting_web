@@ -71,7 +71,11 @@ export default function CasinoCategoryPage() {
               </div>
             )}
 
-            {isApiCategory && (
+            {isApiCategory && loading ? (
+              <div className="text-center py-5 text-white-50">Loading games…</div>
+            ) : null}
+
+            {isApiCategory && !loading && (
               <div className="top_slot_outer">
                 <div className="game_items_grid">
                   {apiGames.map((g) => (

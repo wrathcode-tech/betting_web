@@ -36,10 +36,6 @@ function formatAmount(amount) {
   const n = Number(amount);
   return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-function formatStatus(s) {
-  if (!s) return '—';
-  return String(s).charAt(0).toUpperCase() + String(s).slice(1).toLowerCase();
-}
 
 const COLUMNS = [
   { key: 'eventName', label: 'Event' },

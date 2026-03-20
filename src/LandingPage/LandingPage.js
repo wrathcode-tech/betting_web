@@ -21,9 +21,6 @@ import '../sports/sportsGame.css'
 const Footer = lazy(() => import('../customComponents/Footer'));
 const MobileMenu = lazy(() => import('../customComponents/MobileMenu'));
 
-const MAX_SLIDER_ITEMS = 15
-const MAX_CONTENT_BEFORE_VIEW_ALL = MAX_SLIDER_ITEMS - 1
-
 // TOP Sports: navigation config (Cricket -> /sports, rest -> /sportsbook)
 const topSportsItems = [
   { id: 1, title: 'Cricket', icon: 'menu-icon19.svg', to: '/sports' },
@@ -214,7 +211,6 @@ function LandingPage() {
   const [landingGames, setLandingGames] = useState({
     liveCasino: [], slots: [], trending: [], roulette: [], cardGames: [],
   });
-  const [landingGamesLoading, setLandingGamesLoading] = useState(true);
   const landingLiveCasinoRef = useRef(null);
   const landingSlotsRef = useRef(null);
   const landingTrendingRef = useRef(null);
@@ -233,8 +229,6 @@ function LandingPage() {
   // Casino Lobby: top 50 games from API (providerCode=EZ)
   const [casinoLobbyGames, setCasinoLobbyGames] = useState([]);
   const [casinoLobbyLoading, setCasinoLobbyLoading] = useState(true);
-
-  const [showMore, setShowMore] = useState(false);
 
   // Document title when on landing page
   useEffect(() => {
@@ -273,8 +267,7 @@ function LandingPage() {
           cardGames: arr(data.cardGames),
         });
       })
-      .catch(() => { })
-      .finally(() => { if (!cancelled) setLandingGamesLoading(false); });
+      .catch(() => { });
     return () => { cancelled = true; };
   }, []);
 
@@ -396,6 +389,10 @@ function LandingPage() {
     const token = getToken();
     const eventTime = (m) => m.eventTime ?? m.event_time ?? m.startTime;
     connectSportsbookSocket(token || null);
+    const cricketOddsSubscribed = topMatchesOddsSubscribedRef.current;
+    const tennisOddsSubscribed = topTennisMatchesOddsSubscribedRef.current;
+    const soccerOddsSubscribed = topSoccerMatchesOddsSubscribedRef.current;
+    const subscribedIdToSport = topMatchesSubscribedIdToSportRef.current;
     const onMatches = (payload) => {
       if (payload?.sport !== 'cricket') return;
       const raw = payload.data ?? payload.matches;
@@ -488,13 +485,13 @@ function LandingPage() {
       unsubscribeMatches('cricket');
       unsubscribeMatches('tennis');
       unsubscribeMatches('soccer');
-      topMatchesOddsSubscribedRef.current.forEach((gid) => unsubscribeOdds(gid, 'cricket'));
-      topMatchesOddsSubscribedRef.current.clear();
-      topTennisMatchesOddsSubscribedRef.current.forEach((id) => unsubscribeOdds(id, 'tennis'));
-      topTennisMatchesOddsSubscribedRef.current.clear();
-      topSoccerMatchesOddsSubscribedRef.current.forEach((gid) => unsubscribeOdds(gid, 'soccer'));
-      topSoccerMatchesOddsSubscribedRef.current.clear();
-      topMatchesSubscribedIdToSportRef.current.clear();
+      cricketOddsSubscribed.forEach((gid) => unsubscribeOdds(gid, 'cricket'));
+      cricketOddsSubscribed.clear();
+      tennisOddsSubscribed.forEach((id) => unsubscribeOdds(id, 'tennis'));
+      tennisOddsSubscribed.clear();
+      soccerOddsSubscribed.forEach((gid) => unsubscribeOdds(gid, 'soccer'));
+      soccerOddsSubscribed.clear();
+      subscribedIdToSport.clear();
     };
   }, []);
 
@@ -650,6 +647,7 @@ function LandingPage() {
       });
     }).catch(() => { });
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch key is derived from topTennisMatchesFromApi
   }, [topTennisMatchesOddsFetchKey]);
 
   useEffect(() => {
@@ -678,6 +676,7 @@ function LandingPage() {
       });
     }).catch(() => { });
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch key is derived from topSoccerMatchesFromApi
   }, [topSoccerMatchesOddsFetchKey]);
 
   // Hero 3D slider – 7 items, 5 visible at a time, infinite repeat

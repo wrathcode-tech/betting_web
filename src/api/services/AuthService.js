@@ -141,7 +141,7 @@ const AuthService = {
 
   /** GET /api/v1/wallet/generate-address – auth required. No request body. */
   walletGenerateAddress: async () => {
-    const token = getToken();
+    const token = getStoredToken();
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingWallet, bettingGenerateAddress } = ApiConfig;
     const url = baseBettingWallet + bettingGenerateAddress;
@@ -154,7 +154,7 @@ const AuthService = {
 
   /** GET /api/v1/wallet/verify-usdt-deposit – checks newly arrived USDT deposits for generated BEP20 address. */
   walletVerifyUsdtDeposit: async () => {
-    const token = getToken();
+    const token = getStoredToken();
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingWallet, bettingVerifyUsdtDeposit } = ApiConfig;
     const url = baseBettingWallet + bettingVerifyUsdtDeposit;

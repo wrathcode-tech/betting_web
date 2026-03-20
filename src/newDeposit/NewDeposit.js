@@ -96,7 +96,6 @@ function NewDeposit() {
   }, []);
 
   const bankAccounts = masterAccounts.filter((a) => a.type === 'bank');
-  const upiAccounts = masterAccounts.filter((a) => a.type === 'upi');
   // Unique payment types from backend (e.g. ['bank', 'upi']); fallback to ['bank'] when no accounts
   const paymentTypesFromBackend = React.useMemo(() => {
     const types = [...new Set(masterAccounts.map((a) => a.type).filter(Boolean))];

@@ -82,17 +82,15 @@ function GamePlay() {
   const { isDemo } = useAuth();
 
   const [launchURL, setLaunchURL] = useState(restored?.launchURL ?? null);
-  const [gameName, setGameName] = useState(restored?.gameName ?? stateGameName ?? '');
-  const [gameCode, setGameCode] = useState(restored?.gameCode ?? stateGameCode ?? null);
+  const [, setGameName] = useState(restored?.gameName ?? stateGameName ?? '');
+  const [, setGameCode] = useState(restored?.gameCode ?? stateGameCode ?? null);
   const [providerCode, setProviderCode] = useState(restored?.providerCode ?? stateProviderCode ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const hasSession = launchURL && gameCode && providerCode;
   const hasStateOrRestored = (stateGameCode && stateProviderCode) || restored;
 
   const launchCalledRef = useRef(false);
   const bestGamesSliderWrapperRef = useRef(null);
-  const popularGamesSliderWrapperRef = useRef(null);
   const topSlotsSliderWrapperRef = useRef(null);
   const gameplayIframeWrapRef = useRef(null);
   const sliderDragRef = useRef({ isDragging: false, startX: 0, startScrollLeft: 0, wrapperEl: null });
@@ -314,7 +312,7 @@ function GamePlay() {
       .finally(() => {
         setLoading(false);
       });
-  }, [stateGameCode, stateProviderCode, stateGameName, stateProviderName, restored?.launchURL, restored?.demoPlayBalance, isDemo, setBalance, setDemoPlayBalance]);
+  }, [stateGameCode, stateProviderCode, stateGameName, stateProviderName, restored, isDemo, setBalance, setDemoPlayBalance]);
 
   // Persist context balance to session when it changes (e.g. socket update)
   useEffect(() => {
