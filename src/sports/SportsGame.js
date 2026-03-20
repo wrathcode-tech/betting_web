@@ -78,6 +78,10 @@ function formatOddsSize(size) {
 
 const MARKET_ICONS = ['MC', 'BM', 'P', 'D', 'F']
 
+function getSportsOddsScrollKey(tab, match, day, idx) {
+    return `${tab}-${match.eventId ?? match.gameId ?? `${day}-${idx}`}`
+}
+
 function SportsGame() {
     const navigate = useNavigate()
     const { config: platformConfig } = usePlatformConfig()
@@ -96,6 +100,8 @@ function SportsGame() {
     const [soccerMatchesLoading, setSoccerMatchesLoading] = useState(true)
     const [oddsByGameId, setOddsByGameId] = useState({})
     const subscribedOddsRef = useRef(new Set())
+    const sportsOddsScrollRefs = useRef(new Map())
+    const isSyncingSportsOddsScrollRef = useRef(false)
     const [searchParams] = useSearchParams()
     const filterFromUrl = searchParams.get('filter') || ''
     const [sportsFilter, setSportsFilter] = useState(() => (filterFromUrl === 'live' ? 'live' : 'all')) // 'all' | 'live' | 'virtual' | 'premium'
@@ -401,6 +407,26 @@ function SportsGame() {
         navigate(path, { state })
     }, [navigate, activeTab])
 
+    const registerSportsOddsScrollRef = useCallback((key, node) => {
+        if (node) sportsOddsScrollRefs.current.set(key, node)
+        else sportsOddsScrollRefs.current.delete(key)
+    }, [])
+
+    const syncSportsOddsScroll = useCallback((sourceKey, scrollLeft) => {
+        if (isSyncingSportsOddsScrollRef.current) return
+        const sourceSection = sourceKey.split('-')[0]
+        isSyncingSportsOddsScrollRef.current = true
+        sportsOddsScrollRefs.current.forEach((node, key) => {
+            const section = key.split('-')[0]
+            if (section !== sourceSection) return
+            if (!node || key === sourceKey) return
+            if (Math.abs(node.scrollLeft - scrollLeft) > 1) node.scrollLeft = scrollLeft
+        })
+        requestAnimationFrame(() => {
+            isSyncingSportsOddsScrollRef.current = false
+        })
+    }, [])
+
     const isOddsValid = useCallback((val) => {
         if (val == null || val === '') return false
         const n = parseFloat(String(val).trim())
@@ -595,7 +621,7 @@ function SportsGame() {
                                         </ul>
 
                                         {(activeTab === 'cricket' || activeTab === 'tennis' || activeTab === 'soccer') && (
-                                            <div className='sports_grid_section'>
+                                            <div className='sports_grid_section sports_grid_section_landing'>
                                                 <div className='sports_grid_header'>
                                                     <div className='sports_grid_title'>
                                                         <img src={activeTab === 'tennis' ? 'images/menu-icon20.svg' : activeTab === 'soccer' ? 'images/menu-icon19.svg' : 'images/menu-icon19.svg'} alt='' className='sports_grid_icon' />
@@ -609,102 +635,102 @@ function SportsGame() {
                                                     </div>
                                                 </div>
                                                 <div className='sports_grid_table_wrap desktop_view'>
-                                                    <table className='sports_grid_table'>
-                                                        <thead>
-                                                            <tr className='sports_grid_header_row'>
-                                                                <th className='sports_grid_match_cell'>MATCH</th>
-                                                                <th className='sports_grid_icons_cell' aria-label="Markets"><span className='sports_grid_header_markets'>Markets</span></th>
-                                                                {Array.from({ length: 3 }, (_, i) => (
-                                                                    <React.Fragment key={i}>
-                                                                        <th className='sports_grid_odds_cell'>Back</th>
-                                                                        <th className='sports_grid_odds_cell'>Lay</th>
-                                                                    </React.Fragment>
-                                                                ))}
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {(activeTab === 'cricket' ? cricketMatchesLoading : activeTab === 'tennis' ? tennisMatchesLoading : soccerMatchesLoading) ? (
-                                                                <tr><td colSpan={8} className='sports_grid_loading'>Loading {activeTab} matches...</td></tr>
-                                                            ) : matchesByDay.length === 0 ? (
-                                                                <tr><td colSpan={8} className='sports_grid_empty'>{NO_MATCHES_MSG()}</td></tr>
-                                                            ) : (
-                                                                matchesByDay.map(({ day, matches, isLiveSection }) => (
-                                                                    <React.Fragment key={day}>
-                                                                        {isLiveSection && matches.length > 0 && (
-                                                                            <tr><td colSpan={8} className='sports_grid_section_header'><span className='sports_grid_live'>LIVE</span> — In-play matches</td></tr>
-                                                                        )}
-                                                                        {matches.map((match, idx) => {
-                                                                            const cardOdds = getCardOdds(match)
-                                                                            return (
-                                                                                <tr
-                                                                                    key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
-                                                                                    className='sports_grid_row'
-                                                                                    onClick={(e) => !e.target.closest('button') && handleMatchCardClick(e, match)}
+                                                    <div className='sports_grid_desktop_layout'>
+                                                        {(activeTab === 'cricket' ? cricketMatchesLoading : activeTab === 'tennis' ? tennisMatchesLoading : soccerMatchesLoading) ? (
+                                                            <div className='sports_grid_loading sports_grid_desktop_fullbleed'>Loading {activeTab} matches...</div>
+                                                        ) : matchesByDay.length === 0 ? (
+                                                            <div className='sports_grid_empty sports_grid_desktop_fullbleed'>{NO_MATCHES_MSG()}</div>
+                                                        ) : (
+                                                            matchesByDay.map(({ day, matches, isLiveSection }) => (
+                                                                <React.Fragment key={day}>
+                                                                    {matches.map((match, idx) => {
+                                                                        const cardOdds = getCardOdds(match)
+                                                                        return (
+                                                                            <div
+                                                                                key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
+                                                                                className='sports_grid_row sports_grid_desktop_row two_column_row'
+                                                                                onClick={(e) => !e.target.closest('button') && handleMatchCardClick(e, match)}
+                                                                            >
+                                                                                <div className='leftside_matchlist'>
+                                                                                    <div className='sports_grid_desktop_match'>
+                                                                                        <div className='sports_grid_desktop_time_block'>
+                                                                                            <div className='sports_grid_desktop_time_row'>
+                                                                                                <div className='sports_grid_desktop_time_stack'>
+                                                                                                    <span className='sports_grid_desktop_day'>{match.dayGroup}</span>
+                                                                                                    {match.timeOnly ? <span className='sports_grid_desktop_clock'>{match.timeOnly}</span> : null}
+                                                                                                </div>
+                                                                                                {match.inPlay ? <span className='sports_grid_desktop_live_badge'>LIVE</span> : null}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div className='sports_grid_desktop_match_info'>
+                                                                                            <div className='sports_grid_desktop_match_mid'>
+                                                                                                {/* <div className='sports_grid_desktop_series'>{match.tournament}</div> */}
+                                                                                                <div className='sports_grid_desktop_teamnames'>
+                                                                                                    <span className='sports_grid_desktop_teamline'>{match.teams}</span>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div className='sports_grid_desktop_match_tools'>
+                                                                                                <i className='ri-play-circle-line sports_grid_desktop_tool_icon' aria-hidden />
+                                                                                                <div className='sports_grid_desktop_pills'>
+                                                                                                    {MARKET_ICONS.map((icon) => (
+                                                                                                        <span key={icon} className='sports_grid_desktop_pill'>{icon}</span>
+                                                                                                    ))}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div
+                                                                                    className='rightside_odds'
+                                                                                    ref={(node) => registerSportsOddsScrollRef(getSportsOddsScrollKey(activeTab, match, day, idx), node)}
+                                                                                    onScroll={(e) => syncSportsOddsScroll(getSportsOddsScrollKey(activeTab, match, day, idx), e.currentTarget.scrollLeft)}
                                                                                 >
-                                                                                    <td className='sports_grid_match_cell d-flex align-items-center gap-3'>
-
-                                                                                        <div className='sports_grid_match_cell_inner'>
-                                                                                            <span className='sports_grid_day_time'>{match.dayGroup}{match.timeOnly ? ` ${match.timeOnly}` : ''}</span>
-                                                                                            {match.inPlay && <span className='sports_grid_live'>LIVE</span>}
-                                                                                        </div>
-
-                                                                                        <div className='sports_grid_match_info'>
-
-                                                                                            <div className='sports_grid_tournament'>{match.tournament}</div>
-                                                                                            <div className='sports_grid_teams'>{match.teams}</div>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className='sports_grid_icons_cell'>
-                                                                                        <div className='sports_grid_market_icons'>
-                                                                                            {MARKET_ICONS.map((icon) => (
-                                                                                                <span key={icon} className='sports_grid_market_icon'>{icon}</span>
-                                                                                            ))}
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    {Array.from({ length: 3 }).map((_, i) => {
-                                                                                        const pair = cardOdds[i]
-                                                                                        const hasBack = pair && pair.back != null
-                                                                                        const hasLay = pair && pair.lay != null
-                                                                                        const disabledBack = !hasBack
-                                                                                        const disabledLay = !hasLay
-                                                                                        return (
-                                                                                            <React.Fragment key={i}>
-                                                                                                <td className={`sports_grid_odds_cell sports_grid_back ${disabledBack ? 'sports_grid_odds_disabled' : ''}`}>
-                                                                                                    {hasBack ? (
-                                                                                                        <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
-                                                                                                            <span className='sports_grid_odds_val'>{pair.back}</span>
-                                                                                                            <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
-                                                                                                        </button>
-                                                                                                    ) : (
-                                                                                                        <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
-                                                                                                    )}
-                                                                                                </td>
-                                                                                                <td className={`sports_grid_odds_cell sports_grid_lay ${disabledLay ? 'sports_grid_odds_disabled' : ''}`}>
-                                                                                                    {hasLay ? (
-                                                                                                        <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
-                                                                                                            <span className='sports_grid_odds_val'>{pair.lay}</span>
-                                                                                                            <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
-                                                                                                        </button>
-                                                                                                    ) : (
-                                                                                                        <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
-                                                                                                    )}
-                                                                                                </td>
-                                                                                            </React.Fragment>
-                                                                                        )
-                                                                                    })}
-                                                                                </tr>
-                                                                            )
-                                                                        })}
-                                                                    </React.Fragment>
-                                                                ))
-                                                            )}
-                                                        </tbody>
-                                                    </table>
+                                                                                    <div className='sports_grid_odds_columns sports_grid_desktop_odds_strip'>
+                                                                                        {Array.from({ length: 3 }).map((_, i) => {
+                                                                                            const pair = cardOdds[i]
+                                                                                            const hasBack = pair && pair.back != null
+                                                                                            const hasLay = pair && pair.lay != null
+                                                                                            const disabledBack = !hasBack
+                                                                                            const disabledLay = !hasLay
+                                                                                            return (
+                                                                                                <div key={i} className='sports_grid_odds_column'>
+                                                                                                    <div className={`sports_grid_odds_cell sports_grid_back odds_col_back ${disabledBack ? 'sports_grid_odds_disabled' : ''}`}>
+                                                                                                        {hasBack ? (
+                                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                                <span className='sports_grid_odds_val'>{pair.back}</span>
+                                                                                                                <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
+                                                                                                            </button>
+                                                                                                        ) : (
+                                                                                                            <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                    <div className={`sports_grid_odds_cell sports_grid_lay odds_col_lay ${disabledLay ? 'sports_grid_odds_disabled' : ''}`}>
+                                                                                                        {hasLay ? (
+                                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                                <span className='sports_grid_odds_val'>{pair.lay}</span>
+                                                                                                                <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
+                                                                                                            </button>
+                                                                                                        ) : (
+                                                                                                            <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            )
+                                                                                        })}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        )
+                                                                    })}
+                                                                </React.Fragment>
+                                                            ))
+                                                        )}
+                                                    </div>
                                                 </div>
 
 
                                                 {/* Mobile: first column sticky (match), second column scroll (odds) – iPhone friendly */}
-                                                <div className='sports_grid_table_wrap mobile_view sports_grid_sticky_scroll'>
+                                                {/* <div className='sports_grid_table_wrap mobile_view sports_grid_sticky_scroll'>
                                                     <table className='sports_grid_table sports_grid_table_mobile'>
                                                         <thead>
                                                             <tr className='sports_grid_header_row'>
@@ -722,9 +748,6 @@ function SportsGame() {
                                                             ) : (
                                                                 matchesByDay.map(({ day, matches, isLiveSection }) => (
                                                                     <React.Fragment key={day}>
-                                                                        {isLiveSection && matches.length > 0 && (
-                                                                            <tr><td colSpan={4} className='sports_grid_section_header'><span className='sports_grid_live'>LIVE</span> — In-play</td></tr>
-                                                                        )}
                                                                         {matches.map((match, idx) => {
                                                                             const cardOdds = getCardOdds(match)
                                                                             const padTo3 = (arr) => { const a = [...arr]; while (a.length < 3) a.push(null); return a.slice(0, 3) }
@@ -828,7 +851,7 @@ function SportsGame() {
                                                             )}
                                                         </tbody>
                                                     </table>
-                                                </div>
+                                                </div> */}
 
 
                                             </div>

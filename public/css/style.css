@@ -250,9 +250,13 @@ header {
 }
 
 
-.history_filter_select option{ color: #000; }
+.history_filter_select option {
+    color: #000;
+}
 
-.history_filter_bar{ margin-top:15px;}
+.history_filter_bar {
+    margin-top: 15px;
+}
 
 .casino_hero_s {
     width: 100%;
@@ -1935,6 +1939,21 @@ a.game_items_inner.link_plain img {
     opacity: 0.8;
 }
 
+.lobby_section.topgame_casino_section {
+    position: relative;
+}
+
+.lobby_section_at_top .d-flex.casinotop_tabbar {
+    position: fixed;
+    top: 56px;
+    z-index: 666;
+    background-color: #10131c;
+    padding: 30px 20px 15px;
+}
+
+
+
+
 .gameright_s_item.battlebg:hover {
     box-shadow: 0 8px 24px rgb(62 96 96 / 64%);
 }
@@ -2972,6 +2991,7 @@ footer .container-fluid {
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
     width: 100%;
+    margin-bottom: 40px;
 }
 
 .game_items_video .game_video_bl {
@@ -3334,6 +3354,10 @@ ul.mobile-menu li.active:before {
         font-size: 38px;
     }
 
+    .game_items_video .game_video_bl_title {
+        font-size: 15px;
+    }
+
     .cricket_ball_effect {
         width: 120px;
     }
@@ -3345,6 +3369,10 @@ ul.mobile-menu li.active:before {
     img.hero_left_vector {
         width: 250px;
     }
+
+    .lobby_section_at_top .d-flex.casinotop_tabbar {
+        padding: 20px 20px 15px;
+    } 
 
     img.hero_right_vector {
         width: 250px;
@@ -3573,21 +3601,26 @@ ul.mobile-menu li.active:before {
         display: block;
     }
 
-    .sports_grid_back{ border-radius: 6px; }
-    .sports_grid_lay{ border-radius: 6px; }
+    .sports_grid_back {
+        border-radius: 6px;
+    }
+
+    .sports_grid_lay {
+        border-radius: 6px;
+    }
 
     .slider_view_all_text {
         font-size: 12px;
     }
 
     .top_match_section.sportsmatch_s.cricket_matches_section {
-        margin-left: -20px;
-        margin-right: -20px;
         width: calc(100% + 40px);
+        padding-right: 20px;
     }
 
     .top_match_section.sportsmatch_s.cricket_matches_section .top_hd.d-flex.align-items-center.justify-content-between {
         padding: 0px 15px;
+        padding-left: 0px;
     }
 
     img.hero_left_vector {
@@ -3637,6 +3670,7 @@ ul.mobile-menu li.active:before {
 
     .game_items_video {
         gap: 10px;
+        margin-bottom: 24px;
     }
 
     .game_items_video .game_video_bl {
@@ -3649,6 +3683,8 @@ ul.mobile-menu li.active:before {
 
     .trending_games_section h2 {
         margin-bottom: 15px;
+        font-size: 9px;
+        padding: 1px;
     }
 
     .trending_games_section {
@@ -3922,6 +3958,13 @@ ul.mobile-menu li.active:before {
         min-height: 270px;
     }
 
+
+    .lobby_section_at_top .d-flex.casinotop_tabbar {
+        position: relative;
+        top: 0px;
+        padding: 0px;
+    }
+
     .gameright_s_item h4 {
         font-size: 16px;
     }
@@ -4093,27 +4136,32 @@ ul.mobile-menu li.active:before {
         align-self: stretch;
     }
 
-    .right_content_side .container{ padding: 0px; }
+    .right_content_side .container {
+        padding: 0px;
+    }
 
 
     .playbtn {
         width: 48px;
     }
 
-.mytransactions_header_bl {
+    .mytransactions_header_bl {
         flex-direction: column;
         align-items: start !important;
     }
 
     .mytransactions_header_bl .transactions_search_input {
         min-width: 100%;
-        max-width: 100%; }
+        max-width: 100%;
+    }
 
-        .transactions_filter_select_wrapper.d-flex{
-            width: 100%;
-        }
+    .transactions_filter_select_wrapper.d-flex {
+        width: 100%;
+    }
 
-        .mytransactions_header_bl .transactions_filter_select.deposit_btn_style{ width: 100%; }
+    .mytransactions_header_bl .transactions_filter_select.deposit_btn_style {
+        width: 100%;
+    }
 
     .slider3d_card_overlay_title {
         font-size: 13px;
@@ -4227,8 +4275,11 @@ ul.mobile-menu li.active:before {
         font-size: 15px;
     }
 
+
+
     .game_items_video .game_video_bl_title {
-        font-size: 12px;
+        font-size: 8px;
+        padding: 0px;
     }
 
     body .mybets_cashout_btn_sm {

@@ -27,6 +27,8 @@ function CasinoGame() {
     const loadMoreSentinelRef = useRef(null);
     const providerDropdownRef = useRef(null);
     const categoriesListRef = useRef(null);
+    const lobbySectionRef = useRef(null);
+    const [lobbySectionAtTop, setLobbySectionAtTop] = useState(false);
     const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
     const [providerSearchQuery, setProviderSearchQuery] = useState('');
     const GAMES_PAGE_SIZE = 20;
@@ -256,6 +258,55 @@ function CasinoGame() {
         track.style.transform = `translateX(-${currentSlide * step}px)`;
     }, [currentSlide]);
 
+    useEffect(() => {
+        if (!platformConfig.gameServiceStatus) return;
+        const sectionNode = lobbySectionRef.current;
+        if (!sectionNode) return;
+
+        const getScrollParent = (node) => {
+            let p = node?.parentElement;
+            while (p && p !== document.documentElement) {
+                const s = window.getComputedStyle(p);
+                if (/(auto|scroll|overlay)/.test(s.overflowY) || /(auto|scroll|overlay)/.test(s.overflow)) {
+                    return p;
+                }
+                p = p.parentElement;
+            }
+            return null;
+        };
+
+        const updateLobbyAtTop = () => {
+            const section = lobbySectionRef.current;
+            if (!section) return;
+            const headerEl = document.querySelector('header');
+            const headerBottom = headerEl ? Math.ceil(headerEl.getBoundingClientRect().bottom) : 0;
+            document.documentElement.style.setProperty('--casino-lobby-sticky-top', `${headerBottom}px`);
+            setLobbySectionAtTop(section.getBoundingClientRect().top <= headerBottom + 2);
+        };
+
+        const scrollParent = getScrollParent(sectionNode);
+        const scrollTargets = scrollParent ? [window, scrollParent] : [window];
+
+        updateLobbyAtTop();
+        scrollTargets.forEach((t) => t.addEventListener('scroll', updateLobbyAtTop, { passive: true }));
+        window.addEventListener('resize', updateLobbyAtTop);
+        const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateLobbyAtTop) : null;
+        if (ro) ro.observe(sectionNode);
+
+        return () => {
+            scrollTargets.forEach((t) => t.removeEventListener('scroll', updateLobbyAtTop));
+            window.removeEventListener('resize', updateLobbyAtTop);
+            if (ro) ro.disconnect();
+            document.documentElement.style.removeProperty('--casino-lobby-sticky-top');
+        };
+    }, [
+        platformConfig.gameServiceStatus,
+        selectedProviderCode,
+        selectedCategoryCode,
+        sortedProviderCategoryGames.length,
+        loadingProviderCategory,
+    ]);
+
     return (
         <>
             <div className='dashboard_page'>
@@ -291,7 +342,10 @@ function CasinoGame() {
                             </div>
                         </div>
 
-                        <div className='lobby_section'>
+                        <div
+                            ref={lobbySectionRef}
+                            className={`lobby_section topgame_casino_section${lobbySectionAtTop ? ' lobby_section_at_top' : ''}`}
+                        >
                             <div className='d-flex align-items-center justify-content-between casinotop_tabbar'>
                                 <div className="casino_provider_category_tabs">
                                   
