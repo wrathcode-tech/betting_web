@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import AuthService from '../api/services/AuthService'
 import { ApiConfig } from '../api/apiConfig/apiConfig'
-import { getToken } from '../utils/authStorage'
-import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import MobileMenu from '../customComponents/MobileMenu'
 import Header from '../customComponents/Header'
 import './ProfileTransactions.css'
@@ -71,7 +69,7 @@ function ProfileTransactions() {
 
   const fetchTransactions = useCallback(
     async (page = 1, typeParam = null) => {
-      const token = getToken()
+      const token = sessionStorage.getItem('token')
       if (!token) {
         setLoading(false)
         return
@@ -80,23 +78,22 @@ function ProfileTransactions() {
       const effectiveType = typeParam != null ? typeParam : typeFilter
       const res = await AuthService.walletTransactions(page, PAGE_SIZE, effectiveType)
       setLoading(false)
-      if (res?.success === false) {
-        setTransactions([])
-        setPagination((prev) => ({ ...prev, total: 0, totalPages: 1, hasMore: false }))
-        if (res?.message) alertErrorMessage(res.message)
-        return
-      }
-      const raw = res?.data ?? res
+      const raw = res?.data
       const list = Array.isArray(raw) ? raw : (raw?.transactions || [])
       const pag = res?.pagination ?? raw?.pagination ?? {}
-      setTransactions(Array.isArray(list) ? list : [])
-      setPagination({
-        page: pag.page ?? page,
-        limit: pag.limit ?? PAGE_SIZE,
-        total: pag.total ?? pag.totalRecords ?? 0,
-        totalPages: Math.max(1, pag.totalPages ?? 1),
-        hasMore: (pag.page ?? page) < (pag.totalPages ?? 1),
-      })
+      if (list.length >= 0) {
+        setTransactions(list)
+        setPagination({
+          page: pag.page ?? page,
+          limit: pag.limit ?? PAGE_SIZE,
+          total: pag.total ?? pag.totalRecords ?? list.length,
+          totalPages: Math.max(1, pag.totalPages ?? 1),
+          hasMore: (pag.page ?? page) < (pag.totalPages ?? 1),
+        })
+      } else {
+        setTransactions([])
+        setPagination((prev) => ({ ...prev, total: 0, totalPages: 1, hasMore: false }))
+      }
     },
     [typeFilter]
   )

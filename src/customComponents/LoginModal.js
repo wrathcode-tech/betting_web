@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthService from '../api/services/AuthService'
 import { useAuth } from '../context/AuthContext'
-import { setToken, setRefreshToken } from '../utils/authStorage'
 import { alertErrorMessage, alertSuccessMessage } from './CustomAlertMessage'
 import './LoginModal.css'
 
@@ -92,22 +91,6 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
     })
   }
 
-  /** Map backend validationErrors (Joi: array or object) to form errors state. */
-  const applyValidationErrors = (validationErrors) => {
-    if (!validationErrors) return
-    if (Array.isArray(validationErrors)) {
-      const next = {}
-      validationErrors.forEach((e) => {
-        const key = e.path ?? e.field ?? e.key
-        const msg = e.message ?? e.msg
-        if (key && msg) next[key] = msg
-      })
-      if (Object.keys(next).length > 0) setErrors((prev) => ({ ...prev, ...next }))
-    } else if (typeof validationErrors === 'object') {
-      setErrors((prev) => ({ ...prev, ...validationErrors }))
-    }
-  }
-
   const handleSendOtp = async () => {
     if (!mobile || mobile.length !== 10) {
       setFieldError('mobile', 'Please enter a valid 10-digit mobile number')
@@ -122,12 +105,10 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
         setOtpSent(true)
         setOtpTimer(60)
       } else {
-        applyValidationErrors(result?.validationErrors)
         alertErrorMessage(result?.message || 'Failed to send OTP')
       }
     } catch (error) {
-      const msg = error?.response?.data?.message || error?.message || 'Something went wrong. Please try again.'
-      alertErrorMessage(msg)
+      alertErrorMessage('Something went wrong. Please try again.')
     }
     setLoading(false)
   }
@@ -180,12 +161,10 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
           resetForm()
         }
       } else {
-        applyValidationErrors(result?.validationErrors)
         alertErrorMessage(result?.message || 'Registration failed')
       }
     } catch (error) {
-      const msg = error?.response?.data?.message || error?.message || 'Something went wrong. Please try again.'
-      alertErrorMessage(msg)
+      alertErrorMessage('Something went wrong. Please try again.')
     }
     setLoading(false)
   }
@@ -210,8 +189,8 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
       if (result?.status === 'success' || result?.success) {
         const { accessToken: token, refreshToken } = getTokensFromResult(result)
         if (token) {
-          if (refreshToken) setRefreshToken(refreshToken)
-          setToken(token)
+          if (refreshToken) sessionStorage.setItem('refreshToken', refreshToken)
+          sessionStorage.setItem('token', token)
           window.dispatchEvent(new CustomEvent('loginStateChange'))
           alertSuccessMessage('Login successful!')
           onHide()
@@ -220,12 +199,10 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
           alertErrorMessage('Login failed: No token received')
         }
       } else {
-        applyValidationErrors(result?.validationErrors)
         alertErrorMessage(result?.message || 'Invalid mobile or password')
       }
     } catch (error) {
-      const msg = error?.response?.data?.message || error?.message || 'Something went wrong. Please try again.'
-      alertErrorMessage(msg)
+      alertErrorMessage('Something went wrong. Please try again.')
     }
     setLoading(false)
   }
@@ -243,12 +220,10 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
         alertSuccessMessage(result?.message || 'OTP sent successfully')
         setForgotOtpSent(true)
       } else {
-        applyValidationErrors(result?.validationErrors)
         alertErrorMessage(result?.message || 'Failed to send OTP')
       }
     } catch (error) {
-      const msg = error?.response?.data?.message || error?.message || 'Something went wrong. Please try again.'
-      alertErrorMessage(msg)
+      alertErrorMessage('Something went wrong. Please try again.')
     }
     setLoading(false)
   }
@@ -280,12 +255,10 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
         setShowForgotPassword(false)
         resetForm()
       } else {
-        applyValidationErrors(result?.validationErrors)
         alertErrorMessage(result?.message || 'Password reset failed')
       }
     } catch (error) {
-      const msg = error?.response?.data?.message || error?.message || 'Something went wrong. Please try again.'
-      alertErrorMessage(msg)
+      alertErrorMessage('Something went wrong. Please try again.')
     }
     setLoading(false)
   }
@@ -296,7 +269,6 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
     try {
       const result = await AuthService.bettingDemoLogin()
       if (result?.success === false) {
-        applyValidationErrors(result?.validationErrors)
         alertErrorMessage(result?.message || 'Demo login failed.')
         setLoading(false)
         return
@@ -314,21 +286,19 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
           expiresAt: userPayload.expiresAt ?? userPayload.expires_at,
           ...userPayload,
         }
-        setToken(token)
+        sessionStorage.setItem('token', token)
         const refresh = data?.refreshToken ?? data?.refresh_token
-        if (refresh) setRefreshToken(refresh)
+        if (refresh) sessionStorage.setItem('refreshToken', refresh)
         setUser(user)
         window.dispatchEvent(new CustomEvent('loginStateChange'))
         alertSuccessMessage('Demo mode – view only. Login to place bets.')
         onHide()
         navigate(redirectTo, { replace: true })
       } else {
-        applyValidationErrors(result?.validationErrors)
         alertErrorMessage(result?.message || 'Demo login failed.')
       }
     } catch (err) {
-      const msg = err?.response?.data?.message || err?.message || 'Something went wrong. Please try again.'
-      alertErrorMessage(msg)
+      alertErrorMessage(err?.message || 'Something went wrong. Please try again.')
     }
     setLoading(false)
   }

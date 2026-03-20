@@ -5,7 +5,6 @@ import AuthService from '../api/services/AuthService';
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage';
 import { useBalance } from '../context/BalanceContext';
 import { usePlatformConfig } from '../context/PlatformConfigContext';
-import { getToken } from '../utils/authStorage';
 import '../newDeposit/NewDeposit.css';
 import '../BankDetails/AddAccount.css';
 import './NewWithdrawal.css';
@@ -33,7 +32,7 @@ function NewWithdrawal() {
   const { balance } = useBalance();
 
   const fetchAccounts = async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem('token');
     if (!token) {
       setLoading(false);
       return;

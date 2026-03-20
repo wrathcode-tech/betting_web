@@ -18,7 +18,6 @@ import {
   addBetUpdateListener,
   removeBetUpdateListener,
 } from '../socket/sportsbookSocket';
-import { getToken } from '../utils/authStorage';
 
 const SPORTS = ['cricket', 'soccer', 'tennis'];
 
@@ -55,7 +54,9 @@ export function useSportsbookMatches(sport, options = {}) {
 
   useEffect(() => {
     if (!options.subscribeSocket) return;
-    connectSportsbookSocket(getToken() || null);
+    const token = sessionStorage.getItem('token');
+    if (!token) return;
+    connectSportsbookSocket(token);
     const onPayload = (payload) => {
       if (payload?.sport !== sportKey) return;
       const list = Array.isArray(payload?.data) ? payload.data : [];
@@ -110,7 +111,7 @@ export function useSportsbookOdds(sport, gameIdOrEventId) {
 
   useEffect(() => {
     if (!gameIdOrEventId) return;
-    const token = getToken();
+    const token = sessionStorage.getItem('token');
     if (!token) return;
     connectSportsbookSocket(token);
     const onPayload = (payload) => {
@@ -165,7 +166,9 @@ export function useSportsbookOpenBets(params = {}, options = {}) {
 
   useEffect(() => {
     if (!options.subscribeBetUpdate) return;
-    connectSportsbookSocket(getToken() || null);
+    const token = sessionStorage.getItem('token');
+    if (!token) return;
+    connectSportsbookSocket(token);
     const onBetUpdate = () => fetchOpen();
     addBetUpdateListener(onBetUpdate);
     return () => removeBetUpdateListener(onBetUpdate);

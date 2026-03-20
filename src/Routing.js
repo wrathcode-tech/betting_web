@@ -8,19 +8,17 @@ import { BetSlipProvider } from "./context/BetSlipContext";
 import { SportsbookStoreProvider } from "./context/SportsbookStore";
 import { PlatformConfigProvider } from "./context/PlatformConfigContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import { getToken } from "./utils/authStorage";
 import Layout from "./Layout";
 
-// Demo users: view-only. Block deposit, withdraw, wallet actions, game play.
+// Demo users: view-only. Block mutation routes (play, bet, wallet operations).
 const DEMO_BLOCKED_PATHS = [
-  '/deposit', '/withdrawal', '/withdraw',
-  '/game', '/add-account', '/add-bank',
-  '/my-wallet', '/wallet/actions',
+  '/deposit', '/withdrawal', '/game',
+  '/add-account', '/add-bank',
 ];
 
 function ProtectedRoute() {
   const location = useLocation();
-  const isLoggedIn = !!getToken();
+  const isLoggedIn = !!(sessionStorage.getItem("token"));
   if (!isLoggedIn) return <Navigate to="/login" replace state={{ returnTo: location.pathname + location.search }} />;
   return <Outlet />;
 }
@@ -29,7 +27,7 @@ function DemoBlockRoute() {
   const location = useLocation();
   const { isDemo } = useAuth();
   if (isDemo && DEMO_BLOCKED_PATHS.includes(location.pathname)) {
-    return <Navigate to="/" replace state={{ demoBlocked: true, message: 'Login required to access this feature' }} />;
+    return <Navigate to="/" replace state={{ demoBlocked: true, message: 'Demo users can only explore the platform' }} />;
   }
   return <Outlet />;
 }

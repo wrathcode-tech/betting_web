@@ -5,7 +5,6 @@ import { useBalance } from '../context/BalanceContext';
 import { usePlatformConfig } from '../context/PlatformConfigContext';
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage';
 import MobileMenu from '../customComponents/MobileMenu';
-import { getToken } from '../utils/authStorage';
 import '../GamePlay/GamePlay.css';
 
 function SportsBook() {
@@ -24,7 +23,7 @@ function SportsBook() {
   }, [platformConfig.sportsBookServiceStatus]);
 
   useEffect(() => {
-    const token = getToken();
+    const token = sessionStorage.getItem('token');
     if (!token) {
       navigate('/login', { replace: true });
       return;
@@ -49,7 +48,7 @@ function SportsBook() {
       });
   }, [navigate, setBalance]);
 
-  const token = typeof window !== 'undefined' ? getToken() : null;
+  const token = typeof localStorage!== 'undefined' ? sessionStorage.getItem('token') : null;
   if (!token) return null;
 
   if (error) {

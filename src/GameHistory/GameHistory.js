@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
-import { getToken } from '../utils/authStorage';
-import { alertErrorMessage } from '../customComponents/CustomAlertMessage';
 import '../ProfileTransactions/ProfileTransactions.css';
 import './gameHistory.css';
 
@@ -76,7 +74,7 @@ function GameHistory() {
   const [dateTo, setDateTo] = useState('');
 
   const fetchTransactions = useCallback(async (page = 1) => {
-    const token = getToken();
+    const token = sessionStorage.getItem('token');
     if (!token) {
       setLoading(false);
       setTransactions([]);
@@ -107,29 +105,27 @@ function GameHistory() {
       } else {
         res = await AuthService.gamesSportsbookTransactions(page, PAGE_SIZE);
       }
-      if (res?.success === false) {
-        setTransactions([]);
-        setPagination((prev) => ({ ...prev, total: 0, totalPages: 1, hasMore: false }));
-        if (res?.message) alertErrorMessage(res.message);
-        return;
-      }
       const data = res?.data ?? res;
       const list = casinoView === VIEW_SESSIONS
         ? (data?.sessions ?? [])
         : (data?.transactions ?? data?.sessions ?? []);
-      const p = data?.pagination ?? res?.pagination ?? {};
-      setTransactions(Array.isArray(list) ? list : []);
-      setPagination({
-        page: p.page ?? page,
-        limit: p.limit ?? PAGE_SIZE,
-        total: p.total ?? p.totalRecords ?? 0,
-        totalPages: Math.max(1, p.totalPages ?? 1),
-        hasMore: (p.page ?? page) < (p.totalPages ?? 1),
-      });
+      const p = data?.pagination ?? {};
+      if (Array.isArray(list)) {
+        setTransactions(list);
+        setPagination({
+          page: p.page ?? page,
+          limit: p.limit ?? PAGE_SIZE,
+          total: p.total ?? 0,
+          totalPages: p.totalPages ?? 1,
+          hasMore: (p.page ?? page) < (p.totalPages ?? 1),
+        });
+      } else {
+        setTransactions([]);
+        setPagination((prev) => ({ ...prev, total: 0, totalPages: 1, hasMore: false }));
+      }
     } catch (err) {
       setTransactions([]);
       setPagination((prev) => ({ ...prev, total: 0, totalPages: 1, hasMore: false }));
-      if (err?.message) alertErrorMessage(err.message);
     } finally {
       setLoading(false);
     }
@@ -152,22 +148,22 @@ function GameHistory() {
   const searchLower = (search || '').trim().toLowerCase();
   const filteredTransactions = searchLower
     ? transactions.filter((tx) => {
-      if (filter === FILTER_CASINO && casinoView === VIEW_LEDGER) {
-        const remark = (tx.remark || '').toLowerCase();
-        const txId = (tx.id || tx.transactionId || '').toLowerCase();
-        return remark.includes(searchLower) || txId.includes(searchLower);
-      }
-      if (filter === FILTER_CASINO && casinoView === VIEW_SESSIONS) {
-        const game = (tx.gameCode || '').toLowerCase();
-        const sessionId = (tx.sessionId || '').toLowerCase();
+        if (filter === FILTER_CASINO && casinoView === VIEW_LEDGER) {
+          const remark = (tx.remark || '').toLowerCase();
+          const txId = (tx.id || tx.transactionId || '').toLowerCase();
+          return remark.includes(searchLower) || txId.includes(searchLower);
+        }
+        if (filter === FILTER_CASINO && casinoView === VIEW_SESSIONS) {
+          const game = (tx.gameCode || '').toLowerCase();
+          const sessionId = (tx.sessionId || '').toLowerCase();
+          const provider = (tx.providerCode || '').toLowerCase();
+          return game.includes(searchLower) || sessionId.includes(searchLower) || provider.includes(searchLower);
+        }
+        const game = (tx.gameName || tx.gameCode || '').toLowerCase();
+        const roundId = (tx.providerRoundId || tx.sessionId || '').toLowerCase();
         const provider = (tx.providerCode || '').toLowerCase();
-        return game.includes(searchLower) || sessionId.includes(searchLower) || provider.includes(searchLower);
-      }
-      const game = (tx.gameName || tx.gameCode || '').toLowerCase();
-      const roundId = (tx.providerRoundId || tx.sessionId || '').toLowerCase();
-      const provider = (tx.providerCode || '').toLowerCase();
-      return game.includes(searchLower) || roundId.includes(searchLower) || provider.includes(searchLower);
-    })
+        return game.includes(searchLower) || roundId.includes(searchLower) || provider.includes(searchLower);
+      })
     : transactions;
 
   return (
@@ -181,41 +177,41 @@ function GameHistory() {
               <div className="transactions_header_right game_history_header_right d-flex">
                 {filter === FILTER_CASINO && (
                   <>
-                    <div className="game_history_filter_wrapper_row d-flex gap-3">
+<div className="game_history_filter_wrapper_row d-flex gap-3">
 
-                      <div className="game_history_filter_wrapper">
-                        <label className="game_history_filter_label">View</label>
-                        <select
-                          className="game_history_filter_select"
-                          value={casinoView}
-                          onChange={(e) => {
-                            setCasinoView(e.target.value);
-                            setSelectedTransaction(null);
-                          }}
-                          aria-label="Casino view"
-                        >
-                          <option value={VIEW_SESSIONS}>Sessions</option>
-                          <option value={VIEW_TRANSACTIONS}>Transactions</option>
-                          <option value={VIEW_LEDGER}>Ledger</option>
-                        </select>
-                      </div>
-                      <div className="game_history_filter_wrapper">
-                        <label htmlFor="game-history-type-filter" className="game_history_filter_label">Type</label>
-                        <select
-                          id="game-history-type-filter"
-                          className="game_history_filter_select"
-                          value={filter}
-                          onChange={(e) => {
-                            setFilter(e.target.value);
-                            setSelectedTransaction(null);
-                          }}
-                          aria-label="Filter by Casino or SportsBook"
-                        >
-                          <option value={FILTER_CASINO}>Casino</option>
-                          <option value={FILTER_SPORTSBOOK}>SportsBook</option>
-                        </select>
-                      </div>
+                    <div className="game_history_filter_wrapper">
+                      <label className="game_history_filter_label">View</label>
+                      <select
+                        className="game_history_filter_select"
+                        value={casinoView}
+                        onChange={(e) => {
+                          setCasinoView(e.target.value);
+                          setSelectedTransaction(null);
+                        }}
+                        aria-label="Casino view"
+                      >
+                        <option value={VIEW_SESSIONS}>Sessions</option>
+                        <option value={VIEW_TRANSACTIONS}>Transactions</option>
+                        <option value={VIEW_LEDGER}>Ledger</option>
+                      </select>
                     </div>
+                    <div className="game_history_filter_wrapper">
+                  <label htmlFor="game-history-type-filter" className="game_history_filter_label">Type</label>
+                  <select
+                    id="game-history-type-filter"
+                    className="game_history_filter_select"
+                    value={filter}
+                    onChange={(e) => {
+                      setFilter(e.target.value);
+                      setSelectedTransaction(null);
+                    }}
+                    aria-label="Filter by Casino or SportsBook"
+                  >
+                    <option value={FILTER_CASINO}>Casino</option>
+                    <option value={FILTER_SPORTSBOOK}>SportsBook</option>
+                  </select>
+                </div>
+                </div>
 
                     {(casinoView === VIEW_SESSIONS || casinoView === VIEW_LEDGER) && (
                       <div className="game_history_date_group">
@@ -234,7 +230,7 @@ function GameHistory() {
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label="Search"
                 />
-
+               
               </div>
             </div>
 
@@ -288,108 +284,108 @@ function GameHistory() {
                     <tbody>
                       {filter === FILTER_CASINO && casinoView === VIEW_LEDGER
                         ? filteredTransactions.map((tx, idx) => (
-                          <tr key={tx.id || tx.transactionId || idx}>
-                            <td>{formatDateTime(tx.date)}</td>
-                            <td className="amount_positive">₹{Number(tx.credit ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                            <td className="amount_negative">₹{Number(tx.debit ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                            <td>₹{Number(tx.balance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                            <td>{tx.id != null ? `Transaction #${tx.id}` : (tx.transactionId || '—')}</td>
-                            <td>{tx.remark || '—'}</td>
-                          </tr>
-                        ))
-                        : filter === FILTER_CASINO && casinoView === VIEW_SESSIONS
-                          ? filteredTransactions.map((sess, idx) => (
-                            <tr key={sess.sessionId || sess._id || idx}>
-                              <td>{sess.sessionId || '—'}</td>
-                              <td>{sess.gameCode || '—'}</td>
-                              <td>{sess.providerCode || '—'}</td>
-                              <td>₹{Number(sess.balanceAtStart ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                              <td>₹{Number(sess.balanceAtEnd ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                              <td>{Number(sess.totalBets ?? 0)}</td>
-                              <td>₹{Number(sess.totalStake ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                              <td className={Number(sess.totalWinnings ?? 0) >= 0 ? 'amount_positive' : 'amount_negative'}>
-                                {formatAmount(sess.totalWinnings)}
-                              </td>
-                              <td>{formatDateTime(sess.createdAt)}</td>
-                              <td>{formatDateTime(sess.endedAt)}</td>
+                            <tr key={tx.id || tx.transactionId || idx}>
+                              <td>{formatDateTime(tx.date)}</td>
+                              <td className="amount_positive">₹{Number(tx.credit ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              <td className="amount_negative">₹{Number(tx.debit ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              <td>₹{Number(tx.balance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              <td>{tx.id != null ? `Transaction #${tx.id}` : (tx.transactionId || '—')}</td>
+                              <td>{tx.remark || '—'}</td>
                             </tr>
                           ))
+                        : filter === FILTER_CASINO && casinoView === VIEW_SESSIONS
+                          ? filteredTransactions.map((sess, idx) => (
+                              <tr key={sess.sessionId || sess._id || idx}>
+                                <td>{sess.sessionId || '—'}</td>
+                                <td>{sess.gameCode || '—'}</td>
+                                <td>{sess.providerCode || '—'}</td>
+                                <td>₹{Number(sess.balanceAtStart ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                <td>₹{Number(sess.balanceAtEnd ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                <td>{Number(sess.totalBets ?? 0)}</td>
+                                <td>₹{Number(sess.totalStake ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                <td className={Number(sess.totalWinnings ?? 0) >= 0 ? 'amount_positive' : 'amount_negative'}>
+                                  {formatAmount(sess.totalWinnings)}
+                                </td>
+                                <td>{formatDateTime(sess.createdAt)}</td>
+                                <td>{formatDateTime(sess.endedAt)}</td>
+                              </tr>
+                            ))
                           : filteredTransactions.map((tx, idx) => (
-                            <tr
-                              key={tx.providerRoundId || tx.sessionId || idx}
-                              className="game_history_row_clickable"
-                              onClick={() => setSelectedTransaction(tx)}
-                              role="button"
-                              tabIndex={0}
-                              onKeyDown={(e) => e.key === 'Enter' && setSelectedTransaction(tx)}
-                            >
-                              <td>{formatDateTime(tx.dateTime)}</td>
-                              <td>{tx.gameName || tx.gameCode || '—'}</td>
-                              <td>₹{Number(tx.betAmount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                              <td>
-                                <span className={`status_badge status_${statusClass(tx.status)}`}>
-                                  {tx.status ? String(tx.status).charAt(0).toUpperCase() + String(tx.status).slice(1).toLowerCase() : '—'}
-                                </span>
-                              </td>
-                              <td className={tx.status && String(tx.status).toLowerCase() === 'win' ? 'amount_positive' : 'amount_negative'}>
-                                {formatAmount(tx.amountWonOrLost)}
-                              </td>
-                              <td>₹{Number(tx.balanceAtBet ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                              <td>₹{Number(tx.balanceAfter ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                            </tr>
-                          ))}
+                              <tr
+                                key={tx.providerRoundId || tx.sessionId || idx}
+                                className="game_history_row_clickable"
+                                onClick={() => setSelectedTransaction(tx)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => e.key === 'Enter' && setSelectedTransaction(tx)}
+                              >
+                                <td>{formatDateTime(tx.dateTime)}</td>
+                                <td>{tx.gameName || tx.gameCode || '—'}</td>
+                                <td>₹{Number(tx.betAmount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                <td>
+                                  <span className={`status_badge status_${statusClass(tx.status)}`}>
+                                    {tx.status ? String(tx.status).charAt(0).toUpperCase() + String(tx.status).slice(1).toLowerCase() : '—'}
+                                  </span>
+                                </td>
+                                <td className={tx.status && String(tx.status).toLowerCase() === 'win' ? 'amount_positive' : 'amount_negative'}>
+                                  {formatAmount(tx.amountWonOrLost)}
+                                </td>
+                                <td>₹{Number(tx.balanceAtBet ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                <td>₹{Number(tx.balanceAfter ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              </tr>
+                            ))}
                     </tbody>
                   </table>
                 </div>
 
                 {!(filter === FILTER_CASINO && (casinoView === VIEW_LEDGER || casinoView === VIEW_SESSIONS)) && (
-                  <div className="game_history_cards_wrapper">
-                    {filteredTransactions.map((tx, idx) => (
-                      <div
-                        key={tx.providerRoundId || tx.sessionId || idx}
-                        className="transaction_card game_history_card game_history_card_clickable"
-                        onClick={() => setSelectedTransaction(tx)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => e.key === 'Enter' && setSelectedTransaction(tx)}
-                      >
-                        <div className="transaction_card_header">
-                          <div className="transaction_card_title">
-                            <h3>{tx.gameName || tx.gameCode || 'Game'}</h3>
-                            <span className={`status_badge status_${statusClass(tx.status)}`}>
-                              {tx.status ? String(tx.status).charAt(0).toUpperCase() + String(tx.status).slice(1).toLowerCase() : '—'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="transaction_card_body">
-                          <div className="transaction_card_row">
-                            <span className="transaction_label">Date & Time</span>
-                            <span className="transaction_value">{formatDateTime(tx.dateTime)}</span>
-                          </div>
-                          <div className="transaction_card_row">
-                            <span className="transaction_label">Provider</span>
-                            <span className="transaction_value">{tx.providerCode || '—'}</span>
-                          </div>
-                          <div className="transaction_card_row">
-                            <span className="transaction_label">Bet Amount</span>
-                            <span className="transaction_value amount_value">₹{Number(tx.betAmount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                          </div>
-                          <div className="transaction_card_row">
-                            <span className="transaction_label">Amount Won/Lost</span>
-                            <span className={`transaction_value ${tx.status && String(tx.status).toLowerCase() === 'win' ? 'amount_positive' : 'amount_negative'}`}>
-                              {formatAmount(tx.amountWonOrLost)}
-                            </span>
-                          </div>
-                          <div className="transaction_card_row">
-                            <span className="transaction_label">Balance (Before → After)</span>
-                            <span className="transaction_value">
-                              ₹{Number(tx.balanceAtBet ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })} → ₹{Number(tx.balanceAfter ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                            </span>
-                          </div>
+                <div className="game_history_cards_wrapper">
+                  {filteredTransactions.map((tx, idx) => (
+                    <div
+                      key={tx.providerRoundId || tx.sessionId || idx}
+                      className="transaction_card game_history_card game_history_card_clickable"
+                      onClick={() => setSelectedTransaction(tx)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && setSelectedTransaction(tx)}
+                    >
+                      <div className="transaction_card_header">
+                        <div className="transaction_card_title">
+                          <h3>{tx.gameName || tx.gameCode || 'Game'}</h3>
+                          <span className={`status_badge status_${statusClass(tx.status)}`}>
+                            {tx.status ? String(tx.status).charAt(0).toUpperCase() + String(tx.status).slice(1).toLowerCase() : '—'}
+                          </span>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                      <div className="transaction_card_body">
+                        <div className="transaction_card_row">
+                          <span className="transaction_label">Date & Time</span>
+                          <span className="transaction_value">{formatDateTime(tx.dateTime)}</span>
+                        </div>
+                        <div className="transaction_card_row">
+                          <span className="transaction_label">Provider</span>
+                          <span className="transaction_value">{tx.providerCode || '—'}</span>
+                        </div>
+                        <div className="transaction_card_row">
+                          <span className="transaction_label">Bet Amount</span>
+                          <span className="transaction_value amount_value">₹{Number(tx.betAmount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="transaction_card_row">
+                          <span className="transaction_label">Amount Won/Lost</span>
+                          <span className={`transaction_value ${tx.status && String(tx.status).toLowerCase() === 'win' ? 'amount_positive' : 'amount_negative'}`}>
+                            {formatAmount(tx.amountWonOrLost)}
+                          </span>
+                        </div>
+                        <div className="transaction_card_row">
+                          <span className="transaction_label">Balance (Before → After)</span>
+                          <span className="transaction_value">
+                            ₹{Number(tx.balanceAtBet ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })} → ₹{Number(tx.balanceAfter ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
                 )}
 
                 <div className="transactions_pagination">

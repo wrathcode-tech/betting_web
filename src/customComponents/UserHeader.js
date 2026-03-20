@@ -15,7 +15,6 @@ import {
 } from '../socket/sportsbookSocket'
 import { disconnectBalanceSocket } from '../socket/balanceSocket'
 import AuthService from '../api/services/AuthService'
-import { clearAuth, getToken } from '../utils/authStorage'
 
 const CURRENCY_LIST = [
   { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹', icon: 'images/digital_currency.svg' },
@@ -69,7 +68,7 @@ export default function UserHeader() {
   );
 
   const fetchUserDisplayName = () => {
-    const token = getToken();
+    const token = sessionStorage.getItem('token');
     if (!token) {
       setUserDisplayName('');
       return;
@@ -97,11 +96,12 @@ export default function UserHeader() {
     return () => window.removeEventListener('loginStateChange', fetchUserDisplayName);
   }, []);
 
-  // Sportsbook socket for matches/odds (balance updates via BalanceContext). Guest = no token, still connect for odds.
+  // Sportsbook socket for matches/odds (balance updates via BalanceContext)
   useEffect(() => {
     const sync = () => {
-      const t = getToken();
-      connectSportsbookSocket(t || null);
+      const t = sessionStorage.getItem('token');
+      if (t) connectSportsbookSocket(t);
+      else disconnectSportsbookSocket();
     };
     sync();
     window.addEventListener('loginStateChange', sync);
@@ -152,22 +152,7 @@ export default function UserHeader() {
     
         <div className="header_right">
         {isDemo && (
-          <>
-            <span className="demo_mode_badge" title="Login to enable this feature">Demo Mode</span>
-            <button
-              type="button"
-              className="demo_logout_btn"
-              onClick={() => {
-                disconnectBalanceSocket();
-                clearAuth();
-                setUserDisplayName('');
-                window.dispatchEvent(new CustomEvent('loginStateChange'));
-                navigate('/', { replace: true });
-              }}
-            >
-              Log out
-            </button>
-          </>
+          <span className="demo_mode_badge" title="View only – login to place bets">Demo Mode (View Only)</span>
         )}
         <div className='d-flex align-items-center gap-2 depositheader'>
         <div className="currency_balance_wrapper currency_balance_inr_only">
@@ -213,14 +198,16 @@ export default function UserHeader() {
           </div>
           )}
         </div>
-        {!isDemo && platformConfig.depositServiceStatus ? (
+        {isDemo ? (
+          <span className="deposit_disabled_banner" aria-live="polite">Login to play and place bets</span>
+        ) : platformConfig.depositServiceStatus ? (
           <button className="deposit_btn" onClick={() => navigate('/deposit')} aria-label="Deposit">
             <i className="ri-add-line deposit_btn_icon" aria-hidden />
             <span className="deposit_btn_text">Deposit</span>
           </button>
-        ) : !isDemo ? (
+        ) : (
           <span className="deposit_disabled_banner" aria-live="polite">Deposits temporarily unavailable</span>
-        ) : null}
+        )}
       </div>
      
           <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>
@@ -261,7 +248,6 @@ export default function UserHeader() {
             )}
           </div> */}
 
-        {!isDemo && (
         <div className='user_header_right' ref={dropdownRef} style={{ position: 'relative' }}>
           <div className='d-flex' onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}>
             <img className='user_header_img' src="/images/user_vector.png" alt="user" />
@@ -294,7 +280,15 @@ export default function UserHeader() {
                   <i className="ri-history-line"></i>
                   <span>Game History</span>
                 </Link>
-                {platformConfig.withdrawalServiceStatus && (
+                {/* <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                  <i className="ri-time-line"></i>
+                  <span>Sessions</span>
+                </Link> */}
+                {/* <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                  <i className="ri-safe-2-line"></i>
+                  <span>Vault</span>
+                </Link> */}
+                {platformConfig.withdrawalServiceStatus && !isDemo && (
                   <Link 
                     to="/withdrawal" 
                     className="dropdown_menu_item" 
@@ -311,7 +305,10 @@ export default function UserHeader() {
                 className="dropdown_logout_btn"
                 onClick={() => {
                   disconnectBalanceSocket();
-                  clearAuth();
+                  disconnectSportsbookSocket();
+                  sessionStorage.removeItem('token');
+                  sessionStorage.removeItem('refreshToken');
+                  sessionStorage.removeItem('user');
                   setUserDisplayName('');
                   window.dispatchEvent(new CustomEvent('loginStateChange'));
                   setIsProfileDropdownOpen(false);
@@ -322,8 +319,7 @@ export default function UserHeader() {
               </button>
             </div>
           )}
-        </div>
-        )}  
+        </div>  
     
           {/* <div className="setting_hdr">
             <img src="/images/en.png" alt="language" />

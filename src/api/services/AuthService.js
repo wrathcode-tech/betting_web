@@ -1,6 +1,18 @@
 import { ApiConfig } from "../apiConfig/apiConfig";
 import { ApiCallGet, ApiCallPost, ApiCallPostFormData, ApiCallPut, ApiCallPutFormData, ApiCallPatch, ApiCallDelete } from "../apiConfig/apiCall";
-import { getToken, getRefreshToken } from "../../utils/authStorage";
+
+// Read token from sessionStorage OR localStorage (for backward compatibility)
+const getStoredToken = () => {
+  try {
+    return sessionStorage.getItem("token") || localStorage.getItem("token");
+  } catch {
+    try {
+      return sessionStorage.getItem("token");
+    } catch {
+      return null;
+    }
+  }
+};
 
 const AuthService = {
 
@@ -67,8 +79,8 @@ const AuthService = {
 
   /** POST /auth/logout – body: { refreshToken } (per API doc). */
   bettingLogout: async () => {
-    const token = getToken();
-    const refreshToken = getRefreshToken();
+    const token = sessionStorage.getItem("token");
+    const refreshToken = sessionStorage.getItem("refreshToken");
     const { baseBettingAuth, bettingLogout } = ApiConfig;
     const url = baseBettingAuth + bettingLogout;
     const headers = {
@@ -78,20 +90,8 @@ const AuthService = {
     return ApiCallPost(url, { refreshToken: refreshToken || "" }, headers);
   },
 
-  /** POST /auth/logout-all – logout from all devices. Requires Bearer token. */
-  bettingLogoutAll: async () => {
-    const token = getToken();
-    const { baseBettingAuth, bettingLogoutAll } = ApiConfig;
-    const url = baseBettingAuth + bettingLogoutAll;
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-    return ApiCallPost(url, {}, headers);
-  },
-
   bettingGetMe: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingAuth, bettingGetMe } = ApiConfig;
     const url = baseBettingAuth + bettingGetMe;
     const headers = {
@@ -102,7 +102,7 @@ const AuthService = {
   },
 
   bettingUpdateProfile: async (payload, profileImageFile = null) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingAuth, bettingUpdateProfile } = ApiConfig;
     const url = baseBettingAuth + bettingUpdateProfile;
     const authHeader = `Bearer ${token}`;
@@ -117,7 +117,7 @@ const AuthService = {
 
   /** POST /auth/change-password – body: currentPassword, newPassword, confirmNewPassword (per API doc). */
   bettingChangePassword: async (currentPassword, newPassword, confirmNewPassword) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingAuth, bettingChangePassword } = ApiConfig;
     const url = baseBettingAuth + bettingChangePassword;
     const params = { currentPassword, newPassword, confirmNewPassword };
@@ -129,7 +129,7 @@ const AuthService = {
   },
 
   bettingGetDepositOptions: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingWallet, bettingDepositOptions } = ApiConfig;
     const url = baseBettingWallet + bettingDepositOptions;
     const headers = {
@@ -141,7 +141,7 @@ const AuthService = {
 
   /** GET /api/v1/user/platform-configuration – returns { success, data: { depositServiceStatus, withdrawalServiceStatus, referralServiceStatus, ... } }. */
   getPlatformConfiguration: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingUser, platformConfiguration } = ApiConfig;
     const url = `${baseBettingUser}/${platformConfiguration}`;
     const headers = { "Content-Type": "application/json" };
@@ -151,7 +151,7 @@ const AuthService = {
 
   /** GET /api/v1/user/transaction-limits – min/max deposit & withdrawal, bonus %, min wager for withdrawal. */
   getTransactionLimits: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingUser, transactionLimits } = ApiConfig;
     const url = `${baseBettingUser}/${transactionLimits}`;
     const headers = { "Content-Type": "application/json" };
@@ -161,7 +161,7 @@ const AuthService = {
 
   /** GET /api/v1/user/deposit-accounts/master – auth required. Returns { data: { accounts, source } }. */
   getMasterDepositAccounts: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingUser, depositAccountsMaster } = ApiConfig;
     const url = `${baseBettingUser}/${depositAccountsMaster}`;
@@ -170,7 +170,7 @@ const AuthService = {
   },
 
   bettingGetBalance: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingWallet, bettingBalance } = ApiConfig;
     const url = baseBettingWallet + bettingBalance;
     const headers = {
@@ -182,7 +182,7 @@ const AuthService = {
 
   /** GET /api/v1/wallet/deposit-transactions – auth required. Returns { data: { transactions, pagination } }. */
   walletDepositTransactions: async (page = 1, limit = 10) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingWallet, bettingDepositTransactions } = ApiConfig;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -193,7 +193,7 @@ const AuthService = {
 
   /** GET /api/v1/wallet/transactions – list with pagination (page, limit, type). Returns { data: { transactions, pagination } }. */
   walletTransactions: async (page = 1, limit = 10, type = "all") => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingWallet, bettingWalletTransactions } = ApiConfig;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -207,7 +207,7 @@ const AuthService = {
 
   /** GET /api/v1/wallet/transactions/:id – single transaction by ID (Section 2). */
   walletTransactionById: async (transactionId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const id = transactionId != null ? String(transactionId).trim() : "";
     if (!id) return { success: false, message: "Transaction ID required" };
@@ -221,7 +221,7 @@ const AuthService = {
 
   /** GET /api/v1/wallet/withdrawal-transactions – auth required. Returns { data: { transactions, pagination } }. */
   walletWithdrawalTransactions: async (page = 1, limit = 10) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingWallet, bettingWithdrawalTransactions } = ApiConfig;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -232,7 +232,7 @@ const AuthService = {
 
   /** POST /api/v1/wallet/withdrawal – auth required. Body: { accountId, amount, otp, note }. */
   walletWithdrawal: async (accountId, amount, otp, note = "") => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingWallet, bettingWithdrawal } = ApiConfig;
     const url = baseBettingWallet + bettingWithdrawal;
@@ -248,7 +248,7 @@ const AuthService = {
 
   /** POST /api/v1/wallet/send-withdrawal-otp – auth required. Body: empty {}. Sends OTP to user's registered mobile. */
   walletRequestWithdrawalOtp: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingWallet, bettingSendWithdrawalOtp } = ApiConfig;
     const url = baseBettingWallet + bettingSendWithdrawalOtp;
@@ -258,7 +258,7 @@ const AuthService = {
 
   /** POST /api/v1/wallet/send-withdrawal-otp – auth required. Body: { accountId, amount, otp, note }. Verifies OTP and processes withdrawal. */
   walletSendWithdrawalOtp: async (accountId, amount, note = "", otp = "") => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingWallet, bettingSendWithdrawalOtp } = ApiConfig;
     const url = baseBettingWallet + bettingSendWithdrawalOtp;
@@ -273,7 +273,7 @@ const AuthService = {
   },
 
   bettingCreateDeposit: async (payload, paymentProofFile = null) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingWallet, bettingDeposit } = ApiConfig;
     const url = baseBettingWallet + bettingDeposit;
     const authHeader = `Bearer ${token}`;
@@ -294,7 +294,7 @@ const AuthService = {
 
   /** Uses auth route POST /api/v1/auth/send-otp-bank (same base as signup OTP) */
   bettingBankAccountsSendOtp: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingAuth, bettingSendOtpBank } = ApiConfig;
     const url = baseBettingAuth + bettingSendOtpBank;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -302,7 +302,7 @@ const AuthService = {
   },
 
   bettingBankAccountsAdd: async (payload) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingBankAccounts } = ApiConfig;
     const url = baseBettingBankAccounts;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -310,7 +310,7 @@ const AuthService = {
   },
 
   bettingBankAccountsList: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingBankAccounts } = ApiConfig;
     const url = baseBettingBankAccounts;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -318,7 +318,7 @@ const AuthService = {
   },
 
   bettingBankAccountsDelete: async (accountId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingBankAccounts } = ApiConfig;
     const url = `${baseBettingBankAccounts}/${accountId}`;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -326,7 +326,7 @@ const AuthService = {
   },
 
   bettingBankAccountsSetDefault: async (accountId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingBankAccounts } = ApiConfig;
     const url = `${baseBettingBankAccounts}/${accountId}/default`;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -335,19 +335,19 @@ const AuthService = {
 
   // ---------- Betting Games (WCO – list + launch for iframe) ----------
   bettingGamesGetProviders: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames, bettingGamesProviders } = ApiConfig;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
     return ApiCallGet(baseBettingGames + bettingGamesProviders, headers);
   },
   bettingGamesGetCategories: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames, bettingGamesCategories } = ApiConfig;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
     return ApiCallGet(baseBettingGames + bettingGamesCategories, headers);
   },
   bettingGamesByCategory: async (category, page = 1, limit = 20, search = "") => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames } = ApiConfig;
     const params = new URLSearchParams({ page, limit });
     if (search) params.set("search", search);
@@ -356,7 +356,7 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
   bettingGamesByProvider: async (providerCode, page = 1, limit = 20, search = "") => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames } = ApiConfig;
     const params = new URLSearchParams({ page, limit });
     if (search) params.set("search", search);
@@ -366,7 +366,7 @@ const AuthService = {
   },
   /** GET /api/v1/games?providerCode=&category=&page=1&limit=20. providerCode "all" (case-insensitive) → "ALL" (no provider filter). */
   bettingGamesList: async (providerCode, category = "all", page = 1, limit = 20) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames } = ApiConfig;
     const normalizedProvider = providerCode && String(providerCode).toLowerCase() === "all" ? "ALL" : providerCode;
     const params = new URLSearchParams({ providerCode: normalizedProvider, page, limit: Math.min(limit, 50) });
@@ -377,14 +377,14 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
   bettingGamesFeatured: async (limit = 20) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames, bettingGamesFeatured } = ApiConfig;
     const url = `${baseBettingGames}${bettingGamesFeatured}?limit=${limit}`;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
     return ApiCallGet(url, headers);
   },
   bettingGamesPopular: async (limit = 20) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingGames, bettingGamesPopular } = ApiConfig;
     const url = `${baseBettingGames}${bettingGamesPopular}?limit=${limit}`;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
@@ -399,7 +399,8 @@ const AuthService = {
   },
   /** Launch game – returns launchURL for iframe. Requires login. */
   bettingGamesLaunch: async (gameCode, providerCode, platform = "desktop") => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
+    console.log("🚀 ~ token:", token)
     if (!token) return { success: false, message: "Login required to play" };
     const { baseBettingGames, bettingGamesLaunch } = ApiConfig;
     const url = baseBettingGames + bettingGamesLaunch;
@@ -409,7 +410,7 @@ const AuthService = {
 
   /** POST /api/v1/games/launch-sportsbook – Launch BT sportsbook. Body: { platform: "desktop", gameCode: null, providerCode: "BT" }. Returns { status, message, data: { launchURL, sessionId, providerCode, balance } }. */
   gamesLaunchSportsbook: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { status: "error", message: "Login required" };
     const { baseBettingGames, bettingGamesLaunchSportsbook } = ApiConfig;
     const url = baseBettingGames + bettingGamesLaunchSportsbook;
@@ -420,7 +421,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/{sportName}/matches – Public. sportName: cricket | soccer | tennis. Query: fresh=1. Response: { success, data: { data: [...], count }, message }. */
   sportsbookMatches: async (sportName, options = {}) => {
-    const token = getToken();
+    const token = getStoredToken();
     const { baseBettingSportsbook } = ApiConfig;
     const params = new URLSearchParams();
     if (options.fresh) params.set("fresh", "1");
@@ -435,7 +436,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/{sportName}/odds?gameId={gameId} or ?eventId={eventId} for tennis. Public; no auth. */
   sportsbookOdds: async (sportName, gameIdOrEventId) => {
-    const token = getToken();
+    const token = getStoredToken();
     const { baseBettingSportsbook } = ApiConfig;
     const isTennis = String(sportName).toLowerCase() === "tennis";
     const param = isTennis ? "eventId" : "gameId";
@@ -461,7 +462,7 @@ const AuthService = {
   /** GET /api/v1/sportsbook/event/config?eventId=<gameId> – tvUrl for live stream (Berlin). Response: { response: { tvUrl, eventId, minStack, maxStack, ... } }. */
   sportsbookEventConfig: async (eventId) => {
     if (!eventId) return { tvUrl: null };
-    const token = getToken();
+    const token = getStoredToken();
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/event/config?eventId=${encodeURIComponent(eventId)}`;
     const headers = {
@@ -476,7 +477,7 @@ const AuthService = {
 
   /** GET /api/v1/games/history – sessions list. Query: page, limit, from, to (ISO date). */
   gamesHistory: async (params = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingGames, bettingGamesHistory } = ApiConfig;
     const q = new URLSearchParams();
@@ -491,7 +492,7 @@ const AuthService = {
 
   /** GET /api/v1/games/transactions – rounds (game, date, bet, result, amount). Query: page, limit, gameCode, providerCode. */
   gamesTransactions: async (page = 1, limit = 20, opts = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingGames, bettingGamesTransactions } = ApiConfig;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -504,7 +505,7 @@ const AuthService = {
 
   /** GET /api/v1/games/transaction-history – ledger (date, credit, debit, balance, remark). Query: page, limit, from, to. */
   gamesTransactionHistory: async (params = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingGames, bettingGamesTransactionHistory } = ApiConfig;
     const q = new URLSearchParams();
@@ -519,7 +520,7 @@ const AuthService = {
 
   /** GET /api/v1/games/sportsbook/transactions – auth required. Returns { status, data: { transactions, pagination } }. */
   gamesSportsbookTransactions: async (page = 1, limit = 10) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { status: "error", message: "Login required" };
     const { baseBettingGames, gamesSportsbookTransactions } = ApiConfig;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -530,7 +531,7 @@ const AuthService = {
 
   /** GET /api/v1/games/sportsbook/transaction-history – auth required. Returns { status, data: { transactions, pagination } }. */
   gamesSportsbookTransactionHistory: async (page = 1, limit = 20) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { status: "error", message: "Login required" };
     const { baseBettingGames, gamesSportsbookTransactionHistory } = ApiConfig;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -541,7 +542,7 @@ const AuthService = {
 
   /** POST /api/v1/sportsbook/bet/place – Place a back/lay bet. Body: sport, gameId, eventName, marketType, marketId, selectionId, selectionName, betType, odds, stake, etc. */
   sportsbookPlaceBet: async (body) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/bet/place`;
@@ -551,7 +552,7 @@ const AuthService = {
 
   /** POST /api/v1/sportsbook/bet/{betId}/cancel – Cancel an open bet. */
   sportsbookCancelBet: async (betId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}/cancel`;
@@ -561,7 +562,7 @@ const AuthService = {
 
   /** POST /api/v1/sportsbook/bet/{betId}/cashout – Execute cashout. Socket: betUpdate (cashed_out) + balance. */
   sportsbookCashout: async (betId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}/cashout`;
@@ -571,7 +572,7 @@ const AuthService = {
 
   /** POST /api/v1/sportsbook/bet/{betId}/loss-cut – Cashout only when in loss; returns 400 if profit/break-even. */
   sportsbookLossCut: async (betId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}/loss-cut`;
@@ -581,7 +582,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/bet/{betId}/cashout-value – Get cashout value for a bet. */
   sportsbookCashoutValue: async (betId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}/cashout-value`;
@@ -591,7 +592,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/loss-limit – Current loss limit settings (dailyLossLimit, isActive, currency). */
   sportsbookGetLossLimit: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/loss-limit`;
@@ -601,7 +602,7 @@ const AuthService = {
 
   /** PUT /api/v1/sportsbook/loss-limit – Set daily loss limit. Body: { dailyLossLimit: number | null }. */
   sportsbookSetLossLimit: async (dailyLossLimit) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/loss-limit`;
@@ -612,7 +613,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/bet/open – Open bets. Query: gameId, marketType, sport, page, limit. Auth: Bearer. Response: { data: { bets: [...] } } or similar. */
   sportsbookOpenBets: async (params = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
     const q = new URLSearchParams(params).toString();
     const url = `${baseBettingSportsbook}/bet/open${q ? `?${q}` : ""}`;
@@ -622,7 +623,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/bet/history – Bet history. Query: page, limit, sport, from, to, result (won | lost | void). */
   sportsbookBetHistory: async (params = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
     const q = new URLSearchParams(params).toString();
     const url = `${baseBettingSportsbook}/bet/history${q ? `?${q}` : ""}`;
@@ -632,7 +633,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/bet/summary – Dashboard: openBetsCount, totalExposure, todayPnl. Define before /bet/:betId. */
   sportsbookBetSummary: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/bet/summary`;
@@ -642,7 +643,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/bet/{betId} – Single bet details (betId = 24-char hex). */
   sportsbookBetById: async (betId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}`;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
@@ -651,7 +652,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/realtime-pnl – Real-time P&L (open bets, cashoutValue, realtimePnl). */
   sportsbookRealtimePnl: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/realtime-pnl`;
@@ -661,7 +662,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/exposure – User exposure (total and per-market risk in INR). */
   sportsbookExposure: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/exposure`;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
@@ -670,7 +671,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/profit-loss – P&L. Params: sport, from, to. */
   sportsbookProfitLoss: async (params = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
     const q = new URLSearchParams(params).toString();
     const url = `${baseBettingSportsbook}/profit-loss${q ? `?${q}` : ""}`;
@@ -680,7 +681,7 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/betfair-result/{type}?marketId=X – type: match-odds | bookmaker | fancy. marketId comma-separated for multiple. */
   sportsbookBetfairResult: async (type, marketId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
     const url = `${baseBettingSportsbook}/betfair-result/${encodeURIComponent(type)}?marketId=${encodeURIComponent(marketId)}`;
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
@@ -693,7 +694,7 @@ const AuthService = {
 
   /** GET /api/v1/support/tickets – List tickets. Query: search?, status? (open|in_progress|resolved|closed), page, limit. */
   getUserTickets: async (params = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSupport, supportTickets } = ApiConfig;
     const q = new URLSearchParams();
@@ -708,7 +709,7 @@ const AuthService = {
 
   /** GET /api/v1/support/tickets/:ticketId – Ticket detail + messages (chat). */
   getTicketDetail: async (ticketId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSupport, supportTickets } = ApiConfig;
     const url = `${baseBettingSupport}/${supportTickets}/${encodeURIComponent(ticketId)}`;
@@ -718,7 +719,7 @@ const AuthService = {
 
   /** POST /api/v1/support/tickets – Create ticket. Body: { subject, category, priority?, description, attachmentUrl?, attachmentName? }. category: deposit|withdrawal|betting|casino|launchpad|account|other. priority: low|medium|high. */
   submitTicket: async (body) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSupport, supportTickets } = ApiConfig;
     const url = `${baseBettingSupport}/${supportTickets}`;
@@ -729,7 +730,7 @@ const AuthService = {
 
   /** POST /api/v1/support/tickets/:ticketId/messages – Send message. Body: { message, attachmentUrl?, attachmentName? }. */
   replyTicket: async (ticketId, body) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSupport, supportTickets } = ApiConfig;
     const url = `${baseBettingSupport}/${supportTickets}/${encodeURIComponent(ticketId)}/messages`;
@@ -740,7 +741,7 @@ const AuthService = {
 
   /** PATCH /api/v1/support/tickets/:ticketId/close – Close ticket. */
   closeTicket: async (ticketId) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSupport, supportTickets } = ApiConfig;
     const url = `${baseBettingSupport}/${supportTickets}/${encodeURIComponent(ticketId)}/close`;
@@ -752,7 +753,7 @@ const AuthService = {
   // REFERRAL (Section 5) – protected
   // ============================================================================
   referralDashboard: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingReferral } = ApiConfig;
     const url = `${baseBettingReferral}/dashboard`;
@@ -760,7 +761,7 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
   referralBalance: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingReferral } = ApiConfig;
     const url = `${baseBettingReferral}/balance`;
@@ -768,7 +769,7 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
   referralClaim: async () => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingReferral } = ApiConfig;
     const url = `${baseBettingReferral}/balance/claim`;
@@ -776,7 +777,7 @@ const AuthService = {
     return ApiCallPost(url, {}, headers);
   },
   referralList: async (params = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingReferral } = ApiConfig;
     const q = new URLSearchParams(params).toString();
@@ -785,7 +786,7 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
   referralApply: async (referralCode) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingReferral } = ApiConfig;
     const url = `${baseBettingReferral}/apply`;
@@ -794,7 +795,7 @@ const AuthService = {
   },
   /** GET /api/v1/referral/referrals/export?from&to – CSV export (Section 5). */
   referralExport: async (params = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingReferral } = ApiConfig;
     const q = new URLSearchParams(params).toString();
@@ -804,7 +805,7 @@ const AuthService = {
   },
   /** GET /api/v1/referral/profit?page&limit – profit per referred user. */
   referralProfit: async (params = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingReferral } = ApiConfig;
     const q = new URLSearchParams(params).toString();
@@ -814,7 +815,7 @@ const AuthService = {
   },
   /** GET /api/v1/referral/rewards/history?page&limit&from&to. */
   referralRewardsHistory: async (params = {}) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingReferral } = ApiConfig;
     const q = new URLSearchParams(params).toString();
@@ -824,7 +825,7 @@ const AuthService = {
   },
   /** GET /api/v1/referral/rewards/live?limit – live rewards feed. */
   referralRewardsLive: async (limit) => {
-    const token = getToken();
+    const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingReferral } = ApiConfig;
     const url = `${baseBettingReferral}/rewards/live${limit != null ? `?limit=${limit}` : ""}`;

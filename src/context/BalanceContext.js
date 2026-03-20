@@ -15,8 +15,6 @@ import {
   addBetUpdateListener,
   removeBetUpdateListener,
 } from '../socket/sportsbookSocket'
-import { getToken } from '../utils/authStorage'
-import { useAuth } from './AuthContext'
 
 const BalanceContext = createContext({
   balance: null,
@@ -25,15 +23,14 @@ const BalanceContext = createContext({
 
 export function BalanceProvider({ children }) {
   const [balance, setBalanceState] = useState(() => getLastBalance())
-  const [token, setToken] = useState(() => getToken())
-  const { isDemo } = useAuth()
+  const [token, setToken] = useState(() => sessionStorage.getItem('token'))
 
   const setBalance = useCallback((value) => {
     setBalanceState((prev) => (value === prev ? prev : value))
   }, [])
 
   useEffect(() => {
-    const onLoginChange = () => setToken(getToken())
+    const onLoginChange = () => setToken(sessionStorage.getItem('token'))
     window.addEventListener('loginStateChange', onLoginChange)
     return () => window.removeEventListener('loginStateChange', onLoginChange)
   }, [])
@@ -46,13 +43,7 @@ export function BalanceProvider({ children }) {
       return
     }
 
-    // Balance socket: real user only. Demo token must not connect (backend rejects).
-    if (!isDemo) {
-      connectBalanceSocket(token)
-    } else {
-      disconnectBalanceSocket()
-    }
-
+    connectBalanceSocket(token)
     const onBalance = (payload) => {
       const newBalance = payload?.balance
       if (newBalance != null) {
@@ -62,7 +53,6 @@ export function BalanceProvider({ children }) {
     }
     addBalanceListener(onBalance)
 
-    // Sportsbook socket: optional token (guest / demo / user). Connects with token for full access.
     connectSportsbookSocket(token)
     const onBetUpdate = (payload) => {
       if (payload?.balanceAfter != null) {
@@ -80,7 +70,7 @@ export function BalanceProvider({ children }) {
       disconnectSportsbookSocket()
       setBalanceState(null)
     }
-  }, [token, isDemo])
+  }, [token])
 
   useEffect(() => {
     const onWalletUpdate = (e) => {

@@ -17,7 +17,6 @@ import {
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { useAuth } from '../context/AuthContext'
-import { getToken } from '../utils/authStorage'
 import LossCutIndicator from '../customComponents/LossCutIndicator'
 import { BackPriceCell, LayPriceCell } from './OddsMarketComponents'
 
@@ -81,13 +80,8 @@ function CricketDetail() {
             .finally(() => setOpenBetsLoading(false))
     }, [openCashoutSection])
 
-    // Fetch cashout-value only when user is viewing cashout UI (popover or betslip Open Bets tab). Avoids calling API on every openBetsList change.
-    const needCashoutValues = !!openCashoutSection || (isBetslipOpen && betslipView === 'openbets')
-    const openBetsForCashout = (openBetsList || []).filter((b) => (b.status || 'open').toLowerCase() === 'open')
-    const cashoutBetIdsKey = openBetsForCashout.map((b) => b._id ?? b.id).filter(Boolean).sort().join(',')
-
+    // Fetch cashout-value from GET /bet/:betId/cashout-value for each open bet
     useEffect(() => {
-        if (!needCashoutValues) return
         const openBets = (openBetsList || []).filter((b) => (b.status || 'open').toLowerCase() === 'open')
         if (openBets.length === 0) {
             setCashoutValuesMap({})
@@ -116,8 +110,7 @@ function CricketDetail() {
         }
         fetchAll()
         return () => { cancelled = true }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when needCashoutValues or bet set (cashoutBetIdsKey) changes; openBetsList read from closure
-    }, [needCashoutValues, cashoutBetIdsKey])
+    }, [openBetsList])
 
     const [defaultMatch, setDefaultMatch] = useState(null)
     const gameIdFromState = location.state?.gameId
@@ -146,7 +139,7 @@ function CricketDetail() {
     // Guest (no token): fetch matches via REST and set first match so odds load without login
     useEffect(() => {
         if (gameIdFromState) return
-        const token = getToken()
+        const token = sessionStorage.getItem('token')
         if (token) return
         let cancelled = false
         AuthService.sportsbookMatches(sportName)
@@ -166,10 +159,12 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [gameIdFromState, sportName])
 
-    // Socket: subscribe:matches { sport }. Works as guest (no token) or with token. Leave → unsubscribe:matches.
+    // Socket (doc): subscribe:matches { sport } when need default match; on('matches') { sport, data, timestamp }. Leave → unsubscribe:matches.
     useEffect(() => {
         if (gameIdFromState) return
-        connectSportsbookSocket(getToken() || null)
+        const token = sessionStorage.getItem('token')
+        if (!token) return
+        connectSportsbookSocket(token)
         const onMatches = (payload) => {
             if (payload?.sport !== sportName || payload.data === undefined) return
             const list = Array.isArray(payload.data) ? payload.data : []
@@ -190,15 +185,14 @@ function CricketDetail() {
     }, [gameIdFromState, sportName])
 
     const normalizeOdds = (d) => {
-        const matchOdds = d?.matchOdds ?? d?.match_odds ?? []
-        const arrMatchOdds = Array.isArray(matchOdds) ? matchOdds : []
-        const firstMarket = arrMatchOdds?.[0]
+        const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds : (Array.isArray(d?.match_odds) ? d.match_odds : [])
+        const firstMarket = matchOdds?.[0]
         const otherMarketOdds = Array.isArray(d?.otherMarketOdds) ? d.otherMarketOdds : (Array.isArray(d?.other_market_odds) ? d.other_market_odds : [])
         const totalGoalsOdds = Array.isArray(d?.totalGoalsOdds) ? d.totalGoalsOdds : (Array.isArray(d?.total_goals_odds) ? d.total_goals_odds : [])
         const overUnderOdds = Array.isArray(d?.overUnderOdds) ? d.overUnderOdds : (Array.isArray(d?.over_under_odds) ? d.over_under_odds : [])
         return {
-            matchOdds: arrMatchOdds,
-            marketClosed: d?.marketClosed ?? true,
+            matchOdds,
+            marketClosed: d?.marketClosed === true,
             tvUrl: d?.tv_url ?? d?.tvUrl ?? firstMarket?.tv_url ?? firstMarket?.tvUrl ?? null,
             isTv: d?.IsTv ?? d?.isTv ?? firstMarket?.IsTv ?? firstMarket?.isTv ?? false,
             fancyOdds: Array.isArray(d?.fancyOdds) ? d.fancyOdds : (Array.isArray(d?.fancy_odds) ? d.fancy_odds : []),
@@ -233,13 +227,8 @@ function CricketDetail() {
         AuthService.sportsbookOdds(sportName, oddsId)
             .then((res) => {
                 if (cancelled || !res) return
-                if (res?.success === false) {
-                    setOddsData(null)
-                    return
-                }
-                const raw = res?.data ?? res
-                let d = raw?.data ?? raw ?? raw?.odds
-                if (Array.isArray(d)) d = { matchOdds: d }
+                const raw = res.data ?? res
+                const d = raw?.data ?? raw
                 if (d && typeof d === 'object') {
                     setOddsData(normalizeOdds(d))
                     const tvUrl = d?.tvUrl ?? d?.tv_url ?? null
@@ -256,11 +245,13 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [oddsId, sportName])
 
-    // 2) Socket – live odds (guest + logged-in, same as /sports). Tennis uses eventId in payload.
+    // 2) Phir socket – live updates (token ho to). Tennis uses eventId in payload. Update odds, liveScore, streamUrl (tvUrl may appear later).
     useEffect(() => {
         if (!oddsId) return
+        const token = sessionStorage.getItem('token')
+        if (!token) return
         const currentOddsKey = oddsId
-        connectSportsbookSocket(getToken() || null)
+        connectSportsbookSocket(token)
         const onOdds = (payload) => {
             const payloadKey = payload?.eventId ?? payload?.gameId
             if (payloadKey !== currentOddsKey || payload?.data === undefined) return
@@ -282,7 +273,7 @@ function CricketDetail() {
     // Guests: fetch live score via REST (no Socket)
     useEffect(() => {
         if (!eventId && !gameId) return
-        const token = getToken()
+        const token = sessionStorage.getItem('token')
         if (token) return
         let cancelled = false
         AuthService.sportsbookScore(eventId || gameId)
@@ -418,26 +409,19 @@ function CricketDetail() {
     const [placeBetLoading, setPlaceBetLoading] = useState(false)
     const [placeBetError, setPlaceBetError] = useState(null)
     const [placeBetSuccessMessage, setPlaceBetSuccessMessage] = useState(null)
-    const [lastPlacedBetDetails, setLastPlacedBetDetails] = useState(null)
 
     useEffect(() => {
         if (!placeBetSuccessMessage) return
-        const t = setTimeout(() => {
-            setPlaceBetSuccessMessage(null)
-            setLastPlacedBetDetails(null)
-        }, 8000)
+        const t = setTimeout(() => setPlaceBetSuccessMessage(null), 4000)
         return () => clearTimeout(t)
     }, [placeBetSuccessMessage])
 
     useEffect(() => {
-        if (selectedBets.length > 0) {
-            setPlaceBetSuccessMessage(null)
-            setLastPlacedBetDetails(null)
-        }
+        if (selectedBets.length > 0) setPlaceBetSuccessMessage(null)
     }, [selectedBets.length])
 
     const handlePlaceBet = async () => {
-        if (!getToken()) {
+        if (!sessionStorage.getItem('token')) {
             window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'login' }))
             return
         }
@@ -490,20 +474,6 @@ function CricketDetail() {
                 const backendMsg = res?.data?.message ?? res?.message
                 if (res && res.success === false) throw new Error(backendMsg)
             }
-            const stakeNumFinal = stakeNum
-            const details = toPlace.map((b) => {
-                const oddsVal = b === toPlace[0] && slipOdds != null && slipOdds >= 1.01 ? slipOdds : (b.oddsDisplay ?? b.odds)
-                const betType = (b.placePayload?.betType ?? b.betType ?? 'back').toLowerCase()
-                const profit = betType === 'lay' ? stakeNumFinal : (stakeNumFinal * (Number(oddsVal) - 1))
-                return {
-                    betName: b.betName,
-                    odds: Number(oddsVal) || 0,
-                    betType,
-                    stake: stakeNumFinal,
-                    profit: profit.toFixed(2),
-                }
-            })
-            setLastPlacedBetDetails({ bets: details, eventName: eventNameFromState || 'Match' })
             setSelectedBets([])
             setStake(100)
             const successMsg = lastRes?.data?.message ?? lastRes?.message
@@ -1035,10 +1005,9 @@ function CricketDetail() {
                                                                     <button
                                                                         className="betslip_place_bet_btn"
                                                                         onClick={handlePlaceBet}
-                                                                        disabled={placeBetLoading || lossLimitReached}
-                                                                        title={isDemo ? 'Login to enable this feature' : undefined}
+                                                                        disabled={placeBetLoading || lossLimitReached || isDemo}
                                                                     >
-                                                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
+                                                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : isDemo ? 'Login to play' : 'Place Bet'}
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -1154,10 +1123,9 @@ function CricketDetail() {
                                 <button
                                     className="betslip_place_bet_btn"
                                     onClick={handlePlaceBet}
-                                    disabled={placeBetLoading || lossLimitReached}
-                                    title={isDemo ? 'Login to enable this feature' : undefined}
+                                    disabled={placeBetLoading || lossLimitReached || isDemo}
                                 >
-                                    {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
+                                    {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : isDemo ? 'Login to play' : 'Place Bet'}
                                 </button>
                             </div>
                         </div>
@@ -1182,43 +1150,6 @@ function CricketDetail() {
         if (val == null || val === '') return true
         const n = parseFloat(String(val).trim())
         return Number.isNaN(n) || n <= 0
-    }
-
-    const getMarketDisplayName = (m) => (m?.marketName ?? m?.market ?? m?.mname ?? m?.name ?? 'Market').trim() || 'Market'
-
-    const buildNoYesRowsFromSingleMarket = (m) => {
-        if (!m) return []
-        const oddList = toOddDatasArray(m.oddDatas)
-        if (oddList.length >= 2) {
-            const noSel = oddList[0]
-            const yesSel = oddList[1]
-            return [{
-                label: m.market || m.name || 'Market',
-                noOdds: noSel?.l1 ?? noSel?.b1 ?? '—',
-                noSize: noSel?.ls1 ?? noSel?.bs1 ?? '—',
-                yesOdds: yesSel?.b1 ?? yesSel?.l1 ?? '—',
-                yesSize: yesSel?.bs1 ?? yesSel?.ls1 ?? '—',
-                max: '100K',
-                marketId: m.mid || m.marketId,
-                noSid: noSel?.sid,
-                yesSid: yesSel?.sid,
-            }]
-        }
-        if (oddList.length === 1) {
-            const o = oddList[0]
-            return [{
-                label: o.rname ?? o.selectionName ?? m.market ?? 'Market',
-                noOdds: o.l1 ?? '—',
-                noSize: o.ls1 ?? '—',
-                yesOdds: o.b1 ?? '—',
-                yesSize: o.bs1 ?? '—',
-                max: '100K',
-                marketId: m.mid || m.marketId,
-                noSid: o.sid,
-                yesSid: o.sid,
-            }]
-        }
-        return []
     }
 
     // Neeche: SESSIONS / W/P MARKET / EXTRA MARKET – API se (fancyOdds / otherMarketOdds). Static data nahi.
@@ -1279,15 +1210,15 @@ function CricketDetail() {
         return markets.map((m) => {
             const oddList = toOddDatasArray(m.oddDatas)
             const rows = oddList.map((o) => ({
-                label: o.rname ?? o.selectionName ?? o.description ?? '—',
+                label: o.rname ?? o.selectionName ?? '—',
                 backOdds: o.b1 ?? '—',
                 backSize: o.bs1 ?? '—',
             }))
             const allLocked = rows.every((r) => isOddsLocked(r.backOdds))
             return {
-                key: m.mid || m.marketId || m.market || `backonly-${markets.indexOf(m)}`,
-                title: getMarketDisplayName(m),
-                minMax: m.minMax ?? 'MIN:100 MAX:10K',
+                key: m.mid || m.marketId || m.market,
+                title: m.market || m.name || 'Market',
+                minMax: 'MIN:100 MAX:50K',
                 rows,
                 isLocked: allLocked,
             }
@@ -1745,15 +1676,9 @@ function CricketDetail() {
                                             }
                                             const crr = s.CRR ?? '—'
                                             const rrr = s.RRR ?? '—'
-                                            const rawBalls = [s.CurrentOverBalls1, s.CurrentOverBalls2, s.CurrentOverBalls3, s.CurrentOverBalls4, s.CurrentOverBalls5, s.CurrentOverBalls6]
+                                            const rawBalls = [s.CurrentOverBalls1, s.CurrentOverBalls2, s.CurrentOverBalls3, s.CurrentOverBalls4, s.CurrentOverBalls5, s.CurrentOverBalls6].filter(Boolean)
                                             const isPlaceholder = rawBalls.length === 1 && /^\d{5,6}$/.test(String(rawBalls[0]).trim())
-                                            let overBalls = isPlaceholder ? [] : rawBalls.map((b) => (b === undefined || b === null || b === '' ? '—' : String(b).trim()))
-                                            const scoreStr = s.Team1OnlyScore || s.Team1Score || s.Over || ''
-                                            const overMatch = String(scoreStr).match(/\((\d+)\.(\d+)\)/) || String(s.Over || '').match(/^(\d+)\.(\d+)$/)
-                                            const ballsInCurrentOver = overMatch ? Math.min(6, Math.max(0, parseInt(overMatch[2], 10))) : 6
-                                            if (overBalls.length > 0 && ballsInCurrentOver >= 0) {
-                                                overBalls = overBalls.slice(0, ballsInCurrentOver)
-                                            }
+                                            const overBalls = isPlaceholder ? [] : rawBalls
                                             const overStr = overBalls.length > 0 ? overBalls.join(' ') : '—'
                                             const team1Flag = s.Team1Flag || s.team1Flag
                                             const team2Flag = s.Team2Flag || s.team2Flag
@@ -1899,8 +1824,8 @@ function CricketDetail() {
                                                         {oddsLoading && gameId && (
                                                             <div className='match_block' style={{ padding: '1rem', color: 'var(--text-secondary, #888)' }}>Loading odds...</div>
                                                         )}
-                                                        {!oddsLoading && oddsData && !oddsData.matchOdds?.length && (
-                                                            <div className='match_block odds_market_closed' style={{ padding: '1rem', color: 'var(--text-secondary, #888)', textAlign: 'center' }}>{oddsData.marketClosed ? 'Market closed' : 'No match odds available'}</div>
+                                                        {!oddsLoading && oddsData && (oddsData.marketClosed || !oddsData.matchOdds?.length) && (
+                                                            <div className='match_block odds_market_closed' style={{ padding: '1rem', color: 'var(--text-secondary, #888)', textAlign: 'center' }}>Market closed</div>
                                                         )}
                                                         {!oddsLoading && oddsData && !oddsData.marketClosed && oddsData.matchOdds?.length > 0 && (sportName === 'soccer' || sportName === 'tennis') ? (
                                                             <>
@@ -1964,42 +1889,26 @@ function CricketDetail() {
                                                                         return renderOddsSection(`soccer_below_${idx}`, def.title, 'ri-settings-3-line', def.minMax, [dummyMarket], 'match_odds')
                                                                     })
                                                                 })()}
-                                                                {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', getMarketDisplayName((oddsData.fancyOdds || oddsData.premiumFancy || [])[0]) || 'Fancy', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
+                                                                {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
                                                             </>
                                                         ) : (
                                                             <>
-                                                                {oddsData?.matchOdds?.length > 0 && renderOddsSection('match_odds', getMarketDisplayName(oddsData.matchOdds[0]) || 'Match Odds', 'ri-rocket-line', oddsData.matchOdds[0]?.minMax || 'MIN: 100 MAX: 10K', oddsData.matchOdds, 'match_odds')}
-                                                                {oddsData?.bookMakerOdds?.length > 0 && oddsData.bookMakerOdds.map((bm, bmIdx) => (
-                                                                    <React.Fragment key={bm.mid || bm.marketId || `bookmaker-${bmIdx}`}>
-                                                                        {renderOddsSection(`bookmaker_${bmIdx}`, getMarketDisplayName(bm) || 'Bookmaker', 'ri-tools-line', bm.minMax || 'MIN: 100 MAX: 300K', [bm], 'bookmaker')}
-                                                                    </React.Fragment>
-                                                                ))}
-                                                                {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', getMarketDisplayName((oddsData.fancyOdds || oddsData.premiumFancy || [])[0]) || 'Fancy', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
-                                                                {/* Genie Combo / Back-only: same level as Match Odds, Bookmaker, Toss (reference UI) */}
-                                                                {backOnlyBlocks.map((block) => renderBackOnlySection(block))}
+                                                                {!oddsData?.marketClosed && oddsData?.matchOdds?.length > 0 && renderOddsSection('match_odds', 'MATCH ODDS', 'ri-rocket-line', 'MIN: 100 MAX: 10K', oddsData.matchOdds, 'match_odds')}
+                                                                {!oddsData?.marketClosed && oddsData?.bookMakerOdds?.length > 0 && renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 300K', oddsData.bookMakerOdds, 'bookmaker')}
+                                                                {!oddsData?.marketClosed && (oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
                                                             </>
                                                         )}
 
-                                                        {/* Neeche: Fancy – API market names (SESSIONS, W/P MARKET, Toss, Genie combo, ODD/EVEN, etc.) */}
-                                                        {sportName === 'cricket' && (() => {
-                                                            const fancyNoYesMarkets = [
-                                                                ...(oddsData?.fancyOdds ?? []),
-                                                                ...(oddsData?.otherMarketOdds ?? []),
-                                                                ...(oddsData?.oddEvenOdds ?? []),
-                                                                ...extraNoYesMarkets,
-                                                            ].filter((m) => buildNoYesRowsFromSingleMarket(m).length > 0)
-                                                            return (
-                                                                <div className="markets_below_wrap MuiTab-wrapper fancy_wrapper">
-                                                                    <div className="fancy_section_label"><i className="ri-price-tag-3-line" aria-hidden /> Fancy</div>
-                                                                    {fancyNoYesMarkets.map((m, idx) => {
-                                                                        const key = m.mid || m.marketId || `fancy-${idx}`
-                                                                        const title = getMarketDisplayName(m)
-                                                                        const rows = buildNoYesRowsFromSingleMarket(m)
-                                                                        return rows.length ? renderNoYesSection(key, title, rows) : null
-                                                                    })}
-                                                                </div>
-                                                            )
-                                                        })()}
+                                                        {/* Neeche: SESSIONS, W/P MARKET, EXTRA MARKET, ODD/EVEN – cricket only */}
+                                                        {sportName === 'cricket' && (
+                                                            <div className="markets_below_wrap">
+                                                                {renderNoYesSection('below_sessions', 'SESSIONS', sessionsRows)}
+                                                                {renderNoYesSection('below_wp', 'W/P MARKET', wpMarketRows)}
+                                                                {renderNoYesSection('below_extra', 'EXTRA MARKET', extraMarketRows)}
+                                                                {renderNoYesSection('below_odd_even', 'ODD/EVEN', oddEvenRows)}
+                                                                {backOnlyBlocks.map((block) => renderBackOnlySection(block))}
+                                                            </div>
+                                                        )}
 
                                                         {/* {oddsData?.matchOdds?.map((market, mIdx) => {
                                                     const marketId = market.mid || market.marketId
@@ -2560,29 +2469,7 @@ function CricketDetail() {
                                     <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
                                     <div className='betslip_success'>
                                         <p className='betslip_success_title'>Bet placed</p>
-                                        {lastPlacedBetDetails?.bets?.length > 0 ? (
-                                            lastPlacedBetDetails.bets.map((placed, idx) => {
-                                                const isBack = placed.betType === 'back'
-                                                const cardClass = `betslip_card_light betslip_card_${isBack ? 'back' : 'lay'} betslip_placed_card`
-                                                return (
-                                                    <div key={idx} className={cardClass}>
-                                                        <div className='betslip_card_header'>
-                                                            <span className='betslip_match_title'>{lastPlacedBetDetails.eventName}</span>
-                                                            <span className='betslip_placed_badge' aria-hidden>✓</span>
-                                                        </div>
-                                                        <div className='betslip_selection'>
-                                                            {placed.betName} @ {placed.odds.toFixed(2)}
-                                                        </div>
-                                                        <div className='betslip_placed_footer'>
-                                                            <span>Stake: ₹{Number(placed.stake).toLocaleString('en-IN')}</span>
-                                                            <span className='betslip_placed_profit'>Profit: ₹{placed.profit}</span>
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })
-                                        ) : (
-                                            <p className='betslip_success_msg'>{placeBetSuccessMessage}</p>
-                                        )}
+                                        <p className='betslip_success_msg'>{placeBetSuccessMessage}</p>
                                     </div>
                                 </>
                             ) : selectedBets.length > 0 ? (
@@ -2675,8 +2562,8 @@ function CricketDetail() {
                                         <button type='button' className='betslip_clear_all_btn' onClick={clearAllBets}>Clear all bets</button>
                                     </p> */}
                                     {placeBetError && <p className='betslip_error'>{placeBetError}</p>}
-                                    <button className='betslip_place_bet_btn' onClick={handlePlaceBet} disabled={placeBetLoading || lossLimitReached} title={isDemo ? 'Login to enable this feature' : undefined}>
-                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : 'Place Bet'}
+                                    <button className='betslip_place_bet_btn' onClick={handlePlaceBet} disabled={placeBetLoading || lossLimitReached || isDemo}>
+                                        {placeBetLoading ? 'Placing...' : lossLimitReached ? 'Betting disabled' : isDemo ? 'Login to play' : 'Place Bet'}
                                     </button>
                                 </>
                             ) : (
