@@ -48,6 +48,17 @@ function CricketDetail() {
     const [openLossCutSection, setOpenLossCutSection] = useState(null)
     const openBetsCount = openBetsList.length
     const [isMobileBetslipOpen, setIsMobileBetslipOpen] = useState(false)
+    const [isOddsTableCompact, setIsOddsTableCompact] = useState(() =>
+        typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+    )
+
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 767px)')
+        const onChange = () => setIsOddsTableCompact(mq.matches)
+        onChange()
+        mq.addEventListener('change', onChange)
+        return () => mq.removeEventListener('change', onChange)
+    }, [])
 
     // Ensure betslip popup opens whenever at least one bet is selected (desktop & mobile)
     useEffect(() => {
@@ -818,13 +829,13 @@ function CricketDetail() {
                     </div>
                 </div>
                 <div className="odds_section_table_wrap">
-                    <table className="odds_section_table">
+                    <table className={`odds_section_table${isOddsTableCompact ? ' odds_section_table_compact' : ''}`}>
                         <thead>
                             <tr>
                                 <th>Market</th>
                                 <th className="odds_section_indicator_th" aria-label="Spread / Value" />
-                                <th colSpan={3}>Back</th>
-                                <th colSpan={3}>Lay</th>
+                                <th colSpan={isOddsTableCompact ? 1 : 3}>Back</th>
+                                <th colSpan={isOddsTableCompact ? 1 : 3}>Lay</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -849,8 +860,22 @@ function CricketDetail() {
                                     if (Number.isNaN(nb)) return -1
                                     return na - nb
                                 }
-                                const backCells = [...backCellsRaw].sort(sortByOddsAsc)
-                                const layCells = [...layCellsRaw].sort(sortByOddsAsc)
+                                const pickSingleBestBack = (raw) => {
+                                    const valid = raw.filter((c) => !isOddsLocked(c.odds))
+                                    if (valid.length === 0) return [raw[0] ?? { odds: null, size: null }]
+                                    return [valid.reduce((best, c) => (parseFloat(c.odds) > parseFloat(best.odds) ? c : best))]
+                                }
+                                const pickSingleBestLay = (raw) => {
+                                    const valid = raw.filter((c) => !isOddsLocked(c.odds))
+                                    if (valid.length === 0) return [raw[0] ?? { odds: null, size: null }]
+                                    return [valid.reduce((best, c) => (parseFloat(c.odds) < parseFloat(best.odds) ? c : best))]
+                                }
+                                const backCells = isOddsTableCompact
+                                    ? pickSingleBestBack(backCellsRaw)
+                                    : [...backCellsRaw].sort(sortByOddsAsc)
+                                const layCells = isOddsTableCompact
+                                    ? pickSingleBestLay(layCellsRaw)
+                                    : [...layCellsRaw].sort(sortByOddsAsc)
                                 const isMatchOdds = sectionKey === 'match_odds' && oddList.length >= 2
                                 const matchOddsBet = isMatchOdds ? selectedBets.find((b) => b.market === market.market) : null
                                 const stakeNum = Number(stake) || 0
