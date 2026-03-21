@@ -41,7 +41,13 @@ All protected calls use `Authorization: Bearer <token>` via AuthService.
 - **Client events:** `subscribe:matches` `{ sport }`, `subscribe:odds` `{ gameId }` or `{ eventId, sport }` (tennis), `subscribe:scoreboard` `{ gameId }` or `{ eventId, sport }` (tennis).
 - **Server events:** `matches`, `odds`, `scoreboard`, `betUpdate`, `balance`.
 
-Balance and bet updates are wired in `BalanceContext` (balance, betUpdate listeners).
+**Connection & subscriptions (single place):** `SportsbookStoreProvider` calls `connectSportsbookSocket(token || null)` on mount and on `loginStateChange`. **`SportsbookRouteMatchStreams`** (inside the provider) drives `subscribe:matches` from **pathname**: `/` and `/sports` → cricket, tennis, soccer; `/cricket` | `/tennis` | `/soccer` → that sport only for logged-in non-demo users. Changing route unsubscribes the previous set. Duplicate `subscribe:matches` emits for the same sport on one connection are skipped (`matchSubSentToServer` Set in `sportsbookSocket.js`).
+
+- **`useSportsOddsSubscription(gameId, sport, enabled?)`**
+- **`useSportsScoreboardSubscription(gameId, sport, enabled?)`**
+- **`useSportsMatchesSubscription`** – ref-count helper; avoid stacking the same sports as the route sync on `/`, `/sports`, or detail paths.
+
+`BalanceContext` only registers `betUpdate` for wallet updates.
 
 ## State management
 

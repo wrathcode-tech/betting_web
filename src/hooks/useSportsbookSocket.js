@@ -1,17 +1,5 @@
 /**
- * Ensures a single sportsbook socket connection; reconnects when auth changes.
+ * @deprecated Connection is owned by `SportsbookStoreProvider` (loginStateChange + guest).
+ * Kept as no-op so any old import does not duplicate listeners.
  */
-import { useEffect } from 'react';
-import { getToken } from '../utils/authStorage';
-import { connectSportsbookSocket } from '../socket/sportsbookSocket';
-
-export default function useSportsbookSocket() {
-  useEffect(() => {
-    const sync = () => {
-      connectSportsbookSocket(getToken() || null);
-    };
-    sync();
-    window.addEventListener('loginStateChange', sync);
-    return () => window.removeEventListener('loginStateChange', sync);
-  }, []);
-}
+export default function useSportsbookSocket() {}

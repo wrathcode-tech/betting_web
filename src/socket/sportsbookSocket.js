@@ -2,7 +2,7 @@
  * Sportsbook Socket — singleton manager (Socket.IO).
  *
  * - Single connection per app; auth change forces reconnect.
- * - Reference-counted subscriptions (React Strict Mode / duplicate mounts safe).
+ * - Reference-counted subscriptions; match list emits deduped per connection (matchSubSentToServer).
  * - Re-subscribes all active streams on connect/reconnect.
  * - Optional payload dedupe (timestamp or JSON) before fan-out to listeners.
  * - Exponential-style backoff via socket.io reconnectionDelay + reconnectionDelayMax.
@@ -51,6 +51,13 @@ const lastMatchesSig = new Map();
 const lastOddsSig = new Map();
 const lastScoreboardSig = new Map();
 
+/**
+ * Sports we already sent subscribe:matches for on this TCP connection.
+ * Prevents duplicate subscribe (e.g. connect reemit + component subscribe both firing).
+ * Cleared on disconnect; reemit repopulates after reconnect.
+ */
+const matchSubSentToServer = new Set();
+
 function countActiveSubscriptionSlots() {
   let n = 0;
   matchRefCounts.forEach((c) => {
@@ -79,7 +86,10 @@ function payloadSignature(payload, dataKey = 'data') {
 export function reemitSubscriptions() {
   if (!socket?.connected) return;
   matchRefCounts.forEach((count, sport) => {
-    if (count > 0) socket.emit('subscribe:matches', { sport });
+    if (count > 0) {
+      socket.emit('subscribe:matches', { sport });
+      matchSubSentToServer.add(sport);
+    }
   });
   oddsRefCounts.forEach((v, id) => {
     if (v.count > 0) {
@@ -197,6 +207,7 @@ function ensureHandlers() {
 
   socket.on('disconnect', (reason) => {
     console.log('Sportsbook socket disconnected:', reason);
+    matchSubSentToServer.clear();
   });
 
   socket.on('connect_error', (err) => {
@@ -263,6 +274,7 @@ export function disconnectSportsbookSocket() {
   lastMatchesSig.clear();
   lastOddsSig.clear();
   lastScoreboardSig.clear();
+  matchSubSentToServer.clear();
   matchesListeners.clear();
   oddsListeners.clear();
   scoreboardListeners.clear();
@@ -293,7 +305,10 @@ export function subscribeMatches(sport) {
   }
   matchRefCounts.set(s, prev + 1);
   if (prev === 0 && socket?.connected) {
-    socket.emit('subscribe:matches', { sport: s });
+    if (!matchSubSentToServer.has(s)) {
+      socket.emit('subscribe:matches', { sport: s });
+      matchSubSentToServer.add(s);
+    }
   }
 }
 
@@ -306,7 +321,10 @@ export function unsubscribeMatches(sport) {
   if (next <= 0) {
     matchRefCounts.delete(s);
     lastMatchesSig.delete(s);
-    if (socket?.connected) socket.emit('unsubscribe:matches', { sport: s });
+    if (socket?.connected && matchSubSentToServer.has(s)) {
+      socket.emit('unsubscribe:matches', { sport: s });
+      matchSubSentToServer.delete(s);
+    }
   } else {
     matchRefCounts.set(s, next);
   }

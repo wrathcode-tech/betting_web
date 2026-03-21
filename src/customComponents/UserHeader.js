@@ -9,10 +9,6 @@ import Search from './Search'
 import { useBalance } from '../context/BalanceContext'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { useAuth } from '../context/AuthContext'
-import {
-  connectSportsbookSocket,
-  disconnectSportsbookSocket,
-} from '../socket/sportsbookSocket'
 import { disconnectBalanceSocket } from '../socket/balanceSocket'
 import AuthService from '../api/services/AuthService'
 import { getDisplayWalletBalance } from '../utils/authUtils'
@@ -92,18 +88,6 @@ export default function UserHeader() {
     fetchUserDisplayName();
     window.addEventListener('loginStateChange', fetchUserDisplayName);
     return () => window.removeEventListener('loginStateChange', fetchUserDisplayName);
-  }, []);
-
-  // Sportsbook socket for matches/odds (balance updates via BalanceContext)
-  useEffect(() => {
-    const sync = () => {
-      const t = sessionStorage.getItem('token');
-      if (t) connectSportsbookSocket(t);
-      else disconnectSportsbookSocket();
-    };
-    sync();
-    window.addEventListener('loginStateChange', sync);
-    return () => window.removeEventListener('loginStateChange', sync);
   }, []);
 
   useEffect(() => {
@@ -306,7 +290,6 @@ export default function UserHeader() {
                 className="dropdown_logout_btn"
                 onClick={() => {
                   disconnectBalanceSocket();
-                  disconnectSportsbookSocket();
                   sessionStorage.removeItem('token');
                   sessionStorage.removeItem('refreshToken');
                   sessionStorage.removeItem('user');

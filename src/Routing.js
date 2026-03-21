@@ -75,8 +75,8 @@ const Routing = memo(function Routing() {
       <SidebarProvider>
         <PlatformConfigProvider>
         <CasinoProvidersProvider>
-        <BalanceProvider>
         <SportsbookStoreProvider>
+        <BalanceProvider>
         <BetSlipProvider>
         <ScrollToTop />
         <Suspense fallback={null}>
@@ -130,8 +130,8 @@ const Routing = memo(function Routing() {
           </Routes>
         </Suspense>
         </BetSlipProvider>
-        </SportsbookStoreProvider>
         </BalanceProvider>
+        </SportsbookStoreProvider>
         </CasinoProvidersProvider>
         </PlatformConfigProvider>
       </SidebarProvider>

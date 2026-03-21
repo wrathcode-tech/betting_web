@@ -5,9 +5,6 @@ import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { getToken } from '../utils/authStorage'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import {
-  connectSportsbookSocket,
-  subscribeMatches,
-  unsubscribeMatches,
   subscribeOdds,
   unsubscribeOdds,
   addMatchesListener,
@@ -43,6 +40,7 @@ const topSportsItems = [
   { id: 14, title: 'Futsal', iconClass: 'ri-football-line', to: '/sportsbook' },
   { id: 15, title: 'Handball', iconClass: 'ri-hand-coin-line', to: '/sportsbook' },
 ]
+
 function parseMatchesFromResponse(res) {
   if (!res) return []
   if (Array.isArray(res)) return res
@@ -85,6 +83,59 @@ function getDayGroup(isoStr) {
   } catch {
     return ''
   }
+}
+
+/** Start time from match object — tennis/soccer APIs often use openDate / commence_time etc. */
+function pickMatchEventTime(m) {
+  if (!m || typeof m !== 'object') return undefined
+  const ev = m.event && typeof m.event === 'object' ? m.event : null
+  const candidates = [
+    m.eventTime,
+    m.event_time,
+    m.startTime,
+    m.start_time,
+    m.openDate,
+    m.open_date,
+    m.eventOpenDate,
+    m.event_open_date,
+    m.scheduledStart,
+    m.scheduled_start,
+    m.commenceTime,
+    m.commence_time,
+    m.matchTime,
+    m.match_time,
+    m.kickOff,
+    m.kick_off,
+    m.kickoffTime,
+    m.kickoff_time,
+    m.marketStartTime,
+    m.market_start_time,
+    ev?.openDate,
+    ev?.open_date,
+    ev?.startTime,
+    ev?.start_time,
+    ev?.eventTime,
+    ev?.scheduledStart,
+  ]
+  for (const v of candidates) {
+    if (v == null || v === '') continue
+    if (typeof v === 'number' && Number.isFinite(v)) {
+      const ms = v < 1e12 ? v * 1000 : v
+      const d = new Date(ms)
+      if (!isNaN(d.getTime())) return d.toISOString()
+    }
+    if (typeof v === 'string') {
+      const d = new Date(v)
+      if (!isNaN(d.getTime())) return v
+      const n = Number(v)
+      if (Number.isFinite(n)) {
+        const ms = n < 1e12 ? n * 1000 : n
+        const dd = new Date(ms)
+        if (!isNaN(dd.getTime())) return dd.toISOString()
+      }
+    }
+  }
+  return undefined
 }
 
 /** Pass-through from sportsbook match list API / socket for TV + market badges */
@@ -148,13 +199,14 @@ function DesktopTopMatchBlock({ match, oddsPayload = null }) {
   const teamLines = splitTeamNamesForDesktop(match.teams)
   const marketPills = getMarketPillsFromSources(match, oddsPayload)
   const showStream = getMatchStreamVisible(match)
+  const clockLabel = match.timeOnly || match.time || ''
   return (
     <div className="sports_grid_desktop_match">
       <div className="sports_grid_desktop_time_block">
         <div className="sports_grid_desktop_time_row">
           <div className="sports_grid_desktop_time_stack">
             {match.dayGroup ? <span className="sports_grid_desktop_day">{match.dayGroup}</span> : null}
-            {match.timeOnly ? <span className="sports_grid_desktop_clock">{match.timeOnly}</span> : null}
+            {clockLabel ? <span className="sports_grid_desktop_clock">{clockLabel}</span> : null}
           </div>
           {match.inPlay ? <span className="sports_grid_desktop_live_badge">LIVE</span> : null}
         </div>
@@ -311,11 +363,10 @@ function LandingPage() {
       .then((res) => {
         if (cancelled) return;
         const list = parseMatchesFromResponse(res);
-        const eventTime = (m) => m.eventTime ?? m.event_time ?? m.startTime;
         const mapped = list
           .filter((m) => m.gameId ?? m.game_id)
           .map((m) => {
-            const et = eventTime(m);
+            const et = pickMatchEventTime(m);
             return {
               id: m.gameId ?? m.game_id,
               gameId: m.gameId ?? m.game_id,
@@ -344,11 +395,10 @@ function LandingPage() {
       .then((res) => {
         if (cancelled) return;
         const list = parseMatchesFromResponse(res);
-        const eventTime = (m) => m.eventTime ?? m.event_time ?? m.startTime;
         const mapped = list
           .filter((m) => m.gameId ?? m.game_id ?? m.eventId ?? m.event_id)
           .map((m) => {
-            const et = eventTime(m);
+            const et = pickMatchEventTime(m);
             const id = m.gameId ?? m.game_id ?? m.eventId ?? m.event_id;
             return {
               id,
@@ -378,11 +428,10 @@ function LandingPage() {
       .then((res) => {
         if (cancelled) return;
         const list = parseMatchesFromResponse(res);
-        const eventTime = (m) => m.eventTime ?? m.event_time ?? m.startTime;
         const mapped = list
           .filter((m) => m.gameId ?? m.game_id)
           .map((m) => {
-            const et = eventTime(m);
+            const et = pickMatchEventTime(m);
             return {
               id: m.gameId ?? m.game_id,
               gameId: m.gameId ?? m.game_id,
@@ -405,9 +454,6 @@ function LandingPage() {
 
   // Socket: live matches & odds for TOP Matches (connect even without login so odds keep coming)
   useEffect(() => {
-    const token = getToken();
-    const eventTime = (m) => m.eventTime ?? m.event_time ?? m.startTime;
-    connectSportsbookSocket(token || null);
     const cricketOddsSubscribed = topMatchesOddsSubscribedRef.current;
     const tennisOddsSubscribed = topTennisMatchesOddsSubscribedRef.current;
     const soccerOddsSubscribed = topSoccerMatchesOddsSubscribedRef.current;
@@ -420,7 +466,7 @@ function LandingPage() {
       const mapped = list
         .filter((m) => m.gameId ?? m.game_id)
         .map((m) => {
-          const et = eventTime(m);
+          const et = pickMatchEventTime(m);
           return {
             id: m.gameId ?? m.game_id,
             gameId: m.gameId ?? m.game_id,
@@ -442,7 +488,7 @@ function LandingPage() {
       return arr
         .filter((m) => m.gameId ?? m.game_id ?? m.eventId ?? m.event_id)
         .map((m) => {
-          const et = eventTime(m);
+          const et = pickMatchEventTime(m);
           const id = m.gameId ?? m.game_id ?? m.eventId ?? m.event_id;
           return {
             id,
@@ -463,7 +509,7 @@ function LandingPage() {
       return arr
         .filter((m) => m.gameId ?? m.game_id)
         .map((m) => {
-          const et = eventTime(m);
+          const et = pickMatchEventTime(m);
           return {
             id: m.gameId ?? m.game_id,
             gameId: m.gameId ?? m.game_id,
@@ -497,16 +543,10 @@ function LandingPage() {
     addMatchesListener(onMatches);
     addMatchesListener(onTennisMatches);
     addMatchesListener(onSoccerMatches);
-    subscribeMatches('cricket');
-    subscribeMatches('tennis');
-    subscribeMatches('soccer');
     return () => {
       removeMatchesListener(onMatches);
       removeMatchesListener(onTennisMatches);
       removeMatchesListener(onSoccerMatches);
-      unsubscribeMatches('cricket');
-      unsubscribeMatches('tennis');
-      unsubscribeMatches('soccer');
       cricketOddsSubscribed.forEach((gid) => unsubscribeOdds(gid, 'cricket'));
       cricketOddsSubscribed.clear();
       tennisOddsSubscribed.forEach((id) => unsubscribeOdds(id, 'tennis'));
@@ -765,14 +805,15 @@ function LandingPage() {
   // TOP Matches: grouped by day (Live, Today, Tomorrow, …) for table view
   const groupMatchesByDay = (matches) => {
     const list = matches.map((m) => {
+      const et = m.eventTime ?? pickMatchEventTime(m);
       let timeOnly = '';
-      if (m.eventTime) {
+      if (et) {
         try {
-          const d = new Date(m.eventTime);
+          const d = new Date(et);
           if (!isNaN(d.getTime())) timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
         } catch { }
       }
-      return { ...m, dayGroup: getDayGroup(m.eventTime), timeOnly };
+      return { ...m, eventTime: et, dayGroup: getDayGroup(et), timeOnly };
     });
     const sorted = [...list].sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
     const liveMatches = sorted.filter((m) => m.inPlay);

@@ -4,9 +4,7 @@
  */
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import * as sportsbookApi from '../api/services/sportsbookApi';
-import { getToken } from '../utils/authStorage';
 import {
-  connectSportsbookSocket,
   subscribeOdds,
   unsubscribeOdds,
   subscribeScoreboard,
@@ -96,7 +94,6 @@ export function useOddsStream(gameIdOrEventId, sport, options = {}) {
 
   useEffect(() => {
     if (!id || !enableSocket) return undefined;
-    connectSportsbookSocket(getToken() || null);
 
     const onOdds = (payload) => {
       const key = payload?.eventId != null ? String(payload.eventId) : payload?.gameId != null ? String(payload.gameId) : null;

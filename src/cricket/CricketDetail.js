@@ -4,16 +4,13 @@ import './CricketDetail.css'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
 import {
-    connectSportsbookSocket,
-    subscribeMatches,
-    unsubscribeMatches,
-    subscribeOdds,
-    unsubscribeOdds,
     addMatchesListener,
     removeMatchesListener,
     addOddsListener,
     removeOddsListener,
 } from '../socket/sportsbookSocket'
+import { useSportsOddsSubscription } from '../context/SportsbookStore'
+import { getToken } from '../utils/authStorage'
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { useAuth } from '../context/AuthContext'
@@ -224,6 +221,7 @@ function CricketDetail() {
     const seriesOrTournamentName = location.state?.seriesName ?? location.state?.tournamentName ?? location.state?.series_name ?? defaultMatch?.seriesName ?? defaultMatch?.series_name ?? defaultMatch?.tournamentName ?? defaultMatch?.tournament ?? ''
     const sportFromPath = location.pathname?.includes('/tennis') ? 'tennis' : location.pathname?.includes('/soccer') ? 'soccer' : null
     const sportName = (location.state?.sportName || sportFromPath || 'cricket').toLowerCase()
+    const tokenPresentForSocket = !!getToken()
     const cricketOnlyTabs = ['sessions', 'wp-market', 'extra-market', 'odd-even']
 
     // Tennis/soccer: only ALL and OPEN BETS tabs; reset cricket-only tab to 'all'
@@ -330,12 +328,11 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [hasExplicitMatchNav, sportName, isDemo])
 
-    // Socket (doc): subscribe:matches { sport } when need default match; on('matches') { sport, data, timestamp }. Leave → unsubscribe:matches.
+    // Live match list for default match (subscribe:matches from SportsbookRouteMatchStreams on this path)
     useEffect(() => {
         if (hasExplicitMatchNav) return
         const token = sessionStorage.getItem('token')
         if (!token || isDemo) return
-        connectSportsbookSocket(token)
         const onMatches = (payload) => {
             if (payload?.sport !== sportName || payload.data === undefined) return
             const list = Array.isArray(payload.data) ? payload.data : []
@@ -348,10 +345,8 @@ function CricketDetail() {
             })
         }
         addMatchesListener(onMatches)
-        subscribeMatches(sportName)
         return () => {
             removeMatchesListener(onMatches)
-            unsubscribeMatches(sportName)
         }
     }, [hasExplicitMatchNav, sportName, isDemo])
 
@@ -388,6 +383,7 @@ function CricketDetail() {
 
     // 0) On match open: fetch event config for initial tvUrl (REST). Clear stream when match changes.
     const oddsId = sportName === 'tennis' ? (eventId || gameId) : gameId
+    useSportsOddsSubscription(oddsId, sportName, !!(oddsId && (isDemo || tokenPresentForSocket)))
     useEffect(() => {
         if (!oddsId) return
         setStreamUrl(null)
@@ -428,13 +424,12 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [oddsId, sportName])
 
-    // 2) Socket live updates. Demo uses guest connection (no JWT) — avoids "Token is expired" on sportsbook socket.
+    // 2) Socket live odds (subscribe via useSportsOddsSubscription). Demo uses guest auth from SportsbookStore.
     useEffect(() => {
         if (!oddsId) return
         const token = sessionStorage.getItem('token')
         if (!isDemo && !token) return
         const currentOddsKey = oddsId
-        connectSportsbookSocket(isDemo ? null : token)
         const onOdds = (payload) => {
             const payloadKey = payload?.eventId ?? payload?.gameId
             if (payloadKey !== currentOddsKey || payload?.data === undefined) return
@@ -446,10 +441,8 @@ function CricketDetail() {
             if (tvUrl != null) setStreamUrl(tvUrl)
         }
         addOddsListener(onOdds)
-        subscribeOdds(oddsId, sportName)
         return () => {
             removeOddsListener(onOdds)
-            unsubscribeOdds(oddsId, sportName)
         }
     }, [oddsId, sportName, isDemo])
 

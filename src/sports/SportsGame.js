@@ -7,9 +7,6 @@ import AuthService from '../api/services/AuthService'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import {
-    connectSportsbookSocket,
-    subscribeMatches,
-    unsubscribeMatches,
     subscribeOdds,
     unsubscribeOdds,
     addMatchesListener,
@@ -17,7 +14,6 @@ import {
     addOddsListener,
     removeOddsListener,
 } from '../socket/sportsbookSocket'
-import { getToken } from '../utils/authStorage'
 import {
     getMarketPillsFromSources,
     getMatchStreamVisible,
@@ -199,10 +195,9 @@ function SportsGame() {
         // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-fetch when id set changes (oddsFetchKey), not when match array ref changes
     }, [oddsFetchKey])
 
-    // Socket: subscribe:matches for cricket/tennis/soccer. Guest or logged-in.
+    // Socket: live match lists — subscribe:matches from SportsbookRouteMatchStreams (pathname)
     useEffect(() => {
         const oddsSubs = subscribedOddsRef.current
-        connectSportsbookSocket(getToken() || null)
         const onMatches = (payload) => {
             const sport = payload?.sport
             const raw = payload.data ?? payload.matches
@@ -220,15 +215,9 @@ function SportsGame() {
             }
         }
         addMatchesListener(onMatches)
-        subscribeMatches('cricket')
-        subscribeMatches('tennis')
-        subscribeMatches('soccer')
 
         return () => {
             removeMatchesListener(onMatches)
-            unsubscribeMatches('cricket')
-            unsubscribeMatches('tennis')
-            unsubscribeMatches('soccer')
             oddsSubs.forEach((gid) => unsubscribeOdds(gid))
             oddsSubs.clear()
         }

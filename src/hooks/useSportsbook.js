@@ -6,7 +6,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as sportsbookApi from '../api/services/sportsbookApi';
 import {
-  connectSportsbookSocket,
   subscribeMatches,
   unsubscribeMatches,
   subscribeOdds,
@@ -56,7 +55,6 @@ export function useSportsbookMatches(sport, options = {}) {
     if (!options.subscribeSocket) return;
     const token = sessionStorage.getItem('token');
     if (!token) return;
-    connectSportsbookSocket(token);
     const onPayload = (payload) => {
       if (payload?.sport !== sportKey) return;
       const list = Array.isArray(payload?.data) ? payload.data : [];
@@ -113,7 +111,6 @@ export function useSportsbookOdds(sport, gameIdOrEventId) {
     if (!gameIdOrEventId) return;
     const token = sessionStorage.getItem('token');
     if (!token) return;
-    connectSportsbookSocket(token);
     const onPayload = (payload) => {
       const key = payload?.eventId ?? payload?.gameId;
       if (key !== gameIdOrEventId || payload?.data === undefined) return;
@@ -168,7 +165,6 @@ export function useSportsbookOpenBets(params = {}, options = {}) {
     if (!options.subscribeBetUpdate) return;
     const token = sessionStorage.getItem('token');
     if (!token) return;
-    connectSportsbookSocket(token);
     const onBetUpdate = () => fetchOpen();
     addBetUpdateListener(onBetUpdate);
     return () => removeBetUpdateListener(onBetUpdate);

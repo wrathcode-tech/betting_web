@@ -12,12 +12,7 @@ import {
   addBalanceListener,
   removeBalanceListener,
 } from '../socket/balanceSocket'
-import {
-  connectSportsbookSocket,
-  disconnectSportsbookSocket,
-  addBetUpdateListener,
-  removeBetUpdateListener,
-} from '../socket/sportsbookSocket'
+import { addBetUpdateListener, removeBetUpdateListener } from '../socket/sportsbookSocket'
 import { getStoredUserForGuard, isDemoUser } from '../utils/authUtils'
 
 const BalanceContext = createContext({
@@ -74,7 +69,6 @@ export function BalanceProvider({ children }) {
   useEffect(() => {
     if (!token) {
       disconnectBalanceSocket()
-      disconnectSportsbookSocket()
       setBalanceState(null)
       setDemoPlayBalanceState(null)
       return
@@ -114,7 +108,6 @@ export function BalanceProvider({ children }) {
     }
     addBalanceListener(onBalance)
 
-    connectSportsbookSocket(token)
     const onBetUpdate = (payload) => {
       const user = getStoredUserForGuard()
       if (isDemoUser(user)) {
@@ -134,7 +127,6 @@ export function BalanceProvider({ children }) {
       removeBalanceListener(onBalance)
       removeBetUpdateListener(onBetUpdate)
       disconnectBalanceSocket()
-      disconnectSportsbookSocket()
       setBalanceState(null)
       setDemoPlayBalanceState(null)
     }

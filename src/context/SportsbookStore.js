@@ -2,9 +2,16 @@
  * Global sportsbook state – matches, odds, scoreboards, bet updates.
  * Updated by /sportsbook socket events. Use for instant UI updates without prop drilling.
  * Wallet balance stays in BalanceContext (updated by socket balance / betUpdate.balanceAfter).
+ *
+ * Connection: connectSportsbookSocket(token || null) on mount + loginStateChange.
+ * Match streams: SportsbookRouteMatchStreams (pathname) — one subscribe set per route;
+ * leaving a page unsubscribes that route’s sports. Odds: useSportsOddsSubscription / hooks.
  */
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 import {
+  connectSportsbookSocket,
   subscribeMatches,
   unsubscribeMatches,
   subscribeOdds,
@@ -64,7 +71,57 @@ function compareOddsAndGetFlash(prevData, nextData) {
   return flash;
 }
 
+/**
+ * Single place for subscribe:matches by pathname — leaving a route unsubscribes previous sports.
+ * - `/` and `/sports` → cricket, tennis, soccer (guest + logged-in)
+ * - `/cricket` | `/tennis` | `/soccer` → that sport only when logged-in real user (not demo)
+ */
+function SportsbookRouteMatchStreams() {
+  const { pathname } = useLocation();
+  const { isDemo } = useAuth();
+  const [hasToken, setHasToken] = useState(
+    () => typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('token')
+  );
+  useEffect(() => {
+    const sync = () => setHasToken(!!sessionStorage.getItem('token'));
+    window.addEventListener('loginStateChange', sync);
+    return () => window.removeEventListener('loginStateChange', sync);
+  }, []);
+
+  const sportsKey = useMemo(() => {
+    const p = (pathname || '/').replace(/\/$/, '') || '/';
+    if (p === '/' || p === '/sports') return 'cricket|tennis|soccer';
+    if (!hasToken || isDemo) return '';
+    if (p === '/cricket') return 'cricket';
+    if (p === '/tennis') return 'tennis';
+    if (p === '/soccer') return 'soccer';
+    return '';
+  }, [pathname, hasToken, isDemo]);
+
+  useEffect(() => {
+    if (!sportsKey) return undefined;
+    const list = sportsKey.split('|');
+    list.forEach((s) => subscribeMatches(s));
+    return () => {
+      list.forEach((s) => unsubscribeMatches(s));
+    };
+  }, [sportsKey]);
+
+  return null;
+}
+
 export function SportsbookStoreProvider({ children }) {
+  /** Single app-wide sportsbook socket – auth sync (guest JWT vs Bearer). */
+  useEffect(() => {
+    const sync = () => {
+      const t = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('token') : null;
+      connectSportsbookSocket(t || null);
+    };
+    sync();
+    window.addEventListener('loginStateChange', sync);
+    return () => window.removeEventListener('loginStateChange', sync);
+  }, []);
+
   const [matchesBySport, setMatchesBySport] = useState(() => ({
     cricket: [],
     soccer: [],
@@ -190,6 +247,7 @@ export function SportsbookStoreProvider({ children }) {
 
   return (
     <SportsbookStoreContext.Provider value={value}>
+      <SportsbookRouteMatchStreams />
       {children}
     </SportsbookStoreContext.Provider>
   );
@@ -232,4 +290,58 @@ export function useOddsFlash(gameId) {
 export function useSportsbookSocketError() {
   const { socketError } = useSportsbookStore();
   return socketError;
+}
+
+/** Dedupe dependency for sport string arrays (order-independent). */
+function sportsListDedupeKey(sports) {
+  if (!Array.isArray(sports) || sports.length === 0) return '';
+  return [...new Set(sports.map((s) => String(s)))].filter(Boolean).sort().join('|');
+}
+
+/**
+ * Ref-counted match streams (advanced). Home/sports/detail match lists are driven by
+ * `SportsbookRouteMatchStreams` — avoid duplicating the same sports here on those routes.
+ */
+export function useSportsMatchesSubscription(sports) {
+  const key = useMemo(
+    () => sportsListDedupeKey(Array.isArray(sports) ? sports : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- compare by contents
+    [JSON.stringify(Array.isArray(sports) ? sports : [])]
+  );
+  useEffect(() => {
+    if (!key) return undefined;
+    const list = key.split('|');
+    list.forEach((s) => subscribeMatches(s));
+    return () => {
+      list.forEach((s) => unsubscribeMatches(s));
+    };
+  }, [key]);
+}
+
+/**
+ * While mounted and enabled, subscribes to live odds for one match/event (ref-counted).
+ */
+export function useSportsOddsSubscription(gameIdOrEventId, sport, enabled = true) {
+  const id =
+    gameIdOrEventId != null && gameIdOrEventId !== '' ? String(gameIdOrEventId) : '';
+  const sp = sport || 'cricket';
+  useEffect(() => {
+    if (!enabled || !id) return undefined;
+    subscribeOdds(id, sp);
+    return () => unsubscribeOdds(id, sp);
+  }, [id, sp, enabled]);
+}
+
+/**
+ * While mounted and enabled, subscribes to scoreboard stream for one match/event (ref-counted).
+ */
+export function useSportsScoreboardSubscription(gameIdOrEventId, sport, enabled = true) {
+  const id =
+    gameIdOrEventId != null && gameIdOrEventId !== '' ? String(gameIdOrEventId) : '';
+  const sp = sport || 'cricket';
+  useEffect(() => {
+    if (!enabled || !id) return undefined;
+    subscribeScoreboard(id, sp);
+    return () => unsubscribeScoreboard(id, sp);
+  }, [id, sp, enabled]);
 }

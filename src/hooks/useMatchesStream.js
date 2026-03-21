@@ -4,9 +4,7 @@
  */
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import * as sportsbookApi from '../api/services/sportsbookApi';
-import { getToken } from '../utils/authStorage';
 import {
-  connectSportsbookSocket,
   subscribeMatches,
   unsubscribeMatches,
   addMatchesListener,
