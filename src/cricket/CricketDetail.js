@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import './CricketDetail.css'
 import MobileMenu from '../customComponents/MobileMenu'
@@ -21,6 +21,95 @@ import LossCutIndicator from '../customComponents/LossCutIndicator'
 import { BackPriceCell, LayPriceCell } from './OddsMarketComponents'
 
 const CASHOUT_COMMISSION = 0.05 // 5% of total bet (stake)
+/** Open bets: high limit. (gameId/sport query kuch backends par error / empty deta hai — filter client-side.) */
+const OPEN_BETS_QUERY = () => ({ page: 1, limit: 100 })
+
+/** API / axios pehle hi response.data de chuka hota hai — alag-alag shapes */
+function parseOpenBetsFromResponse(res) {
+    const raw = res?.data ?? res
+    if (Array.isArray(raw)) return raw
+    if (Array.isArray(raw?.bets)) return raw.bets
+    if (Array.isArray(raw?.data)) return raw.data
+    if (Array.isArray(raw?.openBets)) return raw.openBets
+    if (Array.isArray(raw?.records)) return raw.records
+    return []
+}
+
+/** GET cashout-value / nested success wrappers */
+function extractCashoutFromApiResponse(res) {
+    if (!res || typeof res !== 'object') return { value: null, suspended: false }
+    const pickNum = (...vals) => {
+        for (const v of vals) {
+            if (v == null || v === '') continue
+            const n = Number(v)
+            if (!Number.isNaN(n)) return n
+        }
+        return null
+    }
+    const d = res.data
+    const dd = d && typeof d === 'object' ? d.data : null
+    const val = pickNum(
+        res.cashoutValue,
+        res.cashout_value,
+        res.value,
+        res.amount,
+        res.cashOutValue,
+        d?.cashoutValue,
+        d?.cashout_value,
+        d?.value,
+        d?.amount,
+        dd?.cashoutValue,
+        dd?.value,
+        res.response?.cashoutValue,
+        res.response?.value,
+        res.result?.cashoutValue,
+        res.result?.value
+    )
+    const suspended = !!(
+        res.cashoutSuspended ??
+        res.suspended ??
+        d?.cashoutSuspended ??
+        d?.suspended ??
+        dd?.cashoutSuspended
+    )
+    return { value: val, suspended }
+}
+
+/** Open bet object par seedha cashout (kuch list APIs embed karti hain) */
+function cashoutValueFromBetObject(b) {
+    if (!b || typeof b !== 'object') return null
+    const v =
+        b.cashoutValue ??
+        b.cashout_value ??
+        b.currentCashout ??
+        b.current_cashout ??
+        b.liveCashout ??
+        b.cashOutValue
+    if (v == null || v === '') return null
+    const n = Number(v)
+    return Number.isNaN(n) ? null : n
+}
+
+/** Runner / selection id — APIs alag-alag fields bhej sakti hain */
+function pickSelectionId(node) {
+    if (!node || typeof node !== 'object') return null
+    const v =
+        node.selectionId ??
+        node.sid ??
+        node.id ??
+        node.runnerId ??
+        node.selection_id ??
+        node.runner_id
+    if (v == null || v === '') return null
+    return String(v)
+}
+
+function pickMarketId(market) {
+    if (!market || typeof market !== 'object') return null
+    const v = market.mid ?? market.mId ?? market.marketId ?? market.market_id ?? market.id
+    if (v == null || v === '') return null
+    return v
+}
 
 function CricketDetail() {
     const location = useLocation()
@@ -67,6 +156,13 @@ function CricketDetail() {
         }
     }, [selectedBets.length])
 
+    // Login modal must sit above inline mobile slip — hide slip when login opens from anywhere
+    useEffect(() => {
+        const onOpenLogin = () => setIsMobileBetslipOpen(false)
+        window.addEventListener('openLoginModal', onOpenLogin)
+        return () => window.removeEventListener('openLoginModal', onOpenLogin)
+    }, [])
+
     useEffect(() => {
         if (!openCashoutSection && !openLossCutSection) return
         const close = (e) => {
@@ -77,20 +173,6 @@ function CricketDetail() {
         document.addEventListener('click', close)
         return () => document.removeEventListener('click', close)
     }, [openCashoutSection, openLossCutSection])
-
-    // Refetch open bets when Cashout popover opens so list is fresh
-    useEffect(() => {
-        if (!openCashoutSection) return
-        if (isDemo) return
-        setOpenBetsLoading(true)
-        AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
-            .then((res) => {
-                const data = res?.data ?? res
-                setOpenBetsList(data?.bets ?? [])
-            })
-            .catch(() => { })
-            .finally(() => setOpenBetsLoading(false))
-    }, [openCashoutSection, isDemo])
 
     // Fetch cashout-value from GET /bet/:betId/cashout-value for each open bet
     useEffect(() => {
@@ -105,16 +187,25 @@ function CricketDetail() {
             await Promise.all(
                 openBets.map(async (b) => {
                     const bid = b._id ?? b.id
-                    if (!bid) return
+                    if (bid == null || bid === '') return
+                    const key = String(bid)
+                    const embedded = cashoutValueFromBetObject(b)
                     try {
-                        const res = await AuthService.sportsbookCashoutValue(bid)
+                        const res = await AuthService.sportsbookCashoutValue(key)
                         if (cancelled) return
-                        const data = res?.data ?? res
-                        const val = data?.cashoutValue ?? data?.value ?? data?.cashout_value
-                        const suspended = data?.cashoutSuspended ?? data?.suspended ?? false
-                        next[bid] = { value: val != null ? Number(val) : null, suspended }
+                        const { value: apiVal, suspended } = extractCashoutFromApiResponse(res)
+                        const val = apiVal != null && !Number.isNaN(apiVal) ? apiVal : embedded
+                        next[key] = {
+                            value: val != null && !Number.isNaN(Number(val)) ? Number(val) : null,
+                            suspended: suspended || (val == null && embedded == null),
+                        }
                     } catch {
-                        if (!cancelled) next[bid] = { value: null, suspended: true }
+                        if (!cancelled) {
+                            next[key] = {
+                                value: embedded,
+                                suspended: embedded == null,
+                            }
+                        }
                     }
                 })
             )
@@ -158,6 +249,63 @@ function CricketDetail() {
     const [liveScore, setLiveScore] = useState(null)
     // eslint-disable-next-line no-unused-vars -- used in commented-out Live TV iframe
     const [streamUrl, setStreamUrl] = useState(null)
+
+    /** Place bet API ke liye — sirf state pe depend na ho; odds / match list se fallback */
+    const eventNameForBets = useMemo(() => {
+        const t = (v) => {
+            if (v == null) return ''
+            const s = String(v).trim()
+            return s === '' ? '' : s
+        }
+        return (
+            t(eventNameFromState) ||
+            t(oddsData?.eventName) ||
+            t(oddsData?.matchName) ||
+            t(defaultMatch?.eventName) ||
+            'Match'
+        )
+    }, [eventNameFromState, oddsData?.eventName, oddsData?.matchName, defaultMatch?.eventName])
+
+    // Direct link sirf gameId ke sath: eventName missing → matches API se same match dhundh kar defaultMatch bharo
+    useEffect(() => {
+        if (!hasExplicitMatchNav || !gameId) return
+        const fromNav = location.state?.eventName ?? location.state?.event_name
+        if (fromNav != null && String(fromNav).trim() !== '') return
+        let cancelled = false
+        AuthService.sportsbookMatches(sportName)
+            .then((res) => {
+                if (cancelled) return
+                const raw = res?.data ?? res
+                const list = Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : raw?.matches ?? []
+                const found = list.find((m) => String(m.gameId ?? m.game_id ?? '') === String(gameId))
+                if (!found) return
+                setDefaultMatch((prev) => {
+                    const gid = String(gameId)
+                    const pgid = String(prev?.gameId ?? prev?.game_id ?? '')
+                    const name = found.eventName ?? found.event_name
+                    if (prev && pgid === gid) {
+                        if (name && (!prev.eventName || String(prev.eventName).trim() === '')) {
+                            return { ...prev, eventName: name, eventId: found.eventId ?? found.event_id ?? prev.eventId }
+                        }
+                        return prev
+                    }
+                    return {
+                        gameId: found.gameId ?? found.game_id,
+                        eventName: name,
+                        eventId: found.eventId ?? found.event_id,
+                        seriesName:
+                            found.seriesName ??
+                            found.series_name ??
+                            found.tournamentName ??
+                            found.tournament ??
+                            found.competitionName ??
+                            null,
+                    }
+                })
+            })
+            .catch(() => { })
+        return () => { cancelled = true }
+    }, [hasExplicitMatchNav, gameId, sportName, location.state?.eventName, location.state?.event_name])
 
     // Guest (no token) or demo: fetch matches via REST and set first match (demo JWT must not hit public GETs with Bearer)
     useEffect(() => {
@@ -213,9 +361,21 @@ function CricketDetail() {
         const otherMarketOdds = Array.isArray(d?.otherMarketOdds) ? d.otherMarketOdds : (Array.isArray(d?.other_market_odds) ? d.other_market_odds : [])
         const totalGoalsOdds = Array.isArray(d?.totalGoalsOdds) ? d.totalGoalsOdds : (Array.isArray(d?.total_goals_odds) ? d.total_goals_odds : [])
         const overUnderOdds = Array.isArray(d?.overUnderOdds) ? d.overUnderOdds : (Array.isArray(d?.over_under_odds) ? d.over_under_odds : [])
+        const eventNameFromPayload =
+            d?.eventName ??
+            d?.event_name ??
+            d?.matchName ??
+            d?.match_name ??
+            firstMarket?.eventName ??
+            firstMarket?.event_name ??
+            firstMarket?.matchName ??
+            firstMarket?.match_name ??
+            null
         return {
             matchOdds,
             marketClosed: d?.marketClosed === true,
+            eventName: eventNameFromPayload,
+            matchName: d?.matchName ?? d?.match_name ?? firstMarket?.matchName ?? firstMarket?.match_name ?? null,
             tvUrl: d?.tv_url ?? d?.tvUrl ?? firstMarket?.tv_url ?? firstMarket?.tvUrl ?? null,
             isTv: d?.IsTv ?? d?.isTv ?? firstMarket?.IsTv ?? firstMarket?.isTv ?? false,
             fancyOdds: Array.isArray(d?.fancyOdds) ? d.fancyOdds : (Array.isArray(d?.fancy_odds) ? d.fancy_odds : []),
@@ -322,12 +482,10 @@ function CricketDetail() {
         }
         let cancelled = false
         setOpenBetsLoading(true)
-        AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
+        AuthService.sportsbookOpenBets(OPEN_BETS_QUERY())
             .then((res) => {
                 if (cancelled) return
-                const data = res?.data ?? res
-                const list = data?.bets ?? (Array.isArray(data) ? data : []) ?? []
-                setOpenBetsList(Array.isArray(list) ? list : [])
+                setOpenBetsList(parseOpenBetsFromResponse(res))
             })
             .catch(() => {
                 if (!cancelled) setOpenBetsList([])
@@ -336,19 +494,20 @@ function CricketDetail() {
                 if (!cancelled) setOpenBetsLoading(false)
             })
         return () => { cancelled = true }
-    }, [isDemo])
+    }, [isDemo, gameId])
 
-    // Refresh open bets when gameId changes (e.g. navigated to another match)
+    // Cashout popover khule: open bets dubara lo
     useEffect(() => {
-        if (!gameId || isDemo) return
-        AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
+        if (!openCashoutSection) return
+        if (isDemo) return
+        setOpenBetsLoading(true)
+        AuthService.sportsbookOpenBets(OPEN_BETS_QUERY())
             .then((res) => {
-                const data = res?.data ?? res
-                const list = data?.bets ?? (Array.isArray(data) ? data : []) ?? []
-                setOpenBetsList(Array.isArray(list) ? list : [])
+                setOpenBetsList(parseOpenBetsFromResponse(res))
             })
             .catch(() => { })
-    }, [gameId, isDemo])
+            .finally(() => setOpenBetsLoading(false))
+    }, [openCashoutSection, isDemo])
 
     const toggleBlock = (blockId) => {
         setClosedBlocks(prev => {
@@ -454,12 +613,14 @@ function CricketDetail() {
             return
         }
         if (!sessionStorage.getItem('token')) {
+            setIsMobileBetslipOpen(false)
             window.dispatchEvent(new CustomEvent('openLoginModal', { detail: 'login' }))
             return
         }
         const toPlace = selectedBets.filter((b) => b.placePayload)
         if (toPlace.length === 0) {
-            const msg = 'Only bets from live odds can be placed. Add a selection from Match Odds above.'
+            const msg =
+                'Is selection par bet API ke liye tayyar nahi hai. Match Odds / Bookmaker / Sessions / Fancy jaisi live lines se chunein — static demo lines par bet nahi lagti.'
             setPlaceBetError(msg)
             alertErrorMessage(msg)
             return
@@ -490,7 +651,7 @@ function CricketDetail() {
                 const body = {
                     sport: p.sport ?? sportName,
                     gameId: p.gameId,
-                    eventName: p.eventName ?? eventNameFromState,
+                    eventName: p.eventName ?? eventNameForBets,
                     marketType: p.marketType,
                     marketId: p.marketId,
                     selectionId: p.selectionId,
@@ -510,12 +671,30 @@ function CricketDetail() {
             setStake(100)
             const successMsg = lastRes?.data?.message ?? lastRes?.message
             setPlaceBetSuccessMessage(successMsg || 'Bet placed successfully.')
-            // Refetch open bets in background (count and list stay updated)
-            AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
-                .then((res) => {
-                    const data = res?.data ?? res
-                    const list = data?.bets ?? (Array.isArray(data) ? data : [])
-                    setOpenBetsList(list)
+            // Open bets + exposure turant refresh — cashout / P&L (cashout-value effect openBetsList par chalega)
+            const pullOpenBets = () =>
+                AuthService.sportsbookOpenBets(OPEN_BETS_QUERY())
+                    .then((obRes) => {
+                        setOpenBetsList(parseOpenBetsFromResponse(obRes))
+                    })
+            try {
+                await pullOpenBets()
+            } catch {
+                /* keep previous list */
+            }
+            setTimeout(() => {
+                pullOpenBets().catch(() => { })
+            }, 900)
+            Promise.all([
+                AuthService.sportsbookGetLossLimit(),
+                AuthService.sportsbookExposure(),
+            ])
+                .then(([limitRes, exposureRes]) => {
+                    const limitData = limitRes?.data ?? limitRes
+                    const exposureData = exposureRes?.data ?? exposureRes
+                    setBetslipLossLimit(limitData?.dailyLossLimit ?? null)
+                    setBetslipExposure(exposureData?.totalExposure ?? null)
+                    setBetslipCurrentLoss(exposureData?.current_loss ?? exposureData?.currentLoss ?? exposureData?.totalExposure ?? null)
                 })
                 .catch(() => { })
         } catch (err) {
@@ -550,12 +729,12 @@ function CricketDetail() {
         }
         if (cashoutInProgressRef.current) return
         cashoutInProgressRef.current = true
-        setCashoutId(betId)
+        setCashoutId(String(betId))
         try {
             const res = await AuthService.sportsbookCashout(betId)
             const ok = res?.success === true || (res && res.success !== false && !res?.message)
             if (ok) {
-                const list = await AuthService.sportsbookOpenBets({ page: 1, limit: 20 }).then((r) => (r?.data ?? r)?.bets ?? [])
+                const list = await AuthService.sportsbookOpenBets(OPEN_BETS_QUERY()).then((r) => parseOpenBetsFromResponse(r))
                 setOpenBetsList(list)
                 const successMsg = res?.data?.message ?? res?.message
                 if (successMsg) alertSuccessMessage(successMsg)
@@ -580,17 +759,18 @@ function CricketDetail() {
         const displayBack = backBets.length > 0 ? backBets : (list.length > 0 && layBets.length === 0 ? list : [])
         const displayLay = layBets
         const renderBetCard = (b, isBack) => {
-            const bid = b._id ?? b.id
+            const bidRaw = b._id ?? b.id
+            const bid = bidRaw != null && bidRaw !== '' ? String(bidRaw) : ''
             const statusRaw = (b.status || 'open').toLowerCase()
-            const apiEntry = cashoutValuesMap[bid]
-            const rawVal = apiEntry?.value ?? b.cashout_value
+            const apiEntry = bid ? cashoutValuesMap[bid] : undefined
+            const rawVal = apiEntry?.value ?? cashoutValueFromBetObject(b) ?? b.cashout_value
             const cashoutVal = rawVal != null ? Number(rawVal) : null
             const stakeVal = Number(b.stake) || 0
             const netCashout = cashoutVal != null ? Math.max(0, cashoutVal - stakeVal * CASHOUT_COMMISSION) : null
             const suspended = apiEntry?.suspended === true || b.cashout_suspended === true || b.cashoutSuspended === true
-            const isCashingOut = cashoutId === bid
+            const isCashingOut = bid && cashoutId != null && String(cashoutId) === bid
             return (
-                <div key={bid} className={`betslip_open_bet_card betslip_open_bet_${isBack ? 'back' : 'lay'}`}>
+                <div key={bid || bidRaw} className={`betslip_open_bet_card betslip_open_bet_${isBack ? 'back' : 'lay'}`}>
                     <div className='betslip_open_bet_row_main'>
                         <span className={`betslip_bet_type_badge ${isBack ? 'back' : 'lay'}`}>{isBack ? 'BACK' : 'LAY'}</span>
                         <div className='betslip_open_bet_info'>
@@ -712,25 +892,92 @@ function CricketDetail() {
         }) || null
     }
 
+    /** API alag-alag: match_odds / MATCH_ODDS / match-odds */
+    const normSportsbookMarketType = (t) => (t || '').toString().toLowerCase().replace(/[\s_-]+/g, '')
+
+    /**
+     * Isi screen ke match + market ki open bets (cashout / P&L).
+     * Backend kabhi gameId, kabhi eventId bet par rakhta hai — dono se match.
+     * marketId bet par missing ho to sirf type se match (tab tak jab tak dono side par id na ho).
+     */
+    const openBetMatchesSection = (b, gid, sectionMarketId, sectionMarketType, evtId) => {
+        if (!b) return false
+        if (String(b.status || 'open').toLowerCase() !== 'open') return false
+        const betGid = String(b.gameId ?? b.game_id ?? '').trim()
+        const betEid = String(b.eventId ?? b.event_id ?? '').trim()
+        const pageGid = String(gid ?? '').trim()
+        const pageEid = String(evtId ?? '').trim()
+        const onSameEvent =
+            (pageGid && betGid && betGid === pageGid) ||
+            (pageGid && betEid && betEid === pageGid) ||
+            (pageEid && betEid && betEid === pageEid) ||
+            (pageEid && betGid && betGid === pageEid)
+        if (!onSameEvent) return false
+
+        const smid = sectionMarketId != null && sectionMarketId !== '' ? String(sectionMarketId).trim() : ''
+        const bmidRaw = b.marketId ?? b.mid ?? b.market_id
+        const bmid = bmidRaw != null && bmidRaw !== '' ? String(bmidRaw).trim() : ''
+        if (smid && bmid && bmid !== smid) return false
+
+        const smt = normSportsbookMarketType(sectionMarketType)
+        const bmt = normSportsbookMarketType(b.marketType ?? b.market_type)
+        if (smt && bmt && smt !== bmt) return false
+
+        return true
+    }
+
+    const normSelectionLabel = (s) => (s || '').trim().toLowerCase().replace(/\s+/g, ' ')
+
+    /** Agar yeh runner jeet jaye to net P/L (open bets, isi market) — exchange-style back/lay */
+    const computeRunnerPlIfWins = (runnerName, betsInMarket) => {
+        let pl = 0
+        const rkey = normSelectionLabel(runnerName)
+        for (const bet of betsInMarket) {
+            const sel = normSelectionLabel(bet.selectionName)
+            const s = Number(bet.stake) || 0
+            const o = Number(bet.odds ?? bet.executedOdds) || 0
+            const bt = String(bet.betType ?? bet.bet_type ?? 'back').toLowerCase()
+            if (s <= 0 || o < 1.01) continue
+            const onRunner = sel && rkey && (sel === rkey || sel.includes(rkey) || rkey.includes(sel))
+            if (bt === 'lay') {
+                if (onRunner) pl -= s * (o - 1)
+                else pl += s
+            } else {
+                if (onRunner) pl += s * (o - 1)
+                else pl -= s
+            }
+        }
+        return pl
+    }
+
     const renderOddsSection = (sectionKey, title, icon, minMax, markets, marketTypeApi) => {
         if (!markets?.length) return null
         const market = markets[0]
         const marketTitle = market?.marketName || market?.market || market?.name || title
-        const marketId = market.mid || market.marketId
+        const marketId = pickMarketId(market)
         const oddList = getMarketOddList(market)
         if (!oddList.length) return null
         const isOpen = market.status !== 'CLOSED'
-        const sectionCashoutTotal = (openBetsList || [])
-            .filter((b) => b.gameId === gameId || b.game_id === gameId)
-            .reduce((sum, b) => {
-                const bid = b._id ?? b.id
-                const cvRaw = cashoutValuesMap[bid]?.value ?? b.cashout_value
-                const cv = Number(cvRaw) || 0
-                const stakeVal = Number(b.stake) || 0
-                const net = Math.max(0, cv - stakeVal * CASHOUT_COMMISSION)
-                return sum + net
-            }, 0)
-        const gameBets = (openBetsList || []).filter((b) => (b.gameId === gameId || b.game_id === gameId) && (b.status || 'open').toLowerCase() === 'open')
+        const sectionOpenBets = (openBetsList || []).filter((b) =>
+            openBetMatchesSection(b, gameId, marketId, marketTypeApi, eventId)
+        )
+        const fmtCashoutRupee = (n) =>
+            Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        const sectionCashoutTotal = sectionOpenBets.reduce((sum, b) => {
+            const bidRaw = b._id ?? b.id
+            const bidKey = bidRaw != null && bidRaw !== '' ? String(bidRaw) : ''
+            const cvRaw =
+                (bidKey ? cashoutValuesMap[bidKey]?.value : null) ??
+                cashoutValueFromBetObject(b) ??
+                b.cashout_value
+            if (cvRaw == null || cvRaw === '') return sum
+            const cv = Number(cvRaw)
+            if (Number.isNaN(cv)) return sum
+            const stakeVal = Number(b.stake) || 0
+            // Header par API cashout (commission ke baad) — negative bhi dikhe, jaise ref. app
+            return sum + (cv - stakeVal * CASHOUT_COMMISSION)
+        }, 0)
+        const gameBets = sectionOpenBets
         const hasOneBet = gameBets.length === 1
         const hasMultipleBets = gameBets.length > 1
         const handleCashoutClick = (e) => {
@@ -760,13 +1007,6 @@ function CricketDetail() {
 
                         <span className="odds_section_limits">{minMax}</span>
 
-                        {gameBets.length > 0 && (() => {
-                            const totalStake = gameBets.reduce((s, b) => s + (Number(b.stake) || 0), 0)
-                            const types = [...new Set(gameBets.map((b) => ((b.betType || b.bet_type || 'back').toLowerCase())))]
-                            const typeLabel = types.length === 1 ? (types[0] === 'lay' ? 'Lay' : 'Back') : 'Back + Lay'
-                            return <span className="odds_section_bet_info">₹{totalStake.toLocaleString()} {typeLabel}</span>
-                        })()}
-
                         <div className='d-flex gap-2'>
                             <div className="odds_section_cashout_wrap">
                                 <button
@@ -776,7 +1016,7 @@ function CricketDetail() {
                                     disabled={isDemo}
                                     title={isDemo ? 'Demo mode: View only' : undefined}
                                 >
-                                    {isDemo ? 'Cashout (Login to play)' : `Cashout : ₹${sectionCashoutTotal.toLocaleString()}`}
+                                    {isDemo ? 'Cashout (Login to play)' : `Cashout : ₹${fmtCashoutRupee(sectionCashoutTotal)}`}
                                 </button>
                                 {openCashoutSection === sectionKey && hasMultipleBets && (
                                     <div className="odds_section_cashout_inline">
@@ -785,16 +1025,17 @@ function CricketDetail() {
                                         ) : (
                                             <div className="odds_section_popover_list">
                                                 {gameBets.map((b) => {
-                                                    const bid = b._id ?? b.id
-                                                    const apiEntry = cashoutValuesMap[bid]
-                                                    const rawVal = apiEntry?.value ?? b.cashout_value
+                                                    const bidRaw = b._id ?? b.id
+                                                    const bid = bidRaw != null && bidRaw !== '' ? String(bidRaw) : ''
+                                                    const apiEntry = bid ? cashoutValuesMap[bid] : undefined
+                                                    const rawVal = apiEntry?.value ?? cashoutValueFromBetObject(b) ?? b.cashout_value
                                                     const cashoutVal = rawVal != null ? Number(rawVal) : null
                                                     const stakeVal = Number(b.stake) || 0
                                                     const netCashout = cashoutVal != null ? Math.max(0, cashoutVal - stakeVal * CASHOUT_COMMISSION) : null
                                                     const suspended = apiEntry?.suspended === true || b.cashout_suspended === true || b.cashoutSuspended === true
-                                                    const isCashingOut = cashoutId === bid
+                                                    const isCashingOut = bid && cashoutId != null && String(cashoutId) === bid
                                                     return (
-                                                        <div key={bid} className="odds_section_popover_item">
+                                                        <div key={bid || bidRaw} className="odds_section_popover_item">
                                                             <div className="odds_section_popover_item_info">
                                                                 <span className="odds_section_popover_item_selection">{b.selectionName || b.marketName || '—'}</span>
                                                                 {netCashout != null && <span className="odds_section_popover_item_val">₹{netCashout.toLocaleString()}</span>}
@@ -841,7 +1082,7 @@ function CricketDetail() {
                         <tbody>
                             {oddList.map((odd, oIdx) => {
                                 const name = odd.rname ?? odd.selectionName ?? odd.name ?? ''
-                                const selId = odd.selectionId ?? odd.sid
+                                const selId = pickSelectionId(odd)
                                 const backCellsRaw = [
                                     { odds: odd.b1, size: odd.bs1 },
                                     { odds: odd.b2, size: odd.bs2 },
@@ -876,7 +1117,9 @@ function CricketDetail() {
                                 const layCells = isOddsTableCompact
                                     ? pickSingleBestLay(layCellsRaw)
                                     : [...layCellsRaw].sort(sortByOddsAsc)
-                                const isMatchOdds = sectionKey === 'match_odds' && oddList.length >= 2
+                                /* match_odds_0 / soccer_below_* / tennis: sectionKey alag ho sakta hai */
+                                const isMatchOdds =
+                                    (marketTypeApi === 'match_odds' || marketTypeApi === 'bookmaker') && oddList.length >= 2
                                 const matchOddsBet = isMatchOdds ? selectedBets.find((b) => b.market === market.market) : null
                                 const stakeNum = Number(stake) || 0
                                 const oddsVal = matchOddsBet ? (Number(matchOddsBet.oddsDisplay ?? matchOddsBet.odds) || 0) : 0
@@ -888,6 +1131,12 @@ function CricketDetail() {
                                 const lossAmount = (stakeNum > 0 && oddsVal >= 1) ? (isBack ? stakeNum : stakeNum * (oddsVal - 1)) : null
                                 const showProfitOnThisRow = isMatchOdds && matchOddsBet && (isThisRowSelectedTeam ? isBack : !isBack)
                                 const showLossOnThisRow = isMatchOdds && matchOddsBet && (isThisRowSelectedTeam ? !isBack : isBack)
+                                const plIfThisRunnerWins = isMatchOdds ? computeRunnerPlIfWins(name, sectionOpenBets) : 0
+                                const showPlFromOpenBets =
+                                    isMatchOdds &&
+                                    !matchOddsBet &&
+                                    sectionOpenBets.length > 0 &&
+                                    (Math.abs(plIfThisRunnerWins) > 0.005)
 
                                 const totalCols = 2 + backCells.length + layCells.length
                                 const isMiniBookRowSelected =
@@ -915,11 +1164,22 @@ function CricketDetail() {
                                                         )}
                                                     </>
                                                 )}
+                                                {showPlFromOpenBets && (
+                                                    plIfThisRunnerWins >= 0 ? (
+                                                        <span className="odds_section_pl_box odds_section_pl_box_positive" title="Is selection par open bets ke hisaab se agar yeh jeete">
+                                                            +{plIfThisRunnerWins.toFixed(2)}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="odds_section_pl_box odds_section_pl_box_negative" title="Is selection par open bets ke hisaab se agar yeh jeete">
+                                                            {plIfThisRunnerWins.toFixed(2)}
+                                                        </span>
+                                                    )
+                                                )}
                                             </td>
                                             {backCells.map((cell, cIdx) => {
                                                 const locked = isOddsLocked(cell.odds)
                                                 const oddsStr = String(cell.odds ?? '')
-                                                const placePayload = !locked && isOpen && gameId && eventNameFromState && marketId && (selId != null) ? { sport: sportName, gameId, eventName: eventNameFromState, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(selId), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0 } : null
+                                                const placePayload = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(selId), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0 } : null
                                                 const elId = `odds-${sectionKey}-${oIdx}-back-${cIdx}`
                                                 return (
                                                     <BackPriceCell
@@ -937,7 +1197,7 @@ function CricketDetail() {
                                             {layCells.map((cell, cIdx) => {
                                                 const locked = isOddsLocked(cell.odds)
                                                 const oddsStr = String(cell.odds ?? '')
-                                                const placePayloadLay = !locked && isOpen && gameId && eventNameFromState && marketId && (selId != null) ? { sport: sportName, gameId, eventName: eventNameFromState, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(selId), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0 } : null
+                                                const placePayloadLay = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(selId), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0 } : null
                                                 const elId = `odds-${sectionKey}-${oIdx}-lay-${cIdx}`
                                                 return (
                                                     <LayPriceCell
@@ -1209,7 +1469,7 @@ function CricketDetail() {
         const rows = []
         markets.forEach((m) => {
             const oddList = toOddDatasArray(m.oddDatas)
-            const marketId = m.mid || m.marketId
+            const marketId = pickMarketId(m)
             const marketName = m.marketName || m.market || m.name || 'Market'
             if (oddList.length >= 2) {
                 const noSel = oddList[0]
@@ -1228,8 +1488,8 @@ function CricketDetail() {
                     marketId,
                     marketName,
                     marketType,
-                    noSid: noSel?.sid,
-                    yesSid: yesSel?.sid,
+                    noSid: pickSelectionId(noSel),
+                    yesSid: pickSelectionId(yesSel),
                 })
             } else if (oddList.length === 1) {
                 const o = oddList[0]
@@ -1243,8 +1503,8 @@ function CricketDetail() {
                     marketId,
                     marketName,
                     marketType,
-                    noSid: o.sid,
-                    yesSid: o.sid,
+                    noSid: pickSelectionId(o),
+                    yesSid: pickSelectionId(o),
                 })
             }
         })
@@ -1265,14 +1525,14 @@ function CricketDetail() {
     const buildBackOnlyBlocksFromMarkets = (markets) => {
         if (!markets?.length) return []
         return markets.map((m) => {
-            const marketId = m.mid || m.marketId
+            const marketId = pickMarketId(m)
             const marketName = m.marketName || m.market || m.name || 'Market'
             const oddList = toOddDatasArray(m.oddDatas)
             const rows = oddList.map((o) => ({
                 label: o.rname ?? o.selectionName ?? '—',
                 backOdds: o.b1 ?? '—',
                 backSize: o.bs1 ?? '—',
-                selectionId: o.sid ?? o.selectionId,
+                selectionId: pickSelectionId(o),
             }))
             const allLocked = rows.every((r) => isOddsLocked(r.backOdds))
             return {
@@ -1305,12 +1565,12 @@ function CricketDetail() {
                         const noOddsStr = String(row.noOdds ?? '')
                         const yesElementId = `${sectionKey}-${row.marketId || rIdx}-yes`
                         const noElementId = `${sectionKey}-${row.marketId || rIdx}-no`
-                        const canPlaceYes = !yesLocked && gameId && eventNameFromState && row.marketId && row.yesSid != null
-                        const canPlaceNo = !noLocked && gameId && eventNameFromState && row.marketId && row.noSid != null
+                        const canPlaceYes = !yesLocked && gameId && row.marketId && row.yesSid != null && row.yesSid !== ''
+                        const canPlaceNo = !noLocked && gameId && row.marketId && row.noSid != null && row.noSid !== ''
                         const yesPayload = canPlaceYes ? {
                             sport: sportName,
                             gameId,
-                            eventName: eventNameFromState,
+                            eventName: eventNameForBets,
                             marketType: row.marketType || 'fancy',
                             marketId: String(row.marketId),
                             selectionId: String(row.yesSid),
@@ -1321,7 +1581,7 @@ function CricketDetail() {
                         const noPayload = canPlaceNo ? {
                             sport: sportName,
                             gameId,
-                            eventName: eventNameFromState,
+                            eventName: eventNameForBets,
                             marketType: row.marketType || 'fancy',
                             marketId: String(row.marketId),
                             selectionId: String(row.noSid),
@@ -1410,11 +1670,11 @@ function CricketDetail() {
                         const backLocked = isOddsLocked(row.backOdds)
                         const backOddsStr = String(row.backOdds ?? '')
                         const backElementId = `backonly-${key}-${rIdx}-back`
-                        const canPlaceBack = !backLocked && gameId && eventNameFromState && marketId && row.selectionId != null
+                        const canPlaceBack = !backLocked && gameId && marketId && row.selectionId != null && row.selectionId !== ''
                         const backPayload = canPlaceBack ? {
                             sport: sportName,
                             gameId,
-                            eventName: eventNameFromState,
+                            eventName: eventNameForBets,
                             marketType: marketType || 'fancy',
                             marketId: String(marketId),
                             selectionId: String(row.selectionId),
@@ -1539,11 +1799,9 @@ function CricketDetail() {
     useEffect(() => {
         if (!shouldFetchOpenBets || isDemo) return
         setOpenBetsLoading(true)
-        AuthService.sportsbookOpenBets({ page: 1, limit: 20 })
+        AuthService.sportsbookOpenBets(OPEN_BETS_QUERY())
             .then((res) => {
-                const data = res?.data ?? res
-                const list = data?.bets ?? (Array.isArray(data) ? data : []) ?? []
-                setOpenBetsList(Array.isArray(list) ? list : [])
+                setOpenBetsList(parseOpenBetsFromResponse(res))
             })
             .catch(() => { /* keep previous openBetsList so "No open bets" doesn’t replace real data */ })
             .finally(() => setOpenBetsLoading(false))
@@ -2030,7 +2288,7 @@ function CricketDetail() {
                                                         )}
 
                                                         {/* {oddsData?.matchOdds?.map((market, mIdx) => {
-                                                    const marketId = market.mid || market.marketId
+                                                    const marketId = pickMarketId(market)
                                                     const oddList = Array.isArray(market.oddDatas) ? market.oddDatas : (market.oddDatas ? Object.values(market.oddDatas).filter(Boolean) : [])
                                                     return (
                                                         <div key={marketId || mIdx} className='match_block'>
@@ -2047,8 +2305,9 @@ function CricketDetail() {
                                                                     const layLocked = isOddsLocked(layOdds)
                                                                     const elIdBack = `api-mo-${marketId}-${mIdx}-${oIdx}-back`
                                                                     const elIdLay = `api-mo-${marketId}-${mIdx}-${oIdx}-lay`
-                                                                    const placeBack = !backLocked && gameId && eventNameFromState && marketId && (odd.sid != null) ? { sport: 'cricket', gameId, eventName: eventNameFromState, marketType: 'match_odds', marketId: String(marketId), selectionId: String(odd.sid), selectionName: name, betType: 'back', odds: parseFloat(backOdds) || 0 } : null
-                                                                    const placeLay = !layLocked && gameId && eventNameFromState && marketId && (odd.sid != null) ? { sport: 'cricket', gameId, eventName: eventNameFromState, marketType: 'match_odds', marketId: String(marketId), selectionId: String(odd.sid), selectionName: name, betType: 'lay', odds: parseFloat(layOdds) || 0 } : null
+                                                                    const sidMo = pickSelectionId(odd)
+                                                                    const placeBack = !backLocked && gameId && marketId && sidMo ? { sport: 'cricket', gameId, eventName: eventNameForBets, marketType: 'match_odds', marketId: String(marketId), selectionId: String(sidMo), selectionName: name, betType: 'back', odds: parseFloat(backOdds) || 0 } : null
+                                                                    const placeLay = !layLocked && gameId && marketId && sidMo ? { sport: 'cricket', gameId, eventName: eventNameForBets, marketType: 'match_odds', marketId: String(marketId), selectionId: String(sidMo), selectionName: name, betType: 'lay', odds: parseFloat(layOdds) || 0 } : null
                                                                     return (
                                                                         <div key={odd.sid ?? oIdx} className='d-flex align-items-center mt-2 justify-content-between gap-2' style={{ width: '100%' }}>
                                                                             <div className={`team_cricket_bl_name ${backLocked ? 'locked' : ''} ${isBetSelected(name, market.market, backOdds, elIdBack) ? 'selected' : ''}`} onClick={() => !backLocked && handleBetClick(name, market.market, backOdds, elIdBack, placeBack)}>
@@ -2602,7 +2861,7 @@ function CricketDetail() {
                                         return (
                                             <div key={bet.id} className={cardClass}>
                                                 <div className='betslip_card_header'>
-                                                    <span className='betslip_match_title'>{eventNameFromState || 'Match'}</span>
+                                                    <span className='betslip_match_title'>{eventNameForBets}</span>
                                                     <button type='button' className='betslip_card_close' onClick={() => removeBet(bet.id)} aria-label='Remove'>×</button>
                                                 </div>
                                                 <div className='betslip_selection'>

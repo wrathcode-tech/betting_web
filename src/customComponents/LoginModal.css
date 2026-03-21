@@ -1,17 +1,25 @@
 /* Premium Login / Sign Up Modal */
 
+/*
+ * Above: .mobile-menu-wrapper z-index: 9999999 !important (public/css/style.css)
+ * and betslip ~10050 — login must use !important so bottom bar never blocks modal.
+ */
 .login_modal_backdrop.premium_login_backdrop {
   position: fixed;
   inset: 0;
-  z-index: 99999998;
+  z-index: 150000000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   animation: premiumLoginFadeIn 0.25s ease-out;
+  overscroll-behavior: contain;
+  /* Scroll only inside .login_modal_content — not the dimmed area */
+  overflow: hidden;
 }
 
 @keyframes premiumLoginFadeIn {
@@ -23,10 +31,13 @@
   width: 100%;
   max-width: 520px;
   max-height: calc(100vh - 32px);
+  max-height: min(92dvh, calc(100vh - 32px));
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  z-index: 99999999;
+  z-index: 150000001 !important;
   position: relative;
+  overflow: hidden;
   animation: premiumLoginSlideIn 0.35s ease-out;
 }
 
@@ -43,9 +54,10 @@
 
 .login_modal_content.premium_login_content {
   position: relative;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   max-height: calc(100vh - 32px);
+  max-height: min(92dvh, calc(100vh - 32px));
   background: linear-gradient(165deg, #161F2C 0%, #161F2C 100%);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -53,6 +65,9 @@
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Allow vertical scroll inside modal on touch (body lock stays without touch-action:none) */
+  touch-action: pan-y;
 }
 
 /* Scrollbar: sirf jab scroll ho tab dikhe, light/dark theme */
@@ -73,6 +88,26 @@
 .login_modal_content.premium_login_content {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.25) rgba(255, 255, 255, 0.06);
+}
+
+/* Mobile: sheet upar se shuru — upar scroll / logo reach karna asaan; poori height safe areas ke saath */
+@media (max-width: 991px) {
+  .login_modal_backdrop.premium_login_backdrop {
+    align-items: flex-start;
+    padding-top: max(10px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .login_modal_dialog.premium_login_dialog {
+    max-height: calc(100vh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+
+  .login_modal_content.premium_login_content {
+    max-height: calc(100vh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .premium_login_close {

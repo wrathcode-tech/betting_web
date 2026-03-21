@@ -94,12 +94,18 @@ function Search({ isOpen, onClose }) {
 
   useEffect(() => {
     const el = searchSliderRef.current
-    if (el && trendingGames.length > 0) {
-      el.style.transform = `translateX(${clampSliderTranslate(el, -searchSliderIndex * SEARCH_ITEM_WIDTH)}px)`
+    if (!el || trendingGames.length === 0) return
+    // Mobile: grid layout — inline translate slider ko tod deta hai
+    const isMobileGrid =
+      typeof window !== 'undefined' && window.matchMedia('(max-width: 991px)').matches
+    if (isMobileGrid) {
+      el.style.transform = ''
+      return
     }
+    el.style.transform = `translateX(${clampSliderTranslate(el, -searchSliderIndex * SEARCH_ITEM_WIDTH)}px)`
   }, [searchSliderIndex, trendingGames.length])
 
-  const displayTrending = trendingGames.slice(0, 20)
+  const displayTrending = trendingGames
   const hasSearchText = searchQuery.trim().length >= SEARCH_MIN_CHARS
   const { games: resultGames, matches: resultMatches } = searchResults
 
