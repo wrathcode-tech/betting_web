@@ -15,9 +15,11 @@ const scrollToTopNow = () => {
 };
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, key } = useLocation();
   const [showButton, setShowButton] = useState(false);
 
+  // `key` changes on every navigation, including same path with new location.state
+  // (e.g. search → /cricket with a specific match).
   useEffect(() => {
     scrollToTopNow();
     const t = setTimeout(scrollToTopNow, 0);
@@ -28,7 +30,7 @@ function ScrollToTop() {
       cancelAnimationFrame(t2);
       clearTimeout(t3);
     };
-  }, [pathname]);
+  }, [pathname, key]);
 
   // Show button on any page that has scroll, when user has scrolled down; hide when full page fits on screen
   useEffect(() => {

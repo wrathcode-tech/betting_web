@@ -114,11 +114,14 @@ function CricketDetail() {
     }, [openBetsList])
 
     const [defaultMatch, setDefaultMatch] = useState(null)
-    const gameIdFromState = location.state?.gameId
+    const gameIdFromState = location.state?.gameId ?? location.state?.game_id
+    const eventIdFromState = location.state?.eventId ?? location.state?.event_id
+    /** Search / link with explicit match: never replace with "first match" from list */
+    const hasExplicitMatchNav = !!(gameIdFromState || eventIdFromState)
     const eventNameFromState = location.state?.eventName ?? defaultMatch?.eventName
     const seriesOrTournamentName = location.state?.seriesName ?? location.state?.tournamentName ?? location.state?.series_name ?? defaultMatch?.seriesName ?? defaultMatch?.series_name ?? defaultMatch?.tournamentName ?? defaultMatch?.tournament ?? ''
     const sportFromPath = location.pathname?.includes('/tennis') ? 'tennis' : location.pathname?.includes('/soccer') ? 'soccer' : null
-    const sportName = location.state?.sportName || sportFromPath || 'cricket'
+    const sportName = (location.state?.sportName || sportFromPath || 'cricket').toLowerCase()
     const cricketOnlyTabs = ['sessions', 'wp-market', 'extra-market', 'odd-even']
 
     // Tennis/soccer: only ALL and OPEN BETS tabs; reset cricket-only tab to 'all'
@@ -129,8 +132,16 @@ function CricketDetail() {
         // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when sport changes
     }, [sportName])
 
-    const gameId = gameIdFromState ?? defaultMatch?.gameId
-    const eventId = location.state?.eventId ?? defaultMatch?.eventId ?? gameId
+    // Cricket/soccer: odds REST uses gameId; search may send only eventId — use as fallback.
+    const gameId =
+        sportName === 'tennis'
+            ? (gameIdFromState ?? defaultMatch?.gameId ?? eventIdFromState)
+            : (gameIdFromState ?? eventIdFromState ?? defaultMatch?.gameId)
+    const eventId =
+        eventIdFromState ??
+        gameIdFromState ??
+        defaultMatch?.eventId ??
+        gameId
     const [oddsData, setOddsData] = useState(null)
     const [oddsLoading, setOddsLoading] = useState(false)
     const [liveScore, setLiveScore] = useState(null)
@@ -139,7 +150,7 @@ function CricketDetail() {
 
     // Guest (no token) or demo: fetch matches via REST and set first match (demo JWT must not hit public GETs with Bearer)
     useEffect(() => {
-        if (gameIdFromState) return
+        if (hasExplicitMatchNav) return
         const token = sessionStorage.getItem('token')
         if (token && !isDemo) return
         let cancelled = false
@@ -158,11 +169,11 @@ function CricketDetail() {
             })
             .catch(() => { })
         return () => { cancelled = true }
-    }, [gameIdFromState, sportName, isDemo])
+    }, [hasExplicitMatchNav, sportName, isDemo])
 
     // Socket (doc): subscribe:matches { sport } when need default match; on('matches') { sport, data, timestamp }. Leave → unsubscribe:matches.
     useEffect(() => {
-        if (gameIdFromState) return
+        if (hasExplicitMatchNav) return
         const token = sessionStorage.getItem('token')
         if (!token || isDemo) return
         connectSportsbookSocket(token)
@@ -183,7 +194,7 @@ function CricketDetail() {
             removeMatchesListener(onMatches)
             unsubscribeMatches(sportName)
         }
-    }, [gameIdFromState, sportName, isDemo])
+    }, [hasExplicitMatchNav, sportName, isDemo])
 
     const normalizeOdds = (d) => {
         const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds : (Array.isArray(d?.match_odds) ? d.match_odds : [])

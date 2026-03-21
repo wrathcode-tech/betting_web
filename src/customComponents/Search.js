@@ -167,11 +167,39 @@ function Search({ isOpen, onClose }) {
                       <div className="search_results_list">
                         {resultMatches.map((match, idx) => {
                           const name = match?.eventName ?? match?.event_name ?? match?.name ?? match?.teams ?? 'Match'
-                          const gameId = match?.gameId ?? match?.game_id
-                          const eventId = match?.eventId ?? match?.event_id
-                          const sport = (match?.sport ?? match?.sportName ?? 'cricket').toLowerCase()
-                          const path = sport === 'tennis' ? '/tennis' : sport === 'soccer' ? '/soccer' : '/cricket'
-                          const state = gameId || eventId ? { gameId, eventId, eventName: name, sportName: sport } : undefined
+                          const rawGame =
+                            match?.gameId ?? match?.game_id ?? match?.matchId ?? match?.match_id
+                          const rawEvent = match?.eventId ?? match?.event_id
+                          const gameId = rawGame ?? rawEvent
+                          const eventId = rawEvent ?? rawGame
+                          const sportRaw = match?.sport ?? match?.sportName ?? match?.sport_name ?? 'cricket'
+                          const sport = String(sportRaw).toLowerCase()
+                          const path =
+                            sport === 'tennis'
+                              ? '/tennis'
+                              : sport === 'soccer' || sport === 'football'
+                                ? '/soccer'
+                                : '/cricket'
+                          const canonicalSport = sport === 'football' ? 'soccer' : sport
+                          // Cricket/soccer odds APIs expect gameId; search often returns only eventId — send both.
+                          const gid = gameId ?? eventId
+                          const eid = eventId ?? gameId
+                          const state =
+                            gid || eid
+                              ? {
+                                  gameId: gid,
+                                  eventId: eid,
+                                  eventName: name,
+                                  sportName: canonicalSport,
+                                  seriesName:
+                                    match?.seriesName ??
+                                    match?.series_name ??
+                                    match?.tournament ??
+                                    match?.competitionName ??
+                                    match?.competition_name,
+                                  inPlay: match?.inPlay ?? match?.in_play ?? match?.isLive ?? match?.is_live,
+                                }
+                              : undefined
                           return (
                             <Link
                               key={match?.id ?? match?._id ?? idx}
