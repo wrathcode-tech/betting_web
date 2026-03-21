@@ -690,9 +690,14 @@ button.btn.betnow {
         width: 300px;
     }
 
-    .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .rightside_odds {
+    /* Home landing + /sports: vertical page scroll on odds strip; horizontal odds scroll kept */
+    .sports_grid_table_wrap.desktop_view .rightside_odds {
         overscroll-behavior-x: contain;
-        touch-action: pan-x;
+        touch-action: pan-x pan-y;
+    }
+
+    .sports_grid_table_wrap.desktop_view .rightside_odds .sports_grid_odds_btn {
+        touch-action: pan-x pan-y;
     }
 
     .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .sports_grid_odds_columns.sports_grid_desktop_odds_strip {
@@ -1315,7 +1320,7 @@ ul.match_type_tabs li.active button {
         overflow-x: auto;
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-x;
+        touch-action: pan-x pan-y;
     }
 
     .sports_grid_table_wrap.mobile_view .sports_grid_mobile_single_cell .sports_grid_mobile_row {
@@ -1585,7 +1590,7 @@ ul.match_type_tabs li.active button {
         overflow-x: auto;
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-x;
+        touch-action: pan-x pan-y;
     }
 
     .sports_grid_table_wrap.mobile_view.sports_grid_sticky_scroll .sports_grid_table_mobile {
@@ -1727,6 +1732,7 @@ ul.match_type_tabs li.active button {
         overflow-x: auto;
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
         padding: 6px 8px;
         min-width: 0;
         max-width: 280px;
