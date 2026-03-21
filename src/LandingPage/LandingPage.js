@@ -355,10 +355,9 @@ function LandingPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Fetch TOP Matches (cricket) from API
+  // Fetch TOP Matches (cricket) from API — don’t force loading=true here (socket may already have list; avoids hiding data after refresh)
   useEffect(() => {
     let cancelled = false;
-    setTopMatchesLoading(true);
     AuthService.sportsbookMatches('cricket')
       .then((res) => {
         if (cancelled) return;
@@ -390,7 +389,6 @@ function LandingPage() {
   // Fetch TOP Matches (tennis) from API
   useEffect(() => {
     let cancelled = false;
-    setTopTennisMatchesLoading(true);
     AuthService.sportsbookMatches('tennis')
       .then((res) => {
         if (cancelled) return;
@@ -423,7 +421,6 @@ function LandingPage() {
   // Fetch TOP Matches (soccer/football) from API
   useEffect(() => {
     let cancelled = false;
-    setTopSoccerMatchesLoading(true);
     AuthService.sportsbookMatches('soccer')
       .then((res) => {
         if (cancelled) return;
@@ -480,6 +477,16 @@ function LandingPage() {
           };
         })
         .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
+      const gameIdsSlice = mapped.slice(0, 15).map((m) => m.gameId).filter(Boolean);
+      const oddsSub = topMatchesOddsSubscribedRef.current;
+      const refMap = topMatchesSubscribedIdToSportRef.current;
+      gameIdsSlice.forEach((gid) => {
+        refMap.set(String(gid), 'cricket');
+        if (!oddsSub.has(gid)) {
+          subscribeOdds(gid, 'cricket');
+          oddsSub.add(gid);
+        }
+      });
       setTopMatchesFromApi((prev) => (mapped.length > 0 ? mapped : prev));
       setTopMatchesLoading(false);
     };
@@ -529,7 +536,19 @@ function LandingPage() {
       const raw = payload.data ?? payload.matches;
       const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : []);
       const mapped = mapTennis(list);
-      if (mapped.length > 0) setTopTennisMatchesFromApi(mapped);
+      if (mapped.length > 0) {
+        const idsSlice = mapped.slice(0, 15).map((m) => m.gameId ?? m.eventId).filter(Boolean);
+        const oddsSub = topTennisMatchesOddsSubscribedRef.current;
+        const refMap = topMatchesSubscribedIdToSportRef.current;
+        idsSlice.forEach((tid) => {
+          refMap.set(String(tid), 'tennis');
+          if (!oddsSub.has(tid)) {
+            subscribeOdds(tid, 'tennis');
+            oddsSub.add(tid);
+          }
+        });
+        setTopTennisMatchesFromApi(mapped);
+      }
       setTopTennisMatchesLoading(false);
     };
     const onSoccerMatches = (payload) => {
@@ -537,7 +556,19 @@ function LandingPage() {
       const raw = payload.data ?? payload.matches;
       const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : []);
       const mapped = mapSoccer(list);
-      if (mapped.length > 0) setTopSoccerMatchesFromApi(mapped);
+      if (mapped.length > 0) {
+        const gSlice = mapped.slice(0, 15).map((m) => m.gameId).filter(Boolean);
+        const oddsSub = topSoccerMatchesOddsSubscribedRef.current;
+        const refMap = topMatchesSubscribedIdToSportRef.current;
+        gSlice.forEach((gid) => {
+          refMap.set(String(gid), 'soccer');
+          if (!oddsSub.has(gid)) {
+            subscribeOdds(gid, 'soccer');
+            oddsSub.add(gid);
+          }
+        });
+        setTopSoccerMatchesFromApi(mapped);
+      }
       setTopSoccerMatchesLoading(false);
     };
     addMatchesListener(onMatches);
@@ -562,14 +593,20 @@ function LandingPage() {
     const onOdds = (payload) => {
       const id = payload?.gameId ?? payload?.eventId;
       if (!id || payload?.data === undefined) return;
-      const matchOdds = Array.isArray(payload.data?.matchOdds) ? payload.data.matchOdds : [];
+      const incoming = payload.data && typeof payload.data === 'object' ? payload.data : {};
+      const matchOdds = Array.isArray(incoming.matchOdds) ? incoming.matchOdds : [];
       const sport = topMatchesSubscribedIdToSportRef.current.get(String(id));
+      const mergeOddsEntry = (prevEntry) => ({
+        ...(prevEntry && typeof prevEntry === 'object' ? prevEntry : {}),
+        ...incoming,
+        matchOdds: matchOdds.length ? matchOdds : (prevEntry?.matchOdds ?? []),
+      });
       if (sport === 'tennis') {
-        setTopTennisMatchesOddsByGameId((prev) => ({ ...prev, [id]: { matchOdds } }));
+        setTopTennisMatchesOddsByGameId((prev) => ({ ...prev, [id]: mergeOddsEntry(prev[id]) }));
       } else if (sport === 'soccer') {
-        setTopSoccerMatchesOddsByGameId((prev) => ({ ...prev, [id]: { matchOdds } }));
+        setTopSoccerMatchesOddsByGameId((prev) => ({ ...prev, [id]: mergeOddsEntry(prev[id]) }));
       } else {
-        setTopMatchesOddsByGameId((prev) => ({ ...prev, [id]: { matchOdds } }));
+        setTopMatchesOddsByGameId((prev) => ({ ...prev, [id]: mergeOddsEntry(prev[id]) }));
       }
     };
     addOddsListener(onOdds);
@@ -599,7 +636,7 @@ function LandingPage() {
 
   // Subscribe/unsubscribe odds for visible TOP Tennis Matches (first 15)
   useEffect(() => {
-    const ids = topTennisMatchesFromApi.slice(0, 10).map((m) => m.gameId ?? m.eventId).filter(Boolean);
+    const ids = topTennisMatchesFromApi.slice(0, 15).map((m) => m.gameId ?? m.eventId).filter(Boolean);
     const prev = topTennisMatchesOddsSubscribedRef.current;
     const refMap = topMatchesSubscribedIdToSportRef.current;
     ids.forEach((id) => {
@@ -620,7 +657,7 @@ function LandingPage() {
 
   // Subscribe/unsubscribe odds for visible TOP Soccer Matches (first 15)
   useEffect(() => {
-    const gameIds = topSoccerMatchesFromApi.slice(0, 10).map((m) => m.gameId).filter(Boolean);
+    const gameIds = topSoccerMatchesFromApi.slice(0, 15).map((m) => m.gameId).filter(Boolean);
     const prev = topSoccerMatchesOddsSubscribedRef.current;
     const refMap = topMatchesSubscribedIdToSportRef.current;
     gameIds.forEach((gameId) => {
@@ -645,25 +682,20 @@ function LandingPage() {
     [topMatchesFromApi]
   );
   const topTennisMatchesOddsFetchKey = useMemo(
-    () => topTennisMatchesFromApi.slice(0, 10).map((m) => m.gameId ?? m.eventId).filter(Boolean).sort().join(','),
+    () => topTennisMatchesFromApi.slice(0, 15).map((m) => m.gameId ?? m.eventId).filter(Boolean).sort().join(','),
     [topTennisMatchesFromApi]
   );
   const topSoccerMatchesOddsFetchKey = useMemo(
-    () => topSoccerMatchesFromApi.slice(0, 10).map((m) => m.gameId).filter(Boolean).sort().join(','),
+    () => topSoccerMatchesFromApi.slice(0, 15).map((m) => m.gameId).filter(Boolean).sort().join(','),
     [topSoccerMatchesFromApi]
   );
 
-  // Fetch odds for first 8 TOP Matches (for back/lay display) – REST fallback when no socket
+  // Fetch odds for first 8 TOP Matches – REST backfill; merge with socket; first 3 requests first for faster paint
   useEffect(() => {
     const gameIds = topMatchesFromApi.slice(0, 8).map((m) => m.gameId).filter(Boolean);
     if (gameIds.length === 0) return;
     let cancelled = false;
-    Promise.all(
-      gameIds.map((gameId) =>
-        AuthService.sportsbookOdds('cricket', gameId).then((res) => ({ gameId, res }))
-      )
-    ).then((results) => {
-      if (cancelled) return;
+    const mergeCricketOddsResults = (results) => {
       setTopMatchesOddsByGameId((prev) => {
         const next = { ...prev };
         results.forEach(({ gameId, res }) => {
@@ -674,17 +706,33 @@ function LandingPage() {
             : Array.isArray(raw?.matchOdds) ? raw.matchOdds
               : Array.isArray(res?.matchOdds) ? res.matchOdds
                 : [];
-          next[gameId] = { ...(next[gameId] || {}), matchOdds };
+          next[gameId] = {
+            ...(next[gameId] || {}),
+            ...(typeof d === 'object' && d ? d : {}),
+            matchOdds: Array.isArray(d?.matchOdds) ? d.matchOdds : (next[gameId]?.matchOdds ?? matchOdds),
+          };
         });
         return next;
       });
-    }).catch(() => { });
+    };
+    const fetchBatch = (ids) =>
+      Promise.all(ids.map((gameId) => AuthService.sportsbookOdds('cricket', gameId).then((res) => ({ gameId, res }))));
+    const first = gameIds.slice(0, 3);
+    const rest = gameIds.slice(3);
+    fetchBatch(first)
+      .then((results) => { if (!cancelled) mergeCricketOddsResults(results); })
+      .catch(() => { });
+    if (rest.length > 0) {
+      fetchBatch(rest)
+        .then((results) => { if (!cancelled) mergeCricketOddsResults(results); })
+        .catch(() => { });
+    }
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-fetch when gameId set changes (topMatchesOddsFetchKey), not on every topMatchesFromApi ref change
   }, [topMatchesOddsFetchKey]);
 
   useEffect(() => {
-    const ids = topTennisMatchesFromApi.slice(0, 10).map((m) => m.gameId ?? m.eventId).filter(Boolean);
+    const ids = topTennisMatchesFromApi.slice(0, 15).map((m) => m.gameId ?? m.eventId).filter(Boolean);
     if (ids.length === 0) return;
     let cancelled = false;
     Promise.all(
@@ -703,7 +751,11 @@ function LandingPage() {
             : Array.isArray(raw?.matchOdds) ? raw.matchOdds
               : Array.isArray(res?.matchOdds) ? res.matchOdds
                 : [];
-          next[id] = { ...(next[id] || {}), matchOdds };
+          next[id] = {
+            ...(next[id] || {}),
+            ...(typeof d === 'object' && d ? d : {}),
+            matchOdds: Array.isArray(d?.matchOdds) ? d.matchOdds : (next[id]?.matchOdds ?? matchOdds),
+          };
         });
         return next;
       });
@@ -713,7 +765,7 @@ function LandingPage() {
   }, [topTennisMatchesOddsFetchKey]);
 
   useEffect(() => {
-    const gameIds = topSoccerMatchesFromApi.slice(0, 10).map((m) => m.gameId).filter(Boolean);
+    const gameIds = topSoccerMatchesFromApi.slice(0, 15).map((m) => m.gameId).filter(Boolean);
     if (gameIds.length === 0) return;
     let cancelled = false;
     Promise.all(
@@ -732,7 +784,11 @@ function LandingPage() {
             : Array.isArray(raw?.matchOdds) ? raw.matchOdds
               : Array.isArray(res?.matchOdds) ? res.matchOdds
                 : [];
-          next[gameId] = { ...(next[gameId] || {}), matchOdds };
+          next[gameId] = {
+            ...(next[gameId] || {}),
+            ...(typeof d === 'object' && d ? d : {}),
+            matchOdds: Array.isArray(d?.matchOdds) ? d.matchOdds : (next[gameId]?.matchOdds ?? matchOdds),
+          };
         });
         return next;
       });
@@ -1716,7 +1772,7 @@ function LandingPage() {
 
               <div className="sports_grid_table_wrap desktop_view">
                 <div className="sports_grid_desktop_layout">
-                  {topMatchesLoading ? (
+                  {topMatchesLoading && topMatchesFromApi.length === 0 ? (
                     <div className="sports_grid_loading sports_grid_desktop_fullbleed">Loading cricket matches...</div>
                   ) : topMatchesByDay.length === 0 ? (
                     <div className="sports_grid_empty sports_grid_desktop_fullbleed">No matches at the moment.</div>
@@ -1804,7 +1860,7 @@ function LandingPage() {
             <div className="sports_grid_section sports_grid_section_landing">
               <div className="sports_grid_table_wrap desktop_view">
                 <div className="sports_grid_desktop_layout">
-                  {topTennisMatchesLoading ? (
+                  {topTennisMatchesLoading && topTennisMatchesFromApi.length === 0 ? (
                     <div className="sports_grid_loading sports_grid_desktop_fullbleed">Loading tennis matches...</div>
                   ) : topTennisMatchesByDay.length === 0 ? (
                     <div className="sports_grid_empty sports_grid_desktop_fullbleed">No matches at the moment.</div>
@@ -1893,7 +1949,7 @@ function LandingPage() {
             <div className="sports_grid_section sports_grid_section_landing">
               <div className="sports_grid_table_wrap desktop_view">
                 <div className="sports_grid_desktop_layout">
-                  {topSoccerMatchesLoading ? (
+                  {topSoccerMatchesLoading && topSoccerMatchesFromApi.length === 0 ? (
                     <div className="sports_grid_loading sports_grid_desktop_fullbleed">Loading football matches...</div>
                   ) : topSoccerMatchesByDay.length === 0 ? (
                     <div className="sports_grid_empty sports_grid_desktop_fullbleed">No matches at the moment.</div>
