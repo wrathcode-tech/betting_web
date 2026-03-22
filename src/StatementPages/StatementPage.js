@@ -125,35 +125,37 @@ function StatementPage({
               <h1>{title}</h1>
               <div className={`transactions_header_right ${headerRightClassName || ''}`.trim()}>
                 {headerExtra}
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="transactions_search_input"
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value)
-                    setPage(1)
-                  }}
-                  aria-label="Search"
-                />
-                {filterColumnKey && (
-                  <select
-                    className="transactions_filter_select deposit_btn_style"
-                    value={filterValue}
-                    onChange={(e) => { setFilterValue(e.target.value); setPage(1); }}
-                    aria-label="Filter"
-                  >
-                    <option value="all">All</option>
-                    {uniqueFilterOptions.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                )}
-                {!filterColumnKey && (
-                  <select className="transactions_filter_select deposit_btn_style" value="all" aria-label="Filter">
-                    <option value="all">All</option>
-                  </select>
-                )}
+                <div className="transactions_header_filters">
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    className="transactions_search_input"
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value)
+                      setPage(1)
+                    }}
+                    aria-label="Search"
+                  />
+                  {filterColumnKey && (
+                    <select
+                      className="transactions_filter_select deposit_btn_style"
+                      value={filterValue}
+                      onChange={(e) => { setFilterValue(e.target.value); setPage(1); }}
+                      aria-label="Filter"
+                    >
+                      <option value="all">All</option>
+                      {uniqueFilterOptions.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  )}
+                  {!filterColumnKey && (
+                    <select className="transactions_filter_select deposit_btn_style" value="all" aria-label="Filter">
+                      <option value="all">All</option>
+                    </select>
+                  )}
+                </div>
                 {enableExport && (
                   <div className="export_dropdown_wrapper" ref={exportDropdownRef}>
                     <button

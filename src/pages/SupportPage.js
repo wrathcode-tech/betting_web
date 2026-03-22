@@ -314,6 +314,15 @@ const SupportPage = () => {
   const closeModal = useCallback(() => setModalOpen(false), []);
 
   useEffect(() => {
+    if (!modalOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") closeModal();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [modalOpen, closeModal]);
+
+  useEffect(() => {
     if (messageQuery?.length > 0) {
       messagesEndRef?.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }
@@ -610,8 +619,13 @@ const SupportPage = () => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="support_modal_title"
+          onClick={closeModal}
         >
-          <div className="support_modal_content">
+          <div
+            className="support_modal_content"
+            onClick={(e) => e.stopPropagation()}
+            role="document"
+          >
             <div className="support_modal_header">
               <h3 id="support_modal_title">Help / Support</h3>
               <button

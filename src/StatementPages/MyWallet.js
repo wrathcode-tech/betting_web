@@ -140,6 +140,7 @@ export default function MyWallet() {
           filterColumnKey="type"
           dateColumnKey="time"
           headerExtra={headerExtra}
+          headerRightClassName="my_wallet_header_right"
         />
       </>
     )
@@ -154,6 +155,7 @@ export default function MyWallet() {
       filterColumnKey="type"
       dateColumnKey="time"
       headerExtra={headerExtra}
+      headerRightClassName="my_wallet_header_right"
     />
   )
 }
