@@ -3,21 +3,17 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import './sportsGame.css'
 import MobileMenu from '../customComponents/MobileMenu'
 import { getMatchRowsFromSocketPayload, expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload'
-import { getOdds } from '../api/services/sportsbookApi'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import {
-    subscribeOdds,
-    unsubscribeOdds,
     addMatchesListener,
     removeMatchesListener,
-    addOddsListener,
-    removeOddsListener,
+    subscribeMatches,
+    unsubscribeMatches,
 } from '../socket/sportsbookSocket'
 import {
     getMarketPillsFromSources,
     getMatchStreamVisible,
-    resolveOddsPayloadFromMap,
 } from '../utils/matchMarketPills'
 
 const GALLERY_SLIDES = ['images/sports_slider_img2.png', 'images/sports_slider_img.png', 'images/sports_slider_img3.png']
@@ -211,8 +207,6 @@ function SportsGame() {
     const [cricketMatchesLoading, setCricketMatchesLoading] = useState(true)
     const [tennisMatchesLoading, setTennisMatchesLoading] = useState(true)
     const [soccerMatchesLoading, setSoccerMatchesLoading] = useState(true)
-    const [oddsByGameId, setOddsByGameId] = useState({})
-    const subscribedOddsRef = useRef(new Set())
     const sportsOddsScrollRefs = useRef(new Map())
     const isSyncingSportsOddsScrollRef = useRef(false)
     const [searchParams] = useSearchParams()
@@ -222,8 +216,13 @@ function SportsGame() {
         if (filterFromUrl === 'live') setSportsFilter('live')
     }, [filterFromUrl])
 
-    const getMatchGameId = (m) => m?.gameId ?? m?.game_id
-    const getMatchEventId = (m) => m?.eventId ?? m?.event_id
+    // `/sports`: only the **active tab** sport is subscribed; switching tabs unsubscribes the previous (home `/` still gets all three via SportsbookRouteMatchStreams).
+    useEffect(() => {
+        const sport =
+            activeTab === 'tennis' ? 'tennis' : activeTab === 'soccer' ? 'soccer' : 'cricket'
+        subscribeMatches(sport)
+        return () => unsubscribeMatches(sport)
+    }, [activeTab])
 
     // Matches: socket only (subscribe:matches from route). Watchdog clears spinners if WS is slow/empty.
     const MATCH_LOAD_MAX_WAIT_MS = 10000
@@ -237,9 +236,8 @@ function SportsGame() {
         return () => window.clearTimeout(t)
     }, [])
 
-    // Socket: live match lists — subscribe:matches from SportsbookRouteMatchStreams (pathname)
+    // Socket: live match lists — `/sports` uses tab-scoped subscribe above; home `/` uses SportsbookRouteMatchStreams. No subscribe:odds here — list uses listSummary selections; detail subscribes odds.
     useEffect(() => {
-        const oddsSubs = subscribedOddsRef.current
         const onMatches = (raw) => {
             for (const payload of expandSocketBatchPayload(raw)) {
                 const { sport, rows, error, schema } = getMatchRowsFromSocketPayload(payload)
@@ -265,129 +263,8 @@ function SportsGame() {
 
         return () => {
             removeMatchesListener(onMatches)
-            oddsSubs.forEach((gid) => unsubscribeOdds(gid))
-            oddsSubs.clear()
         }
     }, [])
-
-    // Socket: odds payload — store under gameId (subscribe id) and eventId when both differ so list rows always resolve.
-    useEffect(() => {
-        const onOdds = (raw) => {
-            for (const payload of expandSocketBatchPayload(raw)) {
-                if (payload?.data === undefined) continue
-                const data = payload.data
-                const matchOdds = Array.isArray(data?.matchOdds)
-                    ? data.matchOdds
-                    : Array.isArray(data?.match_odds)
-                      ? data.match_odds
-                      : []
-                const entry = { ...data, matchOdds }
-                const keys = new Set()
-                const g = payload?.gameId != null && String(payload.gameId)
-                const e = payload?.eventId != null && String(payload.eventId)
-                const innerE = data?.eventId != null && String(data.eventId)
-                const innerG = data?.gameId != null && String(data.gameId)
-                ;[g, e, innerE, innerG].forEach((k) => {
-                    if (k) keys.add(k)
-                })
-                if (keys.size === 0) continue
-                setOddsByGameId((prev) => {
-                    const next = { ...prev }
-                    keys.forEach((k) => {
-                        next[k] = entry
-                    })
-                    return next
-                })
-            }
-        }
-        addOddsListener(onOdds)
-        return () => removeOddsListener(onOdds)
-    }, [])
-
-    // Socket odds: subscribe only for active tab so msg me sport sahi jaye (cricket → cricket, tennis → tennis, football → soccer)
-    useEffect(() => {
-        const sport = activeTab === 'tennis' ? 'tennis' : activeTab === 'soccer' ? 'soccer' : 'cricket'
-        const cap = sport === 'cricket' ? 8 : 8
-        const entries =
-            sport === 'cricket'
-                ? (cricketMatches || []).map(getMatchGameId).filter(Boolean).slice(0, cap).map((id) => ({ id: String(id), sport }))
-                : sport === 'tennis'
-                    ? (tennisMatches || []).map(getMatchEventId).filter(Boolean).slice(0, cap).map((id) => ({ id: String(id), sport }))
-                    : (soccerMatches || []).map(getMatchGameId).filter(Boolean).slice(0, cap).map((id) => ({ id: String(id), sport }))
-        const prev = subscribedOddsRef.current
-        const currentIds = new Set(entries.map((e) => e.id))
-        prev.forEach((id) => {
-            if (!currentIds.has(id)) {
-                unsubscribeOdds(id)
-                prev.delete(id)
-            }
-        })
-        entries.forEach(({ id, sport: s }) => {
-            if (!prev.has(id)) {
-                subscribeOdds(id, s)
-                prev.add(id)
-            }
-        })
-    }, [activeTab, cricketMatches, tennisMatches, soccerMatches])
-
-    const oddsPrefetchKey = useMemo(() => {
-        const sport = activeTab === 'tennis' ? 'tennis' : activeTab === 'soccer' ? 'soccer' : 'cricket'
-        const raw =
-            sport === 'cricket' ? cricketMatches : sport === 'tennis' ? tennisMatches : soccerMatches
-        const list = (raw || []).slice(0, 8)
-        return `${sport}:${list
-            .map((m) => (sport === 'tennis' ? getMatchEventId(m) : getMatchGameId(m)))
-            .filter((id) => id != null && id !== '')
-            .join(',')}`
-    }, [activeTab, cricketMatches, tennisMatches, soccerMatches])
-
-    useEffect(() => {
-        let cancelled = false
-        const colon = oddsPrefetchKey.indexOf(':')
-        const sport = colon >= 0 ? oddsPrefetchKey.slice(0, colon) : 'cricket'
-        const idPart = colon >= 0 ? oddsPrefetchKey.slice(colon + 1) : ''
-        const ids = idPart ? idPart.split(',').filter(Boolean) : []
-        if (ids.length === 0) return undefined
-        ;(async () => {
-            const rows = await Promise.all(
-                ids.map(async (id) => ({ id: String(id), res: await getOdds(sport, id).catch(() => null) }))
-            )
-            if (cancelled) return
-            setOddsByGameId((prev) => {
-                let changed = false
-                const next = { ...prev }
-                for (const { id, res } of rows) {
-                    if (!res?.success || !res?.data || typeof res.data !== 'object') continue
-                    const existing = next[id]
-                    const hasMo =
-                        Array.isArray(existing?.matchOdds) && existing.matchOdds.length > 0
-                    if (hasMo) continue
-                    const data = res.data
-                    const matchOdds = Array.isArray(data.matchOdds)
-                        ? data.matchOdds
-                        : Array.isArray(data.match_odds)
-                          ? data.match_odds
-                          : []
-                    const entry = { ...data, matchOdds }
-                    const keySet = new Set([id])
-                    if (data.gameId != null) keySet.add(String(data.gameId))
-                    if (data.eventId != null) keySet.add(String(data.eventId))
-                    for (const k of keySet) {
-                        const ex = next[k]
-                        const exMo = Array.isArray(ex?.matchOdds) && ex.matchOdds.length > 0
-                        if (!exMo) {
-                            next[k] = entry
-                            changed = true
-                        }
-                    }
-                }
-                return changed ? next : prev
-            })
-        })()
-        return () => {
-            cancelled = true
-        }
-    }, [oddsPrefetchKey])
 
     const totalSlides = GALLERY_SLIDES.length
     const mapToDisplayMatch = useCallback((m, defaultTournament, defaultIcon) => {
@@ -564,14 +441,13 @@ function SportsGame() {
     /** Three outcomes: 1 / X / 2 — each { back, lay, sizeFormatted } (exchange match-odds). */
     const getCardOdds = useCallback(
         (match, oddsPayload) => {
-            const odds = oddsPayload ?? resolveOddsPayloadFromMap(oddsByGameId, activeTab, match)
-            return build1x2OddsColumns(match, odds, isOddsValid, formatOddsSize)
+            return build1x2OddsColumns(match, oddsPayload ?? null, isOddsValid, formatOddsSize)
         },
-        [oddsByGameId, activeTab, isOddsValid]
+        [isOddsValid]
     )
 
     const renderMatchCard = useCallback((match, index) => {
-        const oddsPayload = resolveOddsPayloadFromMap(oddsByGameId, activeTab, match)
+        const oddsPayload = null
         const marketPills = getMarketPillsFromSources(match, oddsPayload)
         const cardOdds = getCardOdds(match)
         const o1 = cardOdds[0]
@@ -658,7 +534,7 @@ function SportsGame() {
                 </div>
             </div>
         )
-    }, [handleMatchCardClick, getCardOdds, activeTab, oddsByGameId])
+    }, [handleMatchCardClick, getCardOdds])
 
     return (
         <>
@@ -790,7 +666,7 @@ function SportsGame() {
                                                                 <React.Fragment key={day}>
                                                                     {                                                                    matches.map((match, idx) => {
                                                                         const cardOdds = getCardOdds(match)
-                                                                        const oddsPayloadRow = resolveOddsPayloadFromMap(oddsByGameId, activeTab, match)
+                                                                        const oddsPayloadRow = null
                                                                         const rowPills = getMarketPillsFromSources(match, oddsPayloadRow)
                                                                         const rowShowStream = getMatchStreamVisible(match)
                                                                         return (
@@ -903,7 +779,7 @@ function SportsGame() {
                                                                     <React.Fragment key={day}>
                                                                         {matches.map((match, idx) => {
                                                                             const cardOdds = getCardOdds(match)
-                                                                            const oddsPayloadM = resolveOddsPayloadFromMap(oddsByGameId, activeTab, match)
+                                                                            const oddsPayloadM = null
                                                                             const rowPillsM = getMarketPillsFromSources(match, oddsPayloadM)
                                                                             const rowShowStreamM = getMatchStreamVisible(match)
                                                                             const padTo3 = (arr) => { const a = [...arr]; while (a.length < 3) a.push(null); return a.slice(0, 3) }

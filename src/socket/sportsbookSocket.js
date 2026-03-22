@@ -71,7 +71,36 @@ const oddsSubSentToServer = new Set();
 /** Pending batched subscribe:odds — id -> last sport hint (authoritative sport on oddsRefCounts). */
 const pendingOddsSubscribe = new Map();
 const pendingOddsUnsubscribe = new Set();
+/** Ids that lost refcount=0; server unsub is deferred so React Strict remount can resubscribe same tick. */
+const deferredOddsUnsubscribeIds = new Set();
+let deferredOddsUnsubscribeFlushScheduled = false;
 let oddsBatchFlushScheduled = false;
+
+function clearDeferredOddsUnsubscribeState() {
+  deferredOddsUnsubscribeIds.clear();
+  deferredOddsUnsubscribeFlushScheduled = false;
+}
+
+/**
+ * Apply refcount=0 → server unsubscribe after the current stack. Avoids emitting unsubscribe:odds
+ * while Strict Mode (or sibling effects) will immediately resubscribe the same gameId.
+ */
+function scheduleDeferredOddsUnsubscribeFlush() {
+  if (deferredOddsUnsubscribeFlushScheduled) return;
+  deferredOddsUnsubscribeFlushScheduled = true;
+  queueMicrotask(() => {
+    deferredOddsUnsubscribeFlushScheduled = false;
+    const ids = [...deferredOddsUnsubscribeIds];
+    deferredOddsUnsubscribeIds.clear();
+    for (const sid of ids) {
+      if (oddsRefCounts.has(sid) && oddsRefCounts.get(sid).count > 0) continue;
+      if (pendingOddsSubscribe.has(sid)) continue;
+      if (!socket?.connected || !oddsSubSentToServer.has(sid)) continue;
+      pendingOddsUnsubscribe.add(sid);
+    }
+    if (pendingOddsUnsubscribe.size > 0) scheduleOddsBatchFlush();
+  });
+}
 
 function scheduleOddsBatchFlush() {
   if (oddsBatchFlushScheduled) return;
@@ -203,6 +232,7 @@ export function reemitSubscriptions() {
   emitSubscribeMatchesToServer(activeMatchSports);
   pendingOddsSubscribe.clear();
   pendingOddsUnsubscribe.clear();
+  clearDeferredOddsUnsubscribeState();
   const oddsItems = [];
   oddsRefCounts.forEach((v, id) => {
     const sid = String(id);
@@ -428,6 +458,7 @@ export function disconnectSportsbookSocket() {
   oddsSubSentToServer.clear();
   pendingOddsSubscribe.clear();
   pendingOddsUnsubscribe.clear();
+  clearDeferredOddsUnsubscribeState();
   matchesListeners.clear();
   oddsListeners.clear();
   scoreboardListeners.clear();
@@ -510,9 +541,10 @@ export function subscribeOdds(gameIdOrEventId, sport) {
       return;
     }
     oddsRefCounts.set(id, { count: 1, sport: sp });
+    pendingOddsUnsubscribe.delete(id);
+    deferredOddsUnsubscribeIds.delete(id);
     if (socket?.connected) {
       pendingOddsSubscribe.set(id, sp);
-      pendingOddsUnsubscribe.delete(id);
       scheduleOddsBatchFlush();
     }
   } else {
@@ -532,8 +564,8 @@ export function unsubscribeOdds(gameIdOrEventId, _sportIgnored) {
     lastOddsSig.delete(id);
     pendingOddsSubscribe.delete(id);
     if (socket?.connected && oddsSubSentToServer.has(id)) {
-      pendingOddsUnsubscribe.add(id);
-      scheduleOddsBatchFlush();
+      deferredOddsUnsubscribeIds.add(id);
+      scheduleDeferredOddsUnsubscribeFlush();
     }
   }
 }

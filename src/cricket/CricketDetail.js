@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import './CricketDetail.css'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
+import { getOdds, getEventStakeConfig, getCashoutValue } from '../api/services/sportsbookApi'
 import {
     addMatchesListener,
     removeMatchesListener,
@@ -17,7 +18,9 @@ import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { useAuth } from '../context/AuthContext'
 import LossCutIndicator from '../customComponents/LossCutIndicator'
 import { BackPriceCell, LayPriceCell } from './OddsMarketComponents'
-import { formatMinMaxLabel } from '../utils/marketMinMax'
+import { formatMinMaxLabel, extractStakeLimitFields } from '../utils/marketMinMax'
+import BookSummary from './BookSummary'
+import { collectBookBetsFromOpenAndSlip } from './bookSummaryUtils'
 
 const CASHOUT_COMMISSION = 0.05 // 5% of total bet (stake)
 /** Open bets: high limit. (gameId/sport query kuch backends par error / empty deta hai — filter client-side.) */
@@ -135,6 +138,8 @@ function CricketDetail() {
     const [openCashoutSection, setOpenCashoutSection] = useState(null)
     const [openLossCutSection, setOpenLossCutSection] = useState(null)
     const openBetsCount = openBetsList.length
+    /** Betslip khula ya Open Bets tab — open bets + exposure dono yahi par sync */
+    const slipOrOpenBetsUi = isBetslipOpen || activeTab === 'open-bets'
     const [isMobileBetslipOpen, setIsMobileBetslipOpen] = useState(false)
     const [isOddsTableCompact, setIsOddsTableCompact] = useState(() =>
         typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
@@ -173,8 +178,22 @@ function CricketDetail() {
         return () => document.removeEventListener('click', close)
     }, [openCashoutSection, openLossCutSection])
 
-    // Fetch cashout-value from GET /bet/:betId/cashout-value for each open bet
+    /** Sirf jab open bet id set badle — har open-bets list refetch par naya array = pehle [openBetsList] se cashout-value spam */
+    const openBetsCashoutIdsSig = useMemo(() => {
+        const openBets = (openBetsList || []).filter((b) => (b.status || 'open').toLowerCase() === 'open')
+        return openBets
+            .map((b) => String(b._id ?? b.id ?? '').trim())
+            .filter(Boolean)
+            .sort()
+            .join('|')
+    }, [openBetsList])
+
+    // GET /bet/:betId/cashout-value — getCashoutValue() inflight dedupe bhi karti hai
     useEffect(() => {
+        if (!openBetsCashoutIdsSig) {
+            setCashoutValuesMap({})
+            return
+        }
         const openBets = (openBetsList || []).filter((b) => (b.status || 'open').toLowerCase() === 'open')
         if (openBets.length === 0) {
             setCashoutValuesMap({})
@@ -190,7 +209,7 @@ function CricketDetail() {
                     const key = String(bid)
                     const embedded = cashoutValueFromBetObject(b)
                     try {
-                        const res = await AuthService.sportsbookCashoutValue(key)
+                        const res = await getCashoutValue(key)
                         if (cancelled) return
                         const { value: apiVal, suspended } = extractCashoutFromApiResponse(res)
                         const val = apiVal != null && !Number.isNaN(apiVal) ? apiVal : embedded
@@ -211,8 +230,11 @@ function CricketDetail() {
             if (!cancelled) setCashoutValuesMap(next)
         }
         fetchAll()
-        return () => { cancelled = true }
-    }, [openBetsList])
+        return () => {
+            cancelled = true
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- openBetsList sirf id-sig badalne par refresh; same ids = same array refetch ignore
+    }, [openBetsCashoutIdsSig])
 
     const [defaultMatch, setDefaultMatch] = useState(null)
     const gameIdFromState = location.state?.gameId ?? location.state?.game_id
@@ -245,6 +267,16 @@ function CricketDetail() {
         defaultMatch?.eventId ??
         gameId
     const [oddsData, setOddsData] = useState(null)
+    /** Event config / REST — minStack, maxStack, etc.; merged under socket odds for MIN/MAX labels */
+    const [eventStakeLimits, setEventStakeLimits] = useState(() => ({}))
+
+    const limitsFallbackPayload = useMemo(
+        () => ({
+            ...eventStakeLimits,
+            ...(oddsData && typeof oddsData === 'object' ? oddsData : {}),
+        }),
+        [eventStakeLimits, oddsData]
+    )
     const [oddsLoading, setOddsLoading] = useState(true)
     const [liveScore, setLiveScore] = useState(null)
     // eslint-disable-next-line no-unused-vars -- used in commented-out Live TV iframe
@@ -339,6 +371,7 @@ function CricketDetail() {
             firstMarket?.match_name ??
             null
         return {
+            ...extractStakeLimitFields(d),
             matchOdds,
             marketClosed: d?.marketClosed === true,
             eventName: eventNameFromPayload,
@@ -360,37 +393,61 @@ function CricketDetail() {
         if (!oddsId) {
             setOddsLoading(false)
             setOddsData(null)
+            setEventStakeLimits({})
         } else {
             setOddsLoading(true)
+            setEventStakeLimits({})
         }
     }, [oddsId])
     useSportsOddsSubscription(oddsId, sportName, !!(oddsId && (isDemo || tokenPresentForSocket)))
+
+    // First paint: odds + event config ek saath (do alag effects = double mount par duplicate calls).
     useEffect(() => {
         if (!oddsId) return
         setStreamUrl(null)
         let cancelled = false
-        AuthService.sportsbookEventConfig(oddsId)
-            .then((res) => {
+        Promise.all([getOdds(sportName, oddsId), getEventStakeConfig(oddsId)])
+            .then(([oddsRes, cfgRes]) => {
                 if (cancelled) return
-                const url = res?.tvUrl ?? res?.response?.tvUrl ?? res?.response?.tv_url ?? null
-                if (url) setStreamUrl(url)
+                const raw = oddsRes?.data
+                if (raw && typeof raw === 'object') {
+                    setOddsData(normalizeOdds(raw))
+                    setOddsLoading(false)
+                    const ls = raw?.liveScore ?? raw?.live_score
+                    if (ls != null) setLiveScore(ls)
+                    const tvUrl = raw?.tvUrl ?? raw?.tv_url ?? null
+                    if (tvUrl) setStreamUrl(tvUrl)
+                }
+                if (cfgRes != null && typeof cfgRes === 'object') {
+                    const cfg = cfgRes?.response ?? cfgRes?.data ?? cfgRes
+                    if (cfg && typeof cfg === 'object') {
+                        setEventStakeLimits(extractStakeLimitFields(cfg))
+                    }
+                    const url = cfgRes?.tvUrl ?? cfgRes?.response?.tvUrl ?? cfgRes?.response?.tv_url ?? null
+                    if (url) setStreamUrl(url)
+                }
             })
-            .catch(() => { })
-        return () => { cancelled = true }
-    }, [oddsId])
+            .catch(() => {})
+        return () => {
+            cancelled = true
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- normalizeOdds is stable UI helper for this screen
+    }, [oddsId, sportName])
 
-    // Odds: socket only (subscribe via useSportsOddsSubscription). No REST sportsbookOdds.
+    // Live updates: socket (subscribe via useSportsOddsSubscription). Initial row: getOdds REST above.
 
-    // Socket live odds (subscribe via useSportsOddsSubscription). Demo uses guest auth from SportsbookStore.
+    // Socket live odds listener (guest + demo + logged-in). Subscription gated in useSportsOddsSubscription.
     useEffect(() => {
         if (!oddsId) return
         const token = sessionStorage.getItem('token')
         if (!isDemo && !token) return
         const currentOddsKey = oddsId
         const onOdds = (raw) => {
+            const want = String(currentOddsKey)
             for (const payload of expandSocketBatchPayload(raw)) {
-                const payloadKey = payload?.eventId ?? payload?.gameId
-                if (payloadKey !== currentOddsKey || payload?.data === undefined) continue
+                const rawKey = payload?.eventId ?? payload?.gameId
+                const payloadKey = rawKey != null && rawKey !== '' ? String(rawKey) : null
+                if (!payloadKey || payloadKey !== want || payload?.data === undefined) continue
                 const data = payload.data
                 setOddsData(normalizeOdds(data))
                 setOddsLoading(false)
@@ -425,7 +482,7 @@ function CricketDetail() {
         return () => { cancelled = true; clearInterval(t) }
     }, [eventId, gameId, isDemo])
 
-    // Fetch open bets on page load so (OPEN BETS) count and cashout list show as soon as user lands on page
+    // Open bets: ek hi effect — pehle 3 alag effects se same mount par 2–3 baar GET open-bets ja raha tha
     useEffect(() => {
         if (isDemo) {
             setOpenBetsList([])
@@ -445,21 +502,10 @@ function CricketDetail() {
             .finally(() => {
                 if (!cancelled) setOpenBetsLoading(false)
             })
-        return () => { cancelled = true }
-    }, [isDemo, gameId])
-
-    // Cashout popover khule: open bets dubara lo
-    useEffect(() => {
-        if (!openCashoutSection) return
-        if (isDemo) return
-        setOpenBetsLoading(true)
-        AuthService.sportsbookOpenBets(OPEN_BETS_QUERY())
-            .then((res) => {
-                setOpenBetsList(parseOpenBetsFromResponse(res))
-            })
-            .catch(() => { })
-            .finally(() => setOpenBetsLoading(false))
-    }, [openCashoutSection, isDemo])
+        return () => {
+            cancelled = true
+        }
+    }, [isDemo, gameId, openCashoutSection, slipOrOpenBetsUi])
 
     const toggleBlock = (blockId) => {
         setClosedBlocks(prev => {
@@ -828,13 +874,13 @@ function CricketDetail() {
 
     // Soccer: MATCH ODDS ke niche fixed order – SS jaisa (FIRST HALF GOALS 0.5/1.5, HALF TIME, OVER/UNDER 0.5–3.5)
     const SOCCER_MARKETS_BELOW = [
-        { title: 'FIRST HALF GOALS 0.5', minMax: 'MIN: 100 MAX: 15K', runnerLabels: ['Under 0.5 Goals', 'Over 0.5 Goals'] },
-        { title: 'FIRST HALF GOALS 1.5', minMax: 'MIN: 100 MAX: 10K', runnerLabels: ['Under 1.5 Goals', 'Over 1.5 Goals'] },
-        { title: 'HALF TIME', minMax: 'MIN: 100 MAX: 25K', runnerLabels: null },
-        { title: 'OVER/UNDER 0.5 GOALS', minMax: 'MIN: 100 MAX: 50K', runnerLabels: ['Under 0.5 Goals', 'Over 0.5 Goals'] },
-        { title: 'OVER/UNDER 1.5 GOALS', minMax: 'MIN: 100 MAX: 50K', runnerLabels: ['Under 1.5 Goals', 'Over 1.5 Goals'] },
-        { title: 'OVER/UNDER 2.5 GOALS', minMax: 'MIN: 100 MAX: 25K', runnerLabels: ['Under 2.5 Goals', 'Over 2.5 Goals'] },
-        { title: 'OVER/UNDER 3.5 GOALS', minMax: 'MIN: 100 MAX: 25K', runnerLabels: ['Under 3.5 Goals', 'Over 3.5 Goals'] },
+        { title: 'FIRST HALF GOALS 0.5', runnerLabels: ['Under 0.5 Goals', 'Over 0.5 Goals'] },
+        { title: 'FIRST HALF GOALS 1.5', runnerLabels: ['Under 1.5 Goals', 'Over 1.5 Goals'] },
+        { title: 'HALF TIME', runnerLabels: null },
+        { title: 'OVER/UNDER 0.5 GOALS', runnerLabels: ['Under 0.5 Goals', 'Over 0.5 Goals'] },
+        { title: 'OVER/UNDER 1.5 GOALS', runnerLabels: ['Under 1.5 Goals', 'Over 1.5 Goals'] },
+        { title: 'OVER/UNDER 2.5 GOALS', runnerLabels: ['Under 2.5 Goals', 'Over 2.5 Goals'] },
+        { title: 'OVER/UNDER 3.5 GOALS', runnerLabels: ['Under 3.5 Goals', 'Over 3.5 Goals'] },
     ]
     const normalizeMarketTitle = (t) => (t || '').toUpperCase().replace(/\s+/g, ' ').trim()
     const findSoccerMarketByTitle = (title, markets) => {
@@ -908,7 +954,7 @@ function CricketDetail() {
         if (!markets?.length) return null
         const market = markets[0]
         const limitsText =
-            formatMinMaxLabel(market, oddsData) ||
+            formatMinMaxLabel(market, limitsFallbackPayload) ||
             (typeof fallbackMinMax === 'string' && fallbackMinMax.trim()) ||
             ''
         const marketTitle = market?.marketName || market?.market || market?.name || title
@@ -957,6 +1003,14 @@ function CricketDetail() {
         const isSlipForMiniBookmaker = sectionKey === 'mini_bookmaker' && currentMarketType === 'fancy'
         const showMobileSlipHere = isMobileBetslipOpen && selectedBets.length > 0 && (isSlipForMatchOdds || isSlipForMiniBookmaker)
 
+        const bookBets = collectBookBetsFromOpenAndSlip({
+            openBetsInSection: sectionOpenBets,
+            selectedBets,
+            slipStake: stake,
+            marketId,
+            marketTypeApi,
+        })
+
         return (
             <div key={sectionKey} className="odds_section_block">
                 <div className="odds_section_header">
@@ -964,6 +1018,8 @@ function CricketDetail() {
                     <div className="odds_section_header_right d-flex align-items-center gap-2 flex-wrap">
 
                         {limitsText ? <span className="odds_section_limits">{limitsText}</span> : null}
+
+                        <BookSummary marketTitle={marketTitle} bets={bookBets} />
 
                         <div className='d-flex gap-2'>
                             <div className="odds_section_cashout_wrap">
@@ -1440,7 +1496,7 @@ function CricketDetail() {
                     noSize: noSize ?? '—',
                     yesOdds: yesOdds ?? '—',
                     yesSize: yesSize ?? '—',
-                    limitsLine: formatMinMaxLabel(m, oddsData),
+                    limitsLine: formatMinMaxLabel(m, limitsFallbackPayload),
                     marketId,
                     marketName,
                     marketType,
@@ -1455,7 +1511,7 @@ function CricketDetail() {
                     noSize: o.ls1 ?? '—',
                     yesOdds: o.b1 ?? '—',
                     yesSize: o.bs1 ?? '—',
-                    limitsLine: formatMinMaxLabel(m, oddsData),
+                    limitsLine: formatMinMaxLabel(m, limitsFallbackPayload),
                     marketId,
                     marketName,
                     marketType,
@@ -1496,7 +1552,7 @@ function CricketDetail() {
                 marketId,
                 title: marketName,
                 marketType: 'fancy',
-                minMax: formatMinMaxLabel(m, oddsData),
+                minMax: formatMinMaxLabel(m, limitsFallbackPayload),
                 rows,
                 isLocked: allLocked,
             }
@@ -1515,6 +1571,16 @@ function CricketDetail() {
             <div key={sectionKey} className="market_no_yes_block">
                 <div className="market_no_yes_body">
                     {rows.map((row, rIdx) => {
+                        const rowSectionBets = (openBetsList || []).filter((b) =>
+                            openBetMatchesSection(b, gameId, row.marketId, row.marketType || 'fancy', eventId)
+                        )
+                        const rowBookBets = collectBookBetsFromOpenAndSlip({
+                            openBetsInSection: rowSectionBets,
+                            selectedBets,
+                            slipStake: stake,
+                            marketId: row.marketId,
+                            marketTypeApi: row.marketType || 'fancy',
+                        })
                         const noLocked = isOddsLocked(row.noOdds)
                         const yesLocked = isOddsLocked(row.yesOdds)
                         const yesOddsStr = String(row.yesOdds ?? '')
@@ -1554,7 +1620,11 @@ function CricketDetail() {
                                         <div className="market_no_yes_limits">{row.limitsLine}</div>
                                     ) : null}
                                     <div className="market_no_yes_odds_container">
-                                    <button type="button" className="market_no_yes_book_btn" title="Book">Book</button>
+                                        <BookSummary
+                                            marketTitle={row.label || row.marketName || 'Market'}
+                                            bets={rowBookBets}
+                                            buttonClassName="market_no_yes_book_btn"
+                                        />
                                         <div className="market_no_yes_odds">
                                             {/* <span className="market_no_yes_lbl">Yes</span> */}
                                             <button
@@ -1606,6 +1676,16 @@ function CricketDetail() {
     const renderBackOnlySection = (block) => {
         const { key, title, minMax, rows, isLocked, marketId, marketType } = block
         const isClosed = closedBlocks.has(`backonly-${key}`)
+        const blockSectionBets = (openBetsList || []).filter((b) =>
+            openBetMatchesSection(b, gameId, marketId, marketType || 'fancy', eventId)
+        )
+        const blockBookBets = collectBookBetsFromOpenAndSlip({
+            openBetsInSection: blockSectionBets,
+            selectedBets,
+            slipStake: stake,
+            marketId,
+            marketTypeApi: marketType || 'fancy',
+        })
         return (
             <div key={key} className="market_back_only_block">
                 <div className="market_back_only_header" onClick={() => toggleBlock(`backonly-${key}`)}>
@@ -1617,7 +1697,10 @@ function CricketDetail() {
                         )}
                         {title}
                     </h6>
-                    {minMax ? <span className="market_back_only_limits">{minMax}</span> : null}
+                    <div className="market_back_only_header_right d-flex align-items-center gap-2 flex-wrap">
+                        {minMax ? <span className="market_back_only_limits">{minMax}</span> : null}
+                        <BookSummary marketTitle={title} bets={blockBookBets} />
+                    </div>
                 </div>
                 <div className={`market_back_only_body ${isClosed ? 'hidden' : ''}`}>
                     <div className="market_back_only_table_head">
@@ -1689,9 +1772,7 @@ function CricketDetail() {
         betslipContentRef.current.scrollTop = 0
     }, [isBetslipOpen, betslipView, selectedBets.length])
 
-    const shouldFetchOpenBets = isBetslipOpen || activeTab === 'open-bets'
-
-    // Fetch loss limit and exposure on page load so Open Bets tab has data as soon as it renders
+    // Loss limit + exposure: ek effect (pehle mount + slip/tab dono par alag-alag = duplicate GET)
     useEffect(() => {
         if (isDemo) {
             setBetslipLossLimit(null)
@@ -1718,52 +1799,16 @@ function CricketDetail() {
                 setBetslipExposure(null)
                 setBetslipCurrentLoss(null)
             })
-        return () => { cancelled = true }
-    }, [isDemo])
-
-    // Refetch loss limit and exposure when betslip opens or Open Bets tab is selected (e.g. after placing bet)
-    useEffect(() => {
-        if (isDemo) return
-        if (!isBetslipOpen && activeTab !== 'open-bets') return
-        let cancelled = false
-        Promise.all([
-            AuthService.sportsbookGetLossLimit(),
-            AuthService.sportsbookExposure(),
-        ])
-            .then(([limitRes, exposureRes]) => {
-                if (cancelled) return
-                const limitData = limitRes?.data ?? limitRes
-                const exposureData = exposureRes?.data ?? exposureRes
-                setBetslipLossLimit(limitData?.dailyLossLimit ?? null)
-                setBetslipExposure(exposureData?.totalExposure ?? null)
-                setBetslipCurrentLoss(exposureData?.current_loss ?? exposureData?.currentLoss ?? exposureData?.totalExposure ?? null)
-            })
-            .catch(() => {
-                if (cancelled) return
-                setBetslipLossLimit(null)
-                setBetslipExposure(null)
-                setBetslipCurrentLoss(null)
-            })
-        return () => { cancelled = true }
-    }, [isBetslipOpen, activeTab, isDemo])
+        return () => {
+            cancelled = true
+        }
+    }, [isDemo, slipOrOpenBetsUi])
 
     useEffect(() => {
         if (platformConfig.sportsBookServiceStatus === false || platformConfig.inPlayServiceStatus === false) {
             alertErrorMessage('Sports / In-Play is temporarily unavailable. Please try again later.')
         }
     }, [platformConfig.sportsBookServiceStatus, platformConfig.inPlayServiceStatus])
-
-    // Refresh open bets when popup opens or Open Bets tab – use same parsing as mount; on error don’t clear list so existing data stays
-    useEffect(() => {
-        if (!shouldFetchOpenBets || isDemo) return
-        setOpenBetsLoading(true)
-        AuthService.sportsbookOpenBets(OPEN_BETS_QUERY())
-            .then((res) => {
-                setOpenBetsList(parseOpenBetsFromResponse(res))
-            })
-            .catch(() => { /* keep previous openBetsList so "No open bets" doesn’t replace real data */ })
-            .finally(() => setOpenBetsLoading(false))
-    }, [shouldFetchOpenBets, isDemo])
 
     // Defer heavy markets section until in view for faster FCP/LCP
     useEffect(() => {
@@ -2220,7 +2265,7 @@ function CricketDetail() {
                                                                             l1: null, l2: null, l3: null,
                                                                         }))
                                                                         const dummyMarket = { mid: `soccer-placeholder-${idx}`, marketId: `soccer-placeholder-${idx}`, market: def.title, status: 'CLOSED', runners: lockedRunners }
-                                                                        return renderOddsSection(`soccer_below_${idx}`, def.title, 'ri-settings-3-line', def.minMax, [dummyMarket], 'match_odds')
+                                                                        return renderOddsSection(`soccer_below_${idx}`, def.title, 'ri-settings-3-line', '', [dummyMarket], 'match_odds')
                                                                     })
                                                                 })()}
                                                                 {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', '', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}

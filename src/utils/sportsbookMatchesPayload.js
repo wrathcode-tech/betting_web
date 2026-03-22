@@ -40,6 +40,9 @@ export function expandSocketBatchPayload(payload) {
   return [];
 }
 
+/** @deprecated Use expandSocketBatchPayload — same as spec `unwrapSportsbookEvent`. */
+export const unwrapSportsbookEvent = expandSocketBatchPayload;
+
 /**
  * Map one listSummary row to a legacy-shaped match object for existing list UIs.
  * Preserves `selections` / `markets` for future ladder rendering.
@@ -66,8 +69,10 @@ export function listSummaryRowToLegacyMatch(row) {
     marketClosed: !!row.marketClosed,
     seriesName: row.seriesName ?? row.series_name ?? '',
     series_name: row.seriesName ?? row.series_name ?? '',
-    eventTime: row.eventTime ?? row.event_time,
-    event_time: row.eventTime ?? row.event_time,
+    startTime: row.startTime ?? row.start_time ?? null,
+    start_time: row.startTime ?? row.start_time ?? null,
+    eventTime: row.eventTime ?? row.event_time ?? row.startTime ?? row.start_time ?? null,
+    event_time: row.eventTime ?? row.event_time ?? row.startTime ?? row.start_time ?? null,
     marketBadges: Array.isArray(row.markets)
       ? row.markets.map((m) => (typeof m === 'string' ? m : m?.code ?? m?.name)).filter(Boolean)
       : undefined,

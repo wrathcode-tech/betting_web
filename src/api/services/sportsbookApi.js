@@ -60,6 +60,28 @@ export async function getOdds(sportName, gameIdOrEventId) {
   return promise;
 }
 
+/** Same eventId / gameId ke parallel callers → ek hi HTTP request */
+const inflightEventConfigByKey = new Map();
+
+/**
+ * GET /api/v1/sportsbook/event/config?eventId=...
+ * @param {string|number} eventIdOrGameId
+ * @returns {Promise<unknown>}
+ */
+export async function getEventStakeConfig(eventIdOrGameId) {
+  const id = eventIdOrGameId != null && eventIdOrGameId !== '' ? String(eventIdOrGameId) : '';
+  if (!id) {
+    return null;
+  }
+  const existing = inflightEventConfigByKey.get(id);
+  if (existing) return existing;
+  const promise = AuthService.sportsbookEventConfig(id).finally(() => {
+    inflightEventConfigByKey.delete(id);
+  });
+  inflightEventConfigByKey.set(id, promise);
+  return promise;
+}
+
 /**
  * GET /api/v1/sportsbook/score?eventId=<id>
  * @param {string} eventId
@@ -112,14 +134,28 @@ export async function getBetSummary() {
   return normalizeResponse(res);
 }
 
+/** Same betId ke parallel callers → ek hi HTTP (open-bets refetch + effect overlap). */
+const inflightCashoutValueByBetId = new Map();
+
 /**
  * GET /api/v1/sportsbook/bet/:betId/cashout-value
  * @param {string} betId
  * @returns {Promise<{ cashoutValue?, currency? }>}
  */
 export async function getCashoutValue(betId) {
-  const res = await AuthService.sportsbookCashoutValue(betId);
-  return normalizeResponse(res);
+  const id = betId != null && betId !== '' ? String(betId) : '';
+  if (!id) {
+    return { success: false, data: null, message: 'Missing betId' };
+  }
+  const existing = inflightCashoutValueByBetId.get(id);
+  if (existing) return existing;
+  const promise = AuthService.sportsbookCashoutValue(id)
+    .then((res) => normalizeResponse(res))
+    .finally(() => {
+      inflightCashoutValueByBetId.delete(id);
+    });
+  inflightCashoutValueByBetId.set(id, promise);
+  return promise;
 }
 
 /**
@@ -145,6 +181,7 @@ function normalizeResponse(res) {
 export const sportsbookApi = {
   getMatches,
   getOdds,
+  getEventStakeConfig,
   getScore,
   placeBet,
   getOpenBets,

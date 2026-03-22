@@ -1148,6 +1148,13 @@ img.team_bg_img {
     font-size: 16px;
 }
 
+.market_back_only_header_right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
 .market_back_only_limits {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.7);

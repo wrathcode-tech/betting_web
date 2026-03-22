@@ -1,0 +1,129 @@
+.book_summary_wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.book_summary_btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #e8e8e8;
+    background: #2a3440;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.book_summary_btn:hover {
+    background: #343f4d;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Legacy: in-flow popover (unused when portal active) */
+.book_summary_popover {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 6px;
+    min-width: 260px;
+    max-width: 320px;
+    max-height: 360px;
+    overflow: auto;
+    padding: 12px 14px;
+    background: #2a2e33;
+    border: 1px solid #3d4349;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    z-index: 120;
+}
+
+/* Portal to body — escapes odds_section_block overflow:hidden */
+.book_summary_popover--portal {
+    margin-top: 0;
+    max-height: min(360px, calc(100vh - 24px));
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+.book_summary_popover_title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.book_summary_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.book_summary_row_label {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.book_summary_row_val {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.book_summary_row_val--profit {
+    color: #5fd38d;
+}
+
+.book_summary_row_val--loss {
+    color: #ff7b7b;
+}
+
+.book_summary_empty {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+.book_summary_table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.book_summary_table th {
+    text-align: left;
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 600;
+    padding: 6px 4px 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.book_summary_table th:last-child {
+    text-align: right;
+    padding-right: 0;
+}
+
+.book_summary_table td {
+    padding: 6px 4px 6px 0;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.book_summary_table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    padding-right: 0;
+}
+
+.book_summary_table tr:last-child td {
+    border-bottom: none;
+}

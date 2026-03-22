@@ -76,7 +76,8 @@ function compareOddsAndGetFlash(prevData, nextData) {
 
 /**
  * Single place for subscribe:matches by pathname — leaving a route unsubscribes previous sports.
- * - `/` and `/sports` → cricket, tennis, soccer (guest + logged-in)
+ * - `/` → cricket, tennis, soccer (guest + logged-in)
+ * - `/sports` → **no** subscribe here; `SportsGame` subscribes **one** sport from the active tab (cricket / tennis / soccer)
  * - `/cricket` | `/tennis` | `/soccer` → that sport only when logged-in real user (not demo)
  */
 function SportsbookRouteMatchStreams() {
@@ -93,7 +94,7 @@ function SportsbookRouteMatchStreams() {
 
   const sportsKey = useMemo(() => {
     const p = (pathname || '/').replace(/\/$/, '') || '/';
-    if (p === '/' || p === '/sports') return 'cricket|tennis|soccer';
+    if (p === '/') return 'cricket|tennis|soccer';
     if (!hasToken || isDemo) return '';
     if (p === '/cricket') return 'cricket';
     if (p === '/tennis') return 'tennis';

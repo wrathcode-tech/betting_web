@@ -9,9 +9,11 @@
 3. **List** = socket event `matches` with `schema: 'listSummary'`. **Detail** = socket event `odds` after `subscribe:odds`.
 4. REST is optional (hydrate / SEO / timeout fallback). Backend may serve from Professorji when Redis is empty or down (`SPORTSBOOK_PROFESSORJI_FALLBACK`, default on) — **no frontend change**.
 
-**Other docs in this repo:** [Sportsbook_API_Reference.md](./Sportsbook_API_Reference.md) · [SPORTSBOOK_REALTIME.md](./SPORTSBOOK_REALTIME.md)
+**Other backend docs:** [`../src/Sportbook/SPORTBOOK_USER_DEMO_WALKTHROUGH.md`](../src/Sportbook/SPORTBOOK_USER_DEMO_WALKTHROUGH.md) · [`POLLING_PERF.md`](./POLLING_PERF.md) *(paths resolve in a full-stack or backend checkout; not shipped in this frontend-only repo.)*
 
-**Backend-only references** (paths live in the API/backend repository): `SPORTBOOK_USER_DEMO_WALKTHROUGH.md`, `POLLING_PERF.md`, `src/Sportbook/...`
+**Also in this repo:** [Sportsbook_API_Reference.md](./Sportsbook_API_Reference.md) · [SPORTSBOOK_REALTIME.md](./SPORTSBOOK_REALTIME.md)
+
+**This repository (`betting_web`, JavaScript):** `src/socket/sportsbookSocket.js` (one connection, array emits, unwraps `{ items: [...] }` / top-level arrays on `matches` / `odds` / `scoreboard`), `src/utils/sportsbookMatchesPayload.js` (`expandSocketBatchPayload` ≡ spec `unwrapSportsbookEvent`, `getMatchRowsFromSocketPayload`, `listSummaryRowToLegacyMatch`), `src/context/SportsbookStore.js`. Optional: `REACT_APP_SPORTSBOOK_LEGACY_SOCKET_EMIT` for legacy single-object emits.
 
 ---
 
@@ -27,8 +29,6 @@ src/sportsbook/
   components/MatchListRow.tsx | OddsLadder.tsx | MarketTabs.tsx
   pages/SportsInPlayPage.tsx | MatchDetailPage.tsx
 ```
-
-**This app (JS):** see `src/socket/sportsbookSocket.js`, `src/utils/sportsbookMatchesPayload.js`, `src/context/SportsbookStore.js`.
 
 ---
 
@@ -64,29 +64,62 @@ export function getSportsbookSocket(apiOrigin: string, opts?: { token?: string }
 }
 ```
 
-**Emit**
+**Emit (array protocol — preferred)**
 
-| Event | Payload | When |
-|-------|---------|------|
-| `subscribe:matches` | `{ sport }` (one emit per sport; home uses `subscribeMatchesMany` → 3 emits) | List / landing mounts |
-| `unsubscribe:matches` | `{ sport }` | Leave list (optional) |
-| `subscribe:odds` | `{ gameId, sport? }` per emit (default client) | Set `REACT_APP_SPORTSBOOK_ODDS_BATCH=true` for one emit `{ items: [...] }` if backend supports it. |
-| `unsubscribe:odds` | `{ gameId }` per emit (default) | With batch env: `{ gameIds: [...] }`. |
-| `subscribe:scoreboard` | `{ gameId }` | Detail, in-play (optional) |
+The **first Socket.IO data argument** is an **array** of subscription objects. Empty arrays are ignored. The server loops each entry; duplicate `sport` / `gameId` in one batch are deduped (idempotent joins).
+
+| Event | Payload (first argument) | When |
+|-------|---------------------------|------|
+| `subscribe:matches` | `[{ sport: 'cricket' \| 'soccer' \| 'tennis' }, …]` | List / landing — **send only `sport`** (no `gameId` / `eventId`; server ignores extras) |
+| `unsubscribe:matches` | `[{ sport }, …]` | Leave list (optional). Alias: `matches:unsubscribe` — **only `sport`** |
+| `subscribe:odds` | `[{ gameId, sport? }, …]` | Open match(s) — **pass `sport` when known** |
+| `unsubscribe:odds` | `[{ gameId }, …]` | Back to list / drop rooms |
+| `subscribe:scoreboard` | `[{ gameId, sport? }, …]` | In-play score stream |
+| `unsubscribe:scoreboard` | `[{ gameId }, …]` | Alias: `scoreboard:unsubscribe` |
 | `ping` | `{}` | RTT |
 
-Aliases: `matches:subscribe`, `odds:subscribe`, etc.
+**Legacy (still accepted):** a single object instead of an array, e.g. `subscribe:matches`, `{ sport: 'cricket' }`. For match-level ids use **`subscribe:odds`** after the user opens a row.
 
-**Listen**
+**Server behaviour:** `subscribe:matches` payloads are normalised to **`{ sport }` only** — any `gameId`, `eventId`, or other fields are dropped and do not affect rooms or the list snapshot.
+
+Aliases: `matches:subscribe`, `odds:subscribe`, `odds:unsubscribe`, etc.
+
+**`subscribe:matches` batch reply:** If you send `[{ sport: 'cricket' }, { sport: 'tennis' }, …]` in one emit, the **initial snapshot** is a **single** `matches` event: `{ items: [ { sport, schema, data, timestamp }, … ] }` — one object per sport (deduped order). Later **feed** updates may still arrive as separate `matches` events per sport room.
+
+**Listen — server → client (`items` envelope)**
+
+By default the server sends **either** a legacy **single message object** **or** `{ items: [ … ] }` where each element is self-contained:
+
+- **`matches`:** `{ sport, schema: 'listSummary', data, timestamp?, error?, message? }`
+- **`odds`:** `{ gameId, data, timestamp?, contentHash?, source?, eventId? }`
+- **`scoreboard`:** `{ gameId, data, timestamp?, eventId? }`
+
+Normalize in one place:
+
+```ts
+function unwrapSportsbookEvent<T extends Record<string, unknown>>(raw: unknown): T[] {
+  if (raw == null) return [];
+  if (Array.isArray(raw)) return raw as T[];
+  if (typeof raw === 'object' && Array.isArray((raw as { items?: unknown }).items)) {
+    return ((raw as { items: T[] }).items ?? []) as T[];
+  }
+  if (typeof raw === 'object') return [raw as T];
+  return [];
+}
+```
+
+Then `for (const msg of unwrapSportsbookEvent(payload)) { … }` per event.
 
 | Event | Action |
 |-------|--------|
-| `matches` | If `schema === 'listSummary'`, set state from `data` (array of `MatchSummaryRow`). Handle `error`, `message`. |
-| `odds` | Update `gameId` → full odds payload. Optional `contentHash`, `source: 'professorji'`. |
-| `scoreboard` | Live score strip |
+| `matches` | For each unwrapped message: if `schema === 'listSummary'`, merge/replace list state from `data`. |
+| `odds` | For each: update `oddsByGameId[msg.gameId] = msg.data`. Optional `contentHash`, `source`. |
+| `scoreboard` | For each: update score for `msg.gameId` from `msg.data`. |
 | `pong` | After `ping` |
 
-**Reconnect:** re-emit all active `subscribe:matches`, `subscribe:odds`, `subscribe:scoreboard`.
+**Ops:** If an old web build cannot parse `{ items: [...] }`, set backend `SPORTSBOOK_SOCKET_LEGACY_WIRE_FORMAT=1` to restore single-object emits until clients are updated.
+
+**Reconnect:** re-emit all active subscriptions in **array** form (idempotent on the server).
 
 ---
 
@@ -128,15 +161,30 @@ export interface MatchSummaryRow {
   name: string;
   sport: string;
   inPlay: boolean;
+  /** Provider kickoff string when present (e.g. `2026-03-29T18:30`) — show beside LIVE / under badge if you prefer raw text. */
+  eventTime: string | null;
+  /** ISO 8601 UTC when parseable — use for locale formatting, sorting, “starts in …”. */
+  startTime: string | null;
   markets: MarketLabel[];
   selections: SelectionSummary[];
   marketClosed: boolean;
 }
 ```
 
-**List UI:** per row render title `name`, chips from `markets`, then each `selections[]` as **6 cells** (3 Back + 3 Lay) from `back[0..2]` / `lay[0..2]` — show `price`, format `stack` (e.g. K). Dim if `!rung.open`.
+**List UI:** per row render title `name`, chips from `markets`, then each `selections[]` as **6 cells** (3 Back + 3 Lay) from `back[0..2]` / `lay[0..2]` — show `price`, format `stack` (e.g. K). Dim if `!rung.open`. **Kickoff:** if `inPlay`, still show `eventTime` or formatted `startTime` next to the LIVE badge when either is non-null; for pre-match rows prefer formatted `startTime` (or `eventTime` as fallback).
 
-**Adapter (this repo):** `getMatchRowsFromSocketPayload()` in `src/utils/sportsbookMatchesPayload.js` maps `listSummary` rows to a legacy-compatible shape so existing list screens keep working until the ladder UI ships.
+**Date/time is the same field for every sport.** Professorji uses `eventTime` on cricket rows but **`eventDate` / `startDate`** on soccer and tennis. The server normalizes all of that into **`eventTime`** (display string) and **`startTime`** (ISO UTC when parseable) on each `listSummary` row. If tennis/football rows show no time, the UI is usually only binding kickoff for cricket — use the same snippet for **Football (`soccer`)** and **Tennis** rows after you unwrap `matches` → `items[]` → `data[]`.
+
+**Why soccer/tennis list odds often look slower than cricket**
+
+1. **Bigger lists & the same odds cap** — The feed still attaches main-line ladders for at most **`SOCKET_MATCHES_SUMMARY_ODDS_LOOKUP`** events per sport (default 40). Cricket’s live page is smaller; soccer can have many more rows, so a visible match may be **outside** the first 40 until you scroll or the list order/cache catches up — cells show **“-”** until then.
+2. **Heavier books** — Soccer/tennis payloads go through **`normalizeOddsResponse`** (large `fancyOdds` / side markets). Filling Redis and hashing takes more work per event than typical cricket list odds.
+3. **Provider latency** — The backend uses **longer HTTP timeouts** for soccer/tennis matches/odds than for cricket; the third-party API is often slower for those sports.
+4. **Detail path** — Opening a match and **`subscribe:odds`** always requests a full book for that `gameId`, so prices appear even when the list ladder was empty.
+
+Tune ops (optional): raise **`SOCKET_MATCHES_SUMMARY_ODDS_LOOKUP`** (and feed **`SPORTSBOOK_FEED_ODDS_LIMIT`**) carefully — more Redis reads and provider load per tick.
+
+**Adapter (this repo):** `getMatchRowsFromSocketPayload()` + `listSummaryRowToLegacyMatch()` in `src/utils/sportsbookMatchesPayload.js` map `listSummary` rows to a legacy-compatible shape (`eventTime` / `startTime` preserved for list UIs).
 
 ---
 
@@ -298,4 +346,94 @@ Redis, polling, or room naming — only subscribe payloads. Server owns feed + f
 
 ---
 
-*Consolidated: listSummary socket + Professorji server-side fallback + single-connection model.*
+## 14) For frontend devs — “wrong shape” on the InPlay list
+
+### What you should build against
+
+When you listen to the **`matches`** event, Socket.IO gives you **one JavaScript object** (the event payload). Treat it like this:
+
+```ts
+// What you expect from the server (InPlay / list screen)
+interface MatchesEventPayload {
+  sport: 'cricket' | 'soccer' | 'tennis';
+  schema: 'listSummary';
+  timestamp: number;
+  data: Array<{
+    gameId: string;           // use this for routing + subscribe:odds
+    name: string;             // match title for the row
+    sport: string;
+    inPlay: boolean;          // LIVE badge
+    eventTime: string | null; // provider kickoff text (show near LIVE if set)
+    startTime: string | null; // ISO UTC when parseable — format in user locale
+    marketClosed: boolean;
+    markets: Array<{ code: 'mo' | 'bm' | 'f'; name: string }>;
+    selections: Array<{
+      name: string;
+      back: [{ price, stack, open }, x3];
+      lay: [{ price, stack, open }, x3];
+      backOpen: boolean;
+      layOpen: boolean;
+    }>;
+  }>;
+}
+```
+
+Your list/grid components should read **`payload.data`** (the array of rows) and **`payload.schema === 'listSummary'`** before rendering the ladder UI.
+
+---
+
+### What looks “wrong” (and why the UI breaks)
+
+Sometimes people inspect the **Network → WebSocket → Messages** tab and see a **raw string** starting with `42/sportsbook,["matches",…]`.
+
+- That string is **Engine.IO framing**, not your app payload.
+- **Do not** `JSON.parse` that whole string in the UI. The **socket.io-client** library already unpacks it.
+
+Correct pattern:
+
+```ts
+socket.on('matches', (payload) => {
+  if (payload?.schema !== 'listSummary') {
+    console.warn('Unexpected matches shape', payload);
+    return;
+  }
+  setRows(payload.data);
+});
+```
+
+Another “wrong” shape is when **`payload.data[0]`** still looks like a **provider match row**:
+
+- Fields like **`eventId`**, **`eventName`**, **`eventDate`**, **`seriesName`**, **`marketId: null`**
+- **No** `selections` array, **no** `schema` on the message
+
+That is **not** the contract your UI should implement. It usually means:
+
+1. **Backend** is an old build or wasn’t restarted after an update — ask backend to run the app from the main **`wrathcode_betting_backend`** folder (the one that uses `./src`), restart the process, and pull latest.
+2. After backend is fixed, you should see **`schema: 'listSummary'`** and rows with **`gameId` + `name` + `selections`**.
+
+---
+
+### Empty ladders (`selections: []`) on soccer/tennis
+
+The list endpoint only includes **main-line** prices when the server has **odds in cache** for that match. If odds aren’t filled yet, you can still show the row (name, `gameId`, LIVE) but **Back/Lay cells stay empty or locked** until:
+
+- the feed refreshes, or  
+- the user opens the match and you **`subscribe:odds`** for full depth.
+
+That is expected; it is not a frontend parsing bug.
+
+---
+
+### Quick checklist (frontend)
+
+| Check | Pass? |
+|-------|-------|
+| Using `socket.io-client` (not raw WebSocket) | ☐ |
+| Handler is `socket.on('matches', (payload) => …)` | ☐ |
+| Reading `payload.data`, not the `42/...` frame string | ☐ |
+| Checking `payload.schema === 'listSummary'` | ☐ |
+| Row key / detail route uses `row.gameId` | ☐ |
+
+---
+
+*Consolidated: listSummary socket + Professorji server-side fallback + single-connection model + array/`items` wire format.*

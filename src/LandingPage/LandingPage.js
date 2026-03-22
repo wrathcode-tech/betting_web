@@ -4,14 +4,7 @@ import AuthService from '../api/services/AuthService'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { getToken } from '../utils/authStorage'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
-import {
-  subscribeOdds,
-  unsubscribeOdds,
-  addMatchesListener,
-  removeMatchesListener,
-  addOddsListener,
-  removeOddsListener,
-} from '../socket/sportsbookSocket'
+import { addMatchesListener, removeMatchesListener } from '../socket/sportsbookSocket'
 import { getMatchRowsFromSocketPayload, expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload'
 import {
   getMarketPillsFromSources,
@@ -41,9 +34,6 @@ const topSportsItems = [
   { id: 14, title: 'Futsal', iconClass: 'ri-football-line', to: '/sportsbook' },
   { id: 15, title: 'Handball', iconClass: 'ri-hand-coin-line', to: '/sportsbook' },
 ]
-
-/** Cap subscribe:odds on home (each row = one WS message — lower = faster first paint). */
-const LANDING_HOME_ODDS_ROW_CAP = 8
 
 function formatMatchTime(isoStr) {
   if (!isoStr) return ''
@@ -296,14 +286,6 @@ function LandingPage() {
   const [topSoccerMatchesFromApi, setTopSoccerMatchesFromApi] = useState([]);
   const [topSoccerMatchesLoading, setTopSoccerMatchesLoading] = useState(true);
 
-  const [topMatchesOddsByGameId, setTopMatchesOddsByGameId] = useState({});
-  const topMatchesOddsSubscribedRef = useRef(new Set());
-  const [topTennisMatchesOddsByGameId, setTopTennisMatchesOddsByGameId] = useState({});
-  const topTennisMatchesOddsSubscribedRef = useRef(new Set());
-  const [topSoccerMatchesOddsByGameId, setTopSoccerMatchesOddsByGameId] = useState({});
-  const topSoccerMatchesOddsSubscribedRef = useRef(new Set());
-  const topMatchesSubscribedIdToSportRef = useRef(new Map());
-
   const landingOddsScrollRefs = useRef(new Map());
   const isSyncingLandingOddsScrollRef = useRef(false);
 
@@ -398,14 +380,9 @@ function LandingPage() {
     return () => window.clearTimeout(t);
   }, []);
 
-  // TOP matches: socket only (subscribe:matches on route) + subscribe:odds for first N rows.
+  // TOP matches: socket only — subscribe:matches via route (no subscribe:odds on home; list uses listSummary ladders).
 
   useEffect(() => {
-    const cricketOddsSubscribed = topMatchesOddsSubscribedRef.current;
-    const tennisOddsSubscribed = topTennisMatchesOddsSubscribedRef.current;
-    const soccerOddsSubscribed = topSoccerMatchesOddsSubscribedRef.current;
-    const subscribedIdToSport = topMatchesSubscribedIdToSportRef.current;
-
     const mapRowsToLanding = (rows, defaults) =>
       rows
         .filter((m) => m.gameId ?? m.game_id ?? m.eventId ?? m.event_id)
@@ -477,68 +454,8 @@ function LandingPage() {
       removeMatchesListener(onMatches);
       removeMatchesListener(onTennisMatches);
       removeMatchesListener(onSoccerMatches);
-      cricketOddsSubscribed.forEach((gid) => unsubscribeOdds(gid, 'cricket'));
-      cricketOddsSubscribed.clear();
-      tennisOddsSubscribed.forEach((id) => unsubscribeOdds(id, 'tennis'));
-      tennisOddsSubscribed.clear();
-      soccerOddsSubscribed.forEach((gid) => unsubscribeOdds(gid, 'soccer'));
-      soccerOddsSubscribed.clear();
-      subscribedIdToSport.clear();
     };
   }, []);
-
-  useEffect(() => {
-    const onOdds = (raw) => {
-      for (const payload of expandSocketBatchPayload(raw)) {
-        const id = payload?.gameId ?? payload?.eventId;
-        if (!id || payload?.data === undefined) continue;
-        const incoming = payload.data && typeof payload.data === 'object' ? payload.data : {};
-        const matchOdds = Array.isArray(incoming.matchOdds) ? incoming.matchOdds : [];
-        const sport = topMatchesSubscribedIdToSportRef.current.get(String(id));
-        if (!sport) continue;
-        const mergeOddsEntry = (prevEntry) => ({
-          ...(prevEntry && typeof prevEntry === 'object' ? prevEntry : {}),
-          ...incoming,
-          matchOdds: matchOdds.length ? matchOdds : (prevEntry?.matchOdds ?? []),
-        });
-        if (sport === 'tennis') {
-          setTopTennisMatchesOddsByGameId((prev) => ({ ...prev, [id]: mergeOddsEntry(prev[id]) }));
-        } else if (sport === 'soccer') {
-          setTopSoccerMatchesOddsByGameId((prev) => ({ ...prev, [id]: mergeOddsEntry(prev[id]) }));
-        } else if (sport === 'cricket') {
-          setTopMatchesOddsByGameId((prev) => ({ ...prev, [id]: mergeOddsEntry(prev[id]) }));
-        }
-      }
-    };
-    addOddsListener(onOdds);
-    return () => removeOddsListener(onOdds);
-  }, []);
-
-  useEffect(() => {
-    const refMap = topMatchesSubscribedIdToSportRef.current;
-    const reconcile = (wantedIds, prevSet, sport) => {
-      wantedIds.forEach((wid) => {
-        if (!prevSet.has(wid)) {
-          subscribeOdds(wid, sport);
-          refMap.set(String(wid), sport);
-          prevSet.add(wid);
-        }
-      });
-      [...prevSet].forEach((wid) => {
-        if (!wantedIds.includes(wid)) {
-          unsubscribeOdds(wid, sport);
-          refMap.delete(String(wid));
-          prevSet.delete(wid);
-        }
-      });
-    };
-    const cricketIds = topMatchesFromApi.slice(0, LANDING_HOME_ODDS_ROW_CAP).map((m) => m.gameId).filter(Boolean);
-    const tennisIds = topTennisMatchesFromApi.slice(0, LANDING_HOME_ODDS_ROW_CAP).map((m) => m.gameId ?? m.eventId).filter(Boolean);
-    const soccerIds = topSoccerMatchesFromApi.slice(0, LANDING_HOME_ODDS_ROW_CAP).map((m) => m.gameId).filter(Boolean);
-    reconcile(cricketIds, topMatchesOddsSubscribedRef.current, 'cricket');
-    reconcile(tennisIds, topTennisMatchesOddsSubscribedRef.current, 'tennis');
-    reconcile(soccerIds, topSoccerMatchesOddsSubscribedRef.current, 'soccer');
-  }, [topMatchesFromApi, topTennisMatchesFromApi, topSoccerMatchesFromApi]);
 
   // Hero 3D slider – 7 items, 5 visible at a time, infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);
@@ -1522,8 +1439,7 @@ function LandingPage() {
                   ) : (
                     topMatchesByDay.map(({ day, matches }) =>
                       matches.map((match, idx) => {
-                        const oddsPayload = match.gameId ? topMatchesOddsByGameId[match.gameId] : null;
-                        const cardOdds = getLandingCardOddsTriples(match, oddsPayload);
+                        const cardOdds = getLandingCardOddsTriples(match, null);
                         return (
                           <div
                             key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
@@ -1532,7 +1448,7 @@ function LandingPage() {
                             onClick={(e) => handleTopMatchRowClick(e, match)}
                           >
                             <div className="leftside_matchlist">
-                              <DesktopTopMatchBlock match={match} oddsPayload={oddsPayload} />
+                              <DesktopTopMatchBlock match={match} oddsPayload={null} />
                             </div>
                             <div
                               className="rightside_odds"
@@ -1603,9 +1519,7 @@ function LandingPage() {
                   ) : (
                     topTennisMatchesByDay.map(({ day, matches }) =>
                       matches.map((match, idx) => {
-                        const oddsId = match.gameId ?? match.eventId;
-                        const oddsPayload = oddsId ? topTennisMatchesOddsByGameId[oddsId] : null;
-                        const cardOdds = getLandingCardOddsTriples(match, oddsPayload);
+                        const cardOdds = getLandingCardOddsTriples(match, null);
                         return (
                           <div
                             key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
@@ -1614,7 +1528,7 @@ function LandingPage() {
                             onClick={(e) => handleTopTennisMatchRowClick(e, match)}
                           >
                             <div className="leftside_matchlist">
-                              <DesktopTopMatchBlock match={match} oddsPayload={oddsPayload} />
+                              <DesktopTopMatchBlock match={match} oddsPayload={null} />
                             </div>
                             <div
                               className="rightside_odds"
@@ -1685,8 +1599,7 @@ function LandingPage() {
                   ) : (
                     topSoccerMatchesByDay.map(({ day, matches }) =>
                       matches.map((match, idx) => {
-                        const oddsPayload = match.gameId ? topSoccerMatchesOddsByGameId[match.gameId] : null;
-                        const cardOdds = getLandingCardOddsTriples(match, oddsPayload);
+                        const cardOdds = getLandingCardOddsTriples(match, null);
                         return (
                           <div
                             key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
@@ -1695,7 +1608,7 @@ function LandingPage() {
                             onClick={(e) => handleTopSoccerMatchRowClick(e, match)}
                           >
                             <div className="leftside_matchlist">
-                              <DesktopTopMatchBlock match={match} oddsPayload={oddsPayload} />
+                              <DesktopTopMatchBlock match={match} oddsPayload={null} />
                             </div>
                             <div
                               className="rightside_odds"
