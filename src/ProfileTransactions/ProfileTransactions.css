@@ -23,6 +23,14 @@
     gap: 15px;
 }
 
+/* Search + type filter grouped (StatementPage: My Wallet, Account Statement, etc.) */
+.transactions_header_filters {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
 .transactions_search_input {
     min-width: 180px;
     max-width: 260px;
@@ -34,9 +42,11 @@
     font-size: 14px;
     outline: none;
 }
+
 .transactions_search_input::placeholder {
     color: rgba(255, 255, 255, 0.5);
 }
+
 .transactions_search_input:focus {
     border-color: rgba(249, 122, 49, 0.5);
 }
@@ -111,12 +121,14 @@
     background: linear-gradient(1turn, #b85d26 .8%, #f88540);
     box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px rgba(255, 255, 255, 0.35);
 }
+
 .transactions_header_right button.deposit_btn_style.btn_export:hover:not(:disabled),
 .transactions_header_right button.deposit_btn_style.btn_export:focus-visible:not(:disabled) {
     background: linear-gradient(1turn, #b85d26 .8%, #f88540);
     box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px rgba(255, 255, 255, 0.35);
     outline: none;
 }
+
 .transactions_header_right button.deposit_btn_style.btn_export:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -281,7 +293,7 @@
 
 @media (max-width: 768px) {
     .wallet_summary {
-        flex-direction: column;
+        flex-direction: row;
         align-items: flex-end;
         margin-bottom: 8px;
     }
@@ -488,6 +500,11 @@
         width: 100%;
     }
 
+    /* Unwrap filters so input/select stay grid items (same layout as before wrapper) */
+    .transactions_header_right.account_statement_header_right .transactions_header_filters {
+        display: contents;
+    }
+
     .transactions_header_right.account_statement_header_right .transactions_search_input {
         grid-column: 1 / -1;
         grid-row: 2;
@@ -503,6 +520,35 @@
 
     .transactions_header_right.account_statement_header_right .export_dropdown_wrapper .btn_export {
         width: 100%;
+    }
+
+    /* My Wallet: summary on top, search + filter stacked full width */
+    .transactions_header_right.my_wallet_header_right {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .transactions_header_right.my_wallet_header_right .wallet_summary {
+        margin-right: 0;
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .transactions_header_right.my_wallet_header_right .transactions_header_filters {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .transactions_header_right.my_wallet_header_right .transactions_header_filters .transactions_search_input,
+    .transactions_header_right.my_wallet_header_right .transactions_header_filters .transactions_filter_select {
+        max-width: none;
+        width: 100%;
+        min-width: 0;
     }
 
     .date_range_picker {
@@ -527,6 +573,7 @@
     .transactions_table_wrapper {
         display: block;
     }
+
     .transactions_cards_wrapper {
         display: none !important;
     }
@@ -659,7 +706,11 @@
         min-width: 100%;
     }
 
-    .support_tickets_table_wrapper .transactions_table td{ width: 100%; overflow: scroll; }
+    .support_tickets_table_wrapper .transactions_table td {
+        width: 100%;
+        overflow: scroll;
+    }
+
     .support_tickets_table_wrapper tbody {
         width: 100%;
         display: block;
@@ -763,12 +814,34 @@
         font-size: 12px;
     }
 
+    .wallet_summary {
+        margin-right: 0px;
+    }
+
+    .transactions_header_filters {
+
+        flex-wrap: nowrap;
+    }
+
+    .transactions_header_filters .transactions_search_input {
+        min-width: 150px;
+        max-width: 150px;
+    }
+
 }
 
 @media (max-width:991px) {
 
     .profile_transactions_section {
         padding-bottom: 50px;
+    }
+
+    .transactions_header_right.my_wallet_header_right .transactions_header_filters {
+        flex-direction: row;
+    }
+
+    .my_wallet_header_right .wallet_summary_item {
+        min-width: 49%;
     }
 
     .pagination_btn {
@@ -791,6 +864,14 @@
     }
 
     .btn.deposit_btn {
+        font-size: 12px;
+    }
+
+    .transactions_header_right.my_wallet_header_right .wallet_summary {
+        flex-wrap: nowrap;
+    }
+
+    .transactions_search_input {
         font-size: 12px;
     }
 

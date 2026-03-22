@@ -333,6 +333,12 @@
     display: none;
   }
 
+  .game_history_filter_select {
+    font-size: 12px; }
+
+    .game_history_search_input{
+      font-size: 12px; }
+
   .game_history_cards_wrapper {
     display: flex;
   }

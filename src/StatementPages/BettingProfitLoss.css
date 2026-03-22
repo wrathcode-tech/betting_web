@@ -216,4 +216,8 @@
     align-items: stretch;
     text-align: center;
   }
+
+  .betting_profit_loss_page .transaction_card_header h3 {
+    font-size: 16px;
+} 
 }

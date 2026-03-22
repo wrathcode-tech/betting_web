@@ -1895,3 +1895,16 @@ ul.match_type_tabs li.active button {
     }
 
 }
+
+
+@media (max-width: 340px) {
+
+.sports_filter_btn {
+    padding: 6px 10px;
+    font-size: 11px; }
+
+    .sports_grid_table_wrap.desktop_view .sports_grid_desktop_match_tools {
+        padding-right: 5px;
+    }
+
+}
