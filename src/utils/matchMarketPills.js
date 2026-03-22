@@ -100,3 +100,28 @@ export function getOddsStorageKeyForMatch(activeTab, match) {
   if (activeTab === 'tennis') return match?.eventId ?? match?.event_id ?? match?.gameId ?? match?.game_id
   return match?.gameId ?? match?.game_id ?? match?.eventId ?? match?.event_id
 }
+
+/**
+ * Socket may index odds by gameId while payload used eventId (or vice versa). Try primary id then alternate.
+ * @param {Record<string, unknown>} oddsByGameId
+ * @param {'cricket'|'tennis'|'soccer'} activeTab
+ * @param {Record<string, unknown>|null|undefined} match
+ */
+export function resolveOddsPayloadFromMap(oddsByGameId, activeTab, match) {
+  if (!oddsByGameId || typeof oddsByGameId !== 'object' || !match || typeof match !== 'object') return null
+  const primary = getOddsStorageKeyForMatch(activeTab, match)
+  const gid = match.gameId ?? match.game_id
+  const eid = match.eventId ?? match.event_id
+  const tryKeys = []
+  if (primary != null && primary !== '') tryKeys.push(String(primary))
+  if (activeTab === 'tennis') {
+    if (gid != null && String(gid) !== String(primary ?? '')) tryKeys.push(String(gid))
+  } else {
+    if (eid != null && String(eid) !== String(primary ?? '')) tryKeys.push(String(eid))
+  }
+  for (const k of tryKeys) {
+    const payload = oddsByGameId[k]
+    if (payload && typeof payload === 'object') return payload
+  }
+  return null
+}

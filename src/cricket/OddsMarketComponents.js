@@ -150,7 +150,7 @@ export function OddsMarket({ title, icon, minMax, headerRight, children, classNa
             <div className="odds_section_header">
                 <span className="odds_section_title"><i className={icon} aria-hidden /> {title}</span>
                 <div className="odds_section_header_right d-flex align-items-center gap-2 flex-wrap">
-                    <span className="odds_section_limits">{minMax}</span>
+                    {minMax ? <span className="odds_section_limits">{minMax}</span> : null}
                     {headerRight}
                 </div>
             </div>

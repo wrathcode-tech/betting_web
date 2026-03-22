@@ -10,10 +10,13 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload';
 import {
   connectSportsbookSocket,
   subscribeMatches,
+  subscribeMatchesMany,
   unsubscribeMatches,
+  unsubscribeMatchesMany,
   subscribeOdds,
   unsubscribeOdds,
   subscribeScoreboard,
@@ -101,9 +104,9 @@ function SportsbookRouteMatchStreams() {
   useEffect(() => {
     if (!sportsKey) return undefined;
     const list = sportsKey.split('|');
-    list.forEach((s) => subscribeMatches(s));
+    subscribeMatchesMany(list);
     return () => {
-      list.forEach((s) => unsubscribeMatches(s));
+      unsubscribeMatchesMany(list);
     };
   }, [sportsKey]);
 
@@ -188,19 +191,25 @@ export function SportsbookStoreProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    const onMatches = (payload) => {
-      const sport = payload?.sport;
-      const data = payload?.data;
-      if (sport && SPORTS.includes(sport)) setMatchesForSport(sport, Array.isArray(data) ? data : []);
+    const onMatches = (raw) => {
+      for (const payload of expandSocketBatchPayload(raw)) {
+        const sport = payload?.sport;
+        const data = payload?.data;
+        if (sport && SPORTS.includes(sport)) setMatchesForSport(sport, Array.isArray(data) ? data : []);
+      }
     };
-    const onOdds = (payload) => {
-      const gameId = payload?.gameId ?? payload?.eventId;
-      const data = payload?.data;
-      if (gameId) setOddsForGame(gameId, data);
+    const onOdds = (raw) => {
+      for (const payload of expandSocketBatchPayload(raw)) {
+        const gameId = payload?.gameId ?? payload?.eventId;
+        const data = payload?.data;
+        if (gameId) setOddsForGame(gameId, data);
+      }
     };
-    const onScoreboard = (payload) => {
-      const gameId = payload?.gameId ?? payload?.eventId;
-      if (gameId) setScoreboardForGame(gameId, payload);
+    const onScoreboard = (raw) => {
+      for (const payload of expandSocketBatchPayload(raw)) {
+        const gameId = payload?.gameId ?? payload?.eventId;
+        if (gameId) setScoreboardForGame(gameId, payload);
+      }
     };
     const onBetUpdate = (payload) => {
       setBetUpdatePayload(payload);
@@ -311,9 +320,9 @@ export function useSportsMatchesSubscription(sports) {
   useEffect(() => {
     if (!key) return undefined;
     const list = key.split('|');
-    list.forEach((s) => subscribeMatches(s));
+    subscribeMatchesMany(list);
     return () => {
-      list.forEach((s) => unsubscribeMatches(s));
+      unsubscribeMatchesMany(list);
     };
   }, [key]);
 }

@@ -20,6 +20,9 @@ import AuthService from './AuthService';
 
 const supportedSports = ['cricket', 'soccer', 'tennis'];
 
+/** Same (sport, gameId) ke parallel callers → ek hi HTTP request */
+const inflightOddsByKey = new Map();
+
 /**
  * GET /api/v1/sportsbook/:sportName/matches
  * @param {string} sportName - cricket | soccer | tennis
@@ -40,8 +43,21 @@ export async function getMatches(sportName, options = {}) {
  */
 export async function getOdds(sportName, gameIdOrEventId) {
   const sport = normalizeSport(sportName);
-  const res = await AuthService.sportsbookOdds(sport, gameIdOrEventId);
-  return normalizeResponse(res);
+  const id = gameIdOrEventId != null && gameIdOrEventId !== '' ? String(gameIdOrEventId) : '';
+  if (!id) {
+    return { success: false, data: null, message: 'Missing gameId' };
+  }
+  const key = `${sport}:${id}`;
+  const existing = inflightOddsByKey.get(key);
+  if (existing) return existing;
+
+  const promise = AuthService.sportsbookOdds(sport, id)
+    .then((res) => normalizeResponse(res))
+    .finally(() => {
+      inflightOddsByKey.delete(key);
+    });
+  inflightOddsByKey.set(key, promise);
+  return promise;
 }
 
 /**

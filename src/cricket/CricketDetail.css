@@ -2942,16 +2942,6 @@ span.quicktext {
     opacity: 0.9;
 }
 
-.odds_section_footer {
-    padding: 10px 16px;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
-    background: #1e2a38;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-
-
 @media (max-width: 1367px) {
 
     .odds_section_market_name {
@@ -3161,11 +3151,6 @@ span.quicktext {
         font-size: 10px;
     }
 
-
-    .odds_section_footer {
-        padding: 8px 12px;
-        font-size: 10px;
-    }
 
     .odds_section_btn .odds_size {
         font-size: 9px;

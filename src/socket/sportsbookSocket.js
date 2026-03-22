@@ -15,10 +15,18 @@ import { io } from 'socket.io-client';
 const getSportsbookBaseUrl = () =>
   process.env.REACT_APP_BETTING_API_URL || 'https://gamingbackend.wrathcode.com';
 
+/**
+ * Subscription emits use an array payload (Socket.IO first argument = Array of objects).
+ * Set `REACT_APP_SPORTSBOOK_LEGACY_SOCKET_EMIT=true` to restore per-item single-object emits (old backend).
+ */
+const LEGACY_SOCKET_EMIT =
+  process.env.REACT_APP_SPORTSBOOK_LEGACY_SOCKET_EMIT === '1' ||
+  process.env.REACT_APP_SPORTSBOOK_LEGACY_SOCKET_EMIT === 'true';
+
 const SOCKET_CONFIG = {
   path: '/socket.io',
-  transports: ['websocket'],
-  upgrade: false,
+  transports: ['websocket', 'polling'],
+  upgrade: true,
   reconnection: true,
   reconnectionAttempts: Infinity,
   reconnectionDelay: 1000,
@@ -58,6 +66,61 @@ const lastScoreboardSig = new Map();
  */
 const matchSubSentToServer = new Set();
 
+/** gameIds sent to server via subscribe:odds on this connection (cleared on disconnect). */
+const oddsSubSentToServer = new Set();
+/** Pending batched subscribe:odds — id -> last sport hint (authoritative sport on oddsRefCounts). */
+const pendingOddsSubscribe = new Map();
+const pendingOddsUnsubscribe = new Set();
+let oddsBatchFlushScheduled = false;
+
+function scheduleOddsBatchFlush() {
+  if (oddsBatchFlushScheduled) return;
+  oddsBatchFlushScheduled = true;
+  queueMicrotask(() => {
+    oddsBatchFlushScheduled = false;
+    flushOddsBatchesToServer();
+  });
+}
+
+/** Flush pending odds sub/unsub — array payloads unless LEGACY_SOCKET_EMIT. */
+function flushOddsBatchesToServer() {
+  if (!socket?.connected) return;
+
+  if (pendingOddsUnsubscribe.size > 0) {
+    const gameIds = [...pendingOddsUnsubscribe];
+    pendingOddsUnsubscribe.clear();
+    if (LEGACY_SOCKET_EMIT) {
+      gameIds.forEach((gid) => socket.emit('unsubscribe:odds', { gameId: gid }));
+    } else {
+      socket.emit(
+        'unsubscribe:odds',
+        gameIds.map((gid) => ({ gameId: String(gid) }))
+      );
+    }
+    gameIds.forEach((gid) => oddsSubSentToServer.delete(String(gid)));
+  }
+
+  const items = [];
+  const keys = [...pendingOddsSubscribe.keys()];
+  for (const id of keys) {
+    pendingOddsSubscribe.delete(id);
+    const v = oddsRefCounts.get(id);
+    if (v && v.count > 0 && !oddsSubSentToServer.has(id)) {
+      items.push({ gameId: String(id), sport: v.sport || 'cricket' });
+    }
+  }
+  if (items.length === 0) return;
+  if (LEGACY_SOCKET_EMIT) {
+    items.forEach((x) => {
+      socket.emit('subscribe:odds', { gameId: x.gameId, sport: x.sport });
+      oddsSubSentToServer.add(String(x.gameId));
+    });
+  } else {
+    socket.emit('subscribe:odds', items);
+    items.forEach((x) => oddsSubSentToServer.add(String(x.gameId)));
+  }
+}
+
 function countActiveSubscriptionSlots() {
   let n = 0;
   matchRefCounts.forEach((c) => {
@@ -72,6 +135,39 @@ function countActiveSubscriptionSlots() {
   return n;
 }
 
+/** `subscribe:matches` — array of `{ sport }` (or legacy one emit per sport). */
+function emitSubscribeMatchesToServer(sports) {
+  if (!socket?.connected || !sports?.length) return;
+  const pending = sports.filter((s) => !matchSubSentToServer.has(s));
+  if (pending.length === 0) return;
+  if (LEGACY_SOCKET_EMIT) {
+    pending.forEach((s) => {
+      socket.emit('subscribe:matches', { sport: s });
+      matchSubSentToServer.add(s);
+    });
+  } else {
+    socket.emit(
+      'subscribe:matches',
+      pending.map((s) => ({ sport: s }))
+    );
+    pending.forEach((s) => matchSubSentToServer.add(s));
+  }
+}
+
+function emitUnsubscribeMatchesToServer(sports) {
+  if (!socket?.connected || !sports?.length) return;
+  if (LEGACY_SOCKET_EMIT) {
+    sports.forEach((s) => {
+      socket.emit('unsubscribe:matches', { sport: s });
+    });
+  } else {
+    socket.emit(
+      'unsubscribe:matches',
+      sports.map((s) => ({ sport: s }))
+    );
+  }
+}
+
 function payloadSignature(payload, dataKey = 'data') {
   const ts = payload?.timestamp;
   if (ts != null && ts !== '') return `t:${ts}`;
@@ -83,26 +179,67 @@ function payloadSignature(payload, dataKey = 'data') {
   }
 }
 
+/** Backend may send one message or `items: []` or a top-level array — normalize to array of objects. */
+function asMatchesPayloadArray(payload) {
+  if (payload == null) return [];
+  if (Array.isArray(payload)) return payload.filter(Boolean);
+  if (typeof payload === 'object' && Array.isArray(payload.items)) return payload.items.filter(Boolean);
+  return [payload];
+}
+
+function asOddsOrScoreboardPayloadArray(payload) {
+  if (payload == null) return [];
+  if (Array.isArray(payload)) return payload.filter(Boolean);
+  if (typeof payload === 'object' && Array.isArray(payload.items)) return payload.items.filter(Boolean);
+  return [payload];
+}
+
 export function reemitSubscriptions() {
   if (!socket?.connected) return;
+  const activeMatchSports = [];
   matchRefCounts.forEach((count, sport) => {
-    if (count > 0) {
-      socket.emit('subscribe:matches', { sport });
-      matchSubSentToServer.add(sport);
-    }
+    if (count > 0) activeMatchSports.push(sport);
   });
+  emitSubscribeMatchesToServer(activeMatchSports);
+  pendingOddsSubscribe.clear();
+  pendingOddsUnsubscribe.clear();
+  const oddsItems = [];
   oddsRefCounts.forEach((v, id) => {
-    if (v.count > 0) {
-      const s = v.sport || 'cricket';
-      socket.emit('subscribe:odds', { gameId: String(id), sport: s });
+    const sid = String(id);
+    if (v.count > 0 && !oddsSubSentToServer.has(sid)) {
+      oddsItems.push({ gameId: sid, sport: v.sport || 'cricket' });
     }
   });
+  if (oddsItems.length > 0) {
+    if (LEGACY_SOCKET_EMIT) {
+      oddsItems.forEach((x) => {
+        socket.emit('subscribe:odds', { gameId: String(x.gameId), sport: x.sport });
+        oddsSubSentToServer.add(String(x.gameId));
+      });
+    } else {
+      const normalized = oddsItems.map((x) => ({
+        gameId: String(x.gameId),
+        sport: x.sport,
+      }));
+      socket.emit('subscribe:odds', normalized);
+      normalized.forEach((x) => oddsSubSentToServer.add(String(x.gameId)));
+    }
+  }
+  const scoreboardItems = [];
   scoreboardRefCounts.forEach((v, id) => {
     if (v.count > 0) {
-      const s = v.sport || 'cricket';
-      socket.emit('subscribe:scoreboard', { gameId: String(id), sport: s });
+      scoreboardItems.push({ gameId: String(id), sport: v.sport || 'cricket' });
     }
   });
+  if (scoreboardItems.length > 0) {
+    if (LEGACY_SOCKET_EMIT) {
+      scoreboardItems.forEach((x) =>
+        socket.emit('subscribe:scoreboard', { gameId: x.gameId, sport: x.sport })
+      );
+    } else {
+      socket.emit('subscribe:scoreboard', scoreboardItems);
+    }
+  }
 }
 
 function ensureHandlers() {
@@ -135,49 +272,59 @@ function ensureHandlers() {
   });
 
   socket.on('matches', (payload) => {
-    const sport = payload?.sport;
-    if (!sport) return;
-    const sig = payloadSignature(payload, 'data');
-    if (lastMatchesSig.get(sport) === sig) return;
-    lastMatchesSig.set(sport, sig);
-    matchesListeners.forEach((fn) => {
-      try {
-        fn(payload);
-      } catch (e) {
-        console.error('sportsbookSocket matches listener error:', e);
-      }
-    });
+    const list = asMatchesPayloadArray(payload);
+    for (const p of list) {
+      const sport = p?.sport;
+      if (!sport) continue;
+      const sig = payloadSignature(p, 'data');
+      if (lastMatchesSig.get(sport) === sig) continue;
+      lastMatchesSig.set(sport, sig);
+      matchesListeners.forEach((fn) => {
+        try {
+          fn(p);
+        } catch (e) {
+          console.error('sportsbookSocket matches listener error:', e);
+        }
+      });
+    }
   });
 
   socket.on('odds', (payload) => {
-    const key = payload?.eventId != null ? String(payload.eventId) : payload?.gameId != null ? String(payload.gameId) : null;
-    if (!key || payload?.data === undefined) return;
-    const sig = payloadSignature(payload, 'data');
-    const dedupeKey = key;
-    if (lastOddsSig.get(dedupeKey) === sig) return;
-    lastOddsSig.set(dedupeKey, sig);
-    oddsListeners.forEach((fn) => {
-      try {
-        fn(payload);
-      } catch (e) {
-        console.error('sportsbookSocket odds listener error:', e);
-      }
-    });
+    const list = asOddsOrScoreboardPayloadArray(payload);
+    for (const item of list) {
+      const key =
+        item?.eventId != null ? String(item.eventId) : item?.gameId != null ? String(item.gameId) : null;
+      if (!key || item?.data === undefined) continue;
+      const sig = payloadSignature(item, 'data');
+      if (lastOddsSig.get(key) === sig) continue;
+      lastOddsSig.set(key, sig);
+      oddsListeners.forEach((fn) => {
+        try {
+          fn(item);
+        } catch (e) {
+          console.error('sportsbookSocket odds listener error:', e);
+        }
+      });
+    }
   });
 
   socket.on('scoreboard', (payload) => {
-    const key = payload?.eventId != null ? String(payload.eventId) : payload?.gameId != null ? String(payload.gameId) : null;
-    if (!key || payload?.data === undefined) return;
-    const sig = payloadSignature(payload, 'data');
-    if (lastScoreboardSig.get(key) === sig) return;
-    lastScoreboardSig.set(key, sig);
-    scoreboardListeners.forEach((fn) => {
-      try {
-        fn(payload);
-      } catch (e) {
-        console.error('sportsbookSocket scoreboard listener error:', e);
-      }
-    });
+    const list = asOddsOrScoreboardPayloadArray(payload);
+    for (const item of list) {
+      const key =
+        item?.eventId != null ? String(item.eventId) : item?.gameId != null ? String(item.gameId) : null;
+      if (!key || item?.data === undefined) continue;
+      const sig = payloadSignature(item, 'data');
+      if (lastScoreboardSig.get(key) === sig) continue;
+      lastScoreboardSig.set(key, sig);
+      scoreboardListeners.forEach((fn) => {
+        try {
+          fn(item);
+        } catch (e) {
+          console.error('sportsbookSocket scoreboard listener error:', e);
+        }
+      });
+    }
   });
 
   socket.on('betUpdate', (payload) => {
@@ -208,6 +355,9 @@ function ensureHandlers() {
   socket.on('disconnect', (reason) => {
     console.log('Sportsbook socket disconnected:', reason);
     matchSubSentToServer.clear();
+    oddsSubSentToServer.clear();
+    pendingOddsSubscribe.clear();
+    pendingOddsUnsubscribe.clear();
   });
 
   socket.on('connect_error', (err) => {
@@ -275,6 +425,9 @@ export function disconnectSportsbookSocket() {
   lastOddsSig.clear();
   lastScoreboardSig.clear();
   matchSubSentToServer.clear();
+  oddsSubSentToServer.clear();
+  pendingOddsSubscribe.clear();
+  pendingOddsUnsubscribe.clear();
   matchesListeners.clear();
   oddsListeners.clear();
   scoreboardListeners.clear();
@@ -295,39 +448,55 @@ export function getSportsbookSocket() {
   return socket;
 }
 
+/**
+ * Subscribe to several sports; sends `subscribe:matches` as an array of `{ sport }` (unless legacy env).
+ */
+export function subscribeMatchesMany(sports) {
+  if (!Array.isArray(sports) || !sports.length) return;
+  const uniq = [...new Set(sports.map(String).filter(Boolean))];
+  const firstActivated = [];
+  for (const s of uniq) {
+    const prev = matchRefCounts.get(s) || 0;
+    if (prev === 0 && countActiveSubscriptionSlots() >= MAX_SUBSCRIPTIONS) {
+      console.warn('[sportsbookSocket] MAX_SUBSCRIPTIONS reached; skip subscribe:matches', s);
+      continue;
+    }
+    matchRefCounts.set(s, prev + 1);
+    if (prev === 0) firstActivated.push(s);
+  }
+  emitSubscribeMatchesToServer(firstActivated);
+}
+
 export function subscribeMatches(sport) {
   if (!sport) return;
-  const s = String(sport);
-  const prev = matchRefCounts.get(s) || 0;
-  if (prev === 0 && countActiveSubscriptionSlots() >= MAX_SUBSCRIPTIONS) {
-    console.warn('[sportsbookSocket] MAX_SUBSCRIPTIONS reached; skip subscribe:matches', s);
-    return;
-  }
-  matchRefCounts.set(s, prev + 1);
-  if (prev === 0 && socket?.connected) {
-    if (!matchSubSentToServer.has(s)) {
-      socket.emit('subscribe:matches', { sport: s });
-      matchSubSentToServer.add(s);
+  subscribeMatchesMany([sport]);
+}
+
+export function unsubscribeMatchesMany(sports) {
+  if (!Array.isArray(sports) || !sports.length) return;
+  const uniq = [...new Set(sports.map(String).filter(Boolean))];
+  const removedFromServer = [];
+  for (const s of uniq) {
+    const prev = matchRefCounts.get(s) || 0;
+    if (prev <= 0) continue;
+    const next = prev - 1;
+    if (next <= 0) {
+      matchRefCounts.delete(s);
+      lastMatchesSig.delete(s);
+      if (socket?.connected && matchSubSentToServer.has(s)) {
+        removedFromServer.push(s);
+        matchSubSentToServer.delete(s);
+      }
+    } else {
+      matchRefCounts.set(s, next);
     }
   }
+  emitUnsubscribeMatchesToServer(removedFromServer);
 }
 
 export function unsubscribeMatches(sport) {
   if (!sport) return;
-  const s = String(sport);
-  const prev = matchRefCounts.get(s) || 0;
-  if (prev <= 0) return;
-  const next = prev - 1;
-  if (next <= 0) {
-    matchRefCounts.delete(s);
-    lastMatchesSig.delete(s);
-    if (socket?.connected && matchSubSentToServer.has(s)) {
-      socket.emit('unsubscribe:matches', { sport: s });
-      matchSubSentToServer.delete(s);
-    }
-  } else {
-    matchRefCounts.set(s, next);
-  }
+  unsubscribeMatchesMany([sport]);
 }
 
 export function subscribeOdds(gameIdOrEventId, sport) {
@@ -342,7 +511,9 @@ export function subscribeOdds(gameIdOrEventId, sport) {
     }
     oddsRefCounts.set(id, { count: 1, sport: sp });
     if (socket?.connected) {
-      socket.emit('subscribe:odds', { gameId: id, sport: sp });
+      pendingOddsSubscribe.set(id, sp);
+      pendingOddsUnsubscribe.delete(id);
+      scheduleOddsBatchFlush();
     }
   } else {
     existing.count += 1;
@@ -359,7 +530,11 @@ export function unsubscribeOdds(gameIdOrEventId, _sportIgnored) {
   if (existing.count <= 0) {
     oddsRefCounts.delete(id);
     lastOddsSig.delete(id);
-    if (socket?.connected) socket.emit('unsubscribe:odds', { gameId: id });
+    pendingOddsSubscribe.delete(id);
+    if (socket?.connected && oddsSubSentToServer.has(id)) {
+      pendingOddsUnsubscribe.add(id);
+      scheduleOddsBatchFlush();
+    }
   }
 }
 
@@ -375,7 +550,11 @@ export function subscribeScoreboard(gameIdOrEventId, sport) {
     }
     scoreboardRefCounts.set(id, { count: 1, sport: sp });
     if (socket?.connected) {
-      socket.emit('subscribe:scoreboard', { gameId: id, sport: sp });
+      if (LEGACY_SOCKET_EMIT) {
+        socket.emit('subscribe:scoreboard', { gameId: id, sport: sp });
+      } else {
+        socket.emit('subscribe:scoreboard', [{ gameId: id, sport: sp }]);
+      }
     }
   } else {
     existing.count += 1;
@@ -392,7 +571,13 @@ export function unsubscribeScoreboard(gameIdOrEventId, _sportIgnored) {
   if (existing.count <= 0) {
     scoreboardRefCounts.delete(id);
     lastScoreboardSig.delete(id);
-    if (socket?.connected) socket.emit('unsubscribe:scoreboard', { gameId: id });
+    if (socket?.connected) {
+      if (LEGACY_SOCKET_EMIT) {
+        socket.emit('unsubscribe:scoreboard', { gameId: id });
+      } else {
+        socket.emit('unsubscribe:scoreboard', [{ gameId: id }]);
+      }
+    }
   }
 }
 

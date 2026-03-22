@@ -38,10 +38,10 @@ All protected calls use `Authorization: Bearer <token>` via AuthService.
 
 - **Namespace:** `{baseUrl}/sportsbook`
 - **Auth:** `auth: { token: accessToken }`
-- **Client events:** `subscribe:matches` `{ sport }`, `subscribe:odds` `{ gameId }` or `{ eventId, sport }` (tennis), `subscribe:scoreboard` `{ gameId }` or `{ eventId, sport }` (tennis).
+- **Client events:** `subscribe:matches` `{ sport }` (home/sports uses three emits via `subscribeMatchesMany`); `subscribe:odds` `{ gameId }` or `{ eventId, sport }` (tennis); `subscribe:scoreboard` `{ gameId }` or `{ eventId, sport }` (tennis).
 - **Server events:** `matches`, `odds`, `scoreboard`, `betUpdate`, `balance`.
 
-**Connection & subscriptions (single place):** `SportsbookStoreProvider` calls `connectSportsbookSocket(token || null)` on mount and on `loginStateChange`. **`SportsbookRouteMatchStreams`** (inside the provider) drives `subscribe:matches` from **pathname**: `/` and `/sports` → cricket, tennis, soccer; `/cricket` | `/tennis` | `/soccer` → that sport only for logged-in non-demo users. Changing route unsubscribes the previous set. Duplicate `subscribe:matches` emits for the same sport on one connection are skipped (`matchSubSentToServer` Set in `sportsbookSocket.js`).
+**Connection & subscriptions (single place):** `SportsbookStoreProvider` calls `connectSportsbookSocket(token || null)` on mount and on `loginStateChange`. **`SportsbookRouteMatchStreams`** (inside the provider) drives `subscribe:matches` from **pathname**: `/` and `/sports` → three `{ sport }` emits (cricket, tennis, soccer); `/cricket` | `/tennis` | `/soccer` → one sport for logged-in non-demo users. Changing route unsubscribes the previous set. Duplicate `subscribe:matches` emits for the same sport on one connection are skipped (`matchSubSentToServer` Set in `sportsbookSocket.js`).
 
 - **`useSportsOddsSubscription(gameId, sport, enabled?)`**
 - **`useSportsScoreboardSubscription(gameId, sport, enabled?)`**

@@ -17,6 +17,7 @@ import {
   addBetUpdateListener,
   removeBetUpdateListener,
 } from '../socket/sportsbookSocket';
+import { getMatchRowsFromSocketPayload, expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload';
 
 const SPORTS = ['cricket', 'soccer', 'tennis'];
 
@@ -31,35 +32,30 @@ export function useSportsbookMatches(sport, options = {}) {
   const [error, setError] = useState(null);
   const sportKey = SPORTS.includes(String(sport).toLowerCase()) ? String(sport).toLowerCase() : 'cricket';
 
-  const fetchMatches = useCallback(async () => {
+  const refetch = useCallback(() => {
+    setMatches([]);
     setLoading(true);
     setError(null);
-    try {
-      const res = await sportsbookApi.getMatches(sportKey, { fresh: options.fresh });
-      const data = res?.data ?? res;
-      const list = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : Array.isArray(data?.matches) ? data.matches : [];
-      setMatches(list);
-    } catch (e) {
-      setError(e?.message || 'Failed to load matches');
-      setMatches([]);
-    } finally {
+  }, []);
+
+  useEffect(() => {
+    if (!options.subscribeSocket) {
       setLoading(false);
+      return undefined;
     }
-  }, [sportKey, options.fresh]);
-
-  useEffect(() => {
-    fetchMatches();
-  }, [fetchMatches]);
-
-  useEffect(() => {
-    if (!options.subscribeSocket) return;
-    const token = sessionStorage.getItem('token');
-    if (!token) return;
-    const onPayload = (payload) => {
-      if (payload?.sport !== sportKey) return;
-      const list = Array.isArray(payload?.data) ? payload.data : [];
-      setMatches((prev) => (list.length > 0 ? list : prev));
-      setLoading(false);
+    const onPayload = (raw) => {
+      for (const payload of expandSocketBatchPayload(raw)) {
+        if (payload?.sport !== sportKey) continue;
+        if (payload?.error) {
+          setError(payload?.message || 'Matches stream error');
+          setLoading(false);
+          continue;
+        }
+        const { rows, schema } = getMatchRowsFromSocketPayload(payload);
+        setMatches((prev) => (rows.length > 0 ? rows : schema === 'listSummary' ? rows : prev));
+        setLoading(false);
+        setError(null);
+      }
     };
     addMatchesListener(onPayload);
     subscribeMatches(sportKey);
@@ -69,7 +65,7 @@ export function useSportsbookMatches(sport, options = {}) {
     };
   }, [sportKey, options.subscribeSocket]);
 
-  return { matches, loading, error, refetch: fetchMatches };
+  return { matches, loading, error, refetch };
 }
 
 /**
@@ -79,53 +75,42 @@ export function useSportsbookMatches(sport, options = {}) {
  */
 export function useSportsbookOdds(sport, gameIdOrEventId) {
   const [oddsData, setOddsData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!gameIdOrEventId);
   const [error, setError] = useState(null);
   const sportKey = SPORTS.includes(String(sport).toLowerCase()) ? String(sport).toLowerCase() : 'cricket';
 
-  const fetchOdds = useCallback(async () => {
+  useEffect(() => {
     if (!gameIdOrEventId) {
       setOddsData(null);
       setLoading(false);
-      return;
+      setError(null);
+      return undefined;
     }
     setLoading(true);
     setError(null);
-    try {
-      const res = await sportsbookApi.getOdds(sportKey, gameIdOrEventId);
-      const raw = res?.data ?? res;
-      setOddsData(raw && typeof raw === 'object' ? raw : null);
-    } catch (e) {
-      setError(e?.message || 'Failed to load odds');
-      setOddsData(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [sportKey, gameIdOrEventId]);
-
-  useEffect(() => {
-    fetchOdds();
-  }, [fetchOdds]);
-
-  useEffect(() => {
-    if (!gameIdOrEventId) return;
-    const token = sessionStorage.getItem('token');
-    if (!token) return;
-    const onPayload = (payload) => {
-      const key = payload?.eventId ?? payload?.gameId;
-      if (key !== gameIdOrEventId || payload?.data === undefined) return;
-      setOddsData((prev) => ({ ...prev, ...payload.data }));
-      setLoading(false);
+    const id = String(gameIdOrEventId);
+    const onPayload = (raw) => {
+      for (const payload of expandSocketBatchPayload(raw)) {
+        const key = payload?.eventId != null ? String(payload.eventId) : payload?.gameId != null ? String(payload.gameId) : null;
+        if (key !== id || payload?.data === undefined) continue;
+        setOddsData((prev) => ({ ...(prev && typeof prev === 'object' ? prev : {}), ...payload.data }));
+        setLoading(false);
+        setError(null);
+      }
     };
     addOddsListener(onPayload);
-    subscribeOdds(gameIdOrEventId, sportKey);
+    subscribeOdds(id, sportKey);
     return () => {
       removeOddsListener(onPayload);
-      unsubscribeOdds(gameIdOrEventId, sportKey);
+      unsubscribeOdds(id, sportKey);
     };
   }, [gameIdOrEventId, sportKey]);
 
-  return { oddsData, loading, error, refetch: fetchOdds };
+  const refetch = useCallback(() => {
+    /* socket-only */
+  }, []);
+
+  return { oddsData, loading, error, refetch };
 }
 
 /**

@@ -9,6 +9,7 @@ import {
     addOddsListener,
     removeOddsListener,
 } from '../socket/sportsbookSocket'
+import { getMatchRowsFromSocketPayload, expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload'
 import { useSportsOddsSubscription } from '../context/SportsbookStore'
 import { getToken } from '../utils/authStorage'
 import { alertSuccessMessage, alertErrorMessage } from '../customComponents/CustomAlertMessage'
@@ -16,6 +17,7 @@ import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { useAuth } from '../context/AuthContext'
 import LossCutIndicator from '../customComponents/LossCutIndicator'
 import { BackPriceCell, LayPriceCell } from './OddsMarketComponents'
+import { formatMinMaxLabel } from '../utils/marketMinMax'
 
 const CASHOUT_COMMISSION = 0.05 // 5% of total bet (stake)
 /** Open bets: high limit. (gameId/sport query kuch backends par error / empty deta hai — filter client-side.) */
@@ -243,7 +245,7 @@ function CricketDetail() {
         defaultMatch?.eventId ??
         gameId
     const [oddsData, setOddsData] = useState(null)
-    const [oddsLoading, setOddsLoading] = useState(false)
+    const [oddsLoading, setOddsLoading] = useState(true)
     const [liveScore, setLiveScore] = useState(null)
     // eslint-disable-next-line no-unused-vars -- used in commented-out Live TV iframe
     const [streamUrl, setStreamUrl] = useState(null)
@@ -264,91 +266,61 @@ function CricketDetail() {
         )
     }, [eventNameFromState, oddsData?.eventName, oddsData?.matchName, defaultMatch?.eventName])
 
-    // Direct link sirf gameId ke sath: eventName missing → matches API se same match dhundh kar defaultMatch bharo
+    // defaultMatch: socket `matches` only (no REST sportsbookMatches)
     useEffect(() => {
-        if (!hasExplicitMatchNav || !gameId) return
-        const fromNav = location.state?.eventName ?? location.state?.event_name
-        if (fromNav != null && String(fromNav).trim() !== '') return
-        let cancelled = false
-        AuthService.sportsbookMatches(sportName)
-            .then((res) => {
-                if (cancelled) return
-                const raw = res?.data ?? res
-                const list = Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : raw?.matches ?? []
-                const found = list.find((m) => String(m.gameId ?? m.game_id ?? '') === String(gameId))
-                if (!found) return
-                setDefaultMatch((prev) => {
-                    const gid = String(gameId)
-                    const pgid = String(prev?.gameId ?? prev?.game_id ?? '')
-                    const name = found.eventName ?? found.event_name
-                    if (prev && pgid === gid) {
-                        if (name && (!prev.eventName || String(prev.eventName).trim() === '')) {
-                            return { ...prev, eventName: name, eventId: found.eventId ?? found.event_id ?? prev.eventId }
+        const onMatches = (raw) => {
+            for (const payload of expandSocketBatchPayload(raw)) {
+                if (payload?.sport !== sportName) continue
+                const { rows, error } = getMatchRowsFromSocketPayload(payload)
+                if (error || rows.length === 0) continue
+                if (hasExplicitMatchNav && gameId) {
+                    const fromNav = location.state?.eventName ?? location.state?.event_name
+                    if (fromNav != null && String(fromNav).trim() !== '') continue
+                    const found = rows.find((m) => String(m.gameId ?? m.game_id ?? '') === String(gameId))
+                    if (!found) continue
+                    setDefaultMatch((prev) => {
+                        const gid = String(gameId)
+                        const pgid = String(prev?.gameId ?? prev?.game_id ?? '')
+                        const name = found.eventName ?? found.event_name
+                        if (prev && pgid === gid) {
+                            if (name && (!prev.eventName || String(prev.eventName).trim() === '')) {
+                                return { ...prev, eventName: name, eventId: found.eventId ?? found.event_id ?? prev.eventId }
+                            }
+                            return prev
                         }
-                        return prev
+                        return {
+                            gameId: found.gameId ?? found.game_id,
+                            eventName: name,
+                            eventId: found.eventId ?? found.event_id,
+                            seriesName:
+                                found.seriesName ??
+                                found.series_name ??
+                                found.tournamentName ??
+                                found.tournament ??
+                                found.competitionName ??
+                                null,
+                        }
+                    })
+                    continue
+                }
+                if (!hasExplicitMatchNav) {
+                    const first = rows.find((m) => m.gameId || m.game_id)
+                    if (first) {
+                        setDefaultMatch({
+                            gameId: first.gameId ?? first.game_id,
+                            eventName: first.eventName ?? first.event_name,
+                            eventId: first.eventId ?? first.event_id,
+                            seriesName: first.seriesName ?? first.series_name ?? first.tournamentName ?? first.tournament ?? first.competitionName ?? null,
+                        })
                     }
-                    return {
-                        gameId: found.gameId ?? found.game_id,
-                        eventName: name,
-                        eventId: found.eventId ?? found.event_id,
-                        seriesName:
-                            found.seriesName ??
-                            found.series_name ??
-                            found.tournamentName ??
-                            found.tournament ??
-                            found.competitionName ??
-                            null,
-                    }
-                })
-            })
-            .catch(() => { })
-        return () => { cancelled = true }
-    }, [hasExplicitMatchNav, gameId, sportName, location.state?.eventName, location.state?.event_name])
-
-    // Guest (no token) or demo: fetch matches via REST and set first match (demo JWT must not hit public GETs with Bearer)
-    useEffect(() => {
-        if (hasExplicitMatchNav) return
-        const token = sessionStorage.getItem('token')
-        if (token && !isDemo) return
-        let cancelled = false
-        AuthService.sportsbookMatches(sportName)
-            .then((res) => {
-                if (cancelled) return
-                const raw = res?.data ?? res
-                const list = Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : raw?.matches ?? []
-                const first = list.find((m) => m.gameId || m.game_id)
-                if (first) setDefaultMatch({
-                    gameId: first.gameId ?? first.game_id,
-                    eventName: first.eventName ?? first.event_name,
-                    eventId: first.eventId ?? first.event_id,
-                    seriesName: first.seriesName ?? first.series_name ?? first.tournamentName ?? first.tournament ?? first.competitionName ?? null,
-                })
-            })
-            .catch(() => { })
-        return () => { cancelled = true }
-    }, [hasExplicitMatchNav, sportName, isDemo])
-
-    // Live match list for default match (subscribe:matches from SportsbookRouteMatchStreams on this path)
-    useEffect(() => {
-        if (hasExplicitMatchNav) return
-        const token = sessionStorage.getItem('token')
-        if (!token || isDemo) return
-        const onMatches = (payload) => {
-            if (payload?.sport !== sportName || payload.data === undefined) return
-            const list = Array.isArray(payload.data) ? payload.data : []
-            const first = list.find((m) => m.gameId || m.game_id)
-            if (first) setDefaultMatch({
-                gameId: first.gameId ?? first.game_id,
-                eventName: first.eventName ?? first.event_name,
-                eventId: first.eventId ?? first.event_id,
-                seriesName: first.seriesName ?? first.series_name ?? first.tournamentName ?? first.tournament ?? first.competitionName ?? null,
-            })
+                }
+            }
         }
         addMatchesListener(onMatches)
         return () => {
             removeMatchesListener(onMatches)
         }
-    }, [hasExplicitMatchNav, sportName, isDemo])
+    }, [hasExplicitMatchNav, sportName, gameId, location.state?.eventName, location.state?.event_name])
 
     const normalizeOdds = (d) => {
         const matchOdds = Array.isArray(d?.matchOdds) ? d.matchOdds : (Array.isArray(d?.match_odds) ? d.match_odds : [])
@@ -378,11 +350,20 @@ function CricketDetail() {
             bookMakerOdds: Array.isArray(d?.bookMakerOdds) ? d.bookMakerOdds : (Array.isArray(d?.book_maker_odds) ? d.book_maker_odds : []),
             premiumFancy: Array.isArray(d?.premiumFancy) ? d.premiumFancy : (Array.isArray(d?.premium_fancy) ? d.premium_fancy : []),
             oddEvenOdds: Array.isArray(d?.oddEvenOdds) ? d.oddEvenOdds : (Array.isArray(d?.odd_even_odds) ? d.odd_even_odds : []),
+            oddsUpdatedAt: d?.oddsUpdatedAt ?? d?.odds_updated_at ?? null,
         }
     }
 
     // 0) On match open: fetch event config for initial tvUrl (REST). Clear stream when match changes.
     const oddsId = sportName === 'tennis' ? (eventId || gameId) : gameId
+    useEffect(() => {
+        if (!oddsId) {
+            setOddsLoading(false)
+            setOddsData(null)
+        } else {
+            setOddsLoading(true)
+        }
+    }, [oddsId])
     useSportsOddsSubscription(oddsId, sportName, !!(oddsId && (isDemo || tokenPresentForSocket)))
     useEffect(() => {
         if (!oddsId) return
@@ -398,47 +379,25 @@ function CricketDetail() {
         return () => { cancelled = true }
     }, [oddsId])
 
-    // 1) Pehle odds REST API chalao – initial data. Tennis uses eventId in payload. Merge data.tvUrl into streamUrl.
-    useEffect(() => {
-        if (!oddsId) return
-        let cancelled = false
-        setOddsLoading(true)
-        AuthService.sportsbookOdds(sportName, oddsId)
-            .then((res) => {
-                if (cancelled || !res) return
-                const raw = res.data ?? res
-                const d = raw?.data ?? raw
-                if (d && typeof d === 'object') {
-                    setOddsData(normalizeOdds(d))
-                    const tvUrl = d?.tvUrl ?? d?.tv_url ?? null
-                    if (tvUrl) setStreamUrl(tvUrl)
-                }
-            })
-            .catch(() => {
-                if (!cancelled) {
-                    setOddsData(null)
-                    try { alertErrorMessage('Failed to load odds') } catch (_) { }
-                }
-            })
-            .finally(() => { if (!cancelled) setOddsLoading(false) })
-        return () => { cancelled = true }
-    }, [oddsId, sportName])
+    // Odds: socket only (subscribe via useSportsOddsSubscription). No REST sportsbookOdds.
 
-    // 2) Socket live odds (subscribe via useSportsOddsSubscription). Demo uses guest auth from SportsbookStore.
+    // Socket live odds (subscribe via useSportsOddsSubscription). Demo uses guest auth from SportsbookStore.
     useEffect(() => {
         if (!oddsId) return
         const token = sessionStorage.getItem('token')
         if (!isDemo && !token) return
         const currentOddsKey = oddsId
-        const onOdds = (payload) => {
-            const payloadKey = payload?.eventId ?? payload?.gameId
-            if (payloadKey !== currentOddsKey || payload?.data === undefined) return
-            const data = payload.data
-            setOddsData(normalizeOdds(data))
-            setOddsLoading(false)
-            setLiveScore(data?.liveScore ?? null)
-            const tvUrl = data?.tvUrl ?? data?.tv_url ?? null
-            if (tvUrl != null) setStreamUrl(tvUrl)
+        const onOdds = (raw) => {
+            for (const payload of expandSocketBatchPayload(raw)) {
+                const payloadKey = payload?.eventId ?? payload?.gameId
+                if (payloadKey !== currentOddsKey || payload?.data === undefined) continue
+                const data = payload.data
+                setOddsData(normalizeOdds(data))
+                setOddsLoading(false)
+                setLiveScore(data?.liveScore ?? null)
+                const tvUrl = data?.tvUrl ?? data?.tv_url ?? null
+                if (tvUrl != null) setStreamUrl(tvUrl)
+            }
         }
         addOddsListener(onOdds)
         return () => {
@@ -641,6 +600,7 @@ function CricketDetail() {
                 const p = bet.placePayload
                 let oddsNum = bet.odds >= 1.01 ? bet.odds : (p?.odds ?? 0)
                 if (i === 0 && slipOdds != null && slipOdds >= 1.01) oddsNum = slipOdds
+                const priceVersion = oddsData?.oddsUpdatedAt ?? oddsData?.odds_updated_at
                 const body = {
                     sport: p.sport ?? sportName,
                     gameId: p.gameId,
@@ -654,6 +614,7 @@ function CricketDetail() {
                     stake: stakeNum,
                     isLive,
                     requestId: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-${bet.elementId}-${Date.now()}`,
+                    ...(priceVersion != null && priceVersion !== '' ? { priceVersion } : {}),
                 }
                 const res = await AuthService.sportsbookPlaceBet(body)
                 lastRes = res
@@ -943,9 +904,13 @@ function CricketDetail() {
         return pl
     }
 
-    const renderOddsSection = (sectionKey, title, icon, minMax, markets, marketTypeApi) => {
+    const renderOddsSection = (sectionKey, title, icon, fallbackMinMax, markets, marketTypeApi) => {
         if (!markets?.length) return null
         const market = markets[0]
+        const limitsText =
+            formatMinMaxLabel(market, oddsData) ||
+            (typeof fallbackMinMax === 'string' && fallbackMinMax.trim()) ||
+            ''
         const marketTitle = market?.marketName || market?.market || market?.name || title
         const marketId = pickMarketId(market)
         const oddList = getMarketOddList(market)
@@ -998,7 +963,7 @@ function CricketDetail() {
                     <span className="odds_section_title"><i className={icon} aria-hidden /> {marketTitle}</span>
                     <div className="odds_section_header_right d-flex align-items-center gap-2 flex-wrap">
 
-                        <span className="odds_section_limits">{minMax}</span>
+                        {limitsText ? <span className="odds_section_limits">{limitsText}</span> : null}
 
                         <div className='d-flex gap-2'>
                             <div className="odds_section_cashout_wrap">
@@ -1436,8 +1401,6 @@ function CricketDetail() {
                     </div>
                 )}
 
-
-                <div className="odds_section_footer">THE ULTIMATE ADVENTURE 🏏 CRICKET BATTLE ⚡ IS LIVE NOW : (CREATE YOUR OWN TEAM & PLAY LIKE A PRO) 🏆</div>
             </div>
         )
     }
@@ -1477,7 +1440,7 @@ function CricketDetail() {
                     noSize: noSize ?? '—',
                     yesOdds: yesOdds ?? '—',
                     yesSize: yesSize ?? '—',
-                    max: '100K',
+                    limitsLine: formatMinMaxLabel(m, oddsData),
                     marketId,
                     marketName,
                     marketType,
@@ -1492,7 +1455,7 @@ function CricketDetail() {
                     noSize: o.ls1 ?? '—',
                     yesOdds: o.b1 ?? '—',
                     yesSize: o.bs1 ?? '—',
-                    max: '100K',
+                    limitsLine: formatMinMaxLabel(m, oddsData),
                     marketId,
                     marketName,
                     marketType,
@@ -1533,7 +1496,7 @@ function CricketDetail() {
                 marketId,
                 title: marketName,
                 marketType: 'fancy',
-                minMax: 'MIN:100 MAX:50K',
+                minMax: formatMinMaxLabel(m, oddsData),
                 rows,
                 isLocked: allLocked,
             }
@@ -1587,7 +1550,9 @@ function CricketDetail() {
                                 <div className="market_no_yes_label">{row.label}</div>
                               
                                 <div className="market_no_yes_limits_container d-flex justify-content-between">
-                                    <div className="market_no_yes_limits">MIN: 100 MAX: {row.max}</div>
+                                    {row.limitsLine ? (
+                                        <div className="market_no_yes_limits">{row.limitsLine}</div>
+                                    ) : null}
                                     <div className="market_no_yes_odds_container">
                                     <button type="button" className="market_no_yes_book_btn" title="Book">Book</button>
                                         <div className="market_no_yes_odds">
@@ -1652,7 +1617,7 @@ function CricketDetail() {
                         )}
                         {title}
                     </h6>
-                    <span className="market_back_only_limits">{minMax}</span>
+                    {minMax ? <span className="market_back_only_limits">{minMax}</span> : null}
                 </div>
                 <div className={`market_back_only_body ${isClosed ? 'hidden' : ''}`}>
                     <div className="market_back_only_table_head">
@@ -2199,9 +2164,9 @@ function CricketDetail() {
                                                         )}
                                                         {!oddsLoading && oddsData && !oddsData.marketClosed && oddsData.matchOdds?.length > 0 && (sportName === 'soccer' || sportName === 'tennis') ? (
                                                             <>
-                                                                {oddsData?.matchOdds?.[0] && renderOddsSection('match_odds_0', oddsData.matchOdds[0].marketName || oddsData.matchOdds[0].market || 'MATCH ODDS', 'ri-settings-3-line', oddsData.matchOdds[0].minMax || 'MIN: 100 MAX: 25K', [oddsData.matchOdds[0]], 'match_odds')}
+                                                                {oddsData?.matchOdds?.[0] && renderOddsSection('match_odds_0', oddsData.matchOdds[0].marketName || oddsData.matchOdds[0].market || 'MATCH ODDS', 'ri-settings-3-line', '', [oddsData.matchOdds[0]], 'match_odds')}
                                                                 {oddsData?.bookMakerOdds?.length > 0
-                                                                    ? renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-settings-3-line', 'MIN: 100 MAX: 1000K', oddsData.bookMakerOdds, 'bookmaker')
+                                                                    ? renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-settings-3-line', '', oddsData.bookMakerOdds, 'bookmaker')
                                                                     : (() => {
                                                                         const firstMarket = oddsData?.matchOdds?.[0]
                                                                         const runners = (firstMarket && (Array.isArray(firstMarket.runners) ? firstMarket.runners : toOddDatasArray(firstMarket.oddDatas))) || []
@@ -2209,7 +2174,7 @@ function CricketDetail() {
                                                                             ? runners.map((r) => ({ ...r, rname: r.rname ?? r.selectionName ?? r.name ?? '—', b1: null, b2: null, b3: null, l1: null, l2: null, l3: null }))
                                                                             : [{ rname: '—', selectionName: '—', b1: null, l1: null }, { rname: '—', selectionName: '—', b1: null, l1: null }, { rname: '—', selectionName: '—', b1: null, l1: null }]
                                                                         const dummyMarket = { mid: 'bookmaker-empty', marketId: 'bookmaker-empty', market: 'BOOKMAKER', status: 'CLOSED', runners: lockedRunners }
-                                                                        return renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-settings-3-line', 'MIN: 100 MAX: 1000K', [dummyMarket], 'bookmaker')
+                                                                        return renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-settings-3-line', '', [dummyMarket], 'bookmaker')
                                                                     })()}
                                                                 {/* Tennis: API se aaye extra markets – Set Betting, Total Games, etc. */}
                                                                 {sportName === 'tennis' && (() => {
@@ -2219,8 +2184,7 @@ function CricketDetail() {
                                                                     ]
                                                                     return extra.map((m, idx) => {
                                                                         const title = m.marketName || m.market || `Market ${idx + 1}`
-                                                                        const minMax = m.minMax || 'MIN: 100 MAX: 25K'
-                                                                        return renderOddsSection(`tennis_extra_${idx}`, title, 'ri-settings-3-line', minMax, [m], 'match_odds')
+                                                                        return renderOddsSection(`tennis_extra_${idx}`, title, 'ri-settings-3-line', '', [m], 'match_odds')
                                                                     })
                                                                 })()}
                                                                 {/* Soccer only: First Half Goals, Half Time, Over/Under – tennis pe ye nahi */}
@@ -2241,7 +2205,7 @@ function CricketDetail() {
                                                                                 `soccer_below_${idx}`,
                                                                                 apiMarket.marketName || apiMarket.market || def.title,
                                                                                 'ri-settings-3-line',
-                                                                                apiMarket.minMax || def.minMax,
+                                                                                '',
                                                                                 [apiMarket],
                                                                                 'match_odds'
                                                                             )
@@ -2259,13 +2223,13 @@ function CricketDetail() {
                                                                         return renderOddsSection(`soccer_below_${idx}`, def.title, 'ri-settings-3-line', def.minMax, [dummyMarket], 'match_odds')
                                                                     })
                                                                 })()}
-                                                                {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
+                                                                {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', '', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
                                                             </>
                                                         ) : (
                                                             <>
-                                                                {!oddsData?.marketClosed && oddsData?.matchOdds?.length > 0 && renderOddsSection('match_odds', 'MATCH ODDS', 'ri-rocket-line', 'MIN: 100 MAX: 10K', oddsData.matchOdds, 'match_odds')}
-                                                                {!oddsData?.marketClosed && oddsData?.bookMakerOdds?.length > 0 && renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 300K', oddsData.bookMakerOdds, 'bookmaker')}
-                                                                {!oddsData?.marketClosed && (oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', 'MIN: 100 MAX: 100K', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
+                                                                {!oddsData?.marketClosed && oddsData?.matchOdds?.length > 0 && renderOddsSection('match_odds', 'MATCH ODDS', 'ri-rocket-line', '', oddsData.matchOdds, 'match_odds')}
+                                                                {!oddsData?.marketClosed && oddsData?.bookMakerOdds?.length > 0 && renderOddsSection('bookmaker', 'BOOKMAKER', 'ri-tools-line', '', oddsData.bookMakerOdds, 'bookmaker')}
+                                                                {!oddsData?.marketClosed && (oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) && renderOddsSection('mini_bookmaker', 'MINI BOOKMAKER', 'ri-tools-line', '', oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy, 'fancy')}
                                                             </>
                                                         )}
 

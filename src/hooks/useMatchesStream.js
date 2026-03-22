@@ -1,30 +1,22 @@
 /**
- * Hybrid matches: REST first paint → socket incremental updates into normalized store.
- * Subscribes only subscribe:matches for this sport (no per-match odds here).
+ * Matches: socket only → normalized store (no REST sportsbookMatches).
  */
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
-import * as sportsbookApi from '../api/services/sportsbookApi';
 import {
+  connectSportsbookSocket,
   subscribeMatches,
   unsubscribeMatches,
   addMatchesListener,
   removeMatchesListener,
 } from '../socket/sportsbookSocket';
+import { getToken } from '../utils/authStorage';
+import { getMatchRowsFromSocketPayload, expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload';
 import {
   subscribeSportsbookStore,
   getMatchesSnapshot,
   setMatchesForSport,
   mergeMatchesForSportIfChanged,
 } from '../stores/sportsbookRealtimeStore';
-
-function parseMatchesList(res) {
-  if (!res) return [];
-  const data = res?.data ?? res;
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.data)) return data.data;
-  if (Array.isArray(data?.matches)) return data.matches;
-  return [];
-}
 
 function normalizeSport(s) {
   const k = String(s || 'cricket').toLowerCase();
@@ -46,36 +38,31 @@ export function useMatchesStream(sport, options = {}) {
   const matches = useSyncExternalStore(subscribeStore, getSnap, getSnap);
 
   useEffect(() => {
-    let cancelled = false;
+    setMatchesForSport(key, []);
     setLoading(true);
     setError(null);
-    sportsbookApi
-      .getMatches(key)
-      .then((res) => {
-        if (cancelled) return;
-        const list = parseMatchesList(res);
-        setMatchesForSport(key, list);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e?.message || 'Failed to load matches');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
   }, [key]);
 
   useEffect(() => {
-    if (!enableSocket) return;
+    if (!enableSocket) {
+      setLoading(false);
+      return undefined;
+    }
     connectSportsbookSocket(getToken() || null);
-    const onMatches = (payload) => {
-      if (payload?.sport !== key) return;
-      const raw = payload?.data ?? payload?.matches;
-      const list = Array.isArray(raw) ? raw : Array.isArray(raw?.data) ? raw.data : [];
-      if (list.length === 0) return;
-      mergeMatchesForSportIfChanged(key, list, payload?.timestamp);
+    const onMatches = (raw) => {
+      for (const payload of expandSocketBatchPayload(raw)) {
+        if (payload?.sport !== key) continue;
+        const { rows, error: sockErr, schema } = getMatchRowsFromSocketPayload(payload);
+        if (sockErr) {
+          setError(payload?.message || 'Matches stream error');
+          setLoading(false);
+          continue;
+        }
+        if (rows.length === 0 && schema !== 'listSummary') continue;
+        mergeMatchesForSportIfChanged(key, rows, payload?.timestamp);
+        setLoading(false);
+        setError(null);
+      }
     };
     addMatchesListener(onMatches);
     subscribeMatches(key);
