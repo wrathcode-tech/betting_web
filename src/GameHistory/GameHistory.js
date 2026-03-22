@@ -106,9 +106,14 @@ function GameHistory() {
         res = await AuthService.gamesSportsbookTransactions(page, PAGE_SIZE);
       }
       const data = res?.data ?? res;
-      const list = casinoView === VIEW_SESSIONS
-        ? (data?.sessions ?? [])
-        : (data?.transactions ?? data?.sessions ?? []);
+      let list;
+      if (filter === FILTER_SPORTSBOOK) {
+        list = data?.transactions ?? data?.sessions ?? data?.bets ?? [];
+      } else if (casinoView === VIEW_SESSIONS) {
+        list = data?.sessions ?? [];
+      } else {
+        list = data?.transactions ?? data?.sessions ?? [];
+      }
       const p = data?.pagination ?? {};
       if (Array.isArray(list)) {
         setTransactions(list);
@@ -174,14 +179,29 @@ function GameHistory() {
           <div className="profile_transactions_section">
             <div className="transactions_header game_history_header">
               <h1>Game History</h1>
-              <div className="transactions_header_right game_history_header_right d-flex">
-                {filter === FILTER_CASINO && (
-                  <>
-<div className="game_history_filter_wrapper_row d-flex gap-3">
-
+              <div className="transactions_header_right game_history_header_right d-flex flex-wrap align-items-end gap-2">
+                <div className="game_history_filter_wrapper_row d-flex gap-3 flex-wrap align-items-end">
+                  <div className="game_history_filter_wrapper">
+                    <label htmlFor="game-history-type-filter" className="game_history_filter_label">Type</label>
+                    <select
+                      id="game-history-type-filter"
+                      className="game_history_filter_select"
+                      value={filter}
+                      onChange={(e) => {
+                        setFilter(e.target.value);
+                        setSelectedTransaction(null);
+                      }}
+                      aria-label="Filter by Casino or SportsBook"
+                    >
+                      <option value={FILTER_CASINO}>Casino</option>
+                      <option value={FILTER_SPORTSBOOK}>SportsBook</option>
+                    </select>
+                  </div>
+                  {filter === FILTER_CASINO && (
                     <div className="game_history_filter_wrapper">
-                      <label className="game_history_filter_label">View</label>
+                      <label htmlFor="game-history-casino-view" className="game_history_filter_label">View</label>
                       <select
+                        id="game-history-casino-view"
                         className="game_history_filter_select"
                         value={casinoView}
                         onChange={(e) => {
@@ -195,36 +215,18 @@ function GameHistory() {
                         <option value={VIEW_LEDGER}>Ledger</option>
                       </select>
                     </div>
-                    <div className="game_history_filter_wrapper">
-                  <label htmlFor="game-history-type-filter" className="game_history_filter_label">Type</label>
-                  <select
-                    id="game-history-type-filter"
-                    className="game_history_filter_select"
-                    value={filter}
-                    onChange={(e) => {
-                      setFilter(e.target.value);
-                      setSelectedTransaction(null);
-                    }}
-                    aria-label="Filter by Casino or SportsBook"
-                  >
-                    <option value={FILTER_CASINO}>Casino</option>
-                    <option value={FILTER_SPORTSBOOK}>SportsBook</option>
-                  </select>
+                  )}
                 </div>
-                </div>
-
-                    {(casinoView === VIEW_SESSIONS || casinoView === VIEW_LEDGER) && (
-                      <div className="game_history_date_group">
-                        <input type="date" className="game_history_date_input" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} aria-label="From date" title="From date" />
-                        <input type="date" className="game_history_date_input" value={dateTo} onChange={(e) => setDateTo(e.target.value)} aria-label="To date" title="To date" />
-                        <button type="button" className="game_history_apply_btn" onClick={() => fetchTransactions(1)}>Apply</button>
-                      </div>
-                    )}
-                  </>
+                {filter === FILTER_CASINO && (casinoView === VIEW_SESSIONS || casinoView === VIEW_LEDGER) && (
+                  <div className="game_history_date_group">
+                    <input type="date" className="game_history_date_input" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} aria-label="From date" title="From date" />
+                    <input type="date" className="game_history_date_input" value={dateTo} onChange={(e) => setDateTo(e.target.value)} aria-label="To date" title="To date" />
+                    <button type="button" className="game_history_apply_btn" onClick={() => fetchTransactions(1)}>Apply</button>
+                  </div>
                 )}
                 <input
                   type="text"
-                  placeholder="Search game, round ID..."
+                  placeholder={filter === FILTER_SPORTSBOOK ? 'Search sportsbook…' : 'Search game, round ID…'}
                   className="game_history_search_input"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
