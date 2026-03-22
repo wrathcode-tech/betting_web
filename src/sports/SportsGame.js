@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import './sportsGame.css'
 import MobileMenu from '../customComponents/MobileMenu'
-import { getMatchRowsFromSocketPayload, expandSocketBatchPayload, normalizeRestMatchesList } from '../utils/sportsbookMatchesPayload'
-import { getMatches, getOdds } from '../api/services/sportsbookApi'
+import { getMatchRowsFromSocketPayload, expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload'
+import { getOdds } from '../api/services/sportsbookApi'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import {
@@ -225,8 +225,7 @@ function SportsGame() {
     const getMatchGameId = (m) => m?.gameId ?? m?.game_id
     const getMatchEventId = (m) => m?.eventId ?? m?.event_id
 
-    // Matches: REST hydrates fast; socket replaces/updates when it arrives (same pattern as home).
-
+    // Matches: socket only (subscribe:matches from route). Watchdog clears spinners if WS is slow/empty.
     const MATCH_LOAD_MAX_WAIT_MS = 10000
 
     useEffect(() => {
@@ -236,39 +235,6 @@ function SportsGame() {
             setSoccerMatchesLoading(false)
         }, MATCH_LOAD_MAX_WAIT_MS)
         return () => window.clearTimeout(t)
-    }, [])
-
-    useEffect(() => {
-        let cancelled = false
-        ;(async () => {
-            try {
-                const [cr, tn, sc] = await Promise.all([
-                    getMatches('cricket').catch(() => null),
-                    getMatches('tennis').catch(() => null),
-                    getMatches('soccer').catch(() => null),
-                ])
-                if (cancelled) return
-                const apply = (res, setRows, setLoading) => {
-                    const raw = normalizeRestMatchesList(res)
-                    if (raw.length > 0) {
-                        setRows(raw)
-                        setLoading(false)
-                    }
-                }
-                apply(cr, setCricketMatches, setCricketMatchesLoading)
-                apply(tn, setTennisMatches, setTennisMatchesLoading)
-                apply(sc, setSoccerMatches, setSoccerMatchesLoading)
-            } catch {
-                if (!cancelled) {
-                    setCricketMatchesLoading(false)
-                    setTennisMatchesLoading(false)
-                    setSoccerMatchesLoading(false)
-                }
-            }
-        })()
-        return () => {
-            cancelled = true
-        }
     }, [])
 
     // Socket: live match lists — subscribe:matches from SportsbookRouteMatchStreams (pathname)

@@ -12,8 +12,7 @@ import {
   addOddsListener,
   removeOddsListener,
 } from '../socket/sportsbookSocket'
-import { getMatchRowsFromSocketPayload, expandSocketBatchPayload, normalizeRestMatchesList } from '../utils/sportsbookMatchesPayload'
-import { getMatches } from '../api/services/sportsbookApi'
+import { getMatchRowsFromSocketPayload, expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload'
 import {
   getMarketPillsFromSources,
   getMatchStreamVisible,
@@ -138,31 +137,6 @@ function pickMatchListMediaFields(m) {
     isTv: !!(m.IsTv ?? m.isTv),
     marketBadges: m.marketBadges ?? m.market_badges ?? m.marketPills ?? m.market_pills,
   }
-}
-
-/** Map REST / raw match rows to landing card shape (same as socket mapRowsToLanding). */
-function mapRestRowsToLandingDisplay(rows, defaults) {
-  if (!Array.isArray(rows) || rows.length === 0) return []
-  return rows
-    .filter((m) => m.gameId ?? m.game_id ?? m.eventId ?? m.event_id)
-    .map((m) => {
-      const et = m.eventTime ?? m.event_time ?? pickMatchEventTime(m)
-      const id = m.gameId ?? m.game_id ?? m.eventId ?? m.event_id
-      return {
-        id,
-        gameId: m.gameId ?? m.game_id ?? id,
-        eventId: m.eventId ?? m.event_id ?? id,
-        tournament: m.seriesName ?? m.series_name ?? defaults.tournament,
-        teams: m.eventName ?? m.event_name ?? m.name ?? '—',
-        time: formatMatchTime(et),
-        eventTime: et,
-        inPlay: m.inPlay ?? m.in_play ?? false,
-        selections: m.selections,
-        markets: m.markets,
-        ...pickMatchListMediaFields(m),
-      }
-    })
-    .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
 }
 
 /** Landing/API game item – image can be in thumb, thumbnail, image, icon, logo */
@@ -424,49 +398,7 @@ function LandingPage() {
     return () => window.clearTimeout(t);
   }, []);
 
-  // TOP matches: fast REST hydrate + socket updates (no long wait for WS only).
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [cr, tn, sc] = await Promise.all([
-          getMatches('cricket').catch(() => null),
-          getMatches('tennis').catch(() => null),
-          getMatches('soccer').catch(() => null),
-        ]);
-        if (cancelled) return;
-        const crRows = normalizeRestMatchesList(cr);
-        if (crRows.length > 0) {
-          const mapped = mapRestRowsToLandingDisplay(crRows, { tournament: 'Cricket' });
-          if (mapped.length > 0) setTopMatchesFromApi(mapped);
-          setTopMatchesLoading(false);
-        }
-        const tnRows = normalizeRestMatchesList(tn);
-        if (tnRows.length > 0) {
-          const mapped = mapRestRowsToLandingDisplay(tnRows, { tournament: 'Tennis' });
-          if (mapped.length > 0) setTopTennisMatchesFromApi(mapped);
-          setTopTennisMatchesLoading(false);
-        }
-        const scRows = normalizeRestMatchesList(sc);
-        if (scRows.length > 0) {
-          const mapped = mapRestRowsToLandingDisplay(scRows, { tournament: 'Football' });
-          if (mapped.length > 0) setTopSoccerMatchesFromApi(mapped);
-          setTopSoccerMatchesLoading(false);
-        }
-      } catch {
-        if (!cancelled) {
-          setTopMatchesLoading(false);
-          setTopTennisMatchesLoading(false);
-          setTopSoccerMatchesLoading(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // TOP matches: subscribe:matches (route) + subscribe:odds for first N rows so home odds render (backend list often has no ladder).
+  // TOP matches: socket only (subscribe:matches on route) + subscribe:odds for first N rows.
 
   useEffect(() => {
     const cricketOddsSubscribed = topMatchesOddsSubscribedRef.current;
