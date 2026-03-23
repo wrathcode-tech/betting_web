@@ -320,6 +320,14 @@ img.team_bg_img {
     margin: 0px;
 }
 
+.series_name_row .cricket_page_stake_limits {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.78);
+    margin: 6px 0 0 0;
+    letter-spacing: 0.02em;
+}
+
 .match_name_row_team {
     width: 100%;
     justify-content: space-between;
@@ -1981,6 +1989,38 @@ button.toggleup_btn {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.6);
     font-weight: 500;
+}
+
+.betslip_open_bet_settled {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+}
+
+.betslip_open_bet_result {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.betslip_open_bet_result_won {
+    color: #4ade80;
+}
+
+.betslip_open_bet_result_lost {
+    color: #f87171;
+}
+
+.betslip_open_bet_result_void {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.betslip_settlement_amount {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .team_cricket_bl_name {

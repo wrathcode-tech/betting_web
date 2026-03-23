@@ -72,59 +72,131 @@ function firstLadderPrice(rung) {
     return open && p != null ? p : null
 }
 
-function runnerTo1x2Pair(runner, isOddsValid, formatOddsSize) {
-    if (!runner || typeof runner !== 'object') return { back: null, lay: null, sizeFormatted: '—' }
-    let back =
-        runner.b1 ??
-        runner.back1 ??
-        (typeof runner.back === 'number' || typeof runner.back === 'string' ? runner.back : null)
-    let lay =
-        runner.l1 ??
-        runner.lay1 ??
-        (typeof runner.lay === 'number' || typeof runner.lay === 'string' ? runner.lay : null)
-    if (back == null && Array.isArray(runner.back) && runner.back.length) {
-        const br = runner.back[0]
-        const p = firstLadderPrice(br)
-        if (p != null) back = p
+const LIST_LADDER_DEPTH = 3
+
+function emptyOddsLadderCell() {
+    return { price: null, sizeFormatted: '—' }
+}
+
+function padLadderCells3(arr) {
+    const out = [...arr]
+    while (out.length < LIST_LADDER_DEPTH) out.push(emptyOddsLadderCell())
+    return out.slice(0, LIST_LADDER_DEPTH)
+}
+
+const B_KEYS = ['b1', 'b2', 'b3']
+const BS_KEYS = ['bs1', 'bs2', 'bs3']
+const L_KEYS = ['l1', 'l2', 'l3']
+const LS_KEYS = ['ls1', 'ls2', 'ls3']
+
+function runnerBackCellAtRung(runner, rungIdx, isOddsValid, formatOddsSize) {
+    if (!runner || typeof runner !== 'object') return emptyOddsLadderCell()
+    let price = runner[B_KEYS[rungIdx]] ?? runner[`back${rungIdx + 1}`] ?? null
+    let stack = runner[BS_KEYS[rungIdx]] ?? null
+    const arr = Array.isArray(runner.back) ? runner.back : null
+    if (arr?.[rungIdx]) {
+        const p = firstLadderPrice(arr[rungIdx])
+        if (p != null) price = p
+        if (stack == null) stack = arr[rungIdx]?.stack
     }
-    if (lay == null && Array.isArray(runner.lay) && runner.lay.length) {
-        const lr = runner.lay[0]
-        const p = firstLadderPrice(lr)
-        if (p != null) lay = p
+    if (price == null && rungIdx === 0) {
+        if (typeof runner.back === 'number' || typeof runner.back === 'string') price = runner.back
     }
-    const br0 = Array.isArray(runner.back) ? runner.back[0] : null
-    const lr0 = Array.isArray(runner.lay) ? runner.lay[0] : null
+    const valid = price != null && isOddsValid(price)
     return {
-        back: isOddsValid(back) ? back : null,
-        lay: isOddsValid(lay) ? lay : null,
-        sizeFormatted: formatOddsSize(runner.bs1 ?? br0?.stack ?? runner.ls1 ?? lr0?.stack ?? runner.size),
+        price: valid ? price : null,
+        sizeFormatted: valid ? formatOddsSize(stack ?? runner.size) : '—',
     }
 }
 
-function selectionTo1x2Pair(sel, isOddsValid, formatOddsSize) {
-    if (!sel || typeof sel !== 'object') return { back: null, lay: null, sizeFormatted: '—' }
-    const br = Array.isArray(sel.back) ? sel.back[0] : null
-    const lr = Array.isArray(sel.lay) ? sel.lay[0] : null
-    const bOpen = br == null || br.open !== false
-    const lOpen = lr == null || lr.open !== false
-    const bp = bOpen && br && br.price != null ? br.price : null
-    const lp = lOpen && lr && lr.price != null ? lr.price : null
+function runnerLayCellAtRung(runner, rungIdx, isOddsValid, formatOddsSize) {
+    if (!runner || typeof runner !== 'object') return emptyOddsLadderCell()
+    let price = runner[L_KEYS[rungIdx]] ?? runner[`lay${rungIdx + 1}`] ?? null
+    let stack = runner[LS_KEYS[rungIdx]] ?? null
+    const arr = Array.isArray(runner.lay) ? runner.lay : null
+    if (arr?.[rungIdx]) {
+        const p = firstLadderPrice(arr[rungIdx])
+        if (p != null) price = p
+        if (stack == null) stack = arr[rungIdx]?.stack
+    }
+    if (price == null && rungIdx === 0) {
+        if (typeof runner.lay === 'number' || typeof runner.lay === 'string') price = runner.lay
+    }
+    const valid = price != null && isOddsValid(price)
     return {
-        back: bp != null && isOddsValid(bp) ? bp : null,
-        lay: lp != null && isOddsValid(lp) ? lp : null,
-        sizeFormatted: formatOddsSize(br?.stack ?? lr?.stack),
+        price: valid ? price : null,
+        sizeFormatted: valid ? formatOddsSize(stack ?? runner.size) : '—',
     }
 }
 
-function empty1x2Triple() {
-    return [
-        { back: null, lay: null, sizeFormatted: '—' },
-        { back: null, lay: null, sizeFormatted: '—' },
-        { back: null, lay: null, sizeFormatted: '—' },
-    ]
+function selectionBackCellAtRung(sel, rungIdx, isOddsValid, formatOddsSize) {
+    if (!sel || typeof sel !== 'object') return emptyOddsLadderCell()
+    const br = Array.isArray(sel.back) ? sel.back[rungIdx] : null
+    if (br) {
+        const open = br.open !== false
+        const bp = open && br.price != null ? br.price : null
+        const valid = bp != null && isOddsValid(bp)
+        return {
+            price: valid ? bp : null,
+            sizeFormatted: valid ? formatOddsSize(br.stack) : '—',
+        }
+    }
+    if (rungIdx === 0) {
+        const p = sel.b1 ?? sel.back1
+        if (p != null && isOddsValid(p)) {
+            return { price: p, sizeFormatted: formatOddsSize(sel.bs1 ?? sel.stack) }
+        }
+    }
+    return emptyOddsLadderCell()
 }
 
-function build1x2OddsColumns(match, odds, isOddsValid, formatOddsSize) {
+function selectionLayCellAtRung(sel, rungIdx, isOddsValid, formatOddsSize) {
+    if (!sel || typeof sel !== 'object') return emptyOddsLadderCell()
+    const lr = Array.isArray(sel.lay) ? sel.lay[rungIdx] : null
+    if (lr) {
+        const open = lr.open !== false
+        const lp = open && lr.price != null ? lr.price : null
+        const valid = lp != null && isOddsValid(lp)
+        return {
+            price: valid ? lp : null,
+            sizeFormatted: valid ? formatOddsSize(lr.stack) : '—',
+        }
+    }
+    if (rungIdx === 0) {
+        const p = sel.l1 ?? sel.lay1
+        if (p != null && isOddsValid(p)) {
+            return { price: p, sizeFormatted: formatOddsSize(sel.ls1 ?? sel.stack) }
+        }
+    }
+    return emptyOddsLadderCell()
+}
+
+/** Har runner ke liye 3 back + 3 lay cells (ek horizontal row). */
+function computeRunnerLadders33Rows(match, odds, isOddsValid, formatOddsSize) {
+    const oneEmptyRow = () => ({
+        backs: padLadderCells3([]),
+        lays: padLadderCells3([]),
+    })
+    const pushRowsFromOrdered = (ordered, useRunnerFns) => {
+        const rows = []
+        for (const node of ordered) {
+            if (!node) continue
+            const backs = []
+            const lays = []
+            for (let r = 0; r < LIST_LADDER_DEPTH; r++) {
+                if (useRunnerFns) {
+                    backs.push(runnerBackCellAtRung(node, r, isOddsValid, formatOddsSize))
+                    lays.push(runnerLayCellAtRung(node, r, isOddsValid, formatOddsSize))
+                } else {
+                    backs.push(selectionBackCellAtRung(node, r, isOddsValid, formatOddsSize))
+                    lays.push(selectionLayCellAtRung(node, r, isOddsValid, formatOddsSize))
+                }
+            }
+            rows.push({ backs: padLadderCells3(backs), lays: padLadderCells3(lays) })
+        }
+        return rows
+    }
+
     const matchOddsArr = Array.isArray(odds?.matchOdds)
         ? odds.matchOdds
         : Array.isArray(odds?.match_odds)
@@ -135,17 +207,17 @@ function build1x2OddsColumns(match, odds, isOddsValid, formatOddsSize) {
         const runners = Array.isArray(market.runners) ? market.runners : toOddDatasArray(market.oddDatas)
         if (runners.length) {
             const ordered = orderFor1x2(runners, getRunnerOrSelectionLabel)
-            const cols = ordered.map((r) => runnerTo1x2Pair(r, isOddsValid, formatOddsSize))
-            if (cols.some((c) => c.back != null || c.lay != null)) return cols
+            const rows = pushRowsFromOrdered(ordered, true)
+            if (rows.length) return rows
         }
     }
     const selections = Array.isArray(match?.selections) ? match.selections : []
     if (selections.length) {
         const ordered = orderFor1x2(selections, getRunnerOrSelectionLabel)
-        const cols = ordered.map((s) => selectionTo1x2Pair(s, isOddsValid, formatOddsSize))
-        if (cols.some((c) => c.back != null || c.lay != null)) return cols
+        const rows = pushRowsFromOrdered(ordered, false)
+        if (rows.length) return rows
     }
-    return empty1x2Triple()
+    return [oneEmptyRow()]
 }
 
 function formatMatchTime(isoStr) {
@@ -438,23 +510,16 @@ function SportsGame() {
         return !Number.isNaN(n) && n > 0
     }, [])
 
-    /** Three outcomes: 1 / X / 2 — each { back, lay, sizeFormatted } (exchange match-odds). */
-    const getCardOdds = useCallback(
-        (match, oddsPayload) => {
-            return build1x2OddsColumns(match, oddsPayload ?? null, isOddsValid, formatOddsSize)
-        },
+    /** List / cards: har runner par 3 back + 3 lay (horizontal row). */
+    const getRunnerLadders33 = useCallback(
+        (match, oddsPayload) => computeRunnerLadders33Rows(match, oddsPayload ?? null, isOddsValid, formatOddsSize),
         [isOddsValid]
     )
 
     const renderMatchCard = useCallback((match, index) => {
         const oddsPayload = null
         const marketPills = getMarketPillsFromSources(match, oddsPayload)
-        const cardOdds = getCardOdds(match)
-        const o1 = cardOdds[0]
-        const o2 = cardOdds[1]
-        const o3 = cardOdds[2]
-        const hasBack1 = o1 && o1.back != null
-        const hasLay1 = o1 && o1.lay != null
+        const ladderRows = getRunnerLadders33(match, oddsPayload)
         return (
             <div
                 key={match.eventId ?? index}
@@ -495,46 +560,52 @@ function SportsGame() {
                         <p className='match_team'>{match.teams}</p>
                         <span>{match.inPlay ? 'Live' : match.time}</span>
                     </div>
-                    <div className='sports_card_1x2_labels d-flex justify-content-between gap-1 mb-1'>
-                        {['1', 'X', '2'].map((lab, li) => (
-                            <span key={lab} className='sports_card_1x2_lab' style={{ flex: 1, textAlign: 'center', fontSize: 10, fontWeight: 700, color: '#bbb' }}>{lab}</span>
-                        ))}
+                    <div className='sports_card_bl6_head d-flex mb-1'>
+                        <span className='sports_card_bl6_head_back flex-fill text-center'>Back</span>
+                        <span className='sports_card_bl6_head_lay flex-fill text-center'>Lay</span>
                     </div>
-                    <div className='d-flex justify-content-between align-items-center gap-2'>
-                        <div className='view_matchlike'>
-                            <button className='view_match' onClick={(e) => e.stopPropagation()}>
-                                {hasBack1 ? o1.back : '—'} <span>{hasBack1 && (o1.sizeFormatted ?? o1.size) ? (o1.sizeFormatted ?? o1.size) : '—'}</span>
-                            </button>
-                            <button className='like_match' onClick={(e) => e.stopPropagation()}>
-                                {hasLay1 ? o1.lay : '—'} <span>{hasLay1 && (o1.sizeFormatted ?? o1.size) ? (o1.sizeFormatted ?? o1.size) : '—'}</span>
-                            </button>
-                        </div>
-                        <div className='view_matchlike'>
-                            {(o2 && (o2.back != null || o2.lay != null)) ? (
-                                <>
-                                    <button className='view_match' onClick={(e) => e.stopPropagation()} disabled={o2.back == null}>{o2.back != null ? o2.back : '—'} <span>{(o2.sizeFormatted ?? o2.size) || '—'}</span></button>
-                                    <button className='like_match' onClick={(e) => e.stopPropagation()} disabled={o2.lay == null}>{o2.lay != null ? o2.lay : '—'} <span>{(o2.sizeFormatted ?? o2.size) || '—'}</span></button>
-                                </>
-                            ) : (
-                                <>
-                                    <button className='view_match disabled' onClick={(e) => e.stopPropagation()}><i className="ri-lock-line" aria-hidden /></button>
-                                    <button className='like_match disabled' onClick={(e) => e.stopPropagation()}><i className="ri-lock-line" aria-hidden /></button>
-                                </>
-                            )}
-                        </div>
-                        <div className='view_matchlike'>
-                            <button className='view_match' onClick={(e) => e.stopPropagation()} disabled={!o3 || o3.back == null}>
-                                {o3 && o3.back != null ? o3.back : '—'} <span>{o3 && o3.back != null && (o3.sizeFormatted ?? o3.size) ? (o3.sizeFormatted ?? o3.size) : '—'}</span>
-                            </button>
-                            <button className='like_match' onClick={(e) => e.stopPropagation()} disabled={!o3 || o3.lay == null}>
-                                {o3 && o3.lay != null ? o3.lay : '—'} <span>{o3 && o3.lay != null && (o3.sizeFormatted ?? o3.size) ? (o3.sizeFormatted ?? o3.size) : '—'}</span>
-                            </button>
-                        </div>
+                    <div className='sports_card_bl6_body'>
+                        {ladderRows.map((row, ri) => (
+                            <div key={`lr-${ri}`} className='sports_card_bl6_row d-flex flex-column gap-1'>
+                                <div className='d-flex justify-content-center gap-1'>
+                                    {row.backs.map((cell, ci) => {
+                                        const hb = cell.price != null
+                                        return (
+                                            <button
+                                                key={`cb-${ci}`}
+                                                type='button'
+                                                className='view_match sports_card_bl6_cell'
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {hb ? cell.price : '—'}{' '}
+                                                <span>{cell.sizeFormatted}</span>
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                                <div className='d-flex justify-content-center gap-1'>
+                                    {row.lays.map((cell, ci) => {
+                                        const hl = cell.price != null
+                                        return (
+                                            <button
+                                                key={`cl-${ci}`}
+                                                type='button'
+                                                className='like_match sports_card_bl6_cell'
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {hl ? cell.price : '—'}{' '}
+                                                <span>{cell.sizeFormatted}</span>
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
         )
-    }, [handleMatchCardClick, getCardOdds])
+    }, [handleMatchCardClick, getRunnerLadders33])
 
     return (
         <>
@@ -647,17 +718,14 @@ function SportsGame() {
                                                         ) : (
                                                             <>
                                                             {!listLoading && matchesByDay.length > 0 ? (
-                                                                <div className='sports_grid_desktop_row sports_grid_1x2_header_row' role="row">
+                                                                <div className='sports_grid_desktop_row sports_grid_1x2_header_row sports_grid_bl_header_row' role="row">
                                                                     <div className='leftside_matchlist sports_grid_1x2_header_spacer' aria-hidden />
                                                                     <div className='rightside_odds'>
-                                                                        <div className='sports_grid_odds_columns sports_grid_desktop_odds_strip sports_grid_1x2_header_strip'>
-                                                                            {['1', 'X', '2'].map((h) => (
-                                                                                <div key={h} className='sports_grid_odds_column sports_grid_1x2_header_column'>
-                                                                                    <span className='sports_grid_1x2_header_abs_title'>{h}</span>
-                                                                                    <div className='sports_grid_odds_cell sports_grid_back sports_grid_1x2_header_ph' aria-hidden />
-                                                                                    <div className='sports_grid_odds_cell sports_grid_lay sports_grid_1x2_header_ph' aria-hidden />
-                                                                                </div>
-                                                                            ))}
+                                                                        <div className='sports_grid_odds_columns sports_grid_desktop_odds_strip sports_grid_bl6_strip sports_grid_back_lay_only_strip sports_grid_1x2_header_strip'>
+                                                                            <div className='sports_grid_bl6_header_labels' role="presentation">
+                                                                                <span className='sports_grid_bl6_header_back'>Back</span>
+                                                                                <span className='sports_grid_bl6_header_lay'>Lay</span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -665,7 +733,7 @@ function SportsGame() {
                                                             {matchesByDay.map(({ day, matches, isLiveSection }) => (
                                                                 <React.Fragment key={day}>
                                                                     {                                                                    matches.map((match, idx) => {
-                                                                        const cardOdds = getCardOdds(match)
+                                                                        const ladderRows = getRunnerLadders33(match, null)
                                                                         const oddsPayloadRow = null
                                                                         const rowPills = getMarketPillsFromSources(match, oddsPayloadRow)
                                                                         const rowShowStream = getMatchStreamVisible(match)
@@ -709,42 +777,51 @@ function SportsGame() {
                                                                                     </div>
                                                                                 </div>
                                                                                 <div
-                                                                                    className='rightside_odds'
+                                                                                    className='rightside_odds sports_grid_bl6_odds_stack'
                                                                                     ref={(node) => registerSportsOddsScrollRef(getSportsOddsScrollKey(activeTab, match, day, idx), node)}
                                                                                     onScroll={(e) => syncSportsOddsScroll(getSportsOddsScrollKey(activeTab, match, day, idx), e.currentTarget.scrollLeft)}
                                                                                 >
-                                                                                    <div className='sports_grid_odds_columns sports_grid_desktop_odds_strip'>
-                                                                                        {Array.from({ length: 3 }).map((_, i) => {
-                                                                                            const pair = cardOdds[i]
-                                                                                            const hasBack = pair && pair.back != null
-                                                                                            const hasLay = pair && pair.lay != null
-                                                                                            const disabledBack = !hasBack
-                                                                                            const disabledLay = !hasLay
-                                                                                            return (
-                                                                                                <div key={i} className='sports_grid_odds_column'>
-                                                                                                    <div className={`sports_grid_odds_cell sports_grid_back odds_col_back ${disabledBack ? 'sports_grid_odds_disabled' : ''}`}>
-                                                                                                        {hasBack ? (
-                                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
-                                                                                                                <span className='sports_grid_odds_val'>{pair.back}</span>
-                                                                                                                <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
-                                                                                                            </button>
-                                                                                                        ) : (
-                                                                                                            <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
-                                                                                                        )}
-                                                                                                    </div>
-                                                                                                    <div className={`sports_grid_odds_cell sports_grid_lay odds_col_lay ${disabledLay ? 'sports_grid_odds_disabled' : ''}`}>
-                                                                                                        {hasLay ? (
-                                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
-                                                                                                                <span className='sports_grid_odds_val'>{pair.lay}</span>
-                                                                                                                <span className='sports_grid_odds_size'>{pair.sizeFormatted}</span>
-                                                                                                            </button>
-                                                                                                        ) : (
-                                                                                                            <span className='sports_grid_odds_dash'><i className='ri-lock-line' aria-hidden /></span>
-                                                                                                        )}
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            )
-                                                                                        })}
+                                                                                    <div className='sports_grid_odds_columns sports_grid_desktop_odds_strip sports_grid_bl6_strip sports_grid_back_lay_only_strip'>
+                                                                                        {ladderRows.map((row, lri) => (
+                                                                                            <div key={`bl6-${lri}`} className='sports_grid_bl6_runner_row'>
+                                                                                                {row.backs.map((cell, ci) => {
+                                                                                                    const hb = cell.price != null
+                                                                                                    return (
+                                                                                                        <div key={`b-${ci}`} className={`sports_grid_odds_cell sports_grid_back ${!hb ? 'sports_grid_odds_disabled' : ''}`}>
+                                                                                                            {hb ? (
+                                                                                                                <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                                    <span className='sports_grid_odds_val'>{cell.price}</span>
+                                                                                                                    <span className='sports_grid_odds_size'>{cell.sizeFormatted}</span>
+                                                                                                                </button>
+                                                                                                            ) : (
+                                                                                                                <span className='sports_grid_odds_dash sports_grid_bl6_dash_cell'>
+                                                                                                                    <span className='sports_grid_odds_val'>—</span>
+                                                                                                                    <span className='sports_grid_odds_size'>—</span>
+                                                                                                                </span>
+                                                                                                            )}
+                                                                                                        </div>
+                                                                                                    )
+                                                                                                })}
+                                                                                                {row.lays.map((cell, ci) => {
+                                                                                                    const hl = cell.price != null
+                                                                                                    return (
+                                                                                                        <div key={`l-${ci}`} className={`sports_grid_odds_cell sports_grid_lay ${!hl ? 'sports_grid_odds_disabled' : ''}`}>
+                                                                                                            {hl ? (
+                                                                                                                <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                                    <span className='sports_grid_odds_val'>{cell.price}</span>
+                                                                                                                    <span className='sports_grid_odds_size'>{cell.sizeFormatted}</span>
+                                                                                                                </button>
+                                                                                                            ) : (
+                                                                                                                <span className='sports_grid_odds_dash sports_grid_bl6_dash_cell'>
+                                                                                                                    <span className='sports_grid_odds_val'>—</span>
+                                                                                                                    <span className='sports_grid_odds_size'>—</span>
+                                                                                                                </span>
+                                                                                                            )}
+                                                                                                        </div>
+                                                                                                    )
+                                                                                                })}
+                                                                                            </div>
+                                                                                        ))}
                                                                                     </div>
                                                                                 </div>
                                                                             </div>

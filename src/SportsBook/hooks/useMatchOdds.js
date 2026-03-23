@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchOddsByGameId } from '../api/sportsbookApi';
-import { addOddsListener, removeOddsListener, subscribeOdds, unsubscribeOdds } from '../socket/sportsbookSocket';
+import { getOdds } from '../../api/services/sportsbookApi';
+import { addOddsListener, removeOddsListener, subscribeOdds, unsubscribeOdds } from '../../socket/sportsbookSocket';
 import { useOddsByGameIdStore } from '../stores/oddsByGameId';
 import { expandSocketBatchPayload } from '../../utils/sportsbookMatchesPayload';
 
@@ -66,7 +66,8 @@ export function useMatchOdds(gameId, sport, options = {}) {
     fallbackTimerRef.current = setTimeout(async () => {
       const current = useOddsByGameIdStore.getState().byGameId[id];
       if (current != null) return;
-      const rest = await fetchOddsByGameId(sport, id);
+      const res = await getOdds(sport, id);
+      const rest = res?.success && res?.data != null ? res.data : null;
       if (rest) {
         setOdds(id, rest);
         setSource('rest');

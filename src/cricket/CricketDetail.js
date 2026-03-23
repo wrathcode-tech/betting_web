@@ -18,7 +18,11 @@ import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { useAuth } from '../context/AuthContext'
 import LossCutIndicator from '../customComponents/LossCutIndicator'
 import { BackPriceCell, LayPriceCell } from './OddsMarketComponents'
-import { formatMinMaxLabel, extractStakeLimitFields } from '../utils/marketMinMax'
+import {
+    formatMinMaxLabel,
+    extractStakeLimitFields,
+    getNumericStakeLimitsFromPayload,
+} from '../utils/marketMinMax'
 import BookSummary from './BookSummary'
 import { collectBookBetsFromOpenAndSlip } from './bookSummaryUtils'
 
@@ -113,6 +117,88 @@ function pickMarketId(market) {
     return v
 }
 
+function formatInr2(n) {
+    const x = Number(n)
+    if (!Number.isFinite(x)) return null
+    return x.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+/** @returns {'open'|'won'|'lost'|'void'|'cashed_out'|'closed'} */
+function settlementKindFromBet(b) {
+    if (!b || typeof b !== 'object') return 'closed'
+    const statusRaw = String(b.status ?? b.betStatus ?? '').toLowerCase().trim()
+    const resultRaw = String(b.result ?? b.betResult ?? b.outcome ?? '').toLowerCase().trim()
+    const token = resultRaw || statusRaw
+    if (token === 'open' || token === 'matched' || token === 'active' || token === 'pending' || statusRaw === 'open') return 'open'
+    if (['won', 'win', 'winner'].includes(token)) return 'won'
+    if (['lost', 'loss', 'lose', 'loser'].includes(token)) return 'lost'
+    if (['void', 'voided', 'cancelled', 'canceled', 'refunded'].includes(token)) return 'void'
+    if (['cashed_out', 'cashout', 'cashedout'].includes(token) || statusRaw === 'cashed_out') return 'cashed_out'
+    if (statusRaw && statusRaw !== 'open') return 'closed'
+    return 'open'
+}
+
+function settlementAmountFromBet(b) {
+    if (!b || typeof b !== 'object') return null
+    const keys = [
+        'profit', 'pnl', 'netProfit', 'net_profit', 'amountWon', 'amount_won',
+        'winAmount', 'win_amount', 'settlementAmount', 'settlement_amount',
+        'returns', 'returnAmount', 'payout', 'winnings', 'netReturn', 'net_return',
+    ]
+    for (const k of keys) {
+        const v = b[k]
+        if (v != null && v !== '') {
+            const n = Number(v)
+            if (!Number.isNaN(n)) return n
+        }
+    }
+    return null
+}
+
+function flattenBetUpdatePayload(payload) {
+    if (!payload || typeof payload !== 'object') return {}
+    const nested = payload.bet ?? payload.data ?? payload.payload
+    return typeof nested === 'object' && nested !== null ? { ...payload, ...nested } : { ...payload }
+}
+
+function betUpdatePayloadRelatesToMatch(payload, gameId, eventId) {
+    const p = flattenBetUpdatePayload(payload)
+    const g = p.gameId ?? p.game_id
+    const e = p.eventId ?? p.event_id
+    if (g == null && e == null) return true
+    if (gameId && g != null && String(g) === String(gameId)) return true
+    if (eventId && e != null && String(e) === String(eventId)) return true
+    return false
+}
+
+/**
+ * Socket `betUpdate` → BalanceContext `sportsbookBetUpdate`. Toast sirf jab payload mein clear result ho (spam kam).
+ */
+function tryNotifyBetSettlement(payload, gameId, eventId, dedupeRef) {
+    if (!gameId && !eventId) return
+    const p = flattenBetUpdatePayload(payload)
+    if (!betUpdatePayloadRelatesToMatch(p, gameId, eventId)) return
+    const type = String(p.type ?? p.eventType ?? '').toLowerCase()
+    if (type === 'cashout' || type === 'cashed_out') return
+    const result = String(p.result ?? p.betResult ?? p.outcome ?? '').toLowerCase()
+    const status = String(p.status ?? p.betStatus ?? '').toLowerCase()
+    const effective = (result || status).trim()
+    if (!['won', 'win', 'lost', 'loss', 'void', 'voided', 'cancelled', 'canceled'].includes(effective)) return
+    const bid = String(p.betId ?? p.bet_id ?? p.id ?? p._id ?? '')
+    const dedupeKey = `${bid}:${effective}`
+    const now = Date.now()
+    if (dedupeRef.current.key === dedupeKey && now - dedupeRef.current.at < 10000) return
+    dedupeRef.current = { key: dedupeKey, at: now }
+    const amtStr = formatInr2(settlementAmountFromBet(p))
+    if (['won', 'win'].includes(effective)) {
+        alertSuccessMessage(amtStr != null ? `Bet won · ₹${amtStr}` : 'Bet won!')
+    } else if (['lost', 'loss'].includes(effective)) {
+        alertErrorMessage(amtStr != null ? `Bet lost · ₹${amtStr}` : 'Bet lost')
+    } else {
+        alertSuccessMessage('Bet voided / refunded')
+    }
+}
+
 function CricketDetail() {
     const location = useLocation()
     const { config: platformConfig } = usePlatformConfig()
@@ -137,9 +223,27 @@ function CricketDetail() {
     const [cashoutValuesMap, setCashoutValuesMap] = useState({}) // { betId: { value, suspended } } from GET /bet/:betId/cashout-value
     const [openCashoutSection, setOpenCashoutSection] = useState(null)
     const [openLossCutSection, setOpenLossCutSection] = useState(null)
+    const betUpdateRefreshTimerRef = useRef(null)
+    const settlementToastDedupeRef = useRef({ key: '', at: 0 })
     const openBetsCount = openBetsList.length
     /** Betslip khula ya Open Bets tab — open bets + exposure dono yahi par sync */
     const slipOrOpenBetsUi = isBetslipOpen || activeTab === 'open-bets'
+    const pullOpenBets = useCallback(async ({ showLoading = false } = {}) => {
+        if (isDemo) {
+            setOpenBetsList([])
+            setOpenBetsLoading(false)
+            return
+        }
+        if (showLoading) setOpenBetsLoading(true)
+        try {
+            const res = await AuthService.sportsbookOpenBets(OPEN_BETS_QUERY())
+            setOpenBetsList(parseOpenBetsFromResponse(res))
+        } catch {
+            setOpenBetsList([])
+        } finally {
+            if (showLoading) setOpenBetsLoading(false)
+        }
+    }, [isDemo])
     const [isMobileBetslipOpen, setIsMobileBetslipOpen] = useState(false)
     const [isOddsTableCompact, setIsOddsTableCompact] = useState(() =>
         typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
@@ -180,7 +284,7 @@ function CricketDetail() {
 
     /** Sirf jab open bet id set badle — har open-bets list refetch par naya array = pehle [openBetsList] se cashout-value spam */
     const openBetsCashoutIdsSig = useMemo(() => {
-        const openBets = (openBetsList || []).filter((b) => (b.status || 'open').toLowerCase() === 'open')
+        const openBets = (openBetsList || []).filter((b) => settlementKindFromBet(b) === 'open')
         return openBets
             .map((b) => String(b._id ?? b.id ?? '').trim())
             .filter(Boolean)
@@ -194,8 +298,8 @@ function CricketDetail() {
             setCashoutValuesMap({})
             return
         }
-        const openBets = (openBetsList || []).filter((b) => (b.status || 'open').toLowerCase() === 'open')
-        if (openBets.length === 0) {
+        const openBetsForCashout = (openBetsList || []).filter((b) => settlementKindFromBet(b) === 'open')
+        if (openBetsForCashout.length === 0) {
             setCashoutValuesMap({})
             return
         }
@@ -203,7 +307,7 @@ function CricketDetail() {
         const fetchAll = async () => {
             const next = {}
             await Promise.all(
-                openBets.map(async (b) => {
+                openBetsForCashout.map(async (b) => {
                     const bid = b._id ?? b.id
                     if (bid == null || bid === '') return
                     const key = String(bid)
@@ -277,6 +381,19 @@ function CricketDetail() {
         }),
         [eventStakeLimits, oddsData]
     )
+
+    const globalStakeLimitsLabel = useMemo(
+        () => formatMinMaxLabel({}, limitsFallbackPayload),
+        [limitsFallbackPayload]
+    )
+
+    const effectiveStakeBounds = useMemo(() => {
+        const { min, max } = getNumericStakeLimitsFromPayload(limitsFallbackPayload)
+        return {
+            min: min != null ? min : 100,
+            max: max != null ? max : 10000,
+        }
+    }, [limitsFallbackPayload])
     const [oddsLoading, setOddsLoading] = useState(true)
     const [liveScore, setLiveScore] = useState(null)
     // eslint-disable-next-line no-unused-vars -- used in commented-out Live TV iframe
@@ -372,6 +489,7 @@ function CricketDetail() {
             null
         return {
             ...extractStakeLimitFields(d),
+            ...(firstMarket ? extractStakeLimitFields(firstMarket) : {}),
             matchOdds,
             marketClosed: d?.marketClosed === true,
             eventName: eventNameFromPayload,
@@ -484,28 +602,27 @@ function CricketDetail() {
 
     // Open bets: ek hi effect — pehle 3 alag effects se same mount par 2–3 baar GET open-bets ja raha tha
     useEffect(() => {
-        if (isDemo) {
-            setOpenBetsList([])
-            setOpenBetsLoading(false)
-            return
+        pullOpenBets({ showLoading: true })
+    }, [pullOpenBets, gameId, openCashoutSection, slipOrOpenBetsUi])
+
+    // Socket betUpdate → wallet; BalanceContext `sportsbookBetUpdate` — yahan list turant sync (debounced)
+    useEffect(() => {
+        if (isDemo) return
+        const onBetUpdate = (e) => {
+            const payload = e?.detail
+            if (betUpdateRefreshTimerRef.current) clearTimeout(betUpdateRefreshTimerRef.current)
+            betUpdateRefreshTimerRef.current = setTimeout(() => {
+                betUpdateRefreshTimerRef.current = null
+                tryNotifyBetSettlement(payload, gameId, eventId, settlementToastDedupeRef)
+                pullOpenBets({ showLoading: false })
+            }, 450)
         }
-        let cancelled = false
-        setOpenBetsLoading(true)
-        AuthService.sportsbookOpenBets(OPEN_BETS_QUERY())
-            .then((res) => {
-                if (cancelled) return
-                setOpenBetsList(parseOpenBetsFromResponse(res))
-            })
-            .catch(() => {
-                if (!cancelled) setOpenBetsList([])
-            })
-            .finally(() => {
-                if (!cancelled) setOpenBetsLoading(false)
-            })
+        window.addEventListener('sportsbookBetUpdate', onBetUpdate)
         return () => {
-            cancelled = true
+            window.removeEventListener('sportsbookBetUpdate', onBetUpdate)
+            if (betUpdateRefreshTimerRef.current) clearTimeout(betUpdateRefreshTimerRef.current)
         }
-    }, [isDemo, gameId, openCashoutSection, slipOrOpenBetsUi])
+    }, [isDemo, pullOpenBets, gameId, eventId])
 
     const toggleBlock = (blockId) => {
         setClosedBlocks(prev => {
@@ -624,14 +741,15 @@ function CricketDetail() {
             return
         }
         const stakeNum = Number(stake) || 0
-        if (stakeNum < 100) {
-            const msg = 'Minimum stake is ₹100'
+        const { min: minStake, max: maxStake } = effectiveStakeBounds
+        if (stakeNum < minStake) {
+            const msg = `Minimum stake is ₹${minStake}`
             setPlaceBetError(msg)
             alertErrorMessage(msg)
             return
         }
-        if (stakeNum > 10000) {
-            const msg = 'Maximum stake is ₹10000'
+        if (stakeNum > maxStake) {
+            const msg = `Maximum stake is ₹${maxStake}`
             setPlaceBetError(msg)
             alertErrorMessage(msg)
             return
@@ -668,22 +786,17 @@ function CricketDetail() {
                 if (res && res.success === false) throw new Error(backendMsg)
             }
             setSelectedBets([])
-            setStake(100)
+            setStake(effectiveStakeBounds.min)
             const successMsg = lastRes?.data?.message ?? lastRes?.message
             setPlaceBetSuccessMessage(successMsg || 'Bet placed successfully.')
             // Open bets + exposure turant refresh — cashout / P&L (cashout-value effect openBetsList par chalega)
-            const pullOpenBets = () =>
-                AuthService.sportsbookOpenBets(OPEN_BETS_QUERY())
-                    .then((obRes) => {
-                        setOpenBetsList(parseOpenBetsFromResponse(obRes))
-                    })
             try {
-                await pullOpenBets()
+                await pullOpenBets({ showLoading: false })
             } catch {
                 /* keep previous list */
             }
             setTimeout(() => {
-                pullOpenBets().catch(() => { })
+                pullOpenBets({ showLoading: false }).catch(() => { })
             }, 900)
             Promise.all([
                 AuthService.sportsbookGetLossLimit(),
@@ -734,8 +847,7 @@ function CricketDetail() {
             const res = await AuthService.sportsbookCashout(betId)
             const ok = res?.success === true || (res && res.success !== false && !res?.message)
             if (ok) {
-                const list = await AuthService.sportsbookOpenBets(OPEN_BETS_QUERY()).then((r) => parseOpenBetsFromResponse(r))
-                setOpenBetsList(list)
+                await pullOpenBets({ showLoading: false })
                 const successMsg = res?.data?.message ?? res?.message
                 if (successMsg) alertSuccessMessage(successMsg)
             } else {
@@ -761,7 +873,10 @@ function CricketDetail() {
         const renderBetCard = (b, isBack) => {
             const bidRaw = b._id ?? b.id
             const bid = bidRaw != null && bidRaw !== '' ? String(bidRaw) : ''
-            const statusRaw = (b.status || 'open').toLowerCase()
+            const kind = settlementKindFromBet(b)
+            const isOpenBet = kind === 'open'
+            const settleAmt = settlementAmountFromBet(b)
+            const settleAmtFmt = settleAmt != null ? formatInr2(settleAmt) : null
             const apiEntry = bid ? cashoutValuesMap[bid] : undefined
             const rawVal = apiEntry?.value ?? cashoutValueFromBetObject(b) ?? b.cashout_value
             const cashoutVal = rawVal != null ? Number(rawVal) : null
@@ -785,18 +900,41 @@ function CricketDetail() {
                     <div className='betslip_open_bet_row betslip_cashout_value_row'>
                         <span>Cash Out Value</span>
                         <span className='betslip_cashout_balance'>
-                            {netCashout != null ? `₹${netCashout.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
+                            {isOpenBet && netCashout != null ? `₹${netCashout.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
                         </span>
                     </div>
                     <div className='betslip_open_bet_actions'>
-                        {statusRaw !== 'open' ? (
-                            <span className='betslip_open_bet_closed'>BET CLOSED</span>
-                        ) : suspended ? (
-                            <span className='betslip_cashout_suspended'>CASH OUT NOT AVAILABLE</span>
+                        {isOpenBet ? (
+                            suspended ? (
+                                <span className='betslip_cashout_suspended'>CASH OUT NOT AVAILABLE</span>
+                            ) : (
+                                <button type='button' className='betslip_cashout_btn' onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleCashoutBetslip(bid); }} disabled={isCashingOut || isDemo}>
+                                    {isCashingOut ? 'CASHING OUT...' : isDemo ? 'Login to play' : (netCashout != null ? `CASH OUT ₹${netCashout.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'CASH OUT')}
+                                </button>
+                            )
                         ) : (
-                            <button type='button' className='betslip_cashout_btn' onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleCashoutBetslip(bid); }} disabled={isCashingOut || isDemo}>
-                                {isCashingOut ? 'CASHING OUT...' : isDemo ? 'Login to play' : (netCashout != null ? `CASH OUT ₹${netCashout.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'CASH OUT')}
-                            </button>
+                            <div className='betslip_open_bet_settled'>
+                                {kind === 'won' && (
+                                    <>
+                                        <span className='betslip_open_bet_result betslip_open_bet_result_won'>Won</span>
+                                        {settleAmtFmt != null && <span className='betslip_settlement_amount'>₹{settleAmtFmt}</span>}
+                                    </>
+                                )}
+                                {kind === 'lost' && (
+                                    <>
+                                        <span className='betslip_open_bet_result betslip_open_bet_result_lost'>Lost</span>
+                                        {settleAmtFmt != null && <span className='betslip_settlement_amount'>₹{settleAmtFmt}</span>}
+                                    </>
+                                )}
+                                {kind === 'void' && <span className='betslip_open_bet_result betslip_open_bet_result_void'>Void / Refunded</span>}
+                                {kind === 'cashed_out' && (
+                                    <>
+                                        <span className='betslip_open_bet_result betslip_open_bet_result_void'>Cashed out</span>
+                                        {settleAmtFmt != null && <span className='betslip_settlement_amount'>₹{settleAmtFmt}</span>}
+                                    </>
+                                )}
+                                {kind === 'closed' && <span className='betslip_open_bet_closed'>Settled</span>}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -902,7 +1040,7 @@ function CricketDetail() {
      */
     const openBetMatchesSection = (b, gid, sectionMarketId, sectionMarketType, evtId) => {
         if (!b) return false
-        if (String(b.status || 'open').toLowerCase() !== 'open') return false
+        if (settlementKindFromBet(b) !== 'open') return false
         const betGid = String(b.gameId ?? b.game_id ?? '').trim()
         const betEid = String(b.eventId ?? b.event_id ?? '').trim()
         const pageGid = String(gid ?? '').trim()
@@ -1271,8 +1409,8 @@ function CricketDetail() {
                                                                                 className="betslip_amount_input"
                                                                                 type="number"
                                                                                 placeholder="0"
-                                                                                min="100"
-                                                                                max="10000"
+                                                                                min={effectiveStakeBounds.min}
+                                                                                max={effectiveStakeBounds.max}
                                                                                 value={stake}
                                                                                 onChange={(e) => {
                                                                                     const v = e.target.value
@@ -1290,7 +1428,7 @@ function CricketDetail() {
                                                                                 key={amt}
                                                                                 type="button"
                                                                                 className="betslip_quick_btn"
-                                                                                onClick={() => setStake(prev => Math.min(10000, (Number(prev) || 0) + amt))}
+                                                                                onClick={() => setStake(prev => Math.min(effectiveStakeBounds.max, (Number(prev) || 0) + amt))}
                                                                             >
                                                                                 +{amt >= 1000 ? (amt / 1000).toFixed(0) + ',' + (amt % 1000 ? String(amt).slice(-3) : '000') : amt}
                                                                             </button>
@@ -1298,8 +1436,8 @@ function CricketDetail() {
                                                                     </div>
 
                                                                     <div className="betslip_actions">
-                                                                        <button type="button" className="betslip_act_min" onClick={() => setStake(100)}>MIN STAKE</button>
-                                                                        <button type="button" className="betslip_act_max" onClick={() => setStake(10000)}>MAX STAKE</button>
+                                                                        <button type="button" className="betslip_act_min" onClick={() => setStake(effectiveStakeBounds.min)}>MIN STAKE</button>
+                                                                        <button type="button" className="betslip_act_max" onClick={() => setStake(effectiveStakeBounds.max)}>MAX STAKE</button>
                                                                         <button
                                                                             type="button"
                                                                             className="betslip_act_edit"
@@ -1389,8 +1527,8 @@ function CricketDetail() {
                                             className="betslip_amount_input"
                                             type="number"
                                             placeholder="0"
-                                            min="100"
-                                            max="10000"
+                                            min={effectiveStakeBounds.min}
+                                            max={effectiveStakeBounds.max}
                                             value={stake}
                                             onChange={(e) => {
                                                 const v = e.target.value
@@ -1408,7 +1546,7 @@ function CricketDetail() {
                                             key={amt}
                                             type="button"
                                             className="betslip_quick_btn"
-                                            onClick={() => setStake(prev => Math.min(10000, (Number(prev) || 0) + amt))}
+                                            onClick={() => setStake(prev => Math.min(effectiveStakeBounds.max, (Number(prev) || 0) + amt))}
                                         >
                                             +{amt >= 1000 ? (amt / 1000).toFixed(0) + ',' + (amt % 1000 ? String(amt).slice(-3) : '000') : amt}
                                         </button>
@@ -1416,8 +1554,8 @@ function CricketDetail() {
                                 </div>
 
                                 <div className="betslip_actions">
-                                    <button type="button" className="betslip_act_min" onClick={() => setStake(100)}>MIN STAKE</button>
-                                    <button type="button" className="betslip_act_max" onClick={() => setStake(10000)}>MAX STAKE</button>
+                                    <button type="button" className="betslip_act_min" onClick={() => setStake(effectiveStakeBounds.min)}>MIN STAKE</button>
+                                    <button type="button" className="betslip_act_max" onClick={() => setStake(effectiveStakeBounds.max)}>MAX STAKE</button>
                                     <button
                                         type="button"
                                         className="betslip_act_edit"
@@ -1951,6 +2089,9 @@ function CricketDetail() {
 
                                     <div className='series_name_row'>
                                         <p>{seriesOrTournamentName || '—'}</p>
+                                        {globalStakeLimitsLabel ? (
+                                            <p className='cricket_page_stake_limits'>{globalStakeLimitsLabel}</p>
+                                        ) : null}
                                     </div>
                                     {/* <div className='cricket_info_inner'>
                                 <div className='cricket_vector_icon'>
@@ -2900,8 +3041,8 @@ function CricketDetail() {
                                             type='number'
                                             className='betslip_amount_input'
                                             placeholder='0'
-                                            min={100}
-                                            max={10000}
+                                            min={effectiveStakeBounds.min}
+                                            max={effectiveStakeBounds.max}
                                             value={stake}
                                             onChange={(e) => {
                                                 const v = e.target.value
@@ -2914,15 +3055,15 @@ function CricketDetail() {
 
                                     <div className='betslip_quick_stakes'>
                                         {[100, 200, 500, 1000, 2000, 5000, 10000, 25000].map((amt) => (
-                                            <button key={amt} type='button' className='betslip_quick_btn' onClick={() => setStake(prev => Math.min(10000, (Number(prev) || 0) + amt))}>
+                                            <button key={amt} type='button' className='betslip_quick_btn' onClick={() => setStake(prev => Math.min(effectiveStakeBounds.max, (Number(prev) || 0) + amt))}>
                                                 +{amt >= 1000 ? (amt / 1000).toFixed(0) + ',' + (amt % 1000 ? String(amt).slice(-3) : '000') : amt}
                                             </button>
                                         ))}
                                     </div>
 
                                     <div className='betslip_actions'>
-                                        <button type='button' className='betslip_act_min' onClick={() => setStake(100)}>MIN STAKE</button>
-                                        <button type='button' className='betslip_act_max' onClick={() => setStake(10000)}>MAX STAKE</button>
+                                        <button type='button' className='betslip_act_min' onClick={() => setStake(effectiveStakeBounds.min)}>MIN STAKE</button>
+                                        <button type='button' className='betslip_act_max' onClick={() => setStake(effectiveStakeBounds.max)}>MAX STAKE</button>
                                         <button type='button' className='betslip_act_edit' onClick={() => betslipContentRef.current?.querySelector('.betslip_amount_input')?.focus()}>EDIT STAKE</button>
                                         <button type='button' className='betslip_act_clear' onClick={() => setStake('')}>CLEAR</button>
                                     </div>

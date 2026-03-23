@@ -4,7 +4,7 @@ import {
   removeScoreboardListener,
   subscribeScoreboard,
   unsubscribeScoreboard,
-} from '../socket/sportsbookSocket';
+} from '../../socket/sportsbookSocket';
 import { expandSocketBatchPayload } from '../../utils/sportsbookMatchesPayload';
 
 function extractKey(payload) {

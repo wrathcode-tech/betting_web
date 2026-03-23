@@ -5,7 +5,11 @@ import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { getToken } from '../utils/authStorage'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 import { addMatchesListener, removeMatchesListener } from '../socket/sportsbookSocket'
-import { getMatchRowsFromSocketPayload, expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload'
+import {
+  getMatchRowsFromSocketPayload,
+  expandSocketBatchPayload,
+  normalizeRestMatchesList,
+} from '../utils/sportsbookMatchesPayload'
 import {
   getMarketPillsFromSources,
   getMatchStreamVisible,
@@ -127,6 +131,30 @@ function pickMatchListMediaFields(m) {
     isTv: !!(m.IsTv ?? m.isTv),
     marketBadges: m.marketBadges ?? m.market_badges ?? m.marketPills ?? m.market_pills,
   }
+}
+
+/** Shared shape for home TOP matches (socket listSummary / legacy + REST GET …/matches). */
+function mapSocketRowsToTopMatches(rows, defaults) {
+  return rows
+    .filter((m) => m.gameId ?? m.game_id ?? m.eventId ?? m.event_id)
+    .map((m) => {
+      const et = m.eventTime ?? m.event_time ?? pickMatchEventTime(m)
+      const id = m.gameId ?? m.game_id ?? m.eventId ?? m.event_id
+      return {
+        id,
+        gameId: m.gameId ?? m.game_id ?? id,
+        eventId: m.eventId ?? m.event_id ?? id,
+        tournament: m.seriesName ?? m.series_name ?? defaults.tournament,
+        teams: m.eventName ?? m.event_name ?? m.name ?? '—',
+        time: formatMatchTime(et),
+        eventTime: et,
+        inPlay: m.inPlay ?? m.in_play ?? false,
+        selections: m.selections,
+        markets: m.markets,
+        ...pickMatchListMediaFields(m),
+      }
+    })
+    .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
 }
 
 /** Landing/API game item – image can be in thumb, thumbnail, image, icon, logo */
@@ -380,82 +408,68 @@ function LandingPage() {
     return () => window.clearTimeout(t);
   }, []);
 
-  // TOP matches: socket only — subscribe:matches via route (no subscribe:odds on home; list uses listSummary ladders).
+  // TOP matches: REST prefetch (fast first paint) + socket updates (subscribe:matches from route).
 
   useEffect(() => {
-    const mapRowsToLanding = (rows, defaults) =>
-      rows
-        .filter((m) => m.gameId ?? m.game_id ?? m.eventId ?? m.event_id)
-        .map((m) => {
-          const et = m.eventTime ?? m.event_time ?? pickMatchEventTime(m);
-          const id = m.gameId ?? m.game_id ?? m.eventId ?? m.event_id;
-          return {
-            id,
-            gameId: m.gameId ?? m.game_id ?? id,
-            eventId: m.eventId ?? m.event_id ?? id,
-            tournament: m.seriesName ?? m.series_name ?? defaults.tournament,
-            teams: m.eventName ?? m.event_name ?? m.name ?? '—',
-            time: formatMatchTime(et),
-            eventTime: et,
-            inPlay: m.inPlay ?? m.in_play ?? false,
-            selections: m.selections,
-            markets: m.markets,
-            ...pickMatchListMediaFields(m),
-          };
-        })
-        .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
+    let cancelled = false
+    const prefetchSport = async (sport, setRows, setLoading, tournament) => {
+      try {
+        const res = await AuthService.sportsbookMatches(sport)
+        if (cancelled) return
+        const raw = normalizeRestMatchesList(res)
+        if (!raw.length) return
+        const mapped = mapSocketRowsToTopMatches(raw, { tournament })
+        if (mapped.length > 0) {
+          setRows(mapped)
+          setLoading(false)
+        }
+      } catch {
+        /* socket / TOP_MATCH_LOAD_MAX_WAIT_MS still clears spinner */
+      }
+    }
+    prefetchSport('cricket', setTopMatchesFromApi, setTopMatchesLoading, 'Cricket')
+    prefetchSport('tennis', setTopTennisMatchesFromApi, setTopTennisMatchesLoading, 'Tennis')
+    prefetchSport('soccer', setTopSoccerMatchesFromApi, setTopSoccerMatchesLoading, 'Football')
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
+  useEffect(() => {
     const onMatches = (raw) => {
       for (const payload of expandSocketBatchPayload(raw)) {
-        if (payload?.sport !== 'cricket') continue;
-        const { rows, error } = getMatchRowsFromSocketPayload(payload);
+        const sport = payload?.sport
+        if (sport !== 'cricket' && sport !== 'tennis' && sport !== 'soccer') continue
+        const { rows, error } = getMatchRowsFromSocketPayload(payload)
         if (error) {
-          setTopMatchesLoading(false);
-          continue;
+          if (sport === 'cricket') setTopMatchesLoading(false)
+          else if (sport === 'tennis') setTopTennisMatchesLoading(false)
+          else setTopSoccerMatchesLoading(false)
+          continue
         }
-        if (rows.length === 0 && payload?.schema !== 'listSummary') continue;
-        const mapped = mapRowsToLanding(rows, { tournament: 'Cricket' });
-        setTopMatchesFromApi((prev) => (mapped.length > 0 ? mapped : prev));
-        setTopMatchesLoading(false);
-      }
-    };
-    const onTennisMatches = (raw) => {
-      for (const payload of expandSocketBatchPayload(raw)) {
-        if (payload?.sport !== 'tennis') continue;
-        const { rows, error } = getMatchRowsFromSocketPayload(payload);
-        if (error) {
-          setTopTennisMatchesLoading(false);
-          continue;
+        if (rows.length === 0 && payload?.schema !== 'listSummary') continue
+        const defaults =
+          sport === 'cricket'
+            ? { tournament: 'Cricket' }
+            : sport === 'tennis'
+              ? { tournament: 'Tennis' }
+              : { tournament: 'Football' }
+        const mapped = mapSocketRowsToTopMatches(rows, defaults)
+        if (sport === 'cricket') {
+          setTopMatchesFromApi((prev) => (mapped.length > 0 ? mapped : prev))
+          setTopMatchesLoading(false)
+        } else if (sport === 'tennis') {
+          if (mapped.length > 0) setTopTennisMatchesFromApi(mapped)
+          setTopTennisMatchesLoading(false)
+        } else {
+          if (mapped.length > 0) setTopSoccerMatchesFromApi(mapped)
+          setTopSoccerMatchesLoading(false)
         }
-        if (rows.length === 0 && payload?.schema !== 'listSummary') continue;
-        const mapped = mapRowsToLanding(rows, { tournament: 'Tennis' });
-        if (mapped.length > 0) setTopTennisMatchesFromApi(mapped);
-        setTopTennisMatchesLoading(false);
       }
-    };
-    const onSoccerMatches = (raw) => {
-      for (const payload of expandSocketBatchPayload(raw)) {
-        if (payload?.sport !== 'soccer') continue;
-        const { rows, error } = getMatchRowsFromSocketPayload(payload);
-        if (error) {
-          setTopSoccerMatchesLoading(false);
-          continue;
-        }
-        if (rows.length === 0 && payload?.schema !== 'listSummary') continue;
-        const mapped = mapRowsToLanding(rows, { tournament: 'Football' });
-        if (mapped.length > 0) setTopSoccerMatchesFromApi(mapped);
-        setTopSoccerMatchesLoading(false);
-      }
-    };
-    addMatchesListener(onMatches);
-    addMatchesListener(onTennisMatches);
-    addMatchesListener(onSoccerMatches);
-    return () => {
-      removeMatchesListener(onMatches);
-      removeMatchesListener(onTennisMatches);
-      removeMatchesListener(onSoccerMatches);
-    };
-  }, []);
+    }
+    addMatchesListener(onMatches)
+    return () => removeMatchesListener(onMatches)
+  }, [])
 
   // Hero 3D slider – 7 items, 5 visible at a time, infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);

@@ -4,7 +4,7 @@ import {
   removeMatchesListener,
   subscribeMatches,
   unsubscribeMatches,
-} from '../socket/sportsbookSocket';
+} from '../../socket/sportsbookSocket';
 import { expandSocketBatchPayload } from '../../utils/sportsbookMatchesPayload';
 
 function isListSummaryForSport(payload, sport) {

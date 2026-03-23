@@ -32,8 +32,69 @@ function formatDate(iso) {
   }
 }
 
+/** GET open-bets — backend shapes (same idea as CricketDetail parseOpenBetsFromResponse). */
+function parseOpenBetsList(res) {
+  const raw = res?.data ?? res
+  if (Array.isArray(raw)) return raw
+  if (Array.isArray(raw?.bets)) return raw.bets
+  if (Array.isArray(raw?.data)) return raw.data
+  if (Array.isArray(raw?.openBets)) return raw.openBets
+  if (Array.isArray(raw?.records)) return raw.records
+  return []
+}
+
+function pickBetId(b) {
+  if (!b || typeof b !== 'object') return null
+  const v = b._id ?? b.id ?? b.betId ?? b.bet_id
+  if (v == null || v === '') return null
+  return String(v)
+}
+
+/** POST cancel — kai backends 200 par sirf { message } bhejte hain, bina success: true. */
+function normalizeCancelBetResponse(res) {
+  if (!res || typeof res !== 'object') {
+    return { ok: false, message: 'Invalid response' }
+  }
+  if (res.success === false) {
+    return { ok: false, message: res.message || res.msg || res.error || 'Failed to cancel bet' }
+  }
+  if (res.success === true) {
+    return { ok: true, message: res.message || res.msg || 'Bet cancelled' }
+  }
+  const inner = res.data
+  if (inner && typeof inner === 'object') {
+    if (inner.success === false) {
+      return { ok: false, message: inner.message || inner.msg || res.message || 'Failed to cancel bet' }
+    }
+    if (inner.success === true) {
+      return { ok: true, message: inner.message || inner.msg || res.message || 'Bet cancelled' }
+    }
+  }
+  const st = String(res.status ?? '').toLowerCase()
+  if (st === 'success' || st === 'ok') {
+    return { ok: true, message: res.message || res.msg || 'Bet cancelled' }
+  }
+  if (res.error || res.errorCode) {
+    return { ok: false, message: res.message || res.msg || 'Failed to cancel bet' }
+  }
+  const msg = res.message || res.msg
+  if (msg && typeof msg === 'string') {
+    if (/\b(cannot|fail|invalid|denied|error|unable|not allowed)\b/i.test(msg) && res.success !== true) {
+      return { ok: false, message: msg }
+    }
+    return { ok: true, message: msg }
+  }
+  return { ok: true, message: 'Bet cancelled' }
+}
+
+/** Cancel tab sirf in statuses par (open + matched/pending jo kuch APIs deti hain). */
+function isBetCancellableStatus(statusRaw) {
+  const s = String(statusRaw || '').toLowerCase().trim()
+  return s === 'open' || s === 'matched' || s === 'pending' || s === 'active'
+}
+
 function mapBetToRow(b) {
-  const betId = b._id ?? b.id
+  const betId = pickBetId(b)
   const statusRaw = (b.status || 'open').toLowerCase()
   return {
     id: betId,
@@ -68,9 +129,9 @@ export default function MyBets() {
     setLoading(true)
     try {
       const res = await AuthService.sportsbookOpenBets({ page, limit: 20 })
-      const list = Array.isArray(res?.data) ? res.data : (res?.data?.bets ?? [])
-      const pag = res?.pagination ?? res?.data?.pagination
-      setBets(list.map(mapBetToRow))
+      const list = parseOpenBetsList(res)
+      const pag = res?.pagination ?? res?.data?.pagination ?? (res?.data && typeof res.data === 'object' ? res.data.pagination : null)
+      setBets(list.map(mapBetToRow).filter((row) => row.id))
       setPagination({
         page: pag?.page ?? 1,
         limit: pag?.limit ?? 20,
@@ -89,18 +150,29 @@ export default function MyBets() {
   }, [fetchOpen])
 
   const handleCancelBet = useCallback(async (betId) => {
-    if (!betId) return
-    setCancellingId(betId)
+    const id = betId != null && betId !== '' ? String(betId) : ''
+    if (!id) {
+      toast.error('Missing bet id — refresh the page and try again.')
+      return
+    }
+    setCancellingId(id)
     try {
-      const res = await AuthService.sportsbookCancelBet(betId)
-      if (res?.success || res?.status === 'success') {
-        toast.success(res?.message || 'Bet cancelled')
+      const res = await AuthService.sportsbookCancelBet(id)
+      const { ok, message } = normalizeCancelBetResponse(res)
+      if (ok) {
+        toast.success(message)
         await fetchOpen(pagination.page)
       } else {
-        toast.error(res?.message || 'Failed to cancel bet')
+        toast.error(message || 'Failed to cancel bet')
       }
     } catch (e) {
-      toast.error(e?.message || 'Failed to cancel bet')
+      const msg =
+        e?.response?.data?.message ||
+        e?.response?.data?.msg ||
+        e?.response?.data?.error ||
+        e?.message ||
+        'Failed to cancel bet'
+      toast.error(msg)
     } finally {
       setCancellingId(null)
     }
@@ -126,7 +198,7 @@ export default function MyBets() {
 
   const data = filteredBets.map((row) => ({
     ...row,
-    actions: row.statusRaw === 'open' ? (
+    actions: isBetCancellableStatus(row.statusRaw) ? (
       <div className="mybets_actions_wrap">
         <button type="button" className="mybets_cashout_btn_sm" onClick={goToOpenBets}>
           Cash Out
@@ -135,9 +207,9 @@ export default function MyBets() {
           type="button"
           className="mybets_cancel_btn_sm"
           onClick={() => handleCancelBet(row.id)}
-          disabled={cancellingId === row.id}
+          disabled={cancellingId === String(row.id)}
         >
-          {cancellingId === row.id ? 'Cancelling...' : 'Cancel'}
+          {cancellingId === String(row.id) ? 'Cancelling...' : 'Cancel'}
         </button>
       </div>
     ) : <span className="mybets_bet_closed">BET CLOSED</span>,
@@ -193,7 +265,7 @@ export default function MyBets() {
                             return (
                               <td key={col.key}>
                                 {col.key === 'actions' ? (
-                                  row.statusRaw === 'open' ? (
+                                    isBetCancellableStatus(row.statusRaw) ? (
                                     <div className="mybets_actions_wrap">
                                       <button type="button" className="mybets_cashout_btn_sm" onClick={goToOpenBets}>
                                         Cash Out
@@ -202,9 +274,9 @@ export default function MyBets() {
                                         type="button"
                                         className="mybets_cancel_btn_sm"
                                         onClick={() => handleCancelBet(row.id)}
-                                        disabled={cancellingId === row.id}
+                                        disabled={cancellingId === String(row.id)}
                                       >
-                                        {cancellingId === row.id ? 'Cancelling...' : 'Cancel'}
+                                        {cancellingId === String(row.id) ? 'Cancelling...' : 'Cancel'}
                                       </button>
                                     </div>
                                   ) : (
@@ -248,7 +320,7 @@ export default function MyBets() {
                             </span>
                           </div>
                         ))}
-                        {row.statusRaw === 'open' && (
+                        {isBetCancellableStatus(row.statusRaw) && (
                           <div className="transaction_card_row transaction_card_actions">
                             <span className="transaction_label">Actions</span>
                             <div className="transaction_card_actions_btns">
@@ -259,9 +331,9 @@ export default function MyBets() {
                                 type="button"
                                 className="mybets_cancel_btn_sm"
                                 onClick={() => handleCancelBet(row.id)}
-                                disabled={cancellingId === row.id}
+                                disabled={cancellingId === String(row.id)}
                               >
-                                {cancellingId === row.id ? 'Cancelling...' : 'Cancel'}
+                                {cancellingId === String(row.id) ? 'Cancelling...' : 'Cancel'}
                               </button>
                             </div>
                           </div>

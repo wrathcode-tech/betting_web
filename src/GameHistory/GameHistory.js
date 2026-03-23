@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Header from '../customComponents/Header';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
@@ -51,6 +51,12 @@ function statusClass(status) {
   if (s === 'win') return 'won';
   if (s === 'loss') return 'lost';
   return s;
+}
+
+function formatStatusLabel(status) {
+  if (!status) return '—';
+  const s = String(status);
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 }
 
 const FILTER_CASINO = 'casino';
@@ -150,26 +156,27 @@ function GameHistory() {
     fetchTransactions(pagination.page + 1);
   }, [fetchTransactions, pagination.hasMore, pagination.page]);
 
-  const searchLower = (search || '').trim().toLowerCase();
-  const filteredTransactions = searchLower
-    ? transactions.filter((tx) => {
-        if (filter === FILTER_CASINO && casinoView === VIEW_LEDGER) {
-          const remark = (tx.remark || '').toLowerCase();
-          const txId = (tx.id || tx.transactionId || '').toLowerCase();
-          return remark.includes(searchLower) || txId.includes(searchLower);
-        }
-        if (filter === FILTER_CASINO && casinoView === VIEW_SESSIONS) {
-          const game = (tx.gameCode || '').toLowerCase();
-          const sessionId = (tx.sessionId || '').toLowerCase();
-          const provider = (tx.providerCode || '').toLowerCase();
-          return game.includes(searchLower) || sessionId.includes(searchLower) || provider.includes(searchLower);
-        }
-        const game = (tx.gameName || tx.gameCode || '').toLowerCase();
-        const roundId = (tx.providerRoundId || tx.sessionId || '').toLowerCase();
+  const filteredTransactions = useMemo(() => {
+    const searchLower = (search || '').trim().toLowerCase();
+    if (!searchLower) return transactions;
+    return transactions.filter((tx) => {
+      if (filter === FILTER_CASINO && casinoView === VIEW_LEDGER) {
+        const remark = (tx.remark || '').toLowerCase();
+        const txId = (tx.id || tx.transactionId || '').toLowerCase();
+        return remark.includes(searchLower) || txId.includes(searchLower);
+      }
+      if (filter === FILTER_CASINO && casinoView === VIEW_SESSIONS) {
+        const game = (tx.gameCode || '').toLowerCase();
+        const sessionId = (tx.sessionId || '').toLowerCase();
         const provider = (tx.providerCode || '').toLowerCase();
-        return game.includes(searchLower) || roundId.includes(searchLower) || provider.includes(searchLower);
-      })
-    : transactions;
+        return game.includes(searchLower) || sessionId.includes(searchLower) || provider.includes(searchLower);
+      }
+      const game = (tx.gameName || tx.gameCode || '').toLowerCase();
+      const roundId = (tx.providerRoundId || tx.sessionId || '').toLowerCase();
+      const provider = (tx.providerCode || '').toLowerCase();
+      return game.includes(searchLower) || roundId.includes(searchLower) || provider.includes(searchLower);
+    });
+  }, [transactions, search, filter, casinoView]);
 
   return (
     <>
@@ -326,7 +333,7 @@ function GameHistory() {
                                 <td>₹{Number(tx.betAmount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                 <td>
                                   <span className={`status_badge status_${statusClass(tx.status)}`}>
-                                    {tx.status ? String(tx.status).charAt(0).toUpperCase() + String(tx.status).slice(1).toLowerCase() : '—'}
+                                    {formatStatusLabel(tx.status)}
                                   </span>
                                 </td>
                                 <td className={tx.status && String(tx.status).toLowerCase() === 'win' ? 'amount_positive' : 'amount_negative'}>
@@ -355,7 +362,7 @@ function GameHistory() {
                         <div className="transaction_card_title">
                           <h3>{tx.gameName || tx.gameCode || 'Game'}</h3>
                           <span className={`status_badge status_${statusClass(tx.status)}`}>
-                            {tx.status ? String(tx.status).charAt(0).toUpperCase() + String(tx.status).slice(1).toLowerCase() : '—'}
+                            {formatStatusLabel(tx.status)}
                           </span>
                         </div>
                       </div>
@@ -451,7 +458,7 @@ function GameHistory() {
                 <div className="game_history_modal_row">
                   <span className="game_history_modal_label">Side</span>
                   <span className={`game_history_modal_value ${selectedTransaction.status && String(selectedTransaction.status).toLowerCase() === 'win' ? 'amount_positive' : 'amount_negative'}`}>
-                    {selectedTransaction.status ? String(selectedTransaction.status).charAt(0).toUpperCase() + String(selectedTransaction.status).slice(1).toLowerCase() : '—'}
+                    {formatStatusLabel(selectedTransaction.status)}
                   </span>
                 </div>
                 <div className="game_history_modal_row">

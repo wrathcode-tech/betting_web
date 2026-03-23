@@ -40,6 +40,7 @@ function pickLimitField(obj, keys) {
 }
 
 const MIN_KEYS = [
+    'minbet',
     'minBet',
     'min_bet',
     'minimumBet',
@@ -62,6 +63,7 @@ const MIN_KEYS = [
 ]
 
 const MAX_KEYS = [
+    'maxbet',
     'maxBet',
     'max_bet',
     'maximumBet',
@@ -152,4 +154,28 @@ export function extractStakeLimitFields(obj) {
  */
 export function formatMinMaxLabel(market, payloadFallback) {
     return minMaxFromObject(market) || minMaxFromObject(payloadFallback) || ''
+}
+
+/**
+ * Socket/API odds root ya event config se numeric min/max stake (place-bet validation).
+ * @param {Record<string, unknown>|null|undefined} obj
+ * @returns {{ min: number|null, max: number|null }}
+ */
+export function getNumericStakeLimitsFromPayload(obj) {
+    if (!obj || typeof obj !== 'object') {
+        return { min: null, max: null }
+    }
+    const minRaw = pickLimitField(obj, MIN_KEYS)
+    const maxRaw = pickLimitField(obj, MAX_KEYS)
+    let min = null
+    let max = null
+    if (minRaw !== undefined) {
+        const n = Number(minRaw)
+        if (Number.isFinite(n) && n >= 0) min = n
+    }
+    if (maxRaw !== undefined) {
+        const n = Number(maxRaw)
+        if (Number.isFinite(n) && n >= 0) max = n
+    }
+    return { min, max }
 }
