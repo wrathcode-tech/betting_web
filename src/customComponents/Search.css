@@ -29,13 +29,25 @@
     scrollbar-color: rgba(249, 122, 49, 0.4) rgba(255, 255, 255, 0.1);
 }
 
+.search_results_block.search_results_section_block .search_results_list {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+}
+
+.search_results_block.search_results_section_block .search_result_item {
+    flex-direction: column;
+    gap: 8px;
+}
+
 .search_modal::-webkit-scrollbar {
     width: 6px;
 }
+
 /* Slider scroll: landing jaisa – parent clip na kare, wrapper overflow-x: auto (index.css) se scroll ho */
 .search_modal .top_slot_outer {
     overflow: visible;
 }
+
 /* Landing page jaisa: transform + drag only, scroll last item tak (no gap) */
 .search_modal .game_items_slider_wrapper {
     width: 100%;
@@ -43,6 +55,7 @@
     /* Allow vertical modal scroll when touching slider on mobile */
     touch-action: pan-x pan-y;
 }
+
 .search_modal .game_items_slider_wrapper .game_items_slider {
     display: flex !important;
     flex-wrap: nowrap !important;
@@ -160,7 +173,7 @@
 
 .search_box_bl {
     align-items: center;
-    background-color:#090c1163;
+    background-color: #090c1163;
     border: 1px solid #2a3546;
     cursor: text;
     color: #fff;
@@ -182,7 +195,9 @@
     padding: 0px;
 }
 
-.search_box_bl input[type="text"]:focus-visible{ outline: none; }
+.search_box_bl input[type="text"]:focus-visible {
+    outline: none;
+}
 
 /* Mobile view - bottom slide animation */
 @media (max-width: 991px) {
@@ -204,6 +219,7 @@
             transform: translateY(100%);
             opacity: 0;
         }
+
         to {
             transform: translateY(0);
             opacity: 1;
@@ -304,13 +320,18 @@
     .search_modal .top_slot_outer .game_items_inner:hover {
         transform: none;
     }
+
+    .search_results_block.search_results_section_block .search_results_list {
+
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 .search_header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding:5px 18px 10px 18px;
+    padding: 5px 18px 10px 18px;
 }
 
 .search_back_btn {
@@ -345,51 +366,59 @@
 }
 
 .search_content {
-    padding:5px 20px;
+    padding: 5px 20px;
 }
 
 
 @media (max-width: 767px) {
 
-.search_modal {
-    top: 0px;
-    bottom: 0;
-    max-height: 100vh;
-    border-radius: 0px;
-    padding:10px 0px;
-}
+    .search_modal {
+        top: 0px;
+        bottom: 0;
+        max-height: 100vh;
+        border-radius: 0px;
+        padding: 10px 0px;
+    }
 
-/* Trending grid (991 rules) — yahan generic wrapper overflow na tode */
-.search_modal .top_slot_outer .game_items_slider_wrapper {
-    overflow: visible !important;
-}
+    /* Trending grid (991 rules) — yahan generic wrapper overflow na tode */
+    .search_modal .top_slot_outer .game_items_slider_wrapper {
+        overflow: visible !important;
+    }
 
-/* Chhote tiles, zyada columns — mobile casino game cards (~130px) jaisa */
-.search_modal .top_slot_outer .game_items_slider_wrapper .game_items_slider {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 8px;
-}
+    /* Chhote tiles, zyada columns — mobile casino game cards (~130px) jaisa */
+    .search_modal .top_slot_outer .game_items_slider_wrapper .game_items_slider {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 8px;
+    }
 
-.search_modal .top_slot_outer .game_items_inner {
-    border-radius: 5px;
-}
+    .search_modal .top_slot_outer .game_items_inner {
+        border-radius: 5px;
+    }
 
-.search_modal .top_slot_outer .game_items_inner img {
-    border-radius: 5px;
-    aspect-ratio: 130 / 168;
-}
+    .search_modal .top_slot_outer .game_items_inner img {
+        border-radius: 5px;
+        aspect-ratio: 130 / 168;
+    }
 
-.search_modal .top_slot_outer .game_items_inner .playbtn {
-    width: 36px;
-}
+    .search_modal .top_slot_outer .game_items_inner .playbtn {
+        width: 36px;
+    }
 
-.search_box_bl input[type="text"] {
-    font-size: 12px; }
+    .search_box_bl input[type="text"] {
+        font-size: 12px;
+    }
 
     .search_box_bl {
-        height: 48px; }  
-        
-        .search_header h2 {
-            font-size: 16px; }        
+        height: 48px;
+    }
+
+    .search_header h2 {
+        font-size: 16px;
+    }
+
+    .search_results_block.search_results_section_block .search_results_list {
+
+        grid-template-columns: repeat(3, 1fr);
+    }
 
 }

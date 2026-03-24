@@ -29,7 +29,6 @@ import { collectBookBetsFromOpenAndSlip } from './bookSummaryUtils'
 const CASHOUT_COMMISSION = 0.05 // 5% of total bet (stake)
 /** Open bets: high limit. (gameId/sport query kuch backends par error / empty deta hai — filter client-side.) */
 const OPEN_BETS_QUERY = () => ({ page: 1, limit: 100 })
-
 /** API / axios pehle hi response.data de chuka hota hai — alag-alag shapes */
 function parseOpenBetsFromResponse(res) {
     const raw = res?.data ?? res
@@ -2125,8 +2124,9 @@ function CricketDetail() {
                                             const statusText = [s.ScoreStatus, s.LiveCommentary, s.Message].filter(Boolean).join(' · ') || '—'
                                             return (
                                                 <>
-                                                    <div className='cricket_live_center'>
+                                                    <div className='cricket_live_center flex_direction_column'>
                                                         <span className='cricket_live_toss'>{statusText}</span>
+                                                        <div className='cricket_live_over_box desktop_view'>{overStr}</div>
                                                     </div>
                                                     <div className='cricket_live_top_panel'>
                                                         <div className='cricket_live_team_left'>
@@ -2138,7 +2138,7 @@ function CricketDetail() {
                                                                 <span className='cricket_live_score_box'>{s.Team1OnlyScore || s.Team1Score || '—'}</span>
                                                                 <span className='cricket_live_crr'>CRR: {crr}</span>
                                                             </div>
-                                                            <div className='cricket_live_over_box desktop_view'>{overStr}</div>
+                                                         
                                                         </div>
 
                                                         <div className='cricket_live_team_right'>

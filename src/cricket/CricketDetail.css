@@ -3,6 +3,11 @@
     margin: 15px 0px;
 }
 
+/* Cricket detail: hide Book button near Cashout/Loss Cut */
+.book_summary_wrap {
+    display: none !important;
+}
+
 .match_vs_team_list ul li {
     flex-shrink: 0;
     min-width: 150px;
@@ -1891,6 +1896,8 @@ button.toggleup_btn {
     background: rgba(233, 30, 99, 0.9);
     color: #fff;
 }
+
+.cricket_live_center.flex_direction_column{ flex-direction: column; }
 
 .betslip_open_bet_info {
     flex: 1;

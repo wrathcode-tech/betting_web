@@ -525,7 +525,7 @@ function ReferralProgram() {
                                 <div className="referral_table_block">
                                     <div className="transactions_header align-items-center">
                                         <h3>Rewards History</h3>
-                                        <div className="referral_filters_row">
+                                        <div className="referral_filters_row history_filters_row">
                                             <input type="date" value={rewardsFrom} onChange={(e) => setRewardsFrom(e.target.value)} className="referral_date_input" placeholder="From" />
                                             <input type="date" value={rewardsTo} onChange={(e) => setRewardsTo(e.target.value)} className="referral_date_input" placeholder="To" />
                                             <button type="button" className="referral_btn_filter" onClick={() => loadRewardsHistory(1)}>Apply</button>
@@ -572,7 +572,7 @@ function ReferralProgram() {
                             <div className="referral_referrals_content">
                                 <div className="transactions_header align-items-center">
                                     <h3>Referrals History</h3>
-                                    <div className="referral_filters_row">
+                                    <div className="referral_filters_row referrals_filters_row_his">
                                         <input type="date" value={referralFrom} onChange={(e) => setReferralFrom(e.target.value)} className="referral_date_input" placeholder="From" />
                                         <input type="date" value={referralTo} onChange={(e) => setReferralTo(e.target.value)} className="referral_date_input" placeholder="To" />
                                       <div className="referral_filters_row_buttons d-flex align-items-center gap-2">

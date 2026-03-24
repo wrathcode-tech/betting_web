@@ -1865,6 +1865,8 @@ html {
     transform: none;
 }
 
+
+
 .referral_balance_extra {
     display: flex;
     flex-wrap: wrap;
@@ -2346,22 +2348,48 @@ html {
     }
 
 
-.referral_filters_row_buttons.d-flex {
-    width: 100%;
-}
+    .referral_filters_row_buttons.d-flex {
+        width: 100%;
+    }
 
-.referral_filters_row_buttons button {
-    width: 100%;
-}
-input.transactions_search_input.w-100_inmobile {
-    width: 100%; min-width: 100%;
-}
+    .referral_filters_row_buttons button {
+        width: 100%;
+    }
+
+    input.transactions_search_input.w-100_inmobile {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .referral_apply_row {
+        flex-wrap: nowrap;
+    }
+    .referral_apply_section {
+        margin-bottom: 20px;
+        padding: 13px 12px; }
+
+    .referral_btn_apply {
+        padding: 6px 15px;
+        font-size: 12px;
+    }
+
+    .referral_filters_row {
+        flex-wrap: nowrap; }
+
+    .referral_apply_input {
+        padding: 7px 12px;
+        font-size: 12px;
+    }
 
     .referral_header .referral_program_tabs button {
-        width: 49%; }
+        width: 49%;
+    }
 
     .referral_date_input {
         width: 100%;
+    }
+    .referral_filters_row.referrals_filters_row_his {
+        flex-wrap: wrap;
     }
 
     .referral_filters_row {
@@ -2369,7 +2397,10 @@ input.transactions_search_input.w-100_inmobile {
     }
 
     .referral_table_block .transactions_search_input {
-        min-width: 220px;
+        min-width: 195px;
+    }
+    .referral_filters_row.history_filters_row {
+        flex-wrap: wrap;
     }
 
     .referral_invite_card .notification_icon {
