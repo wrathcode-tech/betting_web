@@ -7,6 +7,7 @@
     font-size: 14px;
     font-weight: 500;
 }
+
 .platform_service_banner_disabled {
     background-color: rgba(220, 53, 69, 0.2);
     border: 1px solid rgba(220, 53, 69, 0.5);
@@ -72,7 +73,7 @@
 .referral_program_content {
     width: 100%;
     display: block;
-    background-color:#161f2c;
+    background-color: #161f2c;
     padding: 18px;
     border-radius: 18px;
     margin: 20px 0px;
@@ -123,7 +124,11 @@
     transition: transform 0.3s ease;
 }
 
-.referral_profit_tl_item img{ width: 100%; height: 100%; object-fit: contain; }
+.referral_profit_tl_item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
 
 .referral_profit_tl:hover .referral_profit_tl_item {
     transform: scale(1.1);
@@ -168,7 +173,11 @@
     transition: transform 0.3s ease;
 }
 
-.notification_icon img{ width: 100%; height: 100%; object-fit: contain; }
+.notification_icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
 
 .invite_users_bl:hover .notification_icon {
     transform: scale(1.1) rotate(5deg);
@@ -497,7 +506,7 @@ table {
     width: 15px;
 }
 
- table tbody tr td.pricevalue {
+table tbody tr td.pricevalue {
     color: #3C8C57;
 }
 
@@ -540,8 +549,18 @@ table {
     overflow-y: auto;
 }
 
-.rewards_history_data_left tr th{ font-size: 15px; color: #AFC7C7; font-weight: 300; }
-.rewards_history_data_left tr td{ font-size: 14px; color: #fff; font-weight: 300; padding: 8px 0px; }
+.rewards_history_data_left tr th {
+    font-size: 15px;
+    color: #AFC7C7;
+    font-weight: 300;
+}
+
+.rewards_history_data_left tr td {
+    font-size: 14px;
+    color: #fff;
+    font-weight: 300;
+    padding: 8px 0px;
+}
 
 .live_rewards_right {
     min-width: 414px;
@@ -559,37 +578,49 @@ table {
     box-shadow: 0 10px 25px rgba(55, 112, 74, 0.4);
 }
 
-.live_rewards_right:before{ content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 155px;
-     background-image: url('../../public/images/rewardsbg.svg'); background-size: contain; background-position: left top;
-      background-repeat: no-repeat; }
+.live_rewards_right:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 155px;
+    background-image: url('../../public/images/rewardsbg.svg');
+    background-size: contain;
+    background-position: left top;
+    background-repeat: no-repeat;
+}
 
-      .totalrewards_bl {
-        width: 100%;
-        text-align: center;
-        background: #00000020;
-        position: relative;
-        z-index: 666;
-        padding: 10px;
-        border-radius: 10px;
-        border: 1px solid #666666a3;
-        margin-bottom: 15px;
-        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-        cursor: pointer;
-    }
+.totalrewards_bl {
+    width: 100%;
+    text-align: center;
+    background: #00000020;
+    position: relative;
+    z-index: 666;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #666666a3;
+    margin-bottom: 15px;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
 
-    .totalrewards_bl:hover {
-        transform: translateY(-3px) scale(1.02);
-        border-color: #3C8C57;
-        box-shadow: 0 8px 20px rgba(60, 140, 87, 0.3);
-    }
+.totalrewards_bl:hover {
+    transform: translateY(-3px) scale(1.02);
+    border-color: #3C8C57;
+    box-shadow: 0 8px 20px rgba(60, 140, 87, 0.3);
+}
 
-    .totalrewards_bl:hover h6 {
-        transform: scale(1.05);
-        transition: transform 0.3s ease;
-    }  
-    
+.totalrewards_bl:hover h6 {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}
+
 .live_rewards_right .table-responsive {
-        height: 150px; position: relative; z-index: 666; }
+    height: 150px;
+    position: relative;
+    z-index: 666;
+}
 
 /* Table Scrollbar Styling */
 .table-responsive {
@@ -598,32 +629,39 @@ table {
     max-height: 400px;
     /* Reserve space for scrollbar to prevent layout shift */
     scrollbar-gutter: stable;
-    scrollbar-width: thin; /* Firefox - thin scrollbar always reserves space */
-    -ms-overflow-style: none; /* IE and Edge - hide by default */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scrollbar-width: thin;
+    /* Firefox - thin scrollbar always reserves space */
+    -ms-overflow-style: none;
+    /* IE and Edge - hide by default */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
 }
 
 /* Hide scrollbar by default but reserve space */
 .table-responsive::-webkit-scrollbar {
     width: 8px;
     height: 8px;
-    background: transparent; /* Transparent track */
+    background: transparent;
+    /* Transparent track */
 }
 
 .table-responsive::-webkit-scrollbar-track {
-    background: transparent; /* No background color */
+    background: transparent;
+    /* No background color */
     border-radius: 4px;
 }
 
 .table-responsive::-webkit-scrollbar-thumb {
-    background: transparent; /* Hide thumb by default */
+    background: transparent;
+    /* Hide thumb by default */
     border-radius: 4px;
     transition: background 0.3s ease;
 }
 
 /* Show scrollbar on hover */
 .table-responsive:hover::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3); /* Show thumb on hover */
+    background: rgba(255, 255, 255, 0.3);
+    /* Show thumb on hover */
 }
 
 .table-responsive:hover::-webkit-scrollbar-thumb:hover {
@@ -638,52 +676,75 @@ table {
 .table-responsive:hover {
     scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
-    
-    .totalrewards_bl span{ font-size: 11.50px; color: #ffffffa3; font-weight: 300; }
-    .totalrewards_bl h6{ font-size: 24px; color: #fff; font-weight: 600; }
 
-    .totalrewards_bl img{ position: absolute; bottom: 0px; }
-    .totalrewards_bl img.rewards_iconleft{ left: 0; }
-    .totalrewards_bl img.rewards_iconright{ right: 0; }
+.totalrewards_bl span {
+    font-size: 11.50px;
+    color: #ffffffa3;
+    font-weight: 300;
+}
 
-    .commingsoon {
-        border: 1px solid #552f1a91;
-        border-radius: 6px;
-        position: relative;
-        max-width: 385px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    } 
-    
-    .live_rewards_right_bottom {
-        width: 100%;
-        display: block;
-        margin-top: 20px;
-    }
+.totalrewards_bl h6 {
+    font-size: 24px;
+    color: #fff;
+    font-weight: 600;
+}
 
-    .commingsoon button {
-        background: #ffffff10;
-        border: 1px solid #778B8C;
-        color: #fff;
-        font-size: 12px;
-        padding: 8px 18px;
-        border-radius: 6px;
-        position: absolute;
-    }
-    button.leaderboard_btn {
-        width: 100%;
-        background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
-        box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
-        border: none;
-        margin-top: 15px;
-        color: #fff;
-        font-size: 13px;
-        padding: 10px 24px;
-        border-radius: 8px;
-    }
+.totalrewards_bl img {
+    position: absolute;
+    bottom: 0px;
+}
 
-    .live_rewards_right h5{ font-weight: 700; position: relative; z-index: 666; }
+.totalrewards_bl img.rewards_iconleft {
+    left: 0;
+}
+
+.totalrewards_bl img.rewards_iconright {
+    right: 0;
+}
+
+.commingsoon {
+    border: 1px solid #552f1a91;
+    border-radius: 6px;
+    position: relative;
+    max-width: 385px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.live_rewards_right_bottom {
+    width: 100%;
+    display: block;
+    margin-top: 20px;
+}
+
+.commingsoon button {
+    background: #ffffff10;
+    border: 1px solid #778B8C;
+    color: #fff;
+    font-size: 12px;
+    padding: 8px 18px;
+    border-radius: 6px;
+    position: absolute;
+}
+
+button.leaderboard_btn {
+    width: 100%;
+    background: linear-gradient(1turn, #AC5422 .8%, #F97A31);
+    box-shadow: 0 4px 0px #5A2304, inset 0 4px 3px #ffffff4d;
+    border: none;
+    margin-top: 15px;
+    color: #fff;
+    font-size: 13px;
+    padding: 10px 24px;
+    border-radius: 8px;
+}
+
+.live_rewards_right h5 {
+    font-weight: 700;
+    position: relative;
+    z-index: 666;
+}
 
 /* Referrals Tab Styles */
 .my_referrals_title {
@@ -727,7 +788,7 @@ table {
 }
 
 .download_csv_btn {
-    background:#ffffff10;
+    background: #ffffff10;
     border: none;
     color: #fff;
     font-size: 14px;
@@ -778,10 +839,10 @@ table {
 .referral_program_content.tabcontent_referrals2 {
     width: 100%;
     display: block;
-    background-color:transparent; 
+    background-color: transparent;
     padding: 24px 0px;
-     border-radius: 0px;
-    margin:0px; 
+    border-radius: 0px;
+    margin: 0px;
 }
 
 /* Responsive Media Queries */
@@ -805,17 +866,17 @@ table {
     .referral_program_section h2 {
         font-size: 30px;
     }
-    
+
     .programflex_bl {
         flex-direction: column;
         gap: 20px !important;
     }
-    
+
     .referral_profit_tl,
     .invite_users_bl {
         width: 100%;
     }
-    
+
     .notification_icon {
         right: 10px;
         max-width: 180px;
@@ -825,14 +886,15 @@ table {
     .referral_campaign_section .d-flex.align-items-center.justify-content-between.gap-4 {
         flex-direction: column;
     }
-    
+
     .referral_input_group {
         gap: 10px;
     }
 
     .referral_input_group input {
-        font-size: 15px; }
-    
+        font-size: 15px;
+    }
+
     .referral_share_cnt {
         gap: 8px;
     }
@@ -840,7 +902,7 @@ table {
     .d-flex.align-items-center.justify-content-between.gap-4.mt-4 {
         margin-top: 15px !important;
     }
-    
+
     .referral_share_btn {
         flex-direction: column;
         width: 100%;
@@ -848,34 +910,34 @@ table {
     }
 
     .balance_section .balance_list .d-flex {
-        flex-direction:row;
+        flex-direction: row;
     }
-    
+
     button.referral_share_btn {
         width: 100%;
     }
-    
+
     .balance_section .d-flex {
         flex-direction: column;
         gap: 20px !important;
     }
-    
+
     .referrals_profit_data .d-flex {
         flex-direction: column;
         gap: 20px !important;
     }
-    
+
     .rewards_history_section {
         flex-direction: column !important;
         gap: 20px !important;
     }
-    
+
     .live_rewards_right {
         min-width: 100%;
         width: 100%;
     }
 
-   
+
 }
 
 /* Tablet (768px to 991px) */
@@ -883,96 +945,99 @@ table {
     .referral_program_section {
         padding: 15px 0;
     }
-    
+
     .referral_program_section h2 {
         font-size: 22px;
         margin-bottom: 20px;
     }
 
-.transactions_header.align-items-center{
+    .transactions_header.align-items-center {
         align-items: start !important;
     }
-    
+
     .referral_program_content {
         padding: 15px;
         margin: 15px 0;
     }
-    
+
     .referral_profit_tl {
         min-height: 150px;
         padding: 15px;
     }
-    
 
-    
+
+
     .referral_profit_tl ul {
         gap: 15px;
         padding: 0px 15px;
     }
-    
+
     .referral_profit_tl_item {
         width: 60px;
     }
-    
+
     .invite_users_bl {
         padding: 20px;
         min-height: 150px;
     }
-    
+
     .notification_icon {
         max-width: 150px;
         margin-top: 15px;
     }
-    
+
     .referral_campaign_section h4 {
         font-size: 16px;
     }
-    
+
     .referral_campaign_section h4 span {
         font-size: 11px;
         margin-left: 12px;
         padding: 4px 10px;
     }
-    
+
     .balance_section {
         padding: 15px;
         margin: 15px 0;
     }
-    
+
     .balance_list {
         padding: 18px;
         background-color: #16202c80;
     }
-    
+
     .referrals_profit_data_left {
         padding: 18px;
     }
-    
+
     .rewards_history_data_left {
         padding: 18px;
     }
+
     .dashboard_page {
         padding: 10px 0px 60px;
     }
-    
+
     .my_referrals_title {
         font-size: 18px;
     }
-    
+
     .referrals_filter_bar {
         gap: 12px !important;
     }
 
     .referrals_filter_dropdown select {
-        font-size: 12px; }
+        font-size: 12px;
+    }
 
-        .download_csv_btn {
-            font-size: 12px; }
-    
+    .download_csv_btn {
+        font-size: 12px;
+    }
+
     .referrals_filter_dropdown {
         width: 100%;
     }
-    
+
     .download_csv_btn {
         width: 100%;
     }
@@ -992,165 +1057,167 @@ table {
         font-size: 24px;
         margin-bottom: 15px;
     }
-    
+
     .referral_program_tabs {
         padding: 8px;
     }
-    
+
     .referral_program_tabs button {
         font-size: 14px;
         padding: 8px;
     }
-    
+
     .referral_program_content {
         padding: 5px;
         margin: 12px 0;
         border-radius: 12px;
         background-color: transparent;
     }
-    
+
     .referral_profit_tl {
         min-height: auto;
         padding: 12px;
     }
-    
+
     .referral_profit_tl ul li {
         flex-direction: column;
         text-align: center;
         gap: 8px;
     }
-    
+
     .referral_profit_tl_item {
         width: 50px;
     }
-    
+
     .referral_profit_tl ul li h5 {
         font-size: 12px;
     }
-    
+
     .referral_profit_tl ul li span.pricevalue {
         font-size: 16px;
     }
-    
+
     .invite_users_bl {
         padding: 15px;
         min-height: auto;
     }
-    
+
     .invite_users_bl h5 {
         font-size: 14px;
     }
-    
+
     .invite_users_bl ul li {
         font-size: 12px;
     }
-    
+
     .referral_campaign_section {
         margin-top: 15px;
     }
-    
+
     .referral_campaign_section h4 {
         font-size: 14px;
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
-    
+
     .referral_campaign_section h4 span {
         margin-left: 0;
         display: inline-block;
         width: fit-content;
     }
-    
+
     .referral_linkcopy {
         padding: 10px;
         margin-top: 12px;
     }
-    
+
     .referral_linkcopy i {
         font-size: 24px;
         margin-left: 0;
     }
-    
+
     .referral_input_group_label label {
         font-size: 12px;
     }
-    
+
     .referral_input_group input {
         font-size: 14px;
     }
-    
+
     button.referral_copy_btn {
         min-height: 40px;
         font-size: 12px;
     }
-    
+
     .referral_share_cnt p {
         font-size: 12px;
     }
-    
+
     button.referral_share_btn {
         font-size: 12px;
         padding: 8px 16px;
     }
-    
+
     .balance_section {
         padding: 12px;
         margin: 12px 0;
     }
-    
+
     .balance_section h5 {
         font-size: 16px;
     }
-    
+
     .balance_list {
         padding: 15px;
     }
-    
+
     .balance_list .d-flex h6 {
         font-size: 14px;
     }
-    
+
     .balance_list .d-flex button {
         font-size: 12px;
     }
-    
+
     .balance_list ul li .balance_list_cnt_lft p {
         font-size: 12px;
     }
-    
+
     .balance_list ul li .balance_list_cnt_lft p span {
         font-size: 14px;
     }
-    
+
     button.balance_list_btn {
         font-size: 12px;
         padding: 8px 16px;
     }
+
     .balance_list_cnt_rgt span {
-        font-size: 14px; }
-    
+        font-size: 14px;
+    }
+
     .referrals_profit_data_left h5 {
         font-size: 16px;
     }
-    
+
     .referrals_profit_data_left {
         padding: 15px;
     }
-    
+
     .referral_program_section table thead tr th {
         font-size: 12px;
     }
-    
+
     .referral_program_section table tbody tr td {
         font-size: 11px;
         padding: 5px 0px;
     }
-    
+
     .referral_program_section table tbody tr td img {
         width: 12px;
     }
-    
+
     .rewards_history_data_left h5 {
         font-size: 16px;
     }
@@ -1158,59 +1225,59 @@ table {
     .right_content_side .container {
         padding: 0px;
     }
-    
+
     .rewards_history_data_left tr th {
         font-size: 12px;
     }
-    
+
     .rewards_history_data_left tr td {
         font-size: 11px;
         padding: 6px 0px;
     }
-    
+
     .live_rewards_right {
         padding: 12px;
     }
-    
+
     .live_rewards_right h5 {
         font-size: 16px;
     }
-    
+
     .totalrewards_bl {
         padding: 8px;
     }
-    
+
     .totalrewards_bl span {
         font-size: 10px;
     }
-    
+
     .totalrewards_bl h6 {
         font-size: 18px;
     }
-    
+
     .live_rewards_right .table-responsive {
         height: 120px;
     }
-    
+
     .commingsoon {
         max-width: 100%;
     }
-    
+
     button.leaderboard_btn {
         font-size: 12px;
         padding: 8px 16px;
     }
-    
+
     .my_referrals_title {
         font-size: 16px;
         margin-bottom: 15px;
     }
-    
+
     .referrals_filter_dropdown select {
         font-size: 12px;
         padding: 8px 30px 8px 12px;
     }
-    
+
     .referrals_filter_dropdown i {
         font-size: 16px;
         right: 10px;
@@ -1221,16 +1288,16 @@ table {
         margin-top: 15px;
         right: -8px;
     }
-    
+
     .download_csv_btn {
         font-size: 12px;
         padding: 8px 16px;
     }
-    
+
     .referrals_no_data {
         padding: 40px 15px;
     }
-    
+
     .no_data_icon {
         width: 150px;
         height: 150px;
@@ -1239,11 +1306,11 @@ table {
     .referral_campaign_section .d-flex.align-items-center.justify-content-between.gap-4 {
         gap: 10px !important;
     }
-    
+
     .no_data_message {
         font-size: 14px;
     }
-    
+
     .table-responsive {
         max-height: 300px;
     }
@@ -1254,118 +1321,119 @@ table {
     .referral_program_section {
         padding: 10px 0;
     }
-    
+
     .referral_program_section h2 {
         font-size: 20px;
         margin-bottom: 12px;
     }
-    
+
     .referral_program_tabs {
         padding: 6px;
         border-radius: 8px;
     }
-    
+
     .referral_program_tabs button {
         font-size: 12px;
         padding: 6px;
     }
-    
+
     .referral_program_content {
         padding: 0px;
         margin: 10px 0;
         border-radius: 10px;
     }
-    
+
     .referral_profit_tl ul {
         padding: 0px 10px;
         gap: 12px;
     }
-    
+
     .referral_profit_tl_item {
         width: 40px;
     }
-    
+
     .referral_profit_tl ul li h5 {
         font-size: 11px;
     }
-    
+
     .referral_profit_tl ul li span.pricevalue {
         font-size: 14px;
     }
-    
+
     .invite_users_bl {
         padding: 12px;
         margin-top: 6px;
     }
-    
+
     .invite_users_bl h5 {
         font-size: 12px;
     }
-    
+
     .invite_users_bl ul li {
         font-size: 11px;
     }
-    
+
     .referral_campaign_section h4 {
         font-size: 13px;
     }
-    
+
     .referral_linkcopy {
         padding: 8px;
-        gap:5px;
+        gap: 5px;
     }
-    
+
     .referral_linkcopy i {
         font-size: 20px;
     }
-    
+
     .referral_input_group_label label {
         font-size: 11px;
     }
-    
+
     .referral_input_group input {
         font-size: 12px;
     }
-    
+
     button.referral_copy_btn {
         min-height: 35px;
         font-size: 11px;
     }
-    
+
     .referral_share_cnt p {
         font-size: 11px;
     }
-    
+
     button.referral_share_btn {
         font-size: 11px;
         padding: 6px 12px;
     }
-    
+
     .balance_section {
         padding: 10px;
     }
-    
+
     .balance_list {
         padding: 12px;
     }
-    
+
     .referrals_profit_data_left {
         padding: 12px;
     }
-    
+
     .rewards_history_data_left {
         padding: 12px;
     }
-    
+
     .table-responsive {
         max-height: 250px;
     }
-    
+
     .no_data_icon {
         width: 120px;
         height: 120px;
     }
-    
+
+
     .no_data_message {
         font-size: 12px;
     }
@@ -1376,33 +1444,33 @@ table {
     .referral_program_section h2 {
         font-size: 18px;
     }
-    
+
     .referral_program_tabs button {
         font-size: 11px;
         padding: 5px;
     }
-    
+
     .referral_profit_tl_item {
         width: 35px;
     }
-    
+
     .referral_profit_tl ul li h5 {
         font-size: 10px;
         margin-bottom: 5px;
     }
-    
+
     .referral_profit_tl ul li span.pricevalue {
         font-size: 12px;
     }
-    
+
     .invite_users_bl h5 {
         font-size: 11px;
     }
-    
+
     .invite_users_bl ul li {
         font-size: 10px;
     }
-    
+
     .table-responsive {
         max-height: 200px;
     }
@@ -1503,26 +1571,26 @@ html {
     .table-responsive {
         display: none;
     }
-    
+
     .referral_cards_wrapper {
         display: flex;
     }
-    
+
     .referral_card {
         padding: 12px;
         background-color: #16202c82;
         border: 1px solid rgb(255 255 255 / 7%);
     }
-    
+
     .referral_label,
     .referral_value {
         font-size: 11px;
     }
-    
+
     .referral_value.pricevalue {
         font-size: 12px;
     }
-    
+
     .referral_value img {
         width: 10px;
         height: 10px;
@@ -1651,9 +1719,11 @@ html {
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 12px;
 }
+
 .referral_invite_card .notification_icon {
     max-width: 120px;
-    right: -20px; }
+    right: -20px;
+}
 
 .referral_invite_card h3 {
     font-size: 14px;
@@ -1664,7 +1734,7 @@ html {
 
 .referral_invite_card ul {
     margin: 0;
-    padding-left:0px;
+    padding-left: 0px;
     font-size: 13px;
     color: rgba(255, 255, 255, 0.85);
     line-height: 1.6;
@@ -1908,6 +1978,12 @@ html {
     outline: none;
 }
 
+.referral_date_input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.95;
+    cursor: pointer;
+}
+
 .referral_btn_filter {
     padding: 8px 16px;
     font-size: 13px;
@@ -1925,6 +2001,10 @@ html {
 }
 
 .referral_btn_export {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     padding: 8px 16px;
     font-size: 13px;
     font-weight: 600;
@@ -1934,6 +2014,11 @@ html {
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+.referral_btn_export i {
+    font-size: 15px;
+    line-height: 1;
 }
 
 .referral_btn_export:hover:not(:disabled) {
@@ -2143,8 +2228,10 @@ html {
     .referral_stats_row {
         grid-template-columns: repeat(1, 1fr);
     }
+
     .referral_invite_card .notification_icon {
-        max-width: 90px; }
+        max-width: 90px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -2152,38 +2239,141 @@ html {
         flex-direction: column;
         align-items: stretch;
     }
+
     .referral_header .referral_program_tabs {
         margin-left: 0;
     }
+
     .referral_stats_row {
         grid-template-columns: 1fr;
     }
+
     .referral_link_grid {
         grid-template-columns: 1fr;
     }
+
     .referral_balance_card {
         flex-direction: column;
         align-items: stretch;
     }
+
     .referral_btn_claim {
         width: 100%;
     }
+
+    /* Referrals History: mobile card layout */
+    .referral_referrals_content .referral_table_wrap {
+        border: none;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .referral_referrals_content .referral_table_wrap .referral_table {
+        display: block;
+        width: 100%;
+    }
+
+    .referral_referrals_content .referral_table_wrap .referral_table thead {
+        display: none;
+    }
+
+    .referral_referrals_content .referral_table_wrap .referral_table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .referral_referrals_content .referral_table_wrap .referral_table tbody tr {
+        display: block;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .referral_referrals_content .referral_table_wrap .referral_table tbody td {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 12px;
+    }
+
+    .referral_referrals_content .referral_table_wrap .referral_table tbody td:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .referral_referrals_content .referral_table_wrap .referral_table tbody td::before {
+        content: attr(data-label);
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.62);
+        font-weight: 600;
+        min-width: 98px;
+        text-align: left;
+    }
+
+    .referral_referrals_content .referral_table_wrap.no-data .referral_table tbody tr {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 220px;
+        padding: 12px;
+    }
+
+    .referral_referrals_content .referral_table_wrap.no-data .referral_table tbody tr td {
+        display: flex;
+        justify-content: center;
+        text-align: center;
+        border-bottom: none;
+        padding: 0;
+    }
+
+    .referral_referrals_content .referral_table_wrap.no-data .referral_table tbody tr td::before {
+        display: none;
+    }
 }
+
+
 
 @media (max-width:667px) {
 
-.referral_invite_card .notification_icon {
-    max-width: 70px; }
+    .referral_invite_card .notification_icon {
+        max-width: 70px;
+    }
 
+
+.referral_filters_row_buttons.d-flex {
+    width: 100%;
+}
+
+.referral_filters_row_buttons button {
+    width: 100%;
+}
+input.transactions_search_input.w-100_inmobile {
+    width: 100%; min-width: 100%;
+}
+
+    .referral_header .referral_program_tabs button {
+        width: 49%; }
 
     .referral_date_input {
-        width: 100%; }
+        width: 100%;
+    }
 
-        .referral_filters_row {
-            justify-content: space-between;
-        }
+    .referral_filters_row {
+        justify-content: space-between;
+    }
 
-        .referral_table_block .transactions_search_input {
-            min-width: 220px; }
+    .referral_table_block .transactions_search_input {
+        min-width: 220px;
+    }
+
+    .referral_invite_card .notification_icon {
+        max-width: 55px;
+    }
 
 }

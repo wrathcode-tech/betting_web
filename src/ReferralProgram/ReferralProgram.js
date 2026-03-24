@@ -575,17 +575,19 @@ function ReferralProgram() {
                                     <div className="referral_filters_row">
                                         <input type="date" value={referralFrom} onChange={(e) => setReferralFrom(e.target.value)} className="referral_date_input" placeholder="From" />
                                         <input type="date" value={referralTo} onChange={(e) => setReferralTo(e.target.value)} className="referral_date_input" placeholder="To" />
+                                      <div className="referral_filters_row_buttons d-flex align-items-center gap-2">
+                                        <button type="button" className="referral_btn_filter" onClick={() => loadReferralList(1)}>Apply</button>
+                                        <button type="button" className="referral_btn_export" onClick={handleExport} disabled={isExporting}>
+                                            {isExporting ? 'Exporting...' : <><i className="ri-download-2-line" aria-hidden /> CSV</>}
+                                        </button>
+                                        </div>
                                         <input
                                             type="text"
-                                            className="transactions_search_input"
+                                            className="transactions_search_input w-100_inmobile"
                                             placeholder="Search by name, mobile..."
                                             value={referralSearchQuery}
                                             onChange={(e) => setReferralSearchQuery(e.target.value)}
                                         />
-                                        <button type="button" className="referral_btn_filter" onClick={() => loadReferralList(1)}>Apply</button>
-                                        <button type="button" className="referral_btn_export" onClick={handleExport} disabled={isExporting}>
-                                            {isExporting ? 'Exporting...' : 'Export CSV'}
-                                        </button>
                                     </div>
                                 </div>
                                 <div className={`referral_table_wrap ${filteredReferralList.length === 0 ? 'no-data' : ''}`}>
@@ -604,12 +606,12 @@ function ReferralProgram() {
                                                 const status = row?.status ?? '—'
                                                 return (
                                                     <tr key={row?.id ?? row?._id ?? idx}>
-                                                        <td>{(referralPagination.page - 1) * REFERRALS_PAGE_SIZE + idx + 1}</td>
-                                                        <td>{formatDate(dateTime)}</td>
-                                                        <td className="text_uppercase">{userName}</td>
-                                                        <td>{mobile}</td>
-                                                        <td>{status}</td>
-                                                        <td>{typeof totalEarnings === 'number' ? `₹ ${Number(totalEarnings).toFixed(2)}` : totalEarnings}</td>
+                                                        <td data-label="#">{(referralPagination.page - 1) * REFERRALS_PAGE_SIZE + idx + 1}</td>
+                                                        <td data-label="Date & Time">{formatDate(dateTime)}</td>
+                                                        <td data-label="User Name" className="text_uppercase">{userName}</td>
+                                                        <td data-label="Mobile">{mobile}</td>
+                                                        <td data-label="Status">{status}</td>
+                                                        <td data-label="Total Earnings">{typeof totalEarnings === 'number' ? `₹ ${Number(totalEarnings).toFixed(2)}` : totalEarnings}</td>
                                                     </tr>
                                                 )
                                             })}

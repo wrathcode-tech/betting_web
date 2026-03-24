@@ -2268,6 +2268,15 @@ ul.match_type_tabs li.active button {
 }
 
 
+@media (max-width: 400px) and (min-width:380px) {
+
+    .sportsmatch_s.cricket_matches_section .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .sports_grid_odds_columns.sports_grid_desktop_odds_strip {
+        min-width: 330px;
+    }
+
+}
+
+
 @media (max-width: 375px) {
 
     .sports_filter_btn {

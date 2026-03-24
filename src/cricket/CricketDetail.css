@@ -2245,6 +2245,10 @@ span.quicktext {
         font-size: 16px;
     }
 
+tr.cricketbet_mobile_row  td {
+        border-bottom: none;
+        border-right: none;
+    }
 
     .market_no_yes_limits_container.d-flex {
         /* width: max-content; */
@@ -2325,6 +2329,9 @@ span.quicktext {
     .market_no_yes_odds_container>* {
         flex: 0 0 auto;
     }
+
+    .cricket_summary_details_wrapper .odds_section_lay {
+        border-right: none; }
 
     .series_name_row p {
         font-size: 12px;
@@ -2680,6 +2687,9 @@ span.quicktext {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
 }
+
+.odds_section_table tr{ width: 100%; }
+.odds_section_table tbody  { width: 100%; }
 
 .odds_section_table {
     width: max-content;
@@ -3226,6 +3236,15 @@ span.quicktext {
         min-width: 60px;
     }
 
+    .market_no_yes_label {
+        min-width: 150px;
+        max-width: 150px;
+        width: 150px;
+    }
+    .market_no_yes_odds_container {
+        justify-content: end;
+    }
+
 }
 
 @media (max-width: 375px) {
@@ -3310,4 +3329,10 @@ span.quicktext {
     .market_no_yes_btn .odds_size {
         font-size: 9px; }
 
+        .market_no_yes_odds_container {
+            flex-direction: column;
+        }
+
 }
+
+
