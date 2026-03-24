@@ -259,7 +259,7 @@ export function usePlaceBet() {
 }
 
 /**
- * Cashout – get value and execute. useSportsbookOpenBets refetch after cashout.
+ * Cashout execute only — live cashout amount open-bets / socket payload se aata hai (GET cashout-value nahi).
  */
 export function useCashout(betId) {
   const [cashoutValue, setCashoutValue] = useState(null);
@@ -268,25 +268,14 @@ export function useCashout(betId) {
   const [error, setError] = useState(null);
 
   const fetchValue = useCallback(async () => {
-    if (!betId) {
-      setCashoutValue(null);
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await sportsbookApi.getCashoutValue(betId);
-      const val = res?.cashoutValue ?? res?.data?.cashoutValue ?? res?.value;
-      setCashoutValue(val != null ? Number(val) : null);
-    } catch {
-      setCashoutValue(null);
-    } finally {
-      setLoading(false);
-    }
+    if (!betId) setCashoutValue(null);
+    setLoading(false);
   }, [betId]);
 
   useEffect(() => {
-    fetchValue();
-  }, [fetchValue]);
+    setCashoutValue(null);
+    setLoading(false);
+  }, [betId]);
 
   const executeCashout = useCallback(async () => {
     if (!betId) return { success: false };

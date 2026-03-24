@@ -595,16 +595,6 @@ const AuthService = {
     return ApiCallPost(url, {}, headers);
   },
 
-  /** GET /api/v1/sportsbook/bet/{betId}/cashout-value – Get cashout value for a bet. */
-  sportsbookCashoutValue: async (betId) => {
-    const token = sessionStorage.getItem("token");
-    if (!token) return { success: false, message: "Login required" };
-    const { baseBettingSportsbook } = ApiConfig;
-    const url = `${baseBettingSportsbook}/bet/${encodeURIComponent(betId)}/cashout-value`;
-    const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
-    return ApiCallGet(url, headers);
-  },
-
   /** GET /api/v1/sportsbook/loss-limit – Current loss limit settings (dailyLossLimit, isActive, currency). */
   sportsbookGetLossLimit: async () => {
     const token = sessionStorage.getItem("token");

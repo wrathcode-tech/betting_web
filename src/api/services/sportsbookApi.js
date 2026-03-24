@@ -12,7 +12,6 @@
  *   - getOpenBets(params?)
  *   - getBetHistory(params?)
  *   - getBetSummary()
- *   - getCashoutValue(betId)
  *   - cashout(betId)
  */
 
@@ -134,30 +133,6 @@ export async function getBetSummary() {
   return normalizeResponse(res);
 }
 
-/** Same betId ke parallel callers → ek hi HTTP (open-bets refetch + effect overlap). */
-const inflightCashoutValueByBetId = new Map();
-
-/**
- * GET /api/v1/sportsbook/bet/:betId/cashout-value
- * @param {string} betId
- * @returns {Promise<{ cashoutValue?, currency? }>}
- */
-export async function getCashoutValue(betId) {
-  const id = betId != null && betId !== '' ? String(betId) : '';
-  if (!id) {
-    return { success: false, data: null, message: 'Missing betId' };
-  }
-  const existing = inflightCashoutValueByBetId.get(id);
-  if (existing) return existing;
-  const promise = AuthService.sportsbookCashoutValue(id)
-    .then((res) => normalizeResponse(res))
-    .finally(() => {
-      inflightCashoutValueByBetId.delete(id);
-    });
-  inflightCashoutValueByBetId.set(id, promise);
-  return promise;
-}
-
 /**
  * POST /api/v1/sportsbook/bet/:betId/cashout
  * @param {string} betId
@@ -187,7 +162,6 @@ export const sportsbookApi = {
   getOpenBets,
   getBetHistory,
   getBetSummary,
-  getCashoutValue,
   cashout,
 };
 

@@ -2690,10 +2690,15 @@ span.quicktext {
 
 .odds_section_table th,
 .odds_section_table td {
-    padding: 2px 2px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0px 0px;
     text-align: center;
 }
+
+.odds_section_table td {
+    border-bottom: 1px solid #ffffff;
+}
+
+.odds_section_table td.odds_section_market_name{ border-bottom:1px solid #93939321; }
 
 .odds_section_table td.odds_section_market_name {
     padding: 8px 10px;
@@ -2871,7 +2876,9 @@ span.quicktext {
 .odds_section_back {
     background: #b3e5fc;
     color: #0e0e0e;
-    border: 1px solid #81d4fa;
+    border-right: 1px solid #ffffff;
+    border-bottom: none !important;
+    min-height: 40px;
 }
 
 /* .odds_section_back:hover {
@@ -2890,7 +2897,8 @@ span.quicktext {
 .odds_section_lay {
     background: #f8bbd9;
     color: #000000;
-    border: 1px solid #f48fb1;
+    border-right: 1px solid #ffffff;
+    min-height: 40px;
 }
 
 /* .odds_section_lay:hover {
@@ -3016,12 +3024,11 @@ span.quicktext {
 @media (max-width: 660px) {
 
     .odds_section_btn {
-        min-height: 32px;
+        min-height: 50px;
         padding: 3px 8px;
     }
 
     .market_no_yes_odds_container {
-        flex-direction: column;
         width: 100%;
     }
 
@@ -3112,7 +3119,8 @@ span.quicktext {
     }
 
     .odds_section_header_right {
-        flex-direction: column;
+        flex-direction:row;
+        width: 100%;
     }
 
     .odds_section_limits {
@@ -3210,6 +3218,8 @@ span.quicktext {
     .odds_section_header {
         padding: 12px 10px;
         gap: 5px;
+        flex-direction: column;
+        align-items: start;
     }
 
     .cricket_detail_section .cricket_live_team_left, .cricket_detail_section .cricket_live_team_right {

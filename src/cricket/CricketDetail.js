@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import './CricketDetail.css'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
-import { getOdds, getEventStakeConfig, getCashoutValue } from '../api/services/sportsbookApi'
+import { getOdds, getEventStakeConfig } from '../api/services/sportsbookApi'
 import {
     addMatchesListener,
     removeMatchesListener,
@@ -41,47 +41,7 @@ function parseOpenBetsFromResponse(res) {
     return []
 }
 
-/** GET cashout-value / nested success wrappers */
-function extractCashoutFromApiResponse(res) {
-    if (!res || typeof res !== 'object') return { value: null, suspended: false }
-    const pickNum = (...vals) => {
-        for (const v of vals) {
-            if (v == null || v === '') continue
-            const n = Number(v)
-            if (!Number.isNaN(n)) return n
-        }
-        return null
-    }
-    const d = res.data
-    const dd = d && typeof d === 'object' ? d.data : null
-    const val = pickNum(
-        res.cashoutValue,
-        res.cashout_value,
-        res.value,
-        res.amount,
-        res.cashOutValue,
-        d?.cashoutValue,
-        d?.cashout_value,
-        d?.value,
-        d?.amount,
-        dd?.cashoutValue,
-        dd?.value,
-        res.response?.cashoutValue,
-        res.response?.value,
-        res.result?.cashoutValue,
-        res.result?.value
-    )
-    const suspended = !!(
-        res.cashoutSuspended ??
-        res.suspended ??
-        d?.cashoutSuspended ??
-        d?.suspended ??
-        dd?.cashoutSuspended
-    )
-    return { value: val, suspended }
-}
-
-/** Open bet object par seedha cashout (kuch list APIs embed karti hain) */
+/** Open bet object par cashout (open-bets REST / socket betUpdate) */
 function cashoutValueFromBetObject(b) {
     if (!b || typeof b !== 'object') return null
     const v =
@@ -220,7 +180,6 @@ function CricketDetail() {
     const [betslipCurrentLoss, setBetslipCurrentLoss] = useState(null)
     const [betslipLossLimit, setBetslipLossLimit] = useState(null)
     const [cashoutId, setCashoutId] = useState(null)
-    const [cashoutValuesMap, setCashoutValuesMap] = useState({}) // { betId: { value, suspended } } from GET /bet/:betId/cashout-value
     const [openCashoutSection, setOpenCashoutSection] = useState(null)
     const [openLossCutSection, setOpenLossCutSection] = useState(null)
     const betUpdateRefreshTimerRef = useRef(null)
@@ -282,63 +241,23 @@ function CricketDetail() {
         return () => document.removeEventListener('click', close)
     }, [openCashoutSection, openLossCutSection])
 
-    /** Sirf jab open bet id set badle — har open-bets list refetch par naya array = pehle [openBetsList] se cashout-value spam */
-    const openBetsCashoutIdsSig = useMemo(() => {
-        const openBets = (openBetsList || []).filter((b) => settlementKindFromBet(b) === 'open')
-        return openBets
-            .map((b) => String(b._id ?? b.id ?? '').trim())
-            .filter(Boolean)
-            .sort()
-            .join('|')
+    /** Cashout display — open-bets list / socket fields only (no GET …/cashout-value). */
+    const cashoutValuesMap = useMemo(() => {
+        const next = {}
+        for (const b of openBetsList || []) {
+            if (settlementKindFromBet(b) !== 'open') continue
+            const bid = b._id ?? b.id
+            if (bid == null || bid === '') continue
+            const key = String(bid)
+            const embedded = cashoutValueFromBetObject(b)
+            const suspendedFlag = b.cashoutSuspended ?? b.cashout_suspended
+            next[key] = {
+                value: embedded,
+                suspended: suspendedFlag === true || embedded == null,
+            }
+        }
+        return next
     }, [openBetsList])
-
-    // GET /bet/:betId/cashout-value — getCashoutValue() inflight dedupe bhi karti hai
-    useEffect(() => {
-        if (!openBetsCashoutIdsSig) {
-            setCashoutValuesMap({})
-            return
-        }
-        const openBetsForCashout = (openBetsList || []).filter((b) => settlementKindFromBet(b) === 'open')
-        if (openBetsForCashout.length === 0) {
-            setCashoutValuesMap({})
-            return
-        }
-        let cancelled = false
-        const fetchAll = async () => {
-            const next = {}
-            await Promise.all(
-                openBetsForCashout.map(async (b) => {
-                    const bid = b._id ?? b.id
-                    if (bid == null || bid === '') return
-                    const key = String(bid)
-                    const embedded = cashoutValueFromBetObject(b)
-                    try {
-                        const res = await getCashoutValue(key)
-                        if (cancelled) return
-                        const { value: apiVal, suspended } = extractCashoutFromApiResponse(res)
-                        const val = apiVal != null && !Number.isNaN(apiVal) ? apiVal : embedded
-                        next[key] = {
-                            value: val != null && !Number.isNaN(Number(val)) ? Number(val) : null,
-                            suspended: suspended || (val == null && embedded == null),
-                        }
-                    } catch {
-                        if (!cancelled) {
-                            next[key] = {
-                                value: embedded,
-                                suspended: embedded == null,
-                            }
-                        }
-                    }
-                })
-            )
-            if (!cancelled) setCashoutValuesMap(next)
-        }
-        fetchAll()
-        return () => {
-            cancelled = true
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- openBetsList sirf id-sig badalne par refresh; same ids = same array refetch ignore
-    }, [openBetsCashoutIdsSig])
 
     const [defaultMatch, setDefaultMatch] = useState(null)
     const gameIdFromState = location.state?.gameId ?? location.state?.game_id
@@ -789,7 +708,7 @@ function CricketDetail() {
             setStake(effectiveStakeBounds.min)
             const successMsg = lastRes?.data?.message ?? lastRes?.message
             setPlaceBetSuccessMessage(successMsg || 'Bet placed successfully.')
-            // Open bets + exposure turant refresh — cashout / P&L (cashout-value effect openBetsList par chalega)
+            // Open bets + exposure turant refresh — cashout amounts openBetsList / socket fields se derive
             try {
                 await pullOpenBets({ showLoading: false })
             } catch {

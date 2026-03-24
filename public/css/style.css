@@ -1812,6 +1812,10 @@ a.game_items_inner.link_plain img {
     transition: filter 0.4s ease;
 }
 
+.rightside_odds .sports_grid_odds_columns.sports_grid_desktop_odds_strip {
+    border-bottom: 1px solid #fff;
+}
+
 .gameright_s_item_cnt {
     width: 60%;
     position: relative;
@@ -3600,6 +3604,8 @@ ul.mobile-menu li.active:before {
     button.deposit_btn.mobile {
         display: block;
     }
+
+    .scroll_to_top_btn{ display: none; }
 
     .sports_grid_back {
         border-radius: 6px;
