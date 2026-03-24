@@ -220,6 +220,38 @@ function computeRunnerLadders33Rows(match, odds, isOddsValid, formatOddsSize) {
     return [oneEmptyRow()]
 }
 
+/** Desktop list: screenshot-style 1X2 (top back/lay only). */
+function computeTop1x2Cells(match, odds, isOddsValid, formatOddsSize) {
+    const empty = { back: emptyOddsLadderCell(), lay: emptyOddsLadderCell() }
+    const mapOrdered = (ordered, useRunnerFns) =>
+        ordered.map((node) => {
+            if (!node) return empty
+            const back = useRunnerFns
+                ? runnerBackCellAtRung(node, 0, isOddsValid, formatOddsSize)
+                : selectionBackCellAtRung(node, 0, isOddsValid, formatOddsSize)
+            const lay = useRunnerFns
+                ? runnerLayCellAtRung(node, 0, isOddsValid, formatOddsSize)
+                : selectionLayCellAtRung(node, 0, isOddsValid, formatOddsSize)
+            return { back, lay }
+        })
+
+    const matchOddsArr = Array.isArray(odds?.matchOdds)
+        ? odds.matchOdds
+        : Array.isArray(odds?.match_odds)
+          ? odds.match_odds
+          : null
+    if (matchOddsArr?.length) {
+        const market = matchOddsArr[0]
+        const runners = Array.isArray(market.runners) ? market.runners : toOddDatasArray(market.oddDatas)
+        if (runners.length) return mapOrdered(orderFor1x2(runners, getRunnerOrSelectionLabel), true)
+    }
+
+    const selections = Array.isArray(match?.selections) ? match.selections : []
+    if (selections.length) return mapOrdered(orderFor1x2(selections, getRunnerOrSelectionLabel), false)
+
+    return [empty, empty, empty]
+}
+
 function formatMatchTime(isoStr) {
     if (!isoStr) return ''
     try {
@@ -515,6 +547,10 @@ function SportsGame() {
         (match, oddsPayload) => computeRunnerLadders33Rows(match, oddsPayload ?? null, isOddsValid, formatOddsSize),
         [isOddsValid]
     )
+    const getTop1x2Cells = useCallback(
+        (match, oddsPayload) => computeTop1x2Cells(match, oddsPayload ?? null, isOddsValid, formatOddsSize),
+        [isOddsValid]
+    )
 
     const renderMatchCard = useCallback((match, index) => {
         const oddsPayload = null
@@ -733,7 +769,7 @@ function SportsGame() {
                                                             {matchesByDay.map(({ day, matches, isLiveSection }) => (
                                                                 <React.Fragment key={day}>
                                                                     {                                                                    matches.map((match, idx) => {
-                                                                        const ladderRows = getRunnerLadders33(match, null)
+                                                                        const top1x2Cells = getTop1x2Cells(match, null)
                                                                         const oddsPayloadRow = null
                                                                         const rowPills = getMarketPillsFromSources(match, oddsPayloadRow)
                                                                         const rowShowStream = getMatchStreamVisible(match)
@@ -782,46 +818,44 @@ function SportsGame() {
                                                                                     onScroll={(e) => syncSportsOddsScroll(getSportsOddsScrollKey(activeTab, match, day, idx), e.currentTarget.scrollLeft)}
                                                                                 >
                                                                                     <div className='sports_grid_odds_columns sports_grid_desktop_odds_strip sports_grid_bl6_strip sports_grid_back_lay_only_strip'>
-                                                                                        {ladderRows.map((row, lri) => (
-                                                                                            <div key={`bl6-${lri}`} className='sports_grid_bl6_runner_row'>
-                                                                                                {row.backs.map((cell, ci) => {
-                                                                                                    const hb = cell.price != null
-                                                                                                    return (
-                                                                                                        <div key={`b-${ci}`} className={`sports_grid_odds_cell sports_grid_back ${!hb ? 'sports_grid_odds_disabled' : ''}`}>
-                                                                                                            {hb ? (
-                                                                                                                <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
-                                                                                                                    <span className='sports_grid_odds_val'>{cell.price}</span>
-                                                                                                                    <span className='sports_grid_odds_size'>{cell.sizeFormatted}</span>
-                                                                                                                </button>
-                                                                                                            ) : (
-                                                                                                                <span className='sports_grid_odds_dash sports_grid_bl6_dash_cell'>
-                                                                                                                    <span className='sports_grid_odds_val'>—</span>
-                                                                                                                    <span className='sports_grid_odds_size'>—</span>
-                                                                                                                </span>
-                                                                                                            )}
-                                                                                                        </div>
-                                                                                                    )
-                                                                                                })}
-                                                                                                {row.lays.map((cell, ci) => {
-                                                                                                    const hl = cell.price != null
-                                                                                                    return (
-                                                                                                        <div key={`l-${ci}`} className={`sports_grid_odds_cell sports_grid_lay ${!hl ? 'sports_grid_odds_disabled' : ''}`}>
-                                                                                                            {hl ? (
-                                                                                                                <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
-                                                                                                                    <span className='sports_grid_odds_val'>{cell.price}</span>
-                                                                                                                    <span className='sports_grid_odds_size'>{cell.sizeFormatted}</span>
-                                                                                                                </button>
-                                                                                                            ) : (
-                                                                                                                <span className='sports_grid_odds_dash sports_grid_bl6_dash_cell'>
-                                                                                                                    <span className='sports_grid_odds_val'>—</span>
-                                                                                                                    <span className='sports_grid_odds_size'>—</span>
-                                                                                                                </span>
-                                                                                                            )}
-                                                                                                        </div>
-                                                                                                    )
-                                                                                                })}
-                                                                                            </div>
-                                                                                        ))}
+                                                                                        <div className='sports_grid_bl6_runner_row'>
+                                                                                            {top1x2Cells.map((pair, ci) => {
+                                                                                                const hb = pair.back.price != null
+                                                                                                return (
+                                                                                                    <div key={`b-${ci}`} className={`sports_grid_odds_cell sports_grid_back ${!hb ? 'sports_grid_odds_disabled' : ''}`}>
+                                                                                                        {hb ? (
+                                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                                <span className='sports_grid_odds_val'>{pair.back.price}</span>
+                                                                                                                <span className='sports_grid_odds_size'>{pair.back.sizeFormatted}</span>
+                                                                                                            </button>
+                                                                                                        ) : (
+                                                                                                            <span className='sports_grid_odds_dash sports_grid_bl6_dash_cell'>
+                                                                                                                <span className='sports_grid_odds_val'>—</span>
+                                                                                                                <span className='sports_grid_odds_size'>—</span>
+                                                                                                            </span>
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                )
+                                                                                            })}
+                                                                                            {top1x2Cells.map((pair, ci) => {
+                                                                                                const hl = pair.lay.price != null
+                                                                                                return (
+                                                                                                    <div key={`l-${ci}`} className={`sports_grid_odds_cell sports_grid_lay ${!hl ? 'sports_grid_odds_disabled' : ''}`}>
+                                                                                                        {hl ? (
+                                                                                                            <button type='button' className='sports_grid_odds_btn' onClick={(e) => { e.stopPropagation(); handleMatchCardClick(e, match); }}>
+                                                                                                                <span className='sports_grid_odds_val'>{pair.lay.price}</span>
+                                                                                                                <span className='sports_grid_odds_size'>{pair.lay.sizeFormatted}</span>
+                                                                                                            </button>
+                                                                                                        ) : (
+                                                                                                            <span className='sports_grid_odds_dash sports_grid_bl6_dash_cell'>
+                                                                                                                <span className='sports_grid_odds_val'>—</span>
+                                                                                                                <span className='sports_grid_odds_size'>—</span>
+                                                                                                            </span>
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                )
+                                                                                            })}
+                                                                                        </div>
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
