@@ -705,7 +705,7 @@ function SportsGame() {
                                 </div>
                             </div>
 
-                            <div className='sports_game_section'>
+                            <div className='sports_game_section inplay_section_bl'>
                                 <div className='sports_top_match_section'>
                                     <div className="top_match_section pt-0">
                                         <ul className='match_type_tabs'>

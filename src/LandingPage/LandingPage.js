@@ -313,6 +313,12 @@ function LandingPage() {
 
   const [topSoccerMatchesFromApi, setTopSoccerMatchesFromApi] = useState([]);
   const [topSoccerMatchesLoading, setTopSoccerMatchesLoading] = useState(true);
+  const [cricketLandingFilter, setCricketLandingFilter] = useState('all');
+  const [tennisLandingFilter, setTennisLandingFilter] = useState('all');
+  const [soccerLandingFilter, setSoccerLandingFilter] = useState('all');
+  const toggleLandingFilter = useCallback((setFilter, value) => {
+    setFilter((prev) => (prev === value ? 'all' : value))
+  }, [])
 
   const landingOddsScrollRefs = useRef(new Map());
   const isSyncingLandingOddsScrollRef = useRef(false);
@@ -562,9 +568,39 @@ function LandingPage() {
     }
     return daySections;
   };
-  const topMatchesByDay = useMemo(() => groupMatchesByDay(topMatchesFromApi), [topMatchesFromApi]);
-  const topTennisMatchesByDay = useMemo(() => groupMatchesByDay(topTennisMatchesFromApi.slice(0, 10)), [topTennisMatchesFromApi]);
-  const topSoccerMatchesByDay = useMemo(() => groupMatchesByDay(topSoccerMatchesFromApi.slice(0, 10)), [topSoccerMatchesFromApi]);
+  const sortLiveFirst = useCallback((list) => [...list].sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0)), [])
+  const cricketTopDisplayMatches = useMemo(() => sortLiveFirst(topMatchesFromApi), [topMatchesFromApi, sortLiveFirst])
+  const tennisTopDisplayMatches = useMemo(() => sortLiveFirst(topTennisMatchesFromApi), [topTennisMatchesFromApi, sortLiveFirst])
+  const soccerTopDisplayMatches = useMemo(() => sortLiveFirst(topSoccerMatchesFromApi), [topSoccerMatchesFromApi, sortLiveFirst])
+
+  const hasTagInMatch = useCallback((match, tag) => {
+    const badgeText = Array.isArray(match?.marketBadges) ? match.marketBadges.join(' ') : ''
+    const marketText = Array.isArray(match?.markets)
+      ? match.markets.map((m) => `${m?.marketName ?? ''} ${m?.market ?? ''}`).join(' ')
+      : ''
+    const fullText = `${badgeText} ${marketText} ${match?.tournament ?? ''} ${match?.teams ?? ''} ${match?.category ?? ''}`.toLowerCase()
+    return fullText.includes(tag)
+  }, [])
+
+  const filterLandingMatches = useCallback((matches, filterValue) => {
+    if (filterValue === 'live') return matches.filter((m) => m.inPlay)
+    if (filterValue === 'virtual') return matches.filter((m) => hasTagInMatch(m, 'virtual'))
+    if (filterValue === 'premium') return matches.filter((m) => hasTagInMatch(m, 'premium'))
+    return sortLiveFirst(matches)
+  }, [hasTagInMatch, sortLiveFirst])
+
+  const topMatchesByDay = useMemo(
+    () => groupMatchesByDay(filterLandingMatches(cricketTopDisplayMatches, cricketLandingFilter)),
+    [cricketTopDisplayMatches, cricketLandingFilter, filterLandingMatches]
+  );
+  const topTennisMatchesByDay = useMemo(
+    () => groupMatchesByDay(filterLandingMatches(tennisTopDisplayMatches, tennisLandingFilter).slice(0, 10)),
+    [tennisTopDisplayMatches, tennisLandingFilter, filterLandingMatches]
+  );
+  const topSoccerMatchesByDay = useMemo(
+    () => groupMatchesByDay(filterLandingMatches(soccerTopDisplayMatches, soccerLandingFilter).slice(0, 10)),
+    [soccerTopDisplayMatches, soccerLandingFilter, filterLandingMatches]
+  );
 
   const navigate = useNavigate();
   const registerLandingOddsScrollRef = useCallback((key, node) => {
@@ -1434,11 +1470,17 @@ function LandingPage() {
             <div className="top_hd d-flex align-items-center justify-content-between">
               <div className="sports_grid_title">
                 <img src="images/menu-icon19.svg" alt="" className="sports_grid_icon" />
-                <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Cricket Matches</h2></Link>
+                <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Cricket</h2></Link>
               </div>
 
               <div className="top_hd_right d-flex align-items-center gap-2">
-                <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
+                <div className="sports_grid_filters">
+                  {/* <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'all' ? 'active' : ''}`} onClick={() => setCricketLandingFilter('all')}>All</button> */}
+                  <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'live' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setCricketLandingFilter, 'live')}>+ Live</button>
+                  <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'virtual' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setCricketLandingFilter, 'virtual')}>+ Virtual</button>
+                  <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'premium' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setCricketLandingFilter, 'premium')}>+ Premium</button>
+                </div>
+                {/* <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link> */}
               </div>
             </div>
 
@@ -1517,10 +1559,16 @@ function LandingPage() {
             <div className="top_hd d-flex align-items-center justify-content-between">
               <div className="sports_grid_title">
                 <img src="images/menu-icon20.svg" alt="" className="sports_grid_icon" />
-                <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Tennis Matches</h2></Link>
+                <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Tennis</h2></Link>
               </div>
               <div className="top_hd_right d-flex align-items-center gap-2">
-                <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
+                <div className="sports_grid_filters">
+                  {/* <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'all' ? 'active' : ''}`} onClick={() => setTennisLandingFilter('all')}>All</button> */}
+                  <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'live' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setTennisLandingFilter, 'live')}>+ Live</button>
+                  <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'virtual' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setTennisLandingFilter, 'virtual')}>+ Virtual</button>
+                  <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'premium' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setTennisLandingFilter, 'premium')}>+ Premium</button>
+                </div>
+                {/* <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link> */}
               </div>
             </div>
             <div className="sports_grid_section sports_grid_section_landing">
@@ -1597,10 +1645,16 @@ function LandingPage() {
             <div className="top_hd d-flex align-items-center justify-content-between">
               <div className="sports_grid_title">
                 <i className="ri-football-line sports_grid_icon" style={{ fontSize: '1.5rem' }} aria-hidden />
-                <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Football Matches</h2></Link>
+                <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Football</h2></Link>
               </div>
               <div className="top_hd_right d-flex align-items-center gap-2">
-                <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link>
+                <div className="sports_grid_filters">
+                  {/* <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'all' ? 'active' : ''}`} onClick={() => setSoccerLandingFilter('all')}>All</button> */}
+                  <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'live' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setSoccerLandingFilter, 'live')}>+ Live</button>
+                  <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'virtual' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setSoccerLandingFilter, 'virtual')}>+ Virtual</button>
+                  <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'premium' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setSoccerLandingFilter, 'premium')}>+ Premium</button>
+                </div>
+                {/* <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link> */}
               </div>
             </div>
             <div className="sports_grid_section sports_grid_section_landing">

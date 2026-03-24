@@ -127,7 +127,7 @@ header {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1001;
+    z-index: 1000000;
 }
 
 .header_lft {
@@ -2649,6 +2649,36 @@ img.hero_right_vector {
     right: 0;
 }
 
+/* Scroll to top button – theme: #0d131c, #F97A31 */
+.scroll_to_top_btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e2a38 0%, #0d131c 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(249, 122, 49, 0.2);
+    color: #F97A31;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.scroll_to_top_btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(249, 122, 49, 0.25), 0 4px 12px rgba(0, 0, 0, 0.4);
+    color: #ff8f4a;
+}
+
+.scroll_to_top_btn:active {
+    transform: translateY(0);
+}
+
 .login_google_btn {
     width: 100%;
     padding: 12px;
@@ -3605,7 +3635,7 @@ ul.mobile-menu li.active:before {
         display: block;
     }
 
-    .scroll_to_top_btn{ display: none; }
+
 
     .sports_grid_back {
         border-radius: 6px;
@@ -4105,6 +4135,8 @@ ul.mobile-menu li.active:before {
         width: 100%;
     }
 
+    .scroll_to_top_btn{ display: none; }
+
     .top_slot_outer {
         padding: 24px 0px 0px;
     }
@@ -4205,35 +4237,7 @@ ul.mobile-menu li.active:before {
 
 }
 
-/* Scroll to top button – theme: #0d131c, #F97A31 */
-.scroll_to_top_btn {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 9999;
-    width: 48px;
-    height: 48px;
-    border: none;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #1e2a38 0%, #0d131c 100%);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(249, 122, 49, 0.2);
-    color: #F97A31;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
-}
 
-.scroll_to_top_btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(249, 122, 49, 0.25), 0 4px 12px rgba(0, 0, 0, 0.4);
-    color: #ff8f4a;
-}
-
-.scroll_to_top_btn:active {
-    transform: translateY(0);
-}
 
 @media (max-width: 576px) {
     .scroll_to_top_btn {
@@ -4298,6 +4302,5 @@ ul.mobile-menu li.active:before {
         margin: 0px;
         font-size: 11px;
     }
-
 
 }

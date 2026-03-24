@@ -2696,6 +2696,7 @@ span.quicktext {
 
 .odds_section_table td {
     border-bottom: 1px solid #ffffff;
+    border-right: 1px solid #ffffff;
 }
 
 .odds_section_table td.odds_section_market_name{ border-bottom:1px solid #93939321; }
@@ -2874,9 +2875,8 @@ span.quicktext {
 
 /* Back = light blue (cyan) – image jaisa */
 .odds_section_back {
-    background: #b3e5fc;
+    background: #a7d8fd;
     color: #0e0e0e;
-    border-right: 1px solid #ffffff;
     border-bottom: none !important;
     min-height: 40px;
 }
@@ -2895,7 +2895,7 @@ span.quicktext {
 
 /* Lay = light pink (magenta) – image jaisa */
 .odds_section_lay {
-    background: #f8bbd9;
+    background: #f9c9d4;
     color: #000000;
     border-right: 1px solid #ffffff;
     min-height: 40px;
@@ -2928,12 +2928,12 @@ span.quicktext {
 
 /* Lock wale cells – light Back/Lay color (sports grid jaisa) */
 .odds_section_cell_back .odds_section_locked {
-    background: #d6f2fc !important;
+    background: #d4ecfe !important;
     color: rgba(0, 0, 0, 0.45);
 }
 
 .odds_section_cell_lay .odds_section_locked {
-    background: #fce4ec !important;
+    background: #fce4ea !important;
     color: rgba(0, 0, 0, 0.45);
 }
 
