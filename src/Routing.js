@@ -1,4 +1,5 @@
-import React, { Suspense, lazy, memo } from "react";
+import React, { Suspense, memo } from "react";
+import { lazyWithRetry } from "./utils/lazyWithRetry";
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 import ScrollToTop from "./ScrollToTop";
 import { SidebarProvider } from "./context/SidebarContext";
@@ -9,6 +10,7 @@ import { SportsbookStoreProvider } from "./context/SportsbookStore";
 import { PlatformConfigProvider } from "./context/PlatformConfigContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Layout from "./Layout";
+import ReferralProgram from "./ReferralProgram/ReferralProgram";
 
 // Demo: block real wallet & bank routes. Casino /game allowed (WCO uses demoPlayBalance).
 const DEMO_BLOCKED_PATHS = [
@@ -33,40 +35,39 @@ function DemoBlockRoute() {
 }
 
 // Lazy load pages – only the current route's chunk loads (faster initial load)
-const LandingPage = lazy(() => import("./LandingPage/LandingPage"));
-const ProfilePage = lazy(() => import("./ProfilePage"));
-const CasinoGame = lazy(() => import("./Casino/CasinoGame"));
-const CasinoCategoryPage = lazy(() => import("./Casino/CasinoCategoryPage"));
-const GamePlay = lazy(() => import("./GamePlay"));
-const GameHistory = lazy(() => import("./GameHistory/GameHistory"));
-const SportsGame = lazy(() => import("./sports/SportsGame"));
-const SportsBook = lazy(() => import("./SportsBook/SportsBook"));
-const ProfileTransactions = lazy(() => import("./ProfileTransactions/ProfileTransactions"));
-const Promotions = lazy(() => import("./promotions/Promotions"));
-const MyBets = lazy(() => import("./StatementPages/MyBets"));
-const MyWallet = lazy(() => import("./StatementPages/MyWallet"));
-const BettingProfitLoss = lazy(() => import("./StatementPages/BettingProfitLoss"));
-const TurnoverHistory = lazy(() => import("./StatementPages/TurnoverHistory"));
-const AccountStatement = lazy(() => import("./StatementPages/AccountStatement"));
-const BonusStatement = lazy(() => import("./StatementPages/BonusStatement"));
-const DepositTurnover = lazy(() => import("./StatementPages/DepositTurnover"));
-const GameRules = lazy(() => import("./GameRule/GameRules"));
-const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
-const CricketDetail = lazy(() => import("./cricket/CricketDetail"));
-const ReferralProgram = lazy(() => import("./ReferralProgram/ReferralProgram"));
-const RankSystem = lazy(() => import("./RankSystem/RankSystem"));
-const NewDeposit = lazy(() => import("./newDeposit/NewDeposit"));
-const NewWithdrawal = lazy(() => import("./newWithdrawal/NewWithdrawal"));
-const AddAccount = lazy(() => import("./BankDetails/AddAccount"));
-const AddBank = lazy(() => import("./BankDetails/AddBank"));
-const LoginPage = lazy(() => import("./pages/LoginPage"));
-const SupportPage = lazy(() => import("./pages/SupportPage"));
-const DepositHistory = lazy(() => import("./pages/DepositHistory"));
-const WithdrawalHistory = lazy(() => import("./pages/WithdrawalHistory"));
-const StatementHistory = lazy(() => import("./pages/StatementHistory"));
-const OpenBets = lazy(() => import("./pages/OpenBets"));
-const BetHistoryPage = lazy(() => import("./pages/BetHistoryPage"));
-const ReferralRewards = lazy(() => import("./pages/ReferralRewards"));
+const LandingPage = lazyWithRetry(() => import("./LandingPage/LandingPage"));
+const ProfilePage = lazyWithRetry(() => import("./ProfilePage"));
+const CasinoGame = lazyWithRetry(() => import("./Casino/CasinoGame"));
+const CasinoCategoryPage = lazyWithRetry(() => import("./Casino/CasinoCategoryPage"));
+const GamePlay = lazyWithRetry(() => import("./GamePlay"));
+const GameHistory = lazyWithRetry(() => import("./GameHistory/GameHistory"));
+const SportsGame = lazyWithRetry(() => import("./sports/SportsGame"));
+const SportsBook = lazyWithRetry(() => import("./SportsBook/SportsBook"));
+const ProfileTransactions = lazyWithRetry(() => import("./ProfileTransactions/ProfileTransactions"));
+const Promotions = lazyWithRetry(() => import("./promotions/Promotions"));
+const MyBets = lazyWithRetry(() => import("./StatementPages/MyBets"));
+const MyWallet = lazyWithRetry(() => import("./StatementPages/MyWallet"));
+const BettingProfitLoss = lazyWithRetry(() => import("./StatementPages/BettingProfitLoss"));
+const TurnoverHistory = lazyWithRetry(() => import("./StatementPages/TurnoverHistory"));
+const AccountStatement = lazyWithRetry(() => import("./StatementPages/AccountStatement"));
+const BonusStatement = lazyWithRetry(() => import("./StatementPages/BonusStatement"));
+const DepositTurnover = lazyWithRetry(() => import("./StatementPages/DepositTurnover"));
+const GameRules = lazyWithRetry(() => import("./GameRule/GameRules"));
+const TermsAndConditions = lazyWithRetry(() => import("./pages/TermsAndConditions"));
+const CricketDetail = lazyWithRetry(() => import("./cricket/CricketDetail"));
+const RankSystem = lazyWithRetry(() => import("./RankSystem/RankSystem"));
+const NewDeposit = lazyWithRetry(() => import("./newDeposit/NewDeposit"));
+const NewWithdrawal = lazyWithRetry(() => import("./newWithdrawal/NewWithdrawal"));
+const AddAccount = lazyWithRetry(() => import("./BankDetails/AddAccount"));
+const AddBank = lazyWithRetry(() => import("./BankDetails/AddBank"));
+const LoginPage = lazyWithRetry(() => import("./pages/LoginPage"));
+const SupportPage = lazyWithRetry(() => import("./pages/SupportPage"));
+const DepositHistory = lazyWithRetry(() => import("./pages/DepositHistory"));
+const WithdrawalHistory = lazyWithRetry(() => import("./pages/WithdrawalHistory"));
+const StatementHistory = lazyWithRetry(() => import("./pages/StatementHistory"));
+const OpenBets = lazyWithRetry(() => import("./pages/OpenBets"));
+const BetHistoryPage = lazyWithRetry(() => import("./pages/BetHistoryPage"));
+const ReferralRewards = lazyWithRetry(() => import("./pages/ReferralRewards"));
 
 const Routing = memo(function Routing() {
   return (

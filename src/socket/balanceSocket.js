@@ -33,7 +33,6 @@ const balanceListeners = new Set();
 function ensureHandlers() {
   if (!socket) return;
   socket.off('balance');
-  socket.off('connect');
   socket.off('disconnect');
   socket.off('connect_error');
 
@@ -50,12 +49,7 @@ function ensureHandlers() {
     });
   });
 
-  socket.on('connect', () => {
-    console.log('Balance socket connected');
-  });
-
-  socket.on('disconnect', (reason) => {
-    console.log('Balance socket disconnected:', reason);
+  socket.on('disconnect', () => {
     lastBalance = null;
     lastDemoPlayBalance = null;
   });

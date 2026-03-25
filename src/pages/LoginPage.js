@@ -1,6 +1,12 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import LoginModal from '../customComponents/LoginModal'
+
+function sanitizeReturnTo(raw) {
+  const rt = (raw && String(raw).trim()) || '/'
+  if (!rt.startsWith('/') || rt.startsWith('//')) return '/'
+  return rt
+}
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -13,19 +19,28 @@ export default function LoginPage() {
 
   const isLoggedIn = !!(sessionStorage.getItem('token'))
 
+  const postLoginPath = useMemo(
+    () => sanitizeReturnTo(location.state?.returnTo),
+    [location.state?.returnTo],
+  )
+
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/', { replace: true })
+      navigate(postLoginPath, { replace: true })
     }
-  }, [isLoggedIn, navigate])
+  }, [isLoggedIn, navigate, postLoginPath])
 
   const handleHide = () => {
-    navigate('/', { replace: true })
+    if (sessionStorage.getItem('token')) {
+      navigate(postLoginPath, { replace: true })
+    } else {
+      navigate('/', { replace: true })
+    }
   }
 
   if (isLoggedIn) return null
 
-  const returnTo = (location.state?.returnTo && String(location.state.returnTo).trim()) ? String(location.state.returnTo).trim() : '/'
+  const returnTo = postLoginPath
 
   return (
     <div className="login_page_wrapper" style={{ minHeight: '100vh', background: '#0d131c' }}>

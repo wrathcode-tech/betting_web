@@ -1,156 +1,190 @@
-import React, { useState, useCallback, memo } from 'react'
+import React, { useState, useCallback, useEffect, memo } from 'react'
 import Header from '../customComponents/Header'
 import MobileMenu from '../customComponents/MobileMenu'
 import './gamerules.css'
 
-const GameRules = memo(function GameRules() {
-  const [openCardId, setOpenCardId] = useState(null)
+const RULE_TILES = [
+  { id: 'cricket', title: 'Cricket Betting Rules', icon: 'ri-cricket-ball-line' },
+  { id: 'football', title: 'Football Betting Rules', icon: 'ri-football-line' },
+  { id: 'tennis', title: 'Tennis & Other Sports', icon: 'ri-trophy-line' },
+  { id: 'casino', title: 'Casino & Games Rules', icon: 'ri-poker-spades-fill' },
+  { id: 'general', title: 'General Rules', icon: 'ri-file-list-3-line' },
+  { id: 'settlement', title: 'Settlement, Void & Fair Play', icon: 'ri-shield-check-line' },
+]
 
-  const toggleCard = useCallback((id) => {
-    setOpenCardId((prev) => (prev === id ? null : id))
-  }, [])
+function IconLi({ icon, children }) {
+  return (
+    <li>
+      <i className={`${icon} game_rules_faq_li_icon`} aria-hidden />
+      <span>{children}</span>
+    </li>
+  )
+}
+
+function RuleModalBody({ ruleId }) {
+  switch (ruleId) {
+    case 'cricket':
+      return (
+        <ul className="game_rules_card_list_with_icon">
+          <IconLi icon="ri-trophy-line"><strong>Match winner:</strong> Bets are settled on the official result published by the governing body. If D/L or VJD is applied, settlement follows that official outcome.</IconLi>
+          <IconLi icon="ri-timer-line"><strong>Minimum overs:</strong> For limited-overs formats, markets stand only if minimum overs criteria are met under the tournament rules. If criteria are not met, unsettled markets are void and stake is returned.</IconLi>
+          <IconLi icon="ri-scales-3-line"><strong>Innings and session markets:</strong> Session, fancy, and innings runs are settled on the official score at completion or official stoppage of that segment.</IconLi>
+          <IconLi icon="ri-calendar-close-line"><strong>Postponed or abandoned matches:</strong> If a match is not completed as per official schedule and reserve-day policy, undecided markets are void. Already decided markets remain settled.</IconLi>
+          <IconLi icon="ri-user-star-line"><strong>Player markets:</strong> Player performance markets are settled using official stats. If the player does not participate in the relevant market condition, bets may be void as per market type.</IconLi>
+        </ul>
+      )
+    case 'football':
+      return (
+        <ul className="game_rules_card_list_with_icon">
+          <IconLi icon="ri-football-line"><strong>Normal-time settlement:</strong> 1X2, handicap, and total goals are settled on 90 minutes plus injury time only, unless market states extra time or penalties included.</IconLi>
+          <IconLi icon="ri-calendar-line"><strong>Postponement window:</strong> If a fixture is not played within the stated market window (commonly 48 hours unless specified), unsettled bets are void.</IconLi>
+          <IconLi icon="ri-stop-circle-line"><strong>Abandonment:</strong> On abandoned matches, markets already decided are settled and all remaining undecided markets are void.</IconLi>
+          <IconLi icon="ri-focus-3-line"><strong>Goals and own goals:</strong> Total goals and score-based markets follow official match reports and accredited stats providers.</IconLi>
+          <IconLi icon="ri-flag-line"><strong>Cards and corners:</strong> Settled as per official statistics for normal time play. Events awarded but not taken generally do not count.</IconLi>
+        </ul>
+      )
+    case 'tennis':
+      return (
+        <ul className="game_rules_card_list_with_icon">
+          <IconLi icon="ri-trophy-line"><strong>Tennis match winner:</strong> Settled on the player who officially progresses or is declared winner by tournament authority.</IconLi>
+          <IconLi icon="ri-skip-forward-line"><strong>Retirement and walkover:</strong> If play has not started and official walkover is declared, bets are void. If retirement happens after start, settlement depends on market type and governing rules.</IconLi>
+          <IconLi icon="ri-global-line"><strong>Other sports:</strong> All markets are settled from official governing-body results, score feeds, and rule books.</IconLi>
+        </ul>
+      )
+    case 'casino':
+      return (
+        <ul className="game_rules_card_list_with_icon">
+          <IconLi icon="ri-poker-spades-fill"><strong>Teen Patti and card games:</strong> Game outcomes follow the in-table rules shown by provider. Hand ranking and tie logic are taken from the live or RNG game engine.</IconLi>
+          <IconLi icon="ri-record-circle-line"><strong>Roulette:</strong> Settlement is based on the final wheel pocket result shown by the provider for that round.</IconLi>
+          <IconLi icon="ri-loop-right-line"><strong>Slots and RNG games:</strong> Results are generated by certified RNG systems. Completed rounds are final unless provider reports a technical malfunction.</IconLi>
+          <IconLi icon="ri-vidicon-line"><strong>Live casino:</strong> Dealer calls and provider game logs are treated as final reference for settlement.</IconLi>
+          <IconLi icon="ri-gift-line"><strong>Bonuses and promotions:</strong> Offer validity, wagering requirement, game contribution, and expiry are governed by promo terms shown in your account.</IconLi>
+        </ul>
+      )
+    case 'general':
+      return (
+        <ul className="game_rules_card_list_with_icon">
+          <IconLi icon="ri-user-follow-line"><strong>Eligibility:</strong> You must be 18+ and legally allowed to use betting and gaming services in your jurisdiction.</IconLi>
+          <IconLi icon="ri-account-box-line"><strong>Single account policy:</strong> One user may hold one active account only. Incorrect KYC details, duplicate accounts, or account sharing may lead to restrictions.</IconLi>
+          <IconLi icon="ri-line-chart-line"><strong>Odds and limits:</strong> Accepted odds at placement time are final. We may limit stakes, cancel obvious-price-error bets, or apply payout caps as per terms.</IconLi>
+          <IconLi icon="ri-hand-heart-line"><strong>Responsible gaming:</strong> Use available controls like deposit limits, session controls, and self-exclusion whenever needed.</IconLi>
+          <IconLi icon="ri-file-paper-2-line"><strong>Terms acceptance:</strong> By betting or playing games on this platform, you agree to the latest Game Rules and Terms and Conditions.</IconLi>
+        </ul>
+      )
+    case 'settlement':
+      return (
+        <ul className="game_rules_card_list_with_icon">
+          <IconLi icon="ri-checkbox-circle-line"><strong>Official source:</strong> All market settlements are based on official results, provider data, and recognized sports statistics feeds.</IconLi>
+          <IconLi icon="ri-equalizer-line"><strong>Dead heat:</strong> If multiple selections tie for a paid position, dead-heat calculation is applied proportionately to stake and odds.</IconLi>
+          <IconLi icon="ri-forbid-line"><strong>Void markets:</strong> Cancelled events, technical errors, duplicated markets, or rule breaches can lead to void settlement with stake refund.</IconLi>
+          <IconLi icon="ri-shield-star-line"><strong>Disputes and fair play:</strong> For settlement queries, raise a Help / Support ticket with your bet ID and event details. Fraud, bot use, collusion, or abuse may result in account action.</IconLi>
+        </ul>
+      )
+    default:
+      return null
+  }
+}
+
+const GameRules = memo(function GameRules() {
+  const [openModalId, setOpenModalId] = useState(null)
+
+  const openModal = useCallback((id) => setOpenModalId(id), [])
+  const closeModal = useCallback(() => setOpenModalId(null), [])
+
+  useEffect(() => {
+    if (!openModalId) return undefined
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeModal()
+    }
+    window.addEventListener('keydown', onKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [openModalId, closeModal])
+
+  const activeTile = RULE_TILES.find((t) => t.id === openModalId)
 
   return (
     <>
       <Header />
-      <div className="dashboard_page game_rules_section">
-        <div className="container-fluid">
-          <div className="promotions_top_hd">
-            <h1>Game Rules</h1>
-            <p>Please read these rules carefully. All bets and game play are subject to these Game Rules and our Terms & Conditions.</p>
+      <div className="game_rules_root">
+        <div className="dashboard_page game_rules_section">
+          <div className="container-fluid game_rules_container">
+            <div className="promotions_top_hd">
+              <div className="promotions_top_hd_row">
+                <div className="promotions_top_hd_icon" aria-hidden>
+                  <i className="ri-book-2-line" />
+                </div>
+                <div className="promotions_top_hd_text">
+                  <h1>Game Rules</h1>
+                  <p>Read these rules before placing bets or playing games. All activity on this platform is settled under these rules and the latest Terms &amp; Conditions.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="game_rules_grid">
+              {RULE_TILES.map((tile) => (
+                <button
+                  key={tile.id}
+                  type="button"
+                  className="game_rules_tile"
+                  onClick={() => openModal(tile.id)}
+                >
+                  <div className="game_rules_tile_icon" aria-hidden>
+                    <i className={tile.icon} />
+                  </div>
+                  <div className="game_rules_tile_body">
+                    <h2 className="game_rules_tile_title">{tile.title}</h2>
+                    <span className="game_rules_tile_action">
+                      Read rules
+                      <i className="ri-external-link-line" aria-hidden />
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
-
-          <div className="game_rules_grid">
-            <section className={`game_rules_card ${openCardId === 'cricket' ? 'open' : ''}`}>
-              <button type="button" className="game_rules_card_header" onClick={() => toggleCard('cricket')} aria-expanded={openCardId === 'cricket'}>
-                <div className="game_rules_card_icon">
-                  <i className="ri-cricket-ball-line" aria-hidden />
-                </div>
-                <h2>Cricket Betting Rules</h2>
-                <i className="ri-arrow-down-s-line game_rules_card_arrow" aria-hidden />
-              </button>
-              <div className="game_rules_card_body">
-                <ul className="game_rules_card_list_with_icon">
-                  <li><i className="ri-cricket-ball-line game_rules_faq_li_icon" aria-hidden /><span><strong>Match result:</strong> Settled on the official result as declared by the governing body. For limited-overs matches, the result is after the scheduled overs (or revised overs in case of D/L or VJD). Tie, no result, or abandonment is settled as per the official competition rules.</span></li>
-                  <li><i className="ri-cricket-ball-line game_rules_faq_li_icon" aria-hidden /><span><strong>Minimum overs:</strong> For match winner and most run markets, a minimum number of overs must be bowled for bets to stand: Test matches – at least 60 overs in the fourth innings (unless a result is achieved earlier); One-Day matches – at least 25 overs per side (or as per official rules); T20 – at least 10 overs per side (or as per official rules). If the match is reduced and the minimum is not met, match bets are void and stakes returned.</span></li>
-                  <li><i className="ri-cricket-ball-line game_rules_faq_li_icon" aria-hidden /><span><strong>Duckworth-Lewis / VJD:</strong> Where the result is determined by D/L or VJD, that result is used for settlement. Bets placed after the interruption may be voided if the market was offered in error.</span></li>
-                  <li><i className="ri-cricket-ball-line game_rules_faq_li_icon" aria-hidden /><span><strong>Postponement / Abandonment:</strong> If a match is postponed and not played on the scheduled date (or official reserve day where applicable), all bets on that match are void unless the match is played within the timeframe specified in the market rules. If a match is abandoned without an official result, match winner and similar markets are void; markets already determined (e.g. first innings runs, session runs) may be settled at the figure when play stopped.</span></li>
-                  <li><i className="ri-cricket-ball-line game_rules_faq_li_icon" aria-hidden /><span><strong>Session / Fancy / Innings runs:</strong> Session and innings runs are settled at the score when the relevant session or innings is complete or when the match is officially stopped. Once a session is completed and settled, it is not reversed even if the match is later abandoned or no result.</span></li>
-                  <li><i className="ri-cricket-ball-line game_rules_faq_li_icon" aria-hidden /><span><strong>Player markets (top batsman, runs, wickets):</strong> The player must take part in the match (bat or bowl as applicable) for bets to stand. If the player does not participate, bets are void. Settlement is based on official statistics.</span></li>
-                </ul>
-              </div>
-            </section>
-
-            <section className={`game_rules_card ${openCardId === 'football' ? 'open' : ''}`}>
-              <button type="button" className="game_rules_card_header" onClick={() => toggleCard('football')} aria-expanded={openCardId === 'football'}>
-                <div className="game_rules_card_icon">
-                  <i className="ri-football-line" aria-hidden />
-                </div>
-                <h2>Football Betting Rules</h2>
-                <i className="ri-arrow-down-s-line game_rules_card_arrow" aria-hidden />
-              </button>
-              <div className="game_rules_card_body">
-                <ul>
-                <li><strong>Match result (1X2, Draw No Bet, etc.):</strong> Settled on the result at the end of normal time (90 minutes plus injury time). Extra time and penalty shootouts do not count unless the market explicitly states “Including Extra Time” or “To Qualify”.</li>
-                <li><strong>Postponement:</strong> If a match is postponed and not played within 48 hours of the original scheduled kick-off time (unless otherwise stated in the market), all bets on that match are void and stakes returned.</li>
-                <li><strong>Abandonment:</strong> If a match is abandoned after kick-off and not resumed within 48 hours, all bets are void except for markets whose outcome has already been determined (e.g. first half result, first goal scorer if a goal was scored, corners in first half). Such determined markets are settled on the result at the time of abandonment.</li>
-                <li><strong>Own goals:</strong> Count towards the team that benefits from the goal (the team that scores it) for total goals and correct score markets. For “first goal scorer” and “anytime scorer”, the player credited with the goal (including own goal) is the winner.</li>
-                  <li><strong>Cards and corners:</strong> Only cards shown to players on the field during normal time count. Corners awarded but not taken (e.g. match abandoned) do not count. Settlement is based on official match statistics.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className={`game_rules_card ${openCardId === 'tennis' ? 'open' : ''}`}>
-              <button type="button" className="game_rules_card_header" onClick={() => toggleCard('tennis')} aria-expanded={openCardId === 'tennis'}>
-                <div className="game_rules_card_icon">
-                  <i className="ri-gamepad-line" aria-hidden />
-                </div>
-                <h2>Tennis & Other Sports</h2>
-                <i className="ri-arrow-down-s-line game_rules_card_arrow" aria-hidden />
-              </button>
-              <div className="game_rules_card_body">
-                <ul>
-                <li><strong>Tennis – Match winner:</strong> Settled on the winner of the match. If a player retires or is disqualified, the player who advances is the winner and all match bets stand. Set and game markets may be void if not completed.</li>
-                <li><strong>Walkover:</strong> If a player receives a walkover before the match has started, all bets on that match are void. If the match has started and a player retires, match winner bets stand on the player who advances.</li>
-                  <li><strong>Other sports:</strong> Settlement is based on the official result and rules of the governing body for that sport. In case of dispute, our decision (based on official sources) is final.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className={`game_rules_card ${openCardId === 'casino' ? 'open' : ''}`}>
-              <button type="button" className="game_rules_card_header" onClick={() => toggleCard('casino')} aria-expanded={openCardId === 'casino'}>
-                <div className="game_rules_card_icon">
-                  <i className="ri-dice-5-fill" aria-hidden />
-                </div>
-                <h2>Casino & Games Rules</h2>
-                <i className="ri-arrow-down-s-line game_rules_card_arrow" aria-hidden />
-              </button>
-              <div className="game_rules_card_body">
-                <ul>
-                <li><strong>Teen Patti (3 Patti):</strong> Standard Teen Patti rules apply as displayed in the game. Hand rankings (Trail, Pure Sequence, Sequence, Color, Pair, High Card) are as per the game rules. In case of tie, the hand with higher value wins as per the game’s tie rules. Dealer’s decision in live games is final.</li>
-                <li><strong>Roulette:</strong> Results are determined by the ball landing in a numbered pocket. Single-zero and double-zero rules apply as per the variant. Outside bets (Red/Black, Odd/Even, Dozens) are settled according to the number. Zero may result in loss of outside bets unless “La Partage” or “En Prison” applies as stated in the game.</li>
-                <li><strong>Slots & RNG games:</strong> Outcomes are determined by a certified Random Number Generator (RNG). Each spin or round is independent. Game rounds are final once the result is displayed. In case of malfunction (e.g. game freeze, incorrect display), the round may be voided and stakes returned; we will not pay out on incorrect results.</li>
-                <li><strong>Live dealer:</strong> Live dealer games follow the rules displayed in the game. The dealer’s decision is final. If there is a dispute due to stream or technical error, we may void the round and refund stakes.</li>
-                  <li><strong>Bonuses:</strong> Bonus offers (welcome bonus, free spins, cashback, etc.) are subject to wagering requirements, game weightings, and time limits as stated in the offer terms. Bonus abuse (e.g. multiple accounts, chip dumping) will result in forfeiture of bonus and winnings and possible account closure.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className={`game_rules_card ${openCardId === 'general' ? 'open' : ''}`}>
-              <button type="button" className="game_rules_card_header" onClick={() => toggleCard('general')} aria-expanded={openCardId === 'general'}>
-                <div className="game_rules_card_icon">
-                  <i className="ri-file-list-3-line" aria-hidden />
-                </div>
-                <h2>General Rules</h2>
-                <i className="ri-arrow-down-s-line game_rules_card_arrow" aria-hidden />
-              </button>
-              <div className="game_rules_card_body">
-                <ul>
-                <li><strong>Eligibility:</strong> You must be at least 18 years of age (or the legal age for gambling in your jurisdiction) to open an account and place bets or play games. You must not be resident in a jurisdiction where online betting or gaming is prohibited.</li>
-                <li><strong>One account:</strong> Only one account per person, household, IP address, or device is permitted. Multiple accounts may be detected, closed, and balances withheld. You must provide accurate registration and KYC details; failure to do so may result in account closure and forfeiture of funds.</li>
-                <li><strong>Odds and stakes:</strong> Odds at the time of bet placement are final. We reserve the right to limit stakes, refuse bets, or void bets placed in error (e.g. incorrect odds due to technical fault, obvious pricing error). Maximum payouts may apply as stated in our Terms.</li>
-                <li><strong>Responsible gaming:</strong> We promote responsible gaming. You can set deposit limits, loss limits, and session time limits from your account. Self-exclusion is available. If you need help, please use the responsible gaming tools or contact support.</li>
-                  <li><strong>Agreement:</strong> By placing a bet or playing a game, you agree to these Game Rules and our Terms & Conditions. We reserve the right to amend these rules; continued use of the service constitutes acceptance of the updated rules.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className={`game_rules_card ${openCardId === 'settlement' ? 'open' : ''}`}>
-              <button type="button" className="game_rules_card_header" onClick={() => toggleCard('settlement')} aria-expanded={openCardId === 'settlement'}>
-                <div className="game_rules_card_icon">
-                  <i className="ri-shield-check-line" aria-hidden />
-                </div>
-                <h2>Settlement, Void & Fair Play</h2>
-                <i className="ri-arrow-down-s-line game_rules_card_arrow" aria-hidden />
-              </button>
-              <div className="game_rules_card_body">
-                <ul>
-                <li><strong>Official result:</strong> All settlements are based on the official result, statistics, and rules of the relevant governing body or game provider. We do not accept responsibility for incorrect data from third-party feeds; we will correct settlements when the official result is confirmed.</li>
-                <li><strong>Dead heat:</strong> Where two or more selections tie for a position (e.g. top batsman tie), dead heat rules apply: payout is (stake × (odds ÷ number of tied selections)). Stake is not multiplied by the number of ties.</li>
-                <li><strong>Void bets:</strong> Bets may be voided if the event is cancelled, abandoned, or declared void; if the market was offered in error; or if there is evidence of fraud, manipulation, or breach of terms. Stakes will be returned for void bets.</li>
-                  <li><strong>Fair play:</strong> Our games and RNG are tested for fairness. Any attempt to cheat, collude, use bots, or abuse promotions will result in account closure, forfeiture of funds, and we may report to authorities. If you have a dispute, contact support with your username and bet/transaction ID; we will investigate and respond in line with our dispute policy.</li>
-                </ul>
-              </div>
-            </section>
-          </div>
-
-          {/* <div className="game_rules_help_cta">
-            <p>Still have questions?</p>
-            <button
-              type="button"
-              className="game_rules_help_btn"
-              onClick={() => window.dispatchEvent(new CustomEvent('openChat'))}
-            >
-              <i className="ri-customer-service-2-line" aria-hidden />
-              Contact Support
-            </button>
-          </div> */}
-
-
-
-
         </div>
+
+        {openModalId && activeTile ? (
+        <div
+          className="game_rules_modal_backdrop"
+          onClick={closeModal}
+          role="presentation"
+        >
+          <div
+            className="game_rules_modal_dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="game-rules-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="game_rules_modal_head">
+              <div className="game_rules_modal_head_left">
+                <div className="game_rules_modal_head_icon" aria-hidden>
+                  <i className={activeTile.icon} />
+                </div>
+                <h2 id="game-rules-modal-title" className="game_rules_modal_head_title">
+                  {activeTile.title}
+                </h2>
+              </div>
+              <button type="button" className="game_rules_modal_close" onClick={closeModal} aria-label="Close">
+                <i className="ri-close-line" aria-hidden />
+              </button>
+            </div>
+            <div className="game_rules_modal_body">
+              <div className="game_rules_modal_inner">
+                <RuleModalBody ruleId={openModalId} />
+              </div>
+            </div>
+          </div>
+        </div>
+        ) : null}
       </div>
+
       <MobileMenu />
     </>
   )

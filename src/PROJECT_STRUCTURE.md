@@ -1,61 +1,78 @@
-# Project Structure & Naming Convention
+# Project Structure and Ownership
 
-## File Naming (Professional)
+This document explains where code should live so any developer can quickly find the right file.
 
-- **React components / pages:** `PascalCase.js` (e.g. `ProfileTransactions.js`, `CricketDetail.js`, `Sidebar.js`)
-- **CSS:** Same as component when 1:1 (e.g. `ProfileTransactions.css`, `GamePlay.css`), or `kebab-case.css` for shared
-- **Utilities / config:** `camelCase.js` (e.g. `apiConfig.js`, `historyApi.js`)
-- **Hooks:** `useCamelCase.js` (e.g. `useSportsbook.js`, `useDebounce.js`)
+## 1) Layer responsibilities
 
-## Folder Layout
-
-```
+```text
 src/
-├── api/                 # API config, calls, services
-│   ├── apiConfig/
-│   ├── services/
-│   └── historyApi.js
-├── components/         # Reusable UI (FilterBar, HistoryTable, Pagination, etc.)
-├── context/            # React context providers
-├── customComponents/   # Layout & shared (Header, Footer, Sidebar, LoginModal, etc.)
-│   └── SideBar/
-│       └── Sidebar.js
-├── cricket/            # Cricket/Tennis/Soccer detail (CricketDetail.js)
-├── StatementPages/     # MyBets, MyWallet, BetHistory, StatementPage, etc.
-├── ProfileTransactions/
-│   └── ProfileTransactions.js
-├── pages/              # Route pages (LoginPage, DepositHistory, ReferralRewards, etc.)
-├── Casino/, GamePlay/, GameHistory/, SportsBook/, sports/
-├── newDeposit/, newWithdrawal/, BankDetails/
-├── ReferralProgram/, RankSystem/, GameRule/
-├── LandingPage/, Layout.js, Routing.js
-├── hooks/, utils/, socket/
-└── index.js, App.js
+├── api/                     # API config + service methods
+│   ├── apiConfig/           # base URL + endpoint constants
+│   └── services/            # AuthService, sportsbookApi, etc.
+│
+├── context/                 # global providers/state containers
+├── hooks/                   # reusable custom hooks
+├── utils/                   # pure helpers (no UI)
+├── socket/                  # socket connection helpers + specs
+│
+├── customComponents/        # app-wide shared UI
+├── components/              # generic UI widgets (table/pagination style)
+│
+├── pages/                   # route pages (login/support/history/terms)
+├── StatementPages/          # betting/account statement pages
+│
+├── Casino/                  # casino module
+├── SportsBook/              # sportsbook module
+├── sports/                  # sports listing/inplay page
+├── cricket/                 # event detail page logic (cricket/tennis/soccer)
+├── GamePlay/                # game launch/gameplay area
+├── GameRule/                # game rules page
+├── ReferralProgram/         # referral page/module
+├── RankSystem/              # rank system module
+├── promotions/              # promotions module
+├── newDeposit/              # deposit flow
+├── newWithdrawal/           # withdrawal flow
+├── BankDetails/             # bank account setup
+│
+├── Layout.js                # main shell around routed pages
+├── Routing.js               # all routes and route guards
+├── App.js                   # app composition
+└── index.js                 # React entry point
 ```
 
-## Renamed Files (Applied)
+## 2) Route mapping (quick lookup)
 
-| Old | New |
-|-----|-----|
-| `profileTransactions.js` | `ProfileTransactions.js` |
-| `profileTransactions.css` | `ProfileTransactions.css` |
-| `sideBar.js` | `Sidebar.js` |
-| `gamePlay.js` / `.css` | `GamePlay.js` / `GamePlay.css` |
-| `casinoGame.js` | `CasinoGame.js` |
-| `cricketDetail.js` / `.css` | `CricketDetail.js` / `CricketDetail.css` |
-| `referralProgram.js` / `.css` | `ReferralProgram.js` / `ReferralProgram.css` |
-| `rankSystem.js` / `.css` | `RankSystem.js` / `RankSystem.css` |
-| `newDeposit.js` / `.css` | `NewDeposit.js` / `NewDeposit.css` |
-| `newWithdrawal.js` / `.css` | `NewWithdrawal.js` / `NewWithdrawal.css` |
-| `addAccount.js` / `.css` | `AddAccount.js` / `AddAccount.css` |
-| `addBank.js` | `AddBank.js` |
-| `gameRules.js` | `GameRules.js` |
-| `footer.js` | `Footer.js` |
+- `/` -> `LandingPage/LandingPage.js`
+- `/casino` -> `Casino/CasinoGame.js`
+- `/sports` -> `sports/SportsGame.js`
+- `/sportsbook` -> `SportsBook/SportsBook.js`
+- `/cricket`, `/tennis`, `/soccer` -> `cricket/CricketDetail.js`
+- `/game-rules` -> `GameRule/GameRules.js`
+- `/terms-and-conditions` -> `pages/TermsAndConditions.js`
+- `/support` -> `pages/SupportPage.js`
+- `/referral` -> `ReferralProgram/ReferralProgram.js`
+- `/rank` -> `RankSystem/RankSystem.js`
+- `/deposit` -> `newDeposit/NewDeposit.js`
+- `/withdrawal` -> `newWithdrawal/NewWithdrawal.js`
 
-All imports have been updated to use the new names.
+## 3) Naming rules
 
-## GamePlay route & save conflict (Windows / Cursor)
+- React component/page: `PascalCase.js`
+- Hook: `useSomething.js`
+- Utility/config: `camelCase.js`
+- Component style: same feature folder, clear name (`FeatureName.css`)
 
-- **Canonical file:** `src/GamePlay/GamePlay.js` (PascalCase — matches Git). Do not rely on a tab titled `gamePlay.js`; on Windows it is the same path and can confuse the editor.
-- **Lazy import:** `import("./GamePlay")` resolves to `src/GamePlay/index.js`, which re-exports `GamePlay.js`.
-- If you see **“The content of the file is newer”** when saving: use **Compare** to merge, or close the tab **without saving** and reopen **`GamePlay.js`** from the file tree, then re-apply edits. Use **Overwrite** only if you intend to replace what is on disk.
+## 4) Where to add new code
+
+- New route page: `pages/` or feature folder, then register in `Routing.js`.
+- New API endpoint: `api/apiConfig/apiConfig.js` + related method in `api/services/`.
+- Shared UI used in many places: `customComponents/`.
+- Feature-only UI/logic: keep inside that feature folder.
+- Shared pure helper: `utils/`.
+- Shared hook: `hooks/`.
+
+## 5) Stability rules for team work
+
+- Do not create duplicate filenames with different casing on Windows.
+- Keep imports relative to folder ownership (avoid random cross-folder dumping).
+- Keep route guards and auth redirects centralized in `Routing.js` / `Layout.js`.

@@ -265,7 +265,6 @@ function DesktopTopMatchBlock({ match, oddsPayload = null }) {
 <div className="sports_grid_desktop_match_info">
 
       <div className="sports_grid_desktop_match_mid">
-        {/* {match.tournament ? <div className="sports_grid_desktop_series">{match.tournament}</div> : null} */}
         <div className="sports_grid_desktop_teamnames">
           {teamLines.map((name, i) => (
             <span key={i} className="sports_grid_desktop_teamline">{name}</span>
@@ -290,7 +289,7 @@ function DesktopTopMatchBlock({ match, oddsPayload = null }) {
 }
 
 function LandingPage() {
-  // Auth token – sync with localStorageso button updates instantly after login (no refresh)
+  // Auth token – sync with localStorage so the UI updates right after login (no full refresh)
   const [token, setToken] = useState(() => getToken());
   const { config: platformConfig } = usePlatformConfig();
   useEffect(() => {
@@ -1030,8 +1029,6 @@ function LandingPage() {
 
       <div className="landing_page_content">
 
-
-        {/* Static landing sections – always visible, data format remains same */}
         <div className="top_slot_outer top_slot_outer_casino">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
@@ -1333,138 +1330,6 @@ function LandingPage() {
           </div>
         </div>
 
-        {/* <div className="casino_sport_section">
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-md-6">
-                <Link to="/casino" className="casino_sport_section_lft link_plain desktopview">
-                  <div className="cntlft">
-                    <h3>Casino</h3>
-                    <p>Enjoy BetFury Originals and other casino games from top providers.</p>
-                  </div>
-                  <div className="gameimg">
-                    <img loading="lazy" src="images/gold_img.png" alt="game" />
-                  </div>
-                </Link>
-              </div>
-              <div className="col-md-6">
-                <Link to="/sports" className="casino_sport_section_lft sport_bg link_plain desktopview">
-                  <div className="cntlft">
-                    <h3>Sport</h3>
-                    <p>Bet on popular sports events with high odds and other great features.</p>
-                  </div>
-                  <div className="gameimg">
-                    <img loading="lazy" src="images/sports_img.png" alt="game" />
-                  </div>
-                </Link>
-              </div>
-
-            </div>
-          </div>
-        </div> */}
-
-
-
-        {/* <div className='playearn_section'>
-          <div className='container-fluid'>
-            <div className='row'>
-              <div className='col-md-8'>
-                <div className='playearn_big_lft desktopview'>
-                  <div className='playearn_big_lft_cnt'>
-                    <h2>PLAY & EARN BIG</h2>
-                    <p>Daily rewards, instant wins aur non-stop fun.</p>
-                    <Link to="/game"><button type="button" className='playearn_btn'>Start Playing</button></Link>
-                  </div>
-                  <div className='playearn_big_rgt'>
-                    <img loading="lazy" src="images/golden_treasure.png" alt="PLAY & EARN BIG" />
-                  </div>
-                </div>
-              </div>
-              <div className='col-md-4 desktopview'>
-                <div className='gameright_s d-flex'>
-
-                  <div className='gameright_s_item luckstarts'>
-                    <div className='gameright_s_item_cnt'>
-                      <h4>YOUR LUCK
-                        STARTS HERE</h4>
-                      <p>Exclusive games. Real rewards. Zero boredom.</p>
-                    </div>
-                    <div className='gameright_s_item_img'>
-                      <img loading="lazy" src="images/luxury_casino.png" alt="YOUR LUCK STARTS HERE" />
-                    </div>
-                  </div>
-
-                  <div className='gameright_s_item rewardsbg'>
-                    <div className='gameright_s_item_cnt'>
-                      <h4>TURN FUN INTO REWARDS</h4>
-                      <p>Spin, play, and unlock exciting prizes every day.</p>
-                    </div>
-                    <div className='gameright_s_item_img'>
-                      <img loading="lazy" src="images/3d_gift_box.png" alt="TURN FUN INTO REWARDS" />
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              <div className='col-md-3 desktopview'>
-                <Link to="/casino" className='gameright_s_item height0 casinozone_s link_plain_block'>
-                  <div className='gameright_s_item_cnt'>
-                    <h4>Casino Zone</h4>
-                    <p>Slots, cards & instant win games</p>
-                  </div>
-                  <div className='gameright_s_item_img'>
-                    <img loading="lazy" src="images/3d_casino_games.png" alt="Casino Zone" />
-                  </div>
-                </Link>
-
-              </div>
-
-              <div className='col-md-3 desktopview'>
-                <Link to="/sports" className='gameright_s_item height0 sportsbg2 link_plain_block'>
-                  <div className='gameright_s_item_cnt'>
-                    <h4>Sports Arena</h4>
-                    <p>Live matches & smart predictions</p>
-                  </div>
-                  <div className='gameright_s_item_img'>
-                    <img loading="lazy" src="images/astronaut_spacesuit.png" alt="Sports Arena" />
-                  </div>
-                </Link>
-
-              </div>
-
-              <div className='col-md-3 desktopview'>
-                <Link to="/rank" className='gameright_s_item height0 rewardsbg2 link_plain_block'>
-                  <div className='gameright_s_item_cnt'>
-                    <h4>Daily Rewards</h4>
-                    <p>Log in daily and unlock exciting gifts.</p>
-                  </div>
-                  <div className='gameright_s_item_img'>
-                    <img loading="lazy" src="images/3d_gift_box_isolated.png" alt="Daily Rewards" />
-                  </div>
-                </Link>
-
-              </div>
-
-
-              <div className='col-md-3 desktopview'>
-                <Link to="/rank" className='gameright_s_item height0 battlebg link_plain_block'>
-                  <div className='gameright_s_item_cnt'>
-                    <h4>Battle Mode</h4>
-                    <p>Compete with others and climb the leaderboard.</p>
-                  </div>
-                  <div className='gameright_s_item_img'>
-                    <img loading="lazy" src="images/alien_head.png" alt="Battle Mode" />
-                  </div>
-                </Link>
-
-              </div>
-
-            </div>
-          </div>
-        </div> */}
-
-
         <div className="top_match_section sportsmatch_s cricket_matches_section">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
@@ -1475,12 +1340,10 @@ function LandingPage() {
 
               <div className="top_hd_right d-flex align-items-center gap-2">
                 <div className="sports_grid_filters">
-                  {/* <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'all' ? 'active' : ''}`} onClick={() => setCricketLandingFilter('all')}>All</button> */}
                   <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'live' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setCricketLandingFilter, 'live')}>+ Live</button>
                   <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'virtual' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setCricketLandingFilter, 'virtual')}>+ Virtual</button>
                   <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'premium' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setCricketLandingFilter, 'premium')}>+ Premium</button>
                 </div>
-                {/* <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link> */}
               </div>
             </div>
 
@@ -1553,7 +1416,6 @@ function LandingPage() {
           </div>
         </div>
 
-        {/* Tennis Matches – same layout as Cricket */}
         <div className="top_match_section sportsmatch_s cricket_matches_section">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
@@ -1563,12 +1425,10 @@ function LandingPage() {
               </div>
               <div className="top_hd_right d-flex align-items-center gap-2">
                 <div className="sports_grid_filters">
-                  {/* <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'all' ? 'active' : ''}`} onClick={() => setTennisLandingFilter('all')}>All</button> */}
                   <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'live' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setTennisLandingFilter, 'live')}>+ Live</button>
                   <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'virtual' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setTennisLandingFilter, 'virtual')}>+ Virtual</button>
                   <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'premium' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setTennisLandingFilter, 'premium')}>+ Premium</button>
                 </div>
-                {/* <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link> */}
               </div>
             </div>
             <div className="sports_grid_section sports_grid_section_landing">
@@ -1639,7 +1499,6 @@ function LandingPage() {
           </div>
         </div>
 
-        {/* Football (Soccer) Matches – same layout as Cricket */}
         <div className="top_match_section sportsmatch_s cricket_matches_section">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
@@ -1649,12 +1508,10 @@ function LandingPage() {
               </div>
               <div className="top_hd_right d-flex align-items-center gap-2">
                 <div className="sports_grid_filters">
-                  {/* <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'all' ? 'active' : ''}`} onClick={() => setSoccerLandingFilter('all')}>All</button> */}
                   <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'live' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setSoccerLandingFilter, 'live')}>+ Live</button>
                   <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'virtual' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setSoccerLandingFilter, 'virtual')}>+ Virtual</button>
                   <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'premium' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setSoccerLandingFilter, 'premium')}>+ Premium</button>
                 </div>
-                {/* <Link to="/sports"><button type="button" className="slotbtn">Go to Sports</button></Link> */}
               </div>
             </div>
             <div className="sports_grid_section sports_grid_section_landing">
@@ -1725,13 +1582,6 @@ function LandingPage() {
           </div>
         </div>
 
-        {/* <div className='container-fluid support_help_container'>
-          <div className='support_help_card'>
-            <i className='ri-customer-service-2-fill support_help_card_icon' aria-hidden="true" />
-            <p className='support_help_card_text'>Need help? Our 24/7 support is here for you.</p>
-          </div>
-        </div> */}
-
         <div className="p_space_footer landing_footer_section desktopview">
           <div className="d-flex topfooter">
             <div className="secure_img">
@@ -1742,123 +1592,7 @@ function LandingPage() {
               <p>Your data is protected with encryption. Bet and play with a secure, private connection.</p>
             </div>
           </div>
-          {/* <div className="footer_description_container">
-            <div
-              className={`footer_description_content crownbet_content ${showMore ? 'footer_description_content_expanded' : ''}`}
-            >
-              <h2 className="crownbet_title">Sports Betting at CrownBet</h2>
-              <p>CrownBet is a modern sports betting platform where you can wager on thousands of sports events across global markets. Live odds, pre-match options, fast payouts, and a seamless betting experience — that’s what you get here.</p>
-              <p>Whether you follow cricket, football, basketball, or MMA, we cover it all. You can also explore esports tournaments happening around the clock. The platform operates 24/7, so there’s always something to bet on.</p>
 
-              <h3 className="crownbet_heading">Why Choose CrownBet?</h3>
-              <p>Online sports betting should be fast, secure, and easy to use. CrownBet is designed to deliver a smooth experience from deposit to withdrawal.</p>
-              <ul className="crownbet_list crownbet_list_bullet">
-                <li><strong>Fast Processing:</strong> Quick deposits and efficient withdrawals</li>
-                <li><strong>Secure Platform:</strong> Advanced protection for user data and funds</li>
-                <li><strong>Competitive Odds:</strong> Strong pricing across major sports markets</li>
-                <li><strong>Wide Coverage:</strong> Thousands of events daily</li>
-                <li><strong>Mobile Friendly:</strong> Fully optimized for all devices</li>
-              </ul>
-              <p>The platform keeps everything straightforward so you can focus on the game.</p>
-
-              <h3 className="crownbet_heading">Sports You Can Bet On</h3>
-              <p>CrownBet covers major international and regional competitions across multiple sports.</p>
-              <p>Cricket fans can follow tournaments like the Indian Premier League and global events such as the ICC Cricket World Cup.</p>
-              <p>Football bettors can explore top leagues including the Premier League, La Liga, and Serie A.</p>
-              <p>American sports are also available, with coverage of the NBA, NFL, and more.</p>
-              <p>Combat sports, tennis tournaments, and horse racing markets are also part of the lineup.</p>
-
-              <h3 className="crownbet_heading">Esports Betting</h3>
-              <p>Esports continues to grow worldwide, and CrownBet offers markets on major competitive gaming tournaments.</p>
-              <ul className="crownbet_list crownbet_list_dash">
-                <li><strong>Dota 2</strong> – International tournaments and pro circuits</li>
-                <li><strong>Counter-Strike 2</strong> – Major championships and league events</li>
-                <li><strong>League of Legends</strong> – Global and regional competitions</li>
-                <li><strong>StarCraft II</strong> – International competitive events</li>
-              </ul>
-              <p>With tournaments happening across different regions, esports betting markets remain active throughout the day.</p>
-
-              <h3 className="crownbet_heading">Virtual Sports Betting</h3>
-              <p>Virtual sports provide fast-paced action when live matches aren’t available. These simulated events deliver quick results and run 24/7.</p>
-              <p>Options include virtual football, basketball, and other popular formats designed for short-session entertainment.</p>
-
-              <h3 className="crownbet_heading">Understanding Betting Markets</h3>
-              <p>If you're new to sports betting, here’s how the main bet types work:</p>
-
-              <div className="crownbet_table_wrap">
-                <table className="crownbet_table">
-                  <thead>
-                    <tr>
-                      <th>Market Type</th>
-                      <th>What It Means</th>
-                      <th>Example</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Match Winner</td><td>Pick who wins the match</td><td>Team A to beat Team B</td></tr>
-                    <tr><td>Handicap</td><td>Adjusted margin betting</td><td>Team A -1.5</td></tr>
-                    <tr><td>Over/Under</td><td>Total score above or below a line</td><td>Over 2.5 goals</td></tr>
-                    <tr><td>1X2</td><td>Home win, draw, or away win</td><td>Common in football</td></tr>
-                    <tr><td>Prop Bets</td><td>Specific in-game events</td><td>First goalscorer</td></tr>
-                    <tr><td>Futures</td><td>Long-term outcomes</td><td>Tournament winner</td></tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <p>Live betting allows you to place wagers while matches are in progress, with odds updating in real time.</p>
-
-              <h3 className="crownbet_heading">How to Start Betting</h3>
-              <ol className="crownbet_list crownbet_list_numbered">
-                <li>Create an account</li>
-                <li>Add funds to your balance</li>
-                <li>Browse sports and select an event</li>
-                <li>Add selections to your bet slip</li>
-                <li>Enter your stake and confirm</li>
-              </ol>
-              <p>Single bets are simple and straightforward, while accumulator bets combine multiple selections for higher potential returns.</p>
-
-              <h3 className="crownbet_heading">Bonuses and Promotions</h3>
-              <p>CrownBet offers regular promotions to enhance your experience:</p>
-              <ul className="crownbet_list crownbet_list_tick">
-                <li>Welcome bonuses</li>
-                <li>Reload offers</li>
-                <li>Cashback promotions</li>
-                <li>Special event boosts</li>
-              </ul>
-              <p>Check the promotions page regularly for the latest offers.</p>
-
-              <h3 className="crownbet_heading">Smart Betting Tips</h3>
-              <ul className="crownbet_list crownbet_list_tick">
-                <li>Focus on sports you understand well</li>
-                <li>Manage your bankroll carefully</li>
-                <li>Start with smaller stakes</li>
-                <li>Avoid emotional betting decisions</li>
-                <li>Analyze live odds before placing in-play bets</li>
-              </ul>
-
-              <h3 className="crownbet_heading">Why CrownBet Stands Out</h3>
-              <ul className="crownbet_list crownbet_list_tick">
-                <li>Wide variety of sports and markets</li>
-                <li>Fast and reliable payouts</li>
-                <li>Secure and user-friendly interface</li>
-                <li>24/7 customer support</li>
-                <li>Optimized for desktop and mobile</li>
-              </ul>
-
-              <h3 className="crownbet_heading">Final Thoughts</h3>
-              <p>CrownBet delivers a complete online sports betting experience with strong market coverage, competitive odds, and a smooth interface.</p>
-              <p>From cricket and football to esports and virtual sports, the platform ensures continuous betting opportunities throughout the day. Always bet responsibly and make informed decisions.</p>
-            </div>
-            <button
-              type="button"
-              className="footer_show_more_btn"
-              onClick={() => setShowMore((prev) => !prev)}
-              aria-expanded={showMore}
-            >
-              {showMore ? 'Show Less' : 'Show More'}
-              <i className={showMore ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'} />
-            </button>
-          </div> */}
         </div>
       </div>
 

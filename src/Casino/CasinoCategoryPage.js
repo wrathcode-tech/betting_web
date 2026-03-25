@@ -78,10 +78,18 @@ export default function CasinoCategoryPage() {
             {isApiCategory && !loading && (
               <div className="top_slot_outer">
                 <div className="game_items_grid">
-                  {apiGames.map((g) => (
+                  {apiGames.map((g) => {
+                    const sp = new URLSearchParams({
+                      gameCode: String(g.gameCode),
+                      providerCode: String(g.providerCode),
+                    })
+                    if (g.name) sp.set('gameName', String(g.name))
+                    const pn = g.providerName || g.provider
+                    if (pn) sp.set('providerName', String(pn))
+                    return (
                       <Link
                         key={`${g.providerCode}-${g.gameCode}`}
-                        to="/game"
+                        to={`/game?${sp.toString()}`}
                         state={{ gameCode: g.gameCode, providerCode: g.providerCode, gameName: g.name, providerName: g.providerName || g.provider }}
                         className="game_items_inner casino_api_game_card"
                         style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
@@ -92,7 +100,8 @@ export default function CasinoCategoryPage() {
                         <img loading="lazy" src={g.thumbnail || `${process.env.PUBLIC_URL || ''}/images/betcasino_img.png`} alt={g.name} />
                         <span className="game_card_name">{g.name || g.gameCode}</span>
                       </Link>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}

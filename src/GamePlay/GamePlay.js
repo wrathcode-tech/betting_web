@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import './GamePlay.css';
 import MobileMenu from '../customComponents/MobileMenu';
 import AuthService from '../api/services/AuthService';
@@ -70,11 +70,21 @@ function extractLaunchPayload(res) {
   };
 }
 
+function qp(searchParams, key) {
+  const v = searchParams.get(key);
+  return v != null && String(v).trim() !== '' ? String(v).trim() : undefined;
+}
+
 function GamePlay() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const stateGame = location.state || {};
-  const { gameCode: stateGameCode, providerCode: stateProviderCode, gameName: stateGameName, providerName: stateProviderName } = stateGame;
+  /** Query string survives /login redirect; location.state does not. */
+  const stateGameCode = stateGame.gameCode ?? qp(searchParams, 'gameCode');
+  const stateProviderCode = stateGame.providerCode ?? qp(searchParams, 'providerCode');
+  const stateGameName = stateGame.gameName ?? qp(searchParams, 'gameName');
+  const stateProviderName = stateGame.providerName ?? qp(searchParams, 'providerName');
 
   // sessionStorage me session sirf page refresh pe use hoga (casino se navigate = already cleared)
   const restored = useMemo(() => getStoredSession(), []);
@@ -87,7 +97,7 @@ function GamePlay() {
   const [providerCode, setProviderCode] = useState(restored?.providerCode ?? stateProviderCode ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const hasStateOrRestored = (stateGameCode && stateProviderCode) || restored;
+  const hasStateOrRestored = !!(stateGameCode && stateProviderCode) || !!restored;
 
   const launchCalledRef = useRef(false);
   const bestGamesSliderWrapperRef = useRef(null);

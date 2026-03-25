@@ -378,12 +378,10 @@ function ensureHandlers() {
   });
 
   socket.on('connect', () => {
-    console.log('Sportsbook socket connected');
     reemitSubscriptions();
   });
 
-  socket.on('disconnect', (reason) => {
-    console.log('Sportsbook socket disconnected:', reason);
+  socket.on('disconnect', () => {
     matchSubSentToServer.clear();
     oddsSubSentToServer.clear();
     pendingOddsSubscribe.clear();
@@ -402,7 +400,6 @@ function ensureHandlers() {
   });
 
   socket.on('reconnect', () => {
-    console.log('Sportsbook socket reconnected');
     reemitSubscriptions();
   });
 }

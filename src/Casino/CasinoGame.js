@@ -104,7 +104,14 @@ function CasinoGame() {
     const handlePlayGame = useCallback((game) => {
         if (!game?.gameCode || !game?.providerCode) return;
         try { sessionStorage.removeItem('wcoGameSession'); } catch (_) {}
-        navigate('/game', { state: { gameCode: game.gameCode, providerCode: game.providerCode, gameName: game.name } });
+        const q = new URLSearchParams({
+            gameCode: String(game.gameCode),
+            providerCode: String(game.providerCode),
+        });
+        if (game.name) q.set('gameName', String(game.name));
+        navigate(`/game?${q.toString()}`, {
+            state: { gameCode: game.gameCode, providerCode: game.providerCode, gameName: game.name },
+        });
     }, [navigate]);
 
     const selectedProvider = useMemo(

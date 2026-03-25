@@ -426,7 +426,6 @@ const AuthService = {
   /** Launch game – returns launchURL for iframe. Requires login. */
   bettingGamesLaunch: async (gameCode, providerCode, platform = "desktop") => {
     const token = sessionStorage.getItem("token");
-    console.log("🚀 ~ token:", token)
     if (!token) return { success: false, message: "Login required to play" };
     const { baseBettingGames, bettingGamesLaunch } = ApiConfig;
     const url = baseBettingGames + bettingGamesLaunch;
