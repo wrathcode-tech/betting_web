@@ -126,9 +126,6 @@ export function BalanceProvider({ children }) {
     return () => {
       removeBalanceListener(onBalance)
       removeBetUpdateListener(onBetUpdate)
-      disconnectBalanceSocket()
-      setBalanceState(null)
-      setDemoPlayBalanceState(null)
     }
   }, [token])
 

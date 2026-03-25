@@ -69,6 +69,13 @@ export function connectBalanceSocket(token) {
   const baseUrl = getBaseUrl();
 
   if (socket?.connected) {
+    if (socket.auth?.token === authToken) {
+      return socket;
+    }
+    socket.auth = { token: authToken };
+    socket.disconnect();
+    socket.connect();
+    ensureHandlers();
     return socket;
   }
 

@@ -855,7 +855,7 @@ img.team_bg_img {
 }
 
 .top_tabs_markets ul li.open_bets_tab button {
-    background: var(--theme-primary, #F97A31);
+    /* background: var(--theme-primary, #F97A31); */
     color: #fff;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
@@ -953,7 +953,7 @@ img.team_bg_img {
     padding: 10px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     flex-wrap: nowrap;
-    background: rgba(255, 255, 255, 0.03);
+    /* background: rgba(255, 255, 255, 0.03); */
     min-height: 72px;
 }
 
@@ -1118,6 +1118,48 @@ img.team_bg_img {
     white-space: nowrap;
 }
 
+/* No/Yes: Ball Running / Suspended — dimmed Yes/No + scrim + red label (reference UI) */
+.market_no_yes_odds_overlay_wrap {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    align-items: stretch;
+}
+
+.market_no_yes_odds_overlay_muted {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    filter: saturate(0.72);
+    opacity: 0.88;
+}
+
+.market_no_yes_odds_overlay_scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 35, 50, 0.4);
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 6px;
+}
+
+.market_no_yes_odds_overlay_text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    pointer-events: none;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: #e53935;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
 /* Back-only table (e.g. 25 OVER AUS W LAST DIGIT) */
 .market_back_only_block {
     width: 100%;
@@ -1218,6 +1260,43 @@ img.team_bg_img {
     min-width: 56px;
     display: flex;
     justify-content: flex-end;
+}
+
+.market_back_only_overlay_wrap {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    min-width: 120px;
+}
+
+.market_back_only_overlay_muted {
+    filter: saturate(0.72);
+    opacity: 0.88;
+}
+
+.market_back_only_overlay_scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 35, 50, 0.4);
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 6px;
+}
+
+.market_back_only_overlay_text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    pointer-events: none;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: #e53935;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .market_back_only_cell .market_yes_btn {
@@ -2698,6 +2777,82 @@ tr.cricketbet_mobile_row  td {
 .odds_section_table tr{ width: 100%; }
 .odds_section_table tbody  { width: 100%; }
 
+/* Odds table: dimmed back/lay + scrim + red status on top */
+/* colSpan cell must match width of N separate odds <td>s (table layout can otherwise shrink-wrap) */
+.odds_section_status_overlay_td {
+    padding: 0 !important;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    width: 100%;
+    min-width: 0;
+    /* --odds-status-cols set inline (back + lay price columns) */
+    min-width: calc(var(--odds-status-cols, 6) * 65px);
+}
+
+.odds_section_status_overlay_root {
+    position: relative;
+    min-height: 40px;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.odds_section_status_overlay_muted {
+    filter: saturate(0.72);
+    opacity: 0.88;
+    width: 100%;
+    min-width: 100%;
+}
+
+.odds_section_status_overlay_cells {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: 100%;
+    min-width: 100%;
+}
+
+/* Match normal row: N back + N lay columns share full odds width (no shrink-wrap gap on the right) */
+.odds_section_status_overlay_cells .odds_section_status_overlay_cell.odds_section_cell {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+}
+
+.odds_section_status_overlay_cells .odds_section_btn {
+    width: 100%;
+    min-width: 0;
+}
+
+.odds_section_status_overlay_cells .odds_section_locked {
+    width: 100%;
+}
+
+.odds_section_status_overlay_scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 35, 50, 0.4);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.odds_section_status_overlay_text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    pointer-events: none;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: #e53935;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
 .odds_section_table {
     width: max-content;
     min-width: 100%;
@@ -3033,6 +3188,10 @@ tr.cricketbet_mobile_row  td {
 .odds_section_cell {
     min-width: 50px;
     width: 50px;
+}
+
+.odds_section_status_overlay_td {
+    min-width: calc(var(--odds-status-cols, 6) * 50px);
 }
 
 }

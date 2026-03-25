@@ -3,13 +3,11 @@
  */
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import {
-  connectSportsbookSocket,
   subscribeMatches,
   unsubscribeMatches,
   addMatchesListener,
   removeMatchesListener,
 } from '../socket/sportsbookSocket';
-import { getToken } from '../utils/authStorage';
 import { getMatchRowsFromSocketPayload, expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload';
 import {
   subscribeSportsbookStore,
@@ -48,7 +46,6 @@ export function useMatchesStream(sport, options = {}) {
       setLoading(false);
       return undefined;
     }
-    connectSportsbookSocket(getToken() || null);
     const onMatches = (raw) => {
       for (const payload of expandSocketBatchPayload(raw)) {
         if (payload?.sport !== key) continue;

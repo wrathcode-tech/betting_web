@@ -3,16 +3,13 @@
  * Updated by /sportsbook socket events. Use for instant UI updates without prop drilling.
  * Wallet balance stays in BalanceContext (updated by socket balance / betUpdate.balanceAfter).
  *
- * Connection: connectSportsbookSocket(token || null) on mount + loginStateChange.
+ * Sportsbook `/sportsbook` WebSocket is disabled (see `socket/sportsbookSocket.js`).
  * Match streams: SportsbookRouteMatchStreams (pathname) — one subscribe set per route;
  * leaving a page unsubscribes that route’s sports. Odds: useSportsOddsSubscription / hooks.
  */
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useAuth } from './AuthContext';
 import { expandSocketBatchPayload } from '../utils/sportsbookMatchesPayload';
 import {
-  connectSportsbookSocket,
   subscribeMatches,
   subscribeMatchesMany,
   unsubscribeMatches,
@@ -21,8 +18,6 @@ import {
   unsubscribeOdds,
   subscribeScoreboard,
   unsubscribeScoreboard,
-  addMatchesListener,
-  removeMatchesListener,
   addOddsListener,
   removeOddsListener,
   addScoreboardListener,
@@ -74,58 +69,7 @@ function compareOddsAndGetFlash(prevData, nextData) {
   return flash;
 }
 
-/**
- * Single place for subscribe:matches by pathname — leaving a route unsubscribes previous sports.
- * - `/` → cricket, tennis, soccer (guest + logged-in)
- * - `/sports` → **no** subscribe here; `SportsGame` subscribes **one** sport from the active tab (cricket / tennis / soccer)
- * - `/cricket` | `/tennis` | `/soccer` → that sport only when logged-in real user (not demo)
- */
-function SportsbookRouteMatchStreams() {
-  const { pathname } = useLocation();
-  const { isDemo } = useAuth();
-  const [hasToken, setHasToken] = useState(
-    () => typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('token')
-  );
-  useEffect(() => {
-    const sync = () => setHasToken(!!sessionStorage.getItem('token'));
-    window.addEventListener('loginStateChange', sync);
-    return () => window.removeEventListener('loginStateChange', sync);
-  }, []);
-
-  const sportsKey = useMemo(() => {
-    const p = (pathname || '/').replace(/\/$/, '') || '/';
-    if (p === '/') return 'cricket|tennis|soccer';
-    if (!hasToken || isDemo) return '';
-    if (p === '/cricket') return 'cricket';
-    if (p === '/tennis') return 'tennis';
-    if (p === '/soccer') return 'soccer';
-    return '';
-  }, [pathname, hasToken, isDemo]);
-
-  useEffect(() => {
-    if (!sportsKey) return undefined;
-    const list = sportsKey.split('|');
-    subscribeMatchesMany(list);
-    return () => {
-      unsubscribeMatchesMany(list);
-    };
-  }, [sportsKey]);
-
-  return null;
-}
-
 export function SportsbookStoreProvider({ children }) {
-  /** Single app-wide sportsbook socket – auth sync (guest JWT vs Bearer). */
-  useEffect(() => {
-    const sync = () => {
-      const t = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('token') : null;
-      connectSportsbookSocket(t || null);
-    };
-    sync();
-    window.addEventListener('loginStateChange', sync);
-    return () => window.removeEventListener('loginStateChange', sync);
-  }, []);
-
   const [matchesBySport, setMatchesBySport] = useState(() => ({
     cricket: [],
     soccer: [],
@@ -138,14 +82,6 @@ export function SportsbookStoreProvider({ children }) {
   const [socketError, setSocketError] = useState(null);
   const prevOddsRef = useRef({});
   const flashTimeoutsRef = useRef([]);
-
-  const setMatchesForSport = useCallback((sport, data) => {
-    if (!SPORTS.includes(sport)) return;
-    setMatchesBySport((prev) => ({
-      ...prev,
-      [sport]: Array.isArray(data) ? data : prev[sport] || [],
-    }));
-  }, []);
 
   const setOddsForGame = useCallback((gameId, data) => {
     const id = String(gameId);
@@ -191,14 +127,15 @@ export function SportsbookStoreProvider({ children }) {
     setLastBetUpdate(payload);
   }, []);
 
+  const setMatchesForSport = useCallback((sport, data) => {
+    if (!SPORTS.includes(sport)) return;
+    setMatchesBySport((prev) => ({
+      ...prev,
+      [sport]: Array.isArray(data) ? data : prev[sport] || [],
+    }));
+  }, []);
+
   useEffect(() => {
-    const onMatches = (raw) => {
-      for (const payload of expandSocketBatchPayload(raw)) {
-        const sport = payload?.sport;
-        const data = payload?.data;
-        if (sport && SPORTS.includes(sport)) setMatchesForSport(sport, Array.isArray(data) ? data : []);
-      }
-    };
     const onOdds = (raw) => {
       for (const payload of expandSocketBatchPayload(raw)) {
         const gameId = payload?.gameId ?? payload?.eventId;
@@ -219,14 +156,12 @@ export function SportsbookStoreProvider({ children }) {
       setSocketError(err?.message ?? err);
     };
 
-    addMatchesListener(onMatches);
     addOddsListener(onOdds);
     addScoreboardListener(onScoreboard);
     addBetUpdateListener(onBetUpdate);
     addErrorListener(onError);
 
     return () => {
-      removeMatchesListener(onMatches);
       removeOddsListener(onOdds);
       removeScoreboardListener(onScoreboard);
       removeBetUpdateListener(onBetUpdate);
@@ -234,7 +169,7 @@ export function SportsbookStoreProvider({ children }) {
       flashTimeoutsRef.current.forEach(clearTimeout);
       flashTimeoutsRef.current = [];
     };
-  }, [setMatchesForSport, setOddsForGame, setScoreboardForGame, setBetUpdatePayload]);
+  }, [setOddsForGame, setScoreboardForGame, setBetUpdatePayload]);
 
   const value = {
     matchesBySport,
@@ -257,7 +192,6 @@ export function SportsbookStoreProvider({ children }) {
 
   return (
     <SportsbookStoreContext.Provider value={value}>
-      <SportsbookRouteMatchStreams />
       {children}
     </SportsbookStoreContext.Provider>
   );
@@ -309,8 +243,8 @@ function sportsListDedupeKey(sports) {
 }
 
 /**
- * Ref-counted match streams (advanced). Home/sports/detail match lists are driven by
- * `SportsbookRouteMatchStreams` — avoid duplicating the same sports here on those routes.
+ * Ref-counted match streams (advanced). Route-based lists use `SportsbookRouteMatchStreams`;
+ * landing home uses `/matchdata` only — avoid duplicating the same sports on those routes.
  */
 export function useSportsMatchesSubscription(sports) {
   const key = useMemo(

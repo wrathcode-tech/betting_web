@@ -1,13 +1,8 @@
-import { useEffect } from 'react';
-import { connectSportsbookSocket, getSportsbookSocket } from '../../socket/sportsbookSocket';
+import { getSportsbookSocket } from '../../socket/sportsbookSocket';
 
 /**
- * Ensures a single `/sportsbook` connection for the tab; pass token from auth (guest allowed).
+ * Sportsbook WebSocket disabled — always returns null.
  */
-export function useSportsbookSocket(token) {
-  useEffect(() => {
-    connectSportsbookSocket(token ?? null);
-  }, [token]);
-
+export function useSportsbookSocket() {
   return getSportsbookSocket();
 }

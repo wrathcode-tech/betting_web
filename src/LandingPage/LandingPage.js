@@ -4,16 +4,19 @@ import AuthService from '../api/services/AuthService'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { getToken } from '../utils/authStorage'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
-import { addMatchesListener, removeMatchesListener } from '../socket/sportsbookSocket'
 import {
-  getMatchRowsFromSocketPayload,
-  expandSocketBatchPayload,
-  normalizeRestMatchesList,
-} from '../utils/sportsbookMatchesPayload'
+  subscribeMatchDataLandingAll,
+  unsubscribeMatchDataLandingAll,
+  addMatchDataListener,
+  normalizeMatchDataUpdatePayload,
+} from '../socket/matchDataSocket'
 import {
   getMarketPillsFromSources,
   getMatchStreamVisible,
+  mergeAndSortPillCodes,
 } from '../utils/matchMarketPills'
+import { normalizeMatchDataEventTime, pickMatchEventTime } from '../utils/matchDataNormalize'
+import { computeTop1x2Cells } from '../utils/sportsGameOdds'
 import '../customComponents/Footer.css'
 import '../sports/sportsGame.css'
 
@@ -70,88 +73,50 @@ function getDayGroup(isoStr) {
   }
 }
 
-/** Start time from match object — tennis/soccer APIs often use openDate / commence_time etc. */
-function pickMatchEventTime(m) {
-  if (!m || typeof m !== 'object') return undefined
-  const ev = m.event && typeof m.event === 'object' ? m.event : null
-  const candidates = [
-    m.eventTime,
-    m.event_time,
-    m.startTime,
-    m.start_time,
-    m.openDate,
-    m.open_date,
-    m.eventOpenDate,
-    m.event_open_date,
-    m.scheduledStart,
-    m.scheduled_start,
-    m.commenceTime,
-    m.commence_time,
-    m.matchTime,
-    m.match_time,
-    m.kickOff,
-    m.kick_off,
-    m.kickoffTime,
-    m.kickoff_time,
-    m.marketStartTime,
-    m.market_start_time,
-    ev?.openDate,
-    ev?.open_date,
-    ev?.startTime,
-    ev?.start_time,
-    ev?.eventTime,
-    ev?.scheduledStart,
-  ]
-  for (const v of candidates) {
-    if (v == null || v === '') continue
-    if (typeof v === 'number' && Number.isFinite(v)) {
-      const ms = v < 1e12 ? v * 1000 : v
-      const d = new Date(ms)
-      if (!isNaN(d.getTime())) return d.toISOString()
-    }
-    if (typeof v === 'string') {
-      const d = new Date(v)
-      if (!isNaN(d.getTime())) return v
-      const n = Number(v)
-      if (Number.isFinite(n)) {
-        const ms = n < 1e12 ? n * 1000 : n
-        const dd = new Date(ms)
-        if (!isNaN(dd.getTime())) return dd.toISOString()
+/** Home TOP rows from `matchData:update` MatchRow[] — align with server: id = gameId ?? eventId. */
+function mapMatchDataRowsToTopMatches(matches, defaults) {
+  if (!Array.isArray(matches)) return []
+  return matches
+    .filter((r) => {
+      if (!r || typeof r !== 'object') return false
+      const id = r.gameId ?? r.eventId
+      return id != null && String(id).trim() !== ''
+    })
+    .map((r) => {
+      const gid = String(r.gameId ?? r.eventId)
+      const rawTime = pickMatchEventTime(r)
+      const et = rawTime != null ? normalizeMatchDataEventTime(rawTime) : null
+      let timeOnly = ''
+      if (et) {
+        try {
+          const d = new Date(et)
+          if (!isNaN(d.getTime())) {
+            timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+          }
+        } catch { /* ignore */ }
       }
-    }
-  }
-  return undefined
-}
-
-/** Pass-through from sportsbook match list API / socket for TV + market badges */
-function pickMatchListMediaFields(m) {
-  if (!m || typeof m !== 'object') return {}
-  return {
-    tvUrl: m.tv_url ?? m.tvUrl,
-    isTv: !!(m.IsTv ?? m.isTv),
-    marketBadges: m.marketBadges ?? m.market_badges ?? m.marketPills ?? m.market_pills,
-  }
-}
-
-/** Shared shape for home TOP matches (socket listSummary / legacy + REST GET …/matches). */
-function mapSocketRowsToTopMatches(rows, defaults) {
-  return rows
-    .filter((m) => m.gameId ?? m.game_id ?? m.eventId ?? m.event_id)
-    .map((m) => {
-      const et = m.eventTime ?? m.event_time ?? pickMatchEventTime(m)
-      const id = m.gameId ?? m.game_id ?? m.eventId ?? m.event_id
+      const mid = r.marketId
       return {
-        id,
-        gameId: m.gameId ?? m.game_id ?? id,
-        eventId: m.eventId ?? m.event_id ?? id,
-        tournament: m.seriesName ?? m.series_name ?? defaults.tournament,
-        teams: m.eventName ?? m.event_name ?? m.name ?? '—',
+        id: gid,
+        gameId: gid,
+        eventId: gid,
+        marketId: mid != null && mid !== '' ? mid : null,
+        tournament: defaults.tournament,
+        teams: r.eventName ?? '—',
+        eventName: r.eventName ?? '—',
         time: formatMatchTime(et),
         eventTime: et,
-        inPlay: m.inPlay ?? m.in_play ?? false,
-        selections: m.selections,
-        markets: m.markets,
-        ...pickMatchListMediaFields(m),
+        inPlay: !!r.inPlay,
+        timeOnly,
+        matchOdds: Array.isArray(r.matchOdds) ? r.matchOdds : [],
+        pills: Array.isArray(r.pills) ? r.pills : undefined,
+        marketFlags: {
+          MO: !!r.MO,
+          BM: !!r.BM,
+          OM: !!r.OM,
+          FO: !!r.FO,
+          PF: !!r.PF,
+        },
       }
     })
     .sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0))
@@ -168,27 +133,6 @@ function formatOddsSize(size) {
   if (!Number.isFinite(n)) return String(size)
   if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 2)}K`
   return n % 1 === 0 ? String(n) : n.toFixed(2)
-}
-
-function toOddDatasArray(oddDatas) {
-  if (!oddDatas) return []
-  if (Array.isArray(oddDatas)) return oddDatas
-  if (typeof oddDatas === 'object') return Object.values(oddDatas).filter(Boolean)
-  return []
-}
-
-function getMarketOddList(market) {
-  if (!market) return []
-  const fromOddDatas = toOddDatasArray(market.oddDatas)
-  if (fromOddDatas.length > 0) return fromOddDatas
-  const runners = Array.isArray(market.runners) ? market.runners : []
-  return runners.map((r) => ({
-    ...r,
-    b1: r.b1 ?? r.back,
-    l1: r.l1 ?? r.lay,
-    bs1: r.bs1 ?? r.size,
-    ls1: r.ls1 ?? r.size,
-  }))
 }
 
 /** listSummary ladder fallback when socket `odds` not received yet. */
@@ -212,25 +156,52 @@ function getLandingThreeColumnOddsFromMatch(match) {
   })
 }
 
-/** Prefer `odds` event payload; else listSummary selections. */
+function isInvalidLandingOdds(val) {
+  if (val == null || val === '') return true
+  const n = parseFloat(String(val).trim())
+  return Number.isNaN(n) || n <= 0
+}
+
+function landingOddsValid(val) {
+  if (val == null || val === '') return false
+  const n = parseFloat(String(val).trim())
+  return !Number.isNaN(n) && n > 0
+}
+
+/**
+ * Same as /sports: `computeTop1x2Cells` — best back / best lay across b1–b3 & l1–l3, columns ordered by event title + rname.
+ */
 function getLandingCardOddsTriples(match, oddsPayload) {
-  const matchOdds = oddsPayload?.matchOdds ?? []
-  const market = matchOdds[0]
-  if (market) {
-    const oddList = getMarketOddList(market)
-    if (oddList.length > 0) {
-      return [0, 1, 2].map((i) => {
-        const o = oddList[i]
-        if (!o) return null
-        return {
-          back: o.b1 ?? o.back ?? '—',
-          lay: o.l1 ?? o.lay ?? '—',
-          sizeFormatted: formatOddsSize(o.bs1 ?? o.ls1 ?? o.size),
-        }
-      })
-    }
+  const mo =
+    Array.isArray(oddsPayload?.matchOdds) && oddsPayload.matchOdds.length > 0
+      ? oddsPayload.matchOdds
+      : match?.matchOdds
+  if (Array.isArray(mo) && mo.length > 0) {
+    const cells = computeTop1x2Cells(match, { matchOdds: mo }, landingOddsValid)
+    return cells.map((c) => {
+      const hb = c.back.price != null && !isInvalidLandingOdds(c.back.price)
+      const hl = c.lay.price != null && !isInvalidLandingOdds(c.lay.price)
+      if (!hb && !hl) return null
+      return {
+        back: hb ? String(c.back.price) : '—',
+        lay: hl ? String(c.lay.price) : '—',
+        backSize: c.back.sizeFormatted,
+        laySize: c.lay.sizeFormatted,
+      }
+    })
   }
-  return getLandingThreeColumnOddsFromMatch(match)
+  const legacy = getLandingThreeColumnOddsFromMatch(match)
+  if (!legacy) return legacy
+  return legacy.map((p) =>
+    p
+      ? {
+          back: p.back,
+          lay: p.lay,
+          backSize: p.sizeFormatted,
+          laySize: p.sizeFormatted,
+        }
+      : null,
+  )
 }
 
 function splitTeamNamesForDesktop(teams) {
@@ -244,10 +215,24 @@ function getOddsScrollKey(sport, match, day, idx) {
   return `${sport}-${match.eventId ?? match.gameId ?? `${day}-${idx}`}`
 }
 
+/** Same pill list as /sports `rowPills`: flags + matchOdds-derived codes, sorted. */
+function landingRowPills(match, oddsPayload) {
+  const flags = []
+  const f = match?.marketFlags
+  if (f && typeof f === 'object') {
+    if (f.MO) flags.push('MO')
+    if (f.BM) flags.push('BM')
+    if (f.FO) flags.push('F')
+    if (f.OM) flags.push('OM')
+    if (f.PF) flags.push('P')
+  }
+  return mergeAndSortPillCodes(flags, getMarketPillsFromSources(match, oddsPayload))
+}
+
 /** Landing desktop row – left block matches exchange-style layout (time, teams, market tools). */
 function DesktopTopMatchBlock({ match, oddsPayload = null }) {
   const teamLines = splitTeamNamesForDesktop(match.teams)
-  const marketPills = getMarketPillsFromSources(match, oddsPayload)
+  const marketPills = landingRowPills(match, oddsPayload)
   const showStream = getMatchStreamVisible(match)
   const clockLabel = match.timeOnly || match.time || ''
   return (
@@ -261,9 +246,7 @@ function DesktopTopMatchBlock({ match, oddsPayload = null }) {
           {match.inPlay ? <span className="sports_grid_desktop_live_badge">LIVE</span> : null}
         </div>
       </div>
-
-<div className="sports_grid_desktop_match_info">
-
+      <div className="sports_grid_desktop_match_info">
       <div className="sports_grid_desktop_match_mid">
         <div className="sports_grid_desktop_teamnames">
           {teamLines.map((name, i) => (
@@ -281,9 +264,7 @@ function DesktopTopMatchBlock({ match, oddsPayload = null }) {
           </div>
         ) : null}
       </div>
-
       </div>
-      
     </div>
   )
 }
@@ -303,7 +284,7 @@ function LandingPage() {
 
   const [topSportsIndex, setTopSportsIndex] = useState(0);
 
-  // TOP Matches from API (cricket, tennis, soccer) + socket for live updates
+  // TOP Matches from `/matchdata` Socket.IO (cricket, tennis, soccer) while landing is mounted
   const [topMatchesFromApi, setTopMatchesFromApi] = useState([]);
   const [topMatchesLoading, setTopMatchesLoading] = useState(true);
 
@@ -312,13 +293,6 @@ function LandingPage() {
 
   const [topSoccerMatchesFromApi, setTopSoccerMatchesFromApi] = useState([]);
   const [topSoccerMatchesLoading, setTopSoccerMatchesLoading] = useState(true);
-  const [cricketLandingFilter, setCricketLandingFilter] = useState('all');
-  const [tennisLandingFilter, setTennisLandingFilter] = useState('all');
-  const [soccerLandingFilter, setSoccerLandingFilter] = useState('all');
-  const toggleLandingFilter = useCallback((setFilter, value) => {
-    setFilter((prev) => (prev === value ? 'all' : value))
-  }, [])
-
   const landingOddsScrollRefs = useRef(new Map());
   const isSyncingLandingOddsScrollRef = useRef(false);
 
@@ -413,67 +387,59 @@ function LandingPage() {
     return () => window.clearTimeout(t);
   }, []);
 
-  // TOP matches: REST prefetch (fast first paint) + socket updates (subscribe:matches from route).
-
+  // Mount once: subscribe cricket/tennis/soccer once; further data only via server `matchData:update` (no re-subscribe loop).
   useEffect(() => {
-    let cancelled = false
-    const prefetchSport = async (sport, setRows, setLoading, tournament) => {
-      try {
-        const res = await AuthService.sportsbookMatches(sport)
-        if (cancelled) return
-        const raw = normalizeRestMatchesList(res)
-        if (!raw.length) return
-        const mapped = mapSocketRowsToTopMatches(raw, { tournament })
-        if (mapped.length > 0) {
-          setRows(mapped)
-          setLoading(false)
-        }
-      } catch {
-        /* socket / TOP_MATCH_LOAD_MAX_WAIT_MS still clears spinner */
+    subscribeMatchDataLandingAll()
+    const remove = addMatchDataListener((kind, payload) => {
+      if (kind === 'error') {
+        console.warn('matchData:error', payload)
+        setTopMatchesLoading(false)
+        setTopTennisMatchesLoading(false)
+        setTopSoccerMatchesLoading(false)
+        return
       }
-    }
-    prefetchSport('cricket', setTopMatchesFromApi, setTopMatchesLoading, 'Cricket')
-    prefetchSport('tennis', setTopTennisMatchesFromApi, setTopTennisMatchesLoading, 'Tennis')
-    prefetchSport('soccer', setTopSoccerMatchesFromApi, setTopSoccerMatchesLoading, 'Football')
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    const onMatches = (raw) => {
-      for (const payload of expandSocketBatchPayload(raw)) {
-        const sport = payload?.sport
-        if (sport !== 'cricket' && sport !== 'tennis' && sport !== 'soccer') continue
-        const { rows, error } = getMatchRowsFromSocketPayload(payload)
-        if (error) {
-          if (sport === 'cricket') setTopMatchesLoading(false)
-          else if (sport === 'tennis') setTopTennisMatchesLoading(false)
-          else setTopSoccerMatchesLoading(false)
-          continue
-        }
-        if (rows.length === 0 && payload?.schema !== 'listSummary') continue
-        const defaults =
-          sport === 'cricket'
-            ? { tournament: 'Cricket' }
-            : sport === 'tennis'
-              ? { tournament: 'Tennis' }
-              : { tournament: 'Football' }
-        const mapped = mapSocketRowsToTopMatches(rows, defaults)
-        if (sport === 'cricket') {
-          setTopMatchesFromApi((prev) => (mapped.length > 0 ? mapped : prev))
+      const { sportName, matches } = normalizeMatchDataUpdatePayload(payload)
+      const defaults =
+        sportName === 'cricket'
+          ? { tournament: 'Cricket' }
+          : sportName === 'tennis'
+            ? { tournament: 'Tennis' }
+            : sportName === 'soccer'
+              ? { tournament: 'Football' }
+              : null
+      if (!defaults) return
+      if (!Array.isArray(matches)) return
+      // Backend `buildPayloadAll` can send empty `matches` per sport; still clear loading.
+      if (matches.length === 0) {
+        if (sportName === 'cricket') {
+          setTopMatchesFromApi([])
           setTopMatchesLoading(false)
-        } else if (sport === 'tennis') {
-          if (mapped.length > 0) setTopTennisMatchesFromApi(mapped)
+        } else if (sportName === 'tennis') {
+          setTopTennisMatchesFromApi([])
           setTopTennisMatchesLoading(false)
-        } else {
-          if (mapped.length > 0) setTopSoccerMatchesFromApi(mapped)
+        } else if (sportName === 'soccer') {
+          setTopSoccerMatchesFromApi([])
           setTopSoccerMatchesLoading(false)
         }
+        return
       }
+      const mapped = mapMatchDataRowsToTopMatches(matches, defaults)
+      if (mapped.length === 0) return
+      if (sportName === 'cricket') {
+        setTopMatchesFromApi(mapped)
+        setTopMatchesLoading(false)
+      } else if (sportName === 'tennis') {
+        setTopTennisMatchesFromApi(mapped)
+        setTopTennisMatchesLoading(false)
+      } else if (sportName === 'soccer') {
+        setTopSoccerMatchesFromApi(mapped)
+        setTopSoccerMatchesLoading(false)
+      }
+    })
+    return () => {
+      remove()
+      unsubscribeMatchDataLandingAll()
     }
-    addMatchesListener(onMatches)
-    return () => removeMatchesListener(onMatches)
   }, [])
 
   // Hero 3D slider – 7 items, 5 visible at a time, infinite repeat
@@ -572,33 +538,17 @@ function LandingPage() {
   const tennisTopDisplayMatches = useMemo(() => sortLiveFirst(topTennisMatchesFromApi), [topTennisMatchesFromApi, sortLiveFirst])
   const soccerTopDisplayMatches = useMemo(() => sortLiveFirst(topSoccerMatchesFromApi), [topSoccerMatchesFromApi, sortLiveFirst])
 
-  const hasTagInMatch = useCallback((match, tag) => {
-    const badgeText = Array.isArray(match?.marketBadges) ? match.marketBadges.join(' ') : ''
-    const marketText = Array.isArray(match?.markets)
-      ? match.markets.map((m) => `${m?.marketName ?? ''} ${m?.market ?? ''}`).join(' ')
-      : ''
-    const fullText = `${badgeText} ${marketText} ${match?.tournament ?? ''} ${match?.teams ?? ''} ${match?.category ?? ''}`.toLowerCase()
-    return fullText.includes(tag)
-  }, [])
-
-  const filterLandingMatches = useCallback((matches, filterValue) => {
-    if (filterValue === 'live') return matches.filter((m) => m.inPlay)
-    if (filterValue === 'virtual') return matches.filter((m) => hasTagInMatch(m, 'virtual'))
-    if (filterValue === 'premium') return matches.filter((m) => hasTagInMatch(m, 'premium'))
-    return sortLiveFirst(matches)
-  }, [hasTagInMatch, sortLiveFirst])
-
   const topMatchesByDay = useMemo(
-    () => groupMatchesByDay(filterLandingMatches(cricketTopDisplayMatches, cricketLandingFilter)),
-    [cricketTopDisplayMatches, cricketLandingFilter, filterLandingMatches]
+    () => groupMatchesByDay(cricketTopDisplayMatches),
+    [cricketTopDisplayMatches]
   );
   const topTennisMatchesByDay = useMemo(
-    () => groupMatchesByDay(filterLandingMatches(tennisTopDisplayMatches, tennisLandingFilter).slice(0, 10)),
-    [tennisTopDisplayMatches, tennisLandingFilter, filterLandingMatches]
+    () => groupMatchesByDay(tennisTopDisplayMatches.slice(0, 25)),
+    [tennisTopDisplayMatches]
   );
   const topSoccerMatchesByDay = useMemo(
-    () => groupMatchesByDay(filterLandingMatches(soccerTopDisplayMatches, soccerLandingFilter).slice(0, 10)),
-    [soccerTopDisplayMatches, soccerLandingFilter, filterLandingMatches]
+    () => groupMatchesByDay(soccerTopDisplayMatches.slice(0, 25)),
+    [soccerTopDisplayMatches]
   );
 
   const navigate = useNavigate();
@@ -621,20 +571,35 @@ function LandingPage() {
       isSyncingLandingOddsScrollRef.current = false
     })
   }, [])
+  const buildMatchNavState = (match, sportName) => {
+    const base = {
+      gameId: match.gameId,
+      eventId: match.eventId ?? match.gameId,
+      eventName: match.teams,
+      sportName,
+      inPlay: match.inPlay,
+      seriesName: match.tournament,
+      marketId: match.marketId,
+    }
+    if (Array.isArray(match.matchOdds) && match.matchOdds.length > 0) {
+      return { ...base, matchOdds: match.matchOdds }
+    }
+    return base
+  }
   const handleTopMatchRowClick = (e, match) => {
     if (e.target.closest('button')) return;
-    if (match?.gameId) navigate('/cricket', { state: { gameId: match.gameId, eventName: match.teams, sportName: 'cricket', inPlay: match.inPlay, seriesName: match.tournament } });
+    if (match?.gameId) navigate('/cricket', { state: buildMatchNavState(match, 'cricket') });
     else navigate('/sports');
   };
   const handleTopTennisMatchRowClick = (e, match) => {
     if (e.target.closest('button')) return;
     const id = match?.gameId ?? match?.eventId;
-    if (id) navigate('/tennis', { state: { gameId: id, eventId: id, eventName: match.teams, sportName: 'tennis', inPlay: match.inPlay, seriesName: match.tournament } });
+    if (id) navigate('/tennis', { state: buildMatchNavState(match, 'tennis') });
     else navigate('/sports');
   };
   const handleTopSoccerMatchRowClick = (e, match) => {
     if (e.target.closest('button')) return;
-    if (match?.gameId) navigate('/soccer', { state: { gameId: match.gameId, eventName: match.teams, sportName: 'soccer', inPlay: match.inPlay, seriesName: match.tournament } });
+    if (match?.gameId) navigate('/soccer', { state: buildMatchNavState(match, 'soccer') });
     else navigate('/sports');
   };
 
@@ -1339,11 +1304,7 @@ function LandingPage() {
               </div>
 
               <div className="top_hd_right d-flex align-items-center gap-2">
-                <div className="sports_grid_filters">
-                  <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'live' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setCricketLandingFilter, 'live')}>+ Live</button>
-                  <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'virtual' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setCricketLandingFilter, 'virtual')}>+ Virtual</button>
-                  <button type="button" className={`sports_filter_btn ${cricketLandingFilter === 'premium' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setCricketLandingFilter, 'premium')}>+ Premium</button>
-                </div>
+                <Link to="/sports"><button type="button" className="slotbtn">View all</button></Link>
               </div>
             </div>
 
@@ -1358,7 +1319,8 @@ function LandingPage() {
                   ) : (
                     topMatchesByDay.map(({ day, matches }) =>
                       matches.map((match, idx) => {
-                        const cardOdds = getLandingCardOddsTriples(match, null);
+                        const oddsPayload = match.matchOdds?.length ? { matchOdds: match.matchOdds } : null
+                        const cardOdds = getLandingCardOddsTriples(match, oddsPayload);
                         return (
                           <div
                             key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
@@ -1367,7 +1329,7 @@ function LandingPage() {
                             onClick={(e) => handleTopMatchRowClick(e, match)}
                           >
                             <div className="leftside_matchlist">
-                              <DesktopTopMatchBlock match={match} oddsPayload={null} />
+                              <DesktopTopMatchBlock match={match} oddsPayload={oddsPayload} />
                             </div>
                             <div
                               className="rightside_odds"
@@ -1384,7 +1346,7 @@ function LandingPage() {
                                       {pair ? (
                                         <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopMatchRowClick(e, match); }}>
                                           <span className="sports_grid_odds_val">{pair.back}</span>
-                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                          <span className="sports_grid_odds_size">{pair.backSize ?? pair.sizeFormatted}</span>
                                         </button>
                                       ) : (
                                         <span className="sports_grid_odds_dash sports_grid_desktop_odds_dash">-</span>
@@ -1394,7 +1356,7 @@ function LandingPage() {
                                       {pair ? (
                                         <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopMatchRowClick(e, match); }}>
                                           <span className="sports_grid_odds_val">{pair.lay}</span>
-                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                          <span className="sports_grid_odds_size">{pair.laySize ?? pair.sizeFormatted}</span>
                                         </button>
                                       ) : (
                                         <span className="sports_grid_odds_dash sports_grid_desktop_odds_dash">-</span>
@@ -1424,11 +1386,7 @@ function LandingPage() {
                 <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Tennis</h2></Link>
               </div>
               <div className="top_hd_right d-flex align-items-center gap-2">
-                <div className="sports_grid_filters">
-                  <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'live' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setTennisLandingFilter, 'live')}>+ Live</button>
-                  <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'virtual' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setTennisLandingFilter, 'virtual')}>+ Virtual</button>
-                  <button type="button" className={`sports_filter_btn ${tennisLandingFilter === 'premium' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setTennisLandingFilter, 'premium')}>+ Premium</button>
-                </div>
+                <Link to="/sports"><button type="button" className="slotbtn">View all</button></Link>
               </div>
             </div>
             <div className="sports_grid_section sports_grid_section_landing">
@@ -1441,7 +1399,8 @@ function LandingPage() {
                   ) : (
                     topTennisMatchesByDay.map(({ day, matches }) =>
                       matches.map((match, idx) => {
-                        const cardOdds = getLandingCardOddsTriples(match, null);
+                        const oddsPayload = match.matchOdds?.length ? { matchOdds: match.matchOdds } : null
+                        const cardOdds = getLandingCardOddsTriples(match, oddsPayload);
                         return (
                           <div
                             key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
@@ -1450,7 +1409,7 @@ function LandingPage() {
                             onClick={(e) => handleTopTennisMatchRowClick(e, match)}
                           >
                             <div className="leftside_matchlist">
-                              <DesktopTopMatchBlock match={match} oddsPayload={null} />
+                              <DesktopTopMatchBlock match={match} oddsPayload={oddsPayload} />
                             </div>
                             <div
                               className="rightside_odds"
@@ -1467,7 +1426,7 @@ function LandingPage() {
                                       {pair ? (
                                         <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopTennisMatchRowClick(e, match); }}>
                                           <span className="sports_grid_odds_val">{pair.back}</span>
-                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                          <span className="sports_grid_odds_size">{pair.backSize ?? pair.sizeFormatted}</span>
                                         </button>
                                       ) : (
                                         <span className="sports_grid_odds_dash sports_grid_desktop_odds_dash">-</span>
@@ -1477,7 +1436,7 @@ function LandingPage() {
                                       {pair ? (
                                         <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopTennisMatchRowClick(e, match); }}>
                                           <span className="sports_grid_odds_val">{pair.lay}</span>
-                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                          <span className="sports_grid_odds_size">{pair.laySize ?? pair.sizeFormatted}</span>
                                         </button>
                                       ) : (
                                         <span className="sports_grid_odds_dash sports_grid_desktop_odds_dash">-</span>
@@ -1507,11 +1466,7 @@ function LandingPage() {
                 <Link to="/sports" className="link_plain"><h2 className="heading_h2 link_plain">Football</h2></Link>
               </div>
               <div className="top_hd_right d-flex align-items-center gap-2">
-                <div className="sports_grid_filters">
-                  <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'live' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setSoccerLandingFilter, 'live')}>+ Live</button>
-                  <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'virtual' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setSoccerLandingFilter, 'virtual')}>+ Virtual</button>
-                  <button type="button" className={`sports_filter_btn ${soccerLandingFilter === 'premium' ? 'active' : ''}`} onClick={() => toggleLandingFilter(setSoccerLandingFilter, 'premium')}>+ Premium</button>
-                </div>
+                <Link to="/sports"><button type="button" className="slotbtn">View all</button></Link>
               </div>
             </div>
             <div className="sports_grid_section sports_grid_section_landing">
@@ -1524,7 +1479,8 @@ function LandingPage() {
                   ) : (
                     topSoccerMatchesByDay.map(({ day, matches }) =>
                       matches.map((match, idx) => {
-                        const cardOdds = getLandingCardOddsTriples(match, null);
+                        const oddsPayload = match.matchOdds?.length ? { matchOdds: match.matchOdds } : null
+                        const cardOdds = getLandingCardOddsTriples(match, oddsPayload);
                         return (
                           <div
                             key={match.eventId ?? match.gameId ?? `${day}-${idx}`}
@@ -1533,7 +1489,7 @@ function LandingPage() {
                             onClick={(e) => handleTopSoccerMatchRowClick(e, match)}
                           >
                             <div className="leftside_matchlist">
-                              <DesktopTopMatchBlock match={match} oddsPayload={null} />
+                              <DesktopTopMatchBlock match={match} oddsPayload={oddsPayload} />
                             </div>
                             <div
                               className="rightside_odds"
@@ -1550,7 +1506,7 @@ function LandingPage() {
                                       {pair ? (
                                         <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopSoccerMatchRowClick(e, match); }}>
                                           <span className="sports_grid_odds_val">{pair.back}</span>
-                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                          <span className="sports_grid_odds_size">{pair.backSize ?? pair.sizeFormatted}</span>
                                         </button>
                                       ) : (
                                         <span className="sports_grid_odds_dash sports_grid_desktop_odds_dash">-</span>
@@ -1560,7 +1516,7 @@ function LandingPage() {
                                       {pair ? (
                                         <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); handleTopSoccerMatchRowClick(e, match); }}>
                                           <span className="sports_grid_odds_val">{pair.lay}</span>
-                                          <span className="sports_grid_odds_size">{pair.sizeFormatted}</span>
+                                          <span className="sports_grid_odds_size">{pair.laySize ?? pair.sizeFormatted}</span>
                                         </button>
                                       ) : (
                                         <span className="sports_grid_odds_dash sports_grid_desktop_odds_dash">-</span>
