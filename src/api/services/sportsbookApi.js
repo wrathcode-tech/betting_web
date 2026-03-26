@@ -92,16 +92,38 @@ export async function getScore(eventId) {
 }
 
 /**
- * POST /api/v1/sportsbook/bet/place
- * @param {object} body - { sport, gameId, eventName, marketType, marketId, selectionId, selectionName, betType, odds, stake }
+ * POST /api/v1/sportsbook/place-bet
+ * @param {object} body - { sport, gameId, eventName, seriesName?, eventTime?, marketType, marketId, marketName?, selectionId, selectionName, betType, odds, stake, isLive?, requestId? } — user from Authorization Bearer
  * @param {string} body.sport - cricket | soccer | tennis
  * @param {string} body.betType - back | lay
  * @param {string} body.marketType - match_odds | bookmaker | fancy
- * @returns {Promise<{ bet, slip, balance? }>}
+ * @returns {Promise<{ success, message?, data?: { data?: object } }>}
  */
 export async function placeBet(body) {
   const res = await AuthService.sportsbookPlaceBet(body);
   return normalizeResponse(res);
+}
+
+/** Response: `{ success, message, data: { data: bet } }` — unwrap bet + balanceAfter for UI. */
+export function unwrapPlaceBetResponse(res) {
+  if (!res || typeof res !== 'object') {
+    return { ok: false, bet: null, message: '', balanceAfter: null };
+  }
+  const msg = String(res.message || '');
+  if (res.success === false) {
+    return { ok: false, bet: null, message: msg || 'Request failed', balanceAfter: null };
+  }
+  if (msg.toLowerCase().includes('fail')) {
+    return { ok: false, bet: null, message: msg, balanceAfter: null };
+  }
+  const wrap = res.data;
+  const inner = wrap && typeof wrap === 'object' ? wrap : {};
+  const bet =
+    inner.data ??
+    inner.bet ??
+    (inner._id || inner.gameId ? inner : null);
+  const balanceAfter = bet?.balanceAfter ?? inner.balanceAfter ?? res.balanceAfter;
+  return { ok: true, bet, message: msg || inner.message, balanceAfter };
 }
 
 /**
@@ -159,6 +181,7 @@ export const sportsbookApi = {
   getEventStakeConfig,
   getScore,
   placeBet,
+  unwrapPlaceBetResponse,
   getOpenBets,
   getBetHistory,
   getBetSummary,

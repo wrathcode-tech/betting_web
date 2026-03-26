@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import './CricketDetail.css'
 import MobileMenu from '../customComponents/MobileMenu'
 import AuthService from '../api/services/AuthService'
-import { getEventStakeConfig } from '../api/services/sportsbookApi'
+import { getEventStakeConfig, unwrapPlaceBetResponse } from '../api/services/sportsbookApi'
 import {
     addMatchesListener,
     removeMatchesListener,
@@ -216,6 +216,16 @@ function betUpdatePayloadRelatesToMatch(payload, gameId, eventId) {
 /**
  * Socket `betUpdate` → BalanceContext `sportsbookBetUpdate`. Toast sirf jab payload mein clear result ho (spam kam).
  */
+/** Place-bet body: backend expects `marketName` (e.g. "Match Odds") when not already on selection payload. */
+function marketNameForPlaceBet(p) {
+    if (p?.marketName != null && String(p.marketName).trim() !== '') return String(p.marketName).trim()
+    const t = String(p?.marketType || '').toLowerCase()
+    if (t === 'match_odds') return 'Match Odds'
+    if (t === 'bookmaker') return 'Bookmaker'
+    if (t === 'fancy') return 'Fancy'
+    return t ? t.replace(/_/g, ' ') : 'Market'
+}
+
 function tryNotifyBetSettlement(payload, gameId, eventId, dedupeRef) {
     if (!gameId && !eventId) return
     const p = flattenBetUpdatePayload(payload)
@@ -418,6 +428,30 @@ function CricketDetail() {
             'Match'
         )
     }, [eventNameFromState, oddsData?.eventName, oddsData?.matchName, defaultMatch?.eventName])
+
+    const eventTimeForPlaceBet = useMemo(() => {
+        const raw =
+            location.state?.eventTime ??
+            location.state?.event_time ??
+            defaultMatch?.eventTime ??
+            defaultMatch?.event_time ??
+            defaultMatch?.eventDate ??
+            oddsData?.eventTime
+        if (raw == null || raw === '') return undefined
+        if (typeof raw === 'string') {
+            const d = new Date(raw)
+            return Number.isNaN(d.getTime()) ? raw : d.toISOString()
+        }
+        if (raw instanceof Date && !Number.isNaN(raw.getTime())) return raw.toISOString()
+        return undefined
+    }, [
+        location.state?.eventTime,
+        location.state?.event_time,
+        defaultMatch?.eventTime,
+        defaultMatch?.event_time,
+        defaultMatch?.eventDate,
+        oddsData?.eventTime,
+    ])
 
     // defaultMatch: socket `matches` only (no REST sportsbookMatches)
     useEffect(() => {
@@ -768,11 +802,14 @@ function CricketDetail() {
                 const priceVersion = oddsData?.oddsUpdatedAt ?? oddsData?.odds_updated_at
                 const body = {
                     sport: p.sport ?? sportName,
-                    gameId: p.gameId,
+                    gameId: String(p.gameId),
                     eventName: p.eventName ?? eventNameForBets,
+                    ...(seriesOrTournamentName ? { seriesName: seriesOrTournamentName } : {}),
+                    ...(eventTimeForPlaceBet ? { eventTime: eventTimeForPlaceBet } : {}),
                     marketType: p.marketType,
-                    marketId: p.marketId,
-                    selectionId: p.selectionId,
+                    marketId: String(p.marketId),
+                    marketName: marketNameForPlaceBet(p),
+                    selectionId: String(p.selectionId),
                     selectionName: p.selectionName,
                     betType: p.betType,
                     odds: Number(oddsNum),
@@ -783,13 +820,17 @@ function CricketDetail() {
                 }
                 const res = await AuthService.sportsbookPlaceBet(body)
                 lastRes = res
-                const backendMsg = res?.data?.message ?? res?.message
-                if (res && res.success === false) throw new Error(backendMsg)
+                const { ok, message: failMsg } = unwrapPlaceBetResponse(res)
+                if (!ok) throw new Error(failMsg || res?.message || 'Bet failed')
             }
             setSelectedBets([])
             setStake(effectiveStakeBounds.min)
-            const successMsg = lastRes?.data?.message ?? lastRes?.message
+            const { message: placedMsg, balanceAfter } = unwrapPlaceBetResponse(lastRes)
+            const successMsg = placedMsg || lastRes?.message
             setPlaceBetSuccessMessage(successMsg || 'Bet placed successfully.')
+            if (balanceAfter != null) {
+                window.dispatchEvent(new CustomEvent('walletBalanceUpdate', { detail: { balance: balanceAfter } }))
+            }
             // Open bets + exposure turant refresh — cashout amounts openBetsList / socket fields se derive
             try {
                 await pullOpenBets({ showLoading: false })
@@ -1360,7 +1401,7 @@ function CricketDetail() {
                                             {backCells.map((cell, cIdx) => {
                                                 const locked = isOddsLocked(cell.odds)
                                                 const oddsStr = String(cell.odds ?? '')
-                                                const placePayload = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(selId), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0 } : null
+                                                const placePayload = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), marketName: marketTitle, selectionId: String(selId), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0 } : null
                                                 const elId = `odds-${sectionKey}-${oIdx}-back-${cIdx}`
                                                 return (
                                                     <BackPriceCell
@@ -1378,7 +1419,7 @@ function CricketDetail() {
                                             {layCells.map((cell, cIdx) => {
                                                 const locked = isOddsLocked(cell.odds)
                                                 const oddsStr = String(cell.odds ?? '')
-                                                const placePayloadLay = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), selectionId: String(selId), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0 } : null
+                                                const placePayloadLay = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), marketName: marketTitle, selectionId: String(selId), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0 } : null
                                                 const elId = `odds-${sectionKey}-${oIdx}-lay-${cIdx}`
                                                 return (
                                                     <LayPriceCell
@@ -1783,6 +1824,7 @@ function CricketDetail() {
                             eventName: eventNameForBets,
                             marketType: row.marketType || 'fancy',
                             marketId: String(row.marketId),
+                            marketName: row.marketName || row.label || 'Market',
                             selectionId: String(row.yesSid),
                             selectionName: row.label,
                             betType: 'back',
@@ -1794,6 +1836,7 @@ function CricketDetail() {
                             eventName: eventNameForBets,
                             marketType: row.marketType || 'fancy',
                             marketId: String(row.marketId),
+                            marketName: row.marketName || row.label || 'Market',
                             selectionId: String(row.noSid),
                             selectionName: row.label,
                             betType: 'lay',
@@ -1953,6 +1996,7 @@ function CricketDetail() {
                             eventName: eventNameForBets,
                             marketType: marketType || 'fancy',
                             marketId: String(marketId),
+                            marketName: title,
                             selectionId: String(row.selectionId),
                             selectionName: row.label,
                             betType: 'back',

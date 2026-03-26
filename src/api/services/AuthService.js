@@ -612,13 +612,18 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
-  /** POST /api/v1/sportsbook/bet/place – Place a back/lay bet. Body: sport, gameId, eventName, marketType, marketId, selectionId, selectionName, betType, odds, stake, etc. */
+  /** POST /api/v1/sportsbook/place-bet — Headers: Authorization: Bearer (access token), Content-Type: application/json. Body: sport, gameId, eventName, seriesName?, eventTime?, marketType, marketId, marketName?, selectionId, selectionName, betType, odds, stake, isLive?, requestId? */
   sportsbookPlaceBet: async (body) => {
-    const token = sessionStorage.getItem("token");
+    const raw = sessionStorage.getItem("token");
+    if (!raw) return { success: false, message: "Login required" };
+    const token = String(raw).replace(/^\s*Bearer\s+/i, "").trim();
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingSportsbook } = ApiConfig;
-    const url = `${baseBettingSportsbook}/bet/place`;
-    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    const url = `${baseBettingSportsbook}/place-bet`;
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
     return ApiCallPost(url, body, headers);
   },
 
