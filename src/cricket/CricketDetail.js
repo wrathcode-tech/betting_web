@@ -1348,7 +1348,9 @@ function CricketDetail() {
                                     sectionOpenBets.length > 0 &&
                                     (Math.abs(plIfThisRunnerWins) > 0.005)
 
-                                const totalCols = 2 + backCells.length + layCells.length
+                                // Indicator column is CSS-hidden on this table, so mobile inline slip
+                                // row should span only visible columns (Market + Back cells + Lay cells).
+                                const totalCols = 1 + backCells.length + layCells.length
                                 const isMiniBookRowSelected =
                                     showMobileSlipHere &&
                                     sectionKey.startsWith('mini_bookmaker') &&
