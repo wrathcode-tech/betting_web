@@ -2222,339 +2222,6 @@ span.quicktext {
     display: none;
 }
 
-@media (max-width: 1800px) {
-
-    .right_content_side.cricketDetail_block .dashboard_page.removebgsports {
-        width: 78%;
-    }
-
-}
-
-@media (max-width: 1440px) {
-
-    .right_content_side.cricketDetail_block .dashboard_page.removebgsports {
-        width: 72%;
-    }
-
-}
-
-@media (max-width: 1200px) {
-
-    .top_tabs_cricket ul li button {
-        font-size: 11px;
-        white-space: nowrap;
-    }
-
-    .betslip_place_bet_btn {
-        padding: 8px 20px;
-        font-size: 12px;
-    }
-
-    .top_tabs_cricket ul {
-        gap: 8px;
-    }
-
-    .betslip_odd_input {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-
-    .betslip_odd_btn {
-        height: 32px;
-    }
-
-    .betslip_amount_input {
-        padding: 7px 14px;
-        font-size: 12px;
-    }
-
-    .betslip_quick_btn {
-        width: 100%;
-        padding: 6px 12px;
-        font-size: 11px;
-    }
-
-    .top_tabs_cricket {
-        overflow: auto;
-    }
-
-    .betslip_actions {
-        flex-wrap: nowrap;
-        gap: 4px;
-    }
-
-    .right_content_side.cricketDetail_block .dashboard_page.removebgsports {
-        width: 100%;
-    }
-
-    .betslip_panel {
-        display: none;
-    }
-
-    .cricketbet_mobile .betslip_panel {
-        display: block;
-    }
-
-    /* Bet place ke baad: inline slip gayab ho chuki hoti hai — floating slip mein success dikhao */
-    .betslip_panel.betslip_panel_success_mobile {
-        display: flex !important;
-        left: 8px;
-        right: 8px;
-        width: auto;
-        bottom: max(72px, calc(env(safe-area-inset-bottom, 0px) + 56px));
-        z-index: 10000050;
-        max-height: min(55vh, 420px);
-    }
-
-    .page_open_bets_wrap .betslip_open_bets {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .d-flex.value_amount .betslip_odd_section {  text-align: left;
-    }
-
-  
-
-}
-
-@media (max-width: 991px) {
-
-.removebgsports {
-    padding-bottom: 60px;
-}
-
-}
-
-@media (max-width: 767px) {
-
-    .cricket_info_inner h2 {
-        font-size: 16px;
-    }
-
-tr.cricketbet_mobile_row  td {
-        border-bottom: none;
-        border-right: none;
-    }
-
-    .market_no_yes_limits_container.d-flex {
-        /* width: max-content; */
-        /* min-width: max-content; */
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        align-items: end;
-    }
-
-    .market_no_yes_label {
-        min-width: 150px;
-        max-width: 150px;
-        width: 150px;
-    }
-
-    .right_content_side .container {
-        padding: 0px;
-    }
-
-    .footer_description_content p {
-        font-size: 12px;
-    }
-
-    .footer_description_content ul {
-        font-size: 12px;
-    }
-
-    .footer_show_more_btn {
-        padding: 8px 15px;
-        font-size: 12px;
-    }
-
-    /* odds_section_block: Market name fix left, baaki scroll (sports jaisa) */
-    .odds_section_block .odds_section_table_wrap {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .odds_section_block .odds_section_table thead th:first-child,
-    .odds_section_block .odds_section_table td.odds_section_market_name {
-        min-width: 170px;
-        max-width: 170px;
-        width: 170px;
-    }
-
-    .market_no_yes_row.match_row {
-        gap: 10px;
-        padding: 10px 10px;
-    }
-
-    .market_no_yes_label.market_no_yes_left.match_left {
-        flex: 0 0 170px;
-        max-width: 170px;
-        min-width: 170px;
-    }
-
-    .market_no_yes_right.match_right {
-        flex: 1 1 auto;
-        min-width: 0;
-        width: 100%;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-x pan-y;
-    }
-
-    .market_no_yes_limits_container.d-flex {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .market_no_yes_odds_container {
-        flex-wrap: nowrap;
-        overflow: auto;
-    }
-
-    .market_no_yes_odds_container>* {
-        flex: 0 0 auto;
-    }
-
-    .cricket_summary_details_wrapper .odds_section_lay {
-        border-right: none; }
-
-    .series_name_row p {
-        font-size: 12px;
-    }
-
-    .cricket_detail_section .cricket_scorecard_team {
-        font-size: 13px;
-    }
-
-    .cricket_detail_section .cricket_scorecard_score {
-        font-size: 12px;
-    }
-
-    .cricket_detail_section .cricket_scorecard_th_left {
-        padding: 8px 12px;
-        font-size: 12px;
-    }
-
-    .cricket_detail_section .cricket_scorecard_th_num {
-        padding: 8px 10px 8px 0;
-        font-size: 12px;
-    }
-
-    .cricket_detail_section .cricket_scorecard_table {
-        font-size: 11px;
-    }
-
-    .cricket_detail_section .cricket_scorecard_td_batter .cricket_scorecard_dismissal {
-        font-size: 10px;
-    }
-
-    .odds_section_locked {
-        min-height: 35px;
-    }
-
-    .cricket_detail_section .cricket_scorecard_extras_row,
-    .cricket_detail_section .cricket_scorecard_total_row,
-    .cricket_detail_section .cricket_scorecard_dnb_row {
-        padding: 8px 12px;
-        font-size: 11px;
-    }
-
-    .cricket_detail_section .cricket_scorecard_td_batter {
-        padding: 8px 12px;
-    }
-
-    .odds_section_title {
-        font-size: 12px;
-    }
-
-    .betslip_act_min {
-        padding: 8px 8px;
-        font-size: 10px;
-    }
-
-    .betslip_act_clear {
-        padding: 8px 8px;
-        font-size: 10px;
-    }
-
-    .cricket_detail_section .cricket_live_table thead th {
-        padding: 4px 4px 3px;
-        font-size: 10px;
-    }
-
-    .match_summary_content_tabs {
-        margin-top: 5px;
-    }
-
-    .cricket_live_over_box.desktop_view {
-        display: none;
-    }
-
-    .betslip_open_bet_row {
-        gap: 10px;
-    }
-
-    .cricket_live_over_box.mobile_view {
-        display: block;
-        margin: 0px 0px 0px;
-    }
-
-    .betslip_act_max {
-        padding: 8px 8px;
-        font-size: 10px;
-    }
-
-    .betslip_act_edit {
-        padding: 8px 8px;
-        font-size: 10px;
-    }
-
-    .cricket_detail_section .cricket_live_top_panel {
-        flex-wrap: nowrap;
-    }
-
-    .cricket_detail_section .cricket_live_team_left,
-    .cricket_detail_section .cricket_live_team_right {
-        min-width: 110px;
-    }
-
-    .cricket_detail_section .cricket_live_team_name {
-        font-size: 12px;
-    }
-
-    .cricket_detail_section .cricket_live_toss {
-        font-size: 10px;
-        white-space: normal;
-    }
-
-    .cricket_detail_section .cricket_live_score_box {
-        font-size: 11px;
-    }
-
-    .cricket_detail_section .cricket_live_crr,
-    .cricket_detail_section .cricket_live_rrr {
-        font-size: 11px;
-    }
-
-    .cricket_detail_section .cricket_live_team_flag {
-        width: 15px;
-        height: 15px;
-        border-radius: 2px;
-    }
-
-    .cricket_detail_section .cricket_live_table tbody td {
-        padding: 3px 5px;
-        font-size: 10px;
-    }
-
-    .odds_section_header_right {
-        justify-content: end;
-    }
-
-}
-
-
 
 /* MATCH ODDS / BOOKMAKER / MINI BOOKMAKER – site theme */
 .odds_section_block {
@@ -2815,8 +2482,10 @@ tr.cricketbet_mobile_row  td {
 
 /* Match normal row: N back + N lay columns share full odds width (no shrink-wrap gap on the right) */
 .odds_section_status_overlay_cells .odds_section_status_overlay_cell.odds_section_cell {
-    flex: 1 1 0;
+    flex: 1 1;
     min-width: 0;
+    border-right: 1px solid #fff;
+    border-bottom: 1px solid #fff;
     width: auto;
 }
 
@@ -2824,6 +2493,8 @@ tr.cricketbet_mobile_row  td {
     width: 100%;
     min-width: 0;
 }
+
+.odds_section_table td.odds_section_market_name{ border-right: none; }
 
 .odds_section_status_overlay_cells .odds_section_locked {
     width: 100%;
@@ -2902,13 +2573,20 @@ tr.cricketbet_mobile_row  td {
     text-align: left !important;
     color: #fff;
     font-weight: 500;
-    min-width: 550px;
-    width: 550px;
+    min-width: 924px;
+    width: 924px;
     position: sticky;
     left: 0;
     z-index: 3;
     background: #1a2332;
     box-shadow: 6px 0 12px rgba(0, 0, 0, 0.25);
+}
+
+td.odds_section_status_overlay_td {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    border: none;
 }
 
 .odds_section_table thead th:first-child {
@@ -3169,6 +2847,361 @@ tr.cricketbet_mobile_row  td {
     opacity: 0.9;
 }
 
+
+
+
+
+@media (max-width: 1800px) {
+
+    .right_content_side.cricketDetail_block .dashboard_page.removebgsports {
+        width: 78%;
+    }
+
+}
+
+@media (max-width: 1550px) {
+
+.odds_section_market_name {
+    min-width: 600px;
+    width: 600px;
+}
+
+}
+
+@media (max-width: 1440px) {
+
+    .right_content_side.cricketDetail_block .dashboard_page.removebgsports {
+        width: 72%;
+    }
+
+    .odds_section_market_name {
+        min-width: 440px;
+        width: 440px; }
+
+}
+
+@media (max-width: 1200px) {
+
+    .top_tabs_cricket ul li button {
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .betslip_place_bet_btn {
+        padding: 8px 20px;
+        font-size: 12px;
+    }
+
+    .top_tabs_cricket ul {
+        gap: 8px;
+    }
+
+    .betslip_odd_input {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .betslip_odd_btn {
+        height: 32px;
+    }
+
+    .betslip_amount_input {
+        padding: 7px 14px;
+        font-size: 12px;
+    }
+
+    .betslip_quick_btn {
+        width: 100%;
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+
+    .top_tabs_cricket {
+        overflow: auto;
+    }
+
+    .betslip_actions {
+        flex-wrap: nowrap;
+        gap: 4px;
+    }
+
+    .right_content_side.cricketDetail_block .dashboard_page.removebgsports {
+        width: 100%;
+    }
+
+    .betslip_panel {
+        display: none;
+    }
+
+    .cricketbet_mobile .betslip_panel {
+        display: block;
+    }
+
+    /* Bet place ke baad: inline slip gayab ho chuki hoti hai — floating slip mein success dikhao */
+    .betslip_panel.betslip_panel_success_mobile {
+        display: flex !important;
+        left: 8px;
+        right: 8px;
+        width: auto;
+        bottom: max(72px, calc(env(safe-area-inset-bottom, 0px) + 56px));
+        z-index: 10000050;
+        max-height: min(55vh, 420px);
+    }
+
+    .page_open_bets_wrap .betslip_open_bets {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .d-flex.value_amount .betslip_odd_section {  text-align: left;
+    }
+
+  
+
+}
+
+@media (max-width: 991px) {
+
+.removebgsports {
+    padding-bottom: 60px;
+}
+
+}
+
+@media (max-width: 767px) {
+
+    .cricket_info_inner h2 {
+        font-size: 16px;
+    }
+
+tr.cricketbet_mobile_row  td {
+        border-bottom: none;
+        border-right: none;
+    }
+
+
+.cricket_summary_details_wrapper.soccer_odds_page tr.odds_section_row_status.odds_section_row_status_suspended 
+td.odds_section_market_name{ min-width: 379px; }
+
+    .market_no_yes_limits_container.d-flex {
+        /* width: max-content; */
+        /* min-width: max-content; */
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        align-items: end;
+    }
+
+    .market_no_yes_label {
+        min-width: 150px;
+        max-width: 150px;
+        width: 150px;
+    }
+
+    .right_content_side .container {
+        padding: 0px;
+    }
+
+    .footer_description_content p {
+        font-size: 12px;
+    }
+
+    .footer_description_content ul {
+        font-size: 12px;
+    }
+
+    .footer_show_more_btn {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+
+    /* odds_section_block: Market name fix left, baaki scroll (sports jaisa) */
+    .odds_section_block .odds_section_table_wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .odds_section_block .odds_section_table thead th:first-child,
+    .odds_section_block .odds_section_table td.odds_section_market_name {
+        min-width: 170px;
+        max-width: 170px;
+        width: 170px;
+    }
+
+    .market_no_yes_row.match_row {
+        gap: 10px;
+        padding: 10px 10px;
+    }
+
+    .market_no_yes_label.market_no_yes_left.match_left {
+        flex: 0 0 170px;
+        max-width: 170px;
+        min-width: 170px;
+    }
+
+    .market_no_yes_right.match_right {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
+    }
+
+    .market_no_yes_limits_container.d-flex {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .market_no_yes_odds_container {
+        flex-wrap: nowrap;
+        overflow: auto;
+    }
+
+    .market_no_yes_odds_container>* {
+        flex: 0 0 auto;
+    }
+
+    .cricket_summary_details_wrapper .odds_section_lay {
+        border-right: none; }
+
+    .series_name_row p {
+        font-size: 12px;
+    }
+
+    .cricket_detail_section .cricket_scorecard_team {
+        font-size: 13px;
+    }
+
+    .cricket_detail_section .cricket_scorecard_score {
+        font-size: 12px;
+    }
+
+    .cricket_detail_section .cricket_scorecard_th_left {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .cricket_detail_section .cricket_scorecard_th_num {
+        padding: 8px 10px 8px 0;
+        font-size: 12px;
+    }
+
+    .cricket_detail_section .cricket_scorecard_table {
+        font-size: 11px;
+    }
+
+    .cricket_detail_section .cricket_scorecard_td_batter .cricket_scorecard_dismissal {
+        font-size: 10px;
+    }
+
+    .odds_section_locked {
+        min-height: 40px;
+    }
+
+    .cricket_detail_section .cricket_scorecard_extras_row,
+    .cricket_detail_section .cricket_scorecard_total_row,
+    .cricket_detail_section .cricket_scorecard_dnb_row {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+
+    .cricket_detail_section .cricket_scorecard_td_batter {
+        padding: 8px 12px;
+    }
+
+    .odds_section_title {
+        font-size: 12px;
+    }
+
+    .betslip_act_min {
+        padding: 8px 8px;
+        font-size: 10px;
+    }
+
+    .betslip_act_clear {
+        padding: 8px 8px;
+        font-size: 10px;
+    }
+
+    .cricket_detail_section .cricket_live_table thead th {
+        padding: 4px 4px 3px;
+        font-size: 10px;
+    }
+
+    .match_summary_content_tabs {
+        margin-top: 5px;
+    }
+
+    .cricket_live_over_box.desktop_view {
+        display: none;
+    }
+
+    .betslip_open_bet_row {
+        gap: 10px;
+    }
+
+    .cricket_live_over_box.mobile_view {
+        display: block;
+        margin: 0px 0px 0px;
+    }
+
+    .betslip_act_max {
+        padding: 8px 8px;
+        font-size: 10px;
+    }
+
+    .betslip_act_edit {
+        padding: 8px 8px;
+        font-size: 10px;
+    }
+
+    .cricket_detail_section .cricket_live_top_panel {
+        flex-wrap: nowrap;
+    }
+
+    .cricket_detail_section .cricket_live_team_left,
+    .cricket_detail_section .cricket_live_team_right {
+        min-width: 110px;
+    }
+
+    .cricket_detail_section .cricket_live_team_name {
+        font-size: 12px;
+    }
+
+    .cricket_detail_section .cricket_live_toss {
+        font-size: 10px;
+        white-space: normal;
+    }
+
+    .cricket_detail_section .cricket_live_score_box {
+        font-size: 11px;
+    }
+
+    .cricket_detail_section .cricket_live_crr,
+    .cricket_detail_section .cricket_live_rrr {
+        font-size: 11px;
+    }
+
+    .cricket_detail_section .cricket_live_team_flag {
+        width: 15px;
+        height: 15px;
+        border-radius: 2px;
+    }
+
+    .cricket_detail_section .cricket_live_table tbody td {
+        padding: 3px 5px;
+        font-size: 10px;
+    }
+
+    .odds_section_header_right {
+        justify-content: end;
+    }
+
+}
+
+
+
 @media (max-width: 1367px) {
 
     .odds_section_market_name {
@@ -3181,8 +3214,9 @@ tr.cricketbet_mobile_row  td {
 @media (max-width:1200px) {
 
 .odds_section_market_name {
-    min-width: 230px;
-    width: 230px;
+    min-width: 33%;
+    width: 33%;
+    max-width: 33%;
 }
 
 .odds_section_cell {
@@ -3257,6 +3291,10 @@ tr.cricketbet_mobile_row  td {
     .loss_cut_set_btn {
         padding: 3px 8px;
         font-size: 9px; }
+
+        .odds_section_locked {
+            min-height: 50px;
+        }
 
 }
 
@@ -3362,6 +3400,8 @@ tr.cricketbet_mobile_row  td {
         border: 1px solid #fff;
     }
 
+
+
     .team_cricket_bl p {
         width: 95%;
         font-size: 9px;
@@ -3409,6 +3449,11 @@ tr.cricketbet_mobile_row  td {
     }
     .market_no_yes_odds_container {
         justify-content: end;
+    }
+
+    .cricket_summary_details_wrapper.soccer_odds_page tr.odds_section_row_status.odds_section_row_status_suspended td.odds_section_market_name {
+        min-width: 70%;
+        width: 70%;
     }
 
 }

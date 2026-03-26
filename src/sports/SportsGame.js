@@ -581,6 +581,7 @@ function SportsGame() {
                                                                         </div>
                                                                     </div>
                                                                 ) : null}
+                                                            <div className="odds_scroll_wrapper">
                                                                 {matchesByDay.map(({ day, matches }) => (
                                                                     <React.Fragment key={day}>
                                                                         {matches.map((match, idx) => {
@@ -675,6 +676,7 @@ function SportsGame() {
                                                                         })}
                                                                     </React.Fragment>
                                                                 ))}
+                                                            </div>
                                                             </>
                                                         )}
                                                     </div>

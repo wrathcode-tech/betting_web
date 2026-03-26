@@ -1317,7 +1317,8 @@ function LandingPage() {
                   ) : topMatchesByDay.length === 0 ? (
                     <div className="sports_grid_empty sports_grid_desktop_fullbleed">No matches at the moment.</div>
                   ) : (
-                    topMatchesByDay.map(({ day, matches }) =>
+                    <div className="odds_scroll_wrapper">
+                    {topMatchesByDay.map(({ day, matches }) =>
                       matches.map((match, idx) => {
                         const oddsPayload = match.matchOdds?.length ? { matchOdds: match.matchOdds } : null
                         const cardOdds = getLandingCardOddsTriples(match, oddsPayload);
@@ -1370,7 +1371,8 @@ function LandingPage() {
                           </div>
                         );
                       })
-                    )
+                    )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -1397,7 +1399,8 @@ function LandingPage() {
                   ) : topTennisMatchesByDay.length === 0 ? (
                     <div className="sports_grid_empty sports_grid_desktop_fullbleed">No matches at the moment.</div>
                   ) : (
-                    topTennisMatchesByDay.map(({ day, matches }) =>
+                    <div className="odds_scroll_wrapper">
+                    {topTennisMatchesByDay.map(({ day, matches }) =>
                       matches.map((match, idx) => {
                         const oddsPayload = match.matchOdds?.length ? { matchOdds: match.matchOdds } : null
                         const cardOdds = getLandingCardOddsTriples(match, oddsPayload);
@@ -1450,7 +1453,8 @@ function LandingPage() {
                           </div>
                         );
                       })
-                    )
+                    )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -1477,7 +1481,8 @@ function LandingPage() {
                   ) : topSoccerMatchesByDay.length === 0 ? (
                     <div className="sports_grid_empty sports_grid_desktop_fullbleed">No matches at the moment.</div>
                   ) : (
-                    topSoccerMatchesByDay.map(({ day, matches }) =>
+                    <div className="odds_scroll_wrapper">
+                    {topSoccerMatchesByDay.map(({ day, matches }) =>
                       matches.map((match, idx) => {
                         const oddsPayload = match.matchOdds?.length ? { matchOdds: match.matchOdds } : null
                         const cardOdds = getLandingCardOddsTriples(match, oddsPayload);
@@ -1530,7 +1535,8 @@ function LandingPage() {
                           </div>
                         );
                       })
-                    )
+                    )}
+                    </div>
                   )}
                 </div>
               </div>
