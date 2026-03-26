@@ -366,6 +366,14 @@ function CricketDetail() {
         gameIdFromState ??
         defaultMatch?.eventId ??
         gameId
+    const professorScoreIframeUrl = useMemo(() => {
+        if (sportName !== 'cricket' || !eventId) return null
+        return `https://apis.professorji.in/api/scorecard?eventId=${encodeURIComponent(String(eventId))}&sport=cricket`
+    }, [sportName, eventId])
+    const professorTvIframeUrl = useMemo(() => {
+        if (sportName !== 'cricket' || !eventId) return null
+        return `https://apis.professorji.in/api/tv?eventId=${encodeURIComponent(String(eventId))}&sport=cricket`
+    }, [sportName, eventId])
     const [oddsData, setOddsData] = useState(null)
     /** Event config / REST — minStack, maxStack, etc.; merged under socket odds for MIN/MAX labels */
     const [eventStakeLimits, setEventStakeLimits] = useState(() => ({}))
@@ -574,6 +582,8 @@ function CricketDetail() {
     // Guests + demo: fetch live score via REST (no Socket score polling when logged-in real user)
     useEffect(() => {
         if (!eventId && !gameId) return
+        // Cricket page par Professorji scorecard polling already chal rahi hai; duplicate REST poll avoid karein.
+        if (sportName === 'cricket' && eventId) return
         const token = sessionStorage.getItem('token')
         if (token && !isDemo) return
         let cancelled = false
@@ -589,56 +599,7 @@ function CricketDetail() {
                 .catch(() => { })
         }, 15000)
         return () => { cancelled = true; clearInterval(t) }
-    }, [eventId, gameId, isDemo])
-
-    // Professorji live scorecard (eventId + matchName) for cricket page.
-    useEffect(() => {
-        if (sportName !== 'cricket') return
-        if (!eventId) return
-        let cancelled = false
-        const fetchScorecard = () => {
-            AuthService.sportsbookProfessorjiScorecard({
-                eventId,
-                sport: 'cricket',
-            })
-                .then((res) => {
-                    if (cancelled) return
-                    if (res?.liveScore != null) setLiveScore(res.liveScore)
-                })
-                .catch(() => { })
-        }
-        fetchScorecard()
-        const t = setInterval(fetchScorecard, 15000)
-        return () => {
-            cancelled = true
-            clearInterval(t)
-        }
-    }, [sportName, eventId])
-
-    // Professorji TV URL for cricket page.
-    useEffect(() => {
-        if (sportName !== 'cricket') return
-        if (!eventId) return
-        let cancelled = false
-        const fetchTv = () => {
-            AuthService.sportsbookProfessorjiTv({
-                eventId,
-                sport: 'cricket',
-            })
-                .then((res) => {
-                    if (cancelled) return
-                    const url = res?.tvUrl
-                    if (url != null && String(url).trim() !== '') setStreamUrl(url)
-                })
-                .catch(() => { })
-        }
-        fetchTv()
-        const t = setInterval(fetchTv, 30000)
-        return () => {
-            cancelled = true
-            clearInterval(t)
-        }
-    }, [sportName, eventId])
+    }, [eventId, gameId, isDemo, sportName])
 
     // Open bets: ek hi effect — pehle 3 alag effects se same mount par 2–3 baar GET open-bets ja raha tha
     useEffect(() => {
@@ -2258,6 +2219,18 @@ function CricketDetail() {
                                             <p className='cricket_page_stake_limits'>{globalStakeLimitsLabel}</p>
                                         ) : null}
                                     </div>
+                                    {professorTvIframeUrl && (
+                                        <div className='match_tv_iframe_wrap'>
+                                            <div className='match_tv_iframe_header'>Live TV</div>
+                                            <iframe
+                                                title='Professorji Live TV'
+                                                src={professorTvIframeUrl}
+                                                className='match_tv_iframe'
+                                                allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                                                allowFullScreen
+                                            />
+                                        </div>
+                                    )}
                                     {/* <div className='cricket_info_inner'>
                                 <div className='cricket_vector_icon'>
                                     <img src="images/t20_vector.svg" alt="cricket" width="48" height="48" decoding="async" fetchPriority="high" />
@@ -2323,6 +2296,16 @@ function CricketDetail() {
 
                                     <div className='cricket_scorecard cricket_live_scoreboard'>
                                         {(() => {
+                                            if (professorScoreIframeUrl) {
+                                                return (
+                                                    <iframe
+                                                        title='Professorji Scorecard'
+                                                        src={professorScoreIframeUrl}
+                                                        className='match_tv_iframe'
+                                                        style={{ minHeight: '420px', background: '#1a2332' }}
+                                                    />
+                                                )
+                                            }
                                             const hasLiveScore = liveScore && !liveScore.error && liveScore.ScoreData?.Score?.[0]
                                             const s = hasLiveScore ? liveScore.ScoreData.Score[0] : null
                                             const eventName = eventNameFromState || 'Premier League, Women'
