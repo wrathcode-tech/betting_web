@@ -28,7 +28,7 @@ import {
 import BookSummary from './BookSummary'
 import { collectBookBetsFromOpenAndSlip } from './bookSummaryUtils'
 
-const CASHOUT_COMMISSION = 0.05 // 5% of total bet (stake)
+// const CASHOUT_COMMISSION = 0.05 // Temporarily disabled with cashout UI
 /** Open bets: high limit. (gameId/sport query kuch backends par error / empty deta hai — filter client-side.) */
 const OPEN_BETS_QUERY = () => ({ page: 1, limit: 100 })
 /** API / axios pehle hi response.data de chuka hota hai — alag-alag shapes */
@@ -42,20 +42,20 @@ function parseOpenBetsFromResponse(res) {
     return []
 }
 
-/** Open bet object par cashout (open-bets REST / socket betUpdate) */
-function cashoutValueFromBetObject(b) {
-    if (!b || typeof b !== 'object') return null
-    const v =
-        b.cashoutValue ??
-        b.cashout_value ??
-        b.currentCashout ??
-        b.current_cashout ??
-        b.liveCashout ??
-        b.cashOutValue
-    if (v == null || v === '') return null
-    const n = Number(v)
-    return Number.isNaN(n) ? null : n
-}
+// /** Open bet object par cashout (open-bets REST / socket betUpdate) */
+// function cashoutValueFromBetObject(b) {
+//     if (!b || typeof b !== 'object') return null
+//     const v =
+//         b.cashoutValue ??
+//         b.cashout_value ??
+//         b.currentCashout ??
+//         b.current_cashout ??
+//         b.liveCashout ??
+//         b.cashOutValue
+//     if (v == null || v === '') return null
+//     const n = Number(v)
+//     return Number.isNaN(n) ? null : n
+// }
 
 /** Runner / selection id — APIs alag-alag fields bhej sakti hain */
 function pickSelectionId(node) {
@@ -261,7 +261,7 @@ function CricketDetail() {
     const [betslipExposure, setBetslipExposure] = useState(null)
     const [betslipCurrentLoss, setBetslipCurrentLoss] = useState(null)
     const [betslipLossLimit, setBetslipLossLimit] = useState(null)
-    const [cashoutId, setCashoutId] = useState(null)
+    // const [cashoutId, setCashoutId] = useState(null) // Temporarily disabled with cashout UI
     const [openCashoutSection, setOpenCashoutSection] = useState(null)
     const [openLossCutSection, setOpenLossCutSection] = useState(null)
     const betUpdateRefreshTimerRef = useRef(null)
@@ -323,23 +323,23 @@ function CricketDetail() {
         return () => document.removeEventListener('click', close)
     }, [openCashoutSection, openLossCutSection])
 
-    /** Cashout display — open-bets list / socket fields only (no GET …/cashout-value). */
-    const cashoutValuesMap = useMemo(() => {
-        const next = {}
-        for (const b of openBetsList || []) {
-            if (settlementKindFromBet(b) !== 'open') continue
-            const bid = b._id ?? b.id
-            if (bid == null || bid === '') continue
-            const key = String(bid)
-            const embedded = cashoutValueFromBetObject(b)
-            const suspendedFlag = b.cashoutSuspended ?? b.cashout_suspended
-            next[key] = {
-                value: embedded,
-                suspended: suspendedFlag === true || embedded == null,
-            }
-        }
-        return next
-    }, [openBetsList])
+    // Cashout map temporarily disabled with cashout UI.
+    // const cashoutValuesMap = useMemo(() => {
+    //     const next = {}
+    //     for (const b of openBetsList || []) {
+    //         if (settlementKindFromBet(b) !== 'open') continue
+    //         const bid = b._id ?? b.id
+    //         if (bid == null || bid === '') continue
+    //         const key = String(bid)
+    //         const embedded = cashoutValueFromBetObject(b)
+    //         const suspendedFlag = b.cashoutSuspended ?? b.cashout_suspended
+    //         next[key] = {
+    //             value: embedded,
+    //             suspended: suspendedFlag === true || embedded == null,
+    //         }
+    //     }
+    //     return next
+    // }, [openBetsList])
 
     const [defaultMatch, setDefaultMatch] = useState(null)
     const gameIdFromState = location.state?.gameId ?? location.state?.game_id
@@ -591,6 +591,55 @@ function CricketDetail() {
         return () => { cancelled = true; clearInterval(t) }
     }, [eventId, gameId, isDemo])
 
+    // Professorji live scorecard (eventId + matchName) for cricket page.
+    useEffect(() => {
+        if (sportName !== 'cricket') return
+        if (!eventId) return
+        let cancelled = false
+        const fetchScorecard = () => {
+            AuthService.sportsbookProfessorjiScorecard({
+                eventId,
+                sport: 'cricket',
+            })
+                .then((res) => {
+                    if (cancelled) return
+                    if (res?.liveScore != null) setLiveScore(res.liveScore)
+                })
+                .catch(() => { })
+        }
+        fetchScorecard()
+        const t = setInterval(fetchScorecard, 15000)
+        return () => {
+            cancelled = true
+            clearInterval(t)
+        }
+    }, [sportName, eventId])
+
+    // Professorji TV URL for cricket page.
+    useEffect(() => {
+        if (sportName !== 'cricket') return
+        if (!eventId) return
+        let cancelled = false
+        const fetchTv = () => {
+            AuthService.sportsbookProfessorjiTv({
+                eventId,
+                sport: 'cricket',
+            })
+                .then((res) => {
+                    if (cancelled) return
+                    const url = res?.tvUrl
+                    if (url != null && String(url).trim() !== '') setStreamUrl(url)
+                })
+                .catch(() => { })
+        }
+        fetchTv()
+        const t = setInterval(fetchTv, 30000)
+        return () => {
+            cancelled = true
+            clearInterval(t)
+        }
+    }, [sportName, eventId])
+
     // Open bets: ek hi effect — pehle 3 alag effects se same mount par 2–3 baar GET open-bets ja raha tha
     useEffect(() => {
         pullOpenBets({ showLoading: true })
@@ -824,35 +873,36 @@ function CricketDetail() {
     const currentLossAmount = Number(betslipCurrentLoss) || 0
     const lossLimitReached = lossLimitAmount != null && lossLimitAmount > 0 && currentLossAmount >= lossLimitAmount
 
-    const cashoutInProgressRef = useRef(false)
-    const handleCashoutBetslip = async (betId) => {
-        if (!betId) return
-        if (isDemo) {
-            alertErrorMessage('Demo mode: View only. Login to play.')
-            return
-        }
-        if (cashoutInProgressRef.current) return
-        cashoutInProgressRef.current = true
-        setCashoutId(String(betId))
-        try {
-            const res = await AuthService.sportsbookCashout(betId)
-            const ok = res?.success === true || (res && res.success !== false && !res?.message)
-            if (ok) {
-                await pullOpenBets({ showLoading: false })
-                const successMsg = res?.data?.message ?? res?.message
-                if (successMsg) alertSuccessMessage(successMsg)
-            } else {
-                const errMsg = res?.data?.message ?? res?.message
-                if (errMsg) alertErrorMessage(errMsg)
-            }
-        } catch (err) {
-            const errMsg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message
-            if (errMsg) alertErrorMessage(errMsg)
-        } finally {
-            cashoutInProgressRef.current = false
-            setCashoutId(null)
-        }
-    }
+    // Cashout action temporarily disabled with cashout UI.
+    // const cashoutInProgressRef = useRef(false)
+    // const handleCashoutBetslip = async (betId) => {
+    //     if (!betId) return
+    //     if (isDemo) {
+    //         alertErrorMessage('Demo mode: View only. Login to play.')
+    //         return
+    //     }
+    //     if (cashoutInProgressRef.current) return
+    //     cashoutInProgressRef.current = true
+    //     setCashoutId(String(betId))
+    //     try {
+    //         const res = await AuthService.sportsbookCashout(betId)
+    //         const ok = res?.success === true || (res && res.success !== false && !res?.message)
+    //         if (ok) {
+    //             await pullOpenBets({ showLoading: false })
+    //             const successMsg = res?.data?.message ?? res?.message
+    //             if (successMsg) alertSuccessMessage(successMsg)
+    //         } else {
+    //             const errMsg = res?.data?.message ?? res?.message
+    //             if (errMsg) alertErrorMessage(errMsg)
+    //         }
+    //     } catch (err) {
+    //         const errMsg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message
+    //         if (errMsg) alertErrorMessage(errMsg)
+    //     } finally {
+    //         cashoutInProgressRef.current = false
+    //         setCashoutId(null)
+    //     }
+    // }
 
     const getBetType = (b) => String(b.betType ?? b.bet_type ?? b.type ?? 'back').toLowerCase()
     const renderOpenBetsContent = () => {
@@ -868,13 +918,6 @@ function CricketDetail() {
             const isOpenBet = kind === 'open'
             const settleAmt = settlementAmountFromBet(b)
             const settleAmtFmt = settleAmt != null ? formatInr2(settleAmt) : null
-            const apiEntry = bid ? cashoutValuesMap[bid] : undefined
-            const rawVal = apiEntry?.value ?? cashoutValueFromBetObject(b) ?? b.cashout_value
-            const cashoutVal = rawVal != null ? Number(rawVal) : null
-            const stakeVal = Number(b.stake) || 0
-            const netCashout = cashoutVal != null ? Math.max(0, cashoutVal - stakeVal * CASHOUT_COMMISSION) : null
-            const suspended = apiEntry?.suspended === true || b.cashout_suspended === true || b.cashoutSuspended === true
-            const isCashingOut = bid && cashoutId != null && String(cashoutId) === bid
             return (
                 <div key={bid || bidRaw} className={`betslip_open_bet_card betslip_open_bet_${isBack ? 'back' : 'lay'}`}>
                     <div className='betslip_open_bet_row_main'>
@@ -888,21 +931,16 @@ function CricketDetail() {
                             <span className='betslip_open_bet_stake'>{(Number(b.stake || 0)).toFixed(2)}</span>
                         </div>
                     </div>
-                    <div className='betslip_open_bet_row betslip_cashout_value_row'>
+                    {/* Temporarily disabled open bets cashout value */}
+                    {/* <div className='betslip_open_bet_row betslip_cashout_value_row'>
                         <span>Cash Out Value</span>
                         <span className='betslip_cashout_balance'>
                             {isOpenBet && netCashout != null ? `₹${netCashout.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
                         </span>
-                    </div>
+                    </div> */}
                     <div className='betslip_open_bet_actions'>
                         {isOpenBet ? (
-                            suspended ? (
-                                <span className='betslip_cashout_suspended'>CASH OUT NOT AVAILABLE</span>
-                            ) : (
-                                <button type='button' className='betslip_cashout_btn' onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleCashoutBetslip(bid); }} disabled={isCashingOut || isDemo}>
-                                    {isCashingOut ? 'CASHING OUT...' : isDemo ? 'Login to play' : (netCashout != null ? `CASH OUT ₹${netCashout.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'CASH OUT')}
-                                </button>
-                            )
+                            null
                         ) : (
                             <div className='betslip_open_bet_settled'>
                                 {kind === 'won' && (
@@ -1094,37 +1132,6 @@ function CricketDetail() {
         const sectionOpenBets = (openBetsList || []).filter((b) =>
             openBetMatchesSection(b, gameId, marketId, marketTypeApi, eventId)
         )
-        const fmtCashoutRupee = (n) =>
-            Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-        const sectionCashoutTotal = sectionOpenBets.reduce((sum, b) => {
-            const bidRaw = b._id ?? b.id
-            const bidKey = bidRaw != null && bidRaw !== '' ? String(bidRaw) : ''
-            const cvRaw =
-                (bidKey ? cashoutValuesMap[bidKey]?.value : null) ??
-                cashoutValueFromBetObject(b) ??
-                b.cashout_value
-            if (cvRaw == null || cvRaw === '') return sum
-            const cv = Number(cvRaw)
-            if (Number.isNaN(cv)) return sum
-            const stakeVal = Number(b.stake) || 0
-            // Header par API cashout (commission ke baad) — negative bhi dikhe, jaise ref. app
-            return sum + (cv - stakeVal * CASHOUT_COMMISSION)
-        }, 0)
-        const gameBets = sectionOpenBets
-        const hasOneBet = gameBets.length === 1
-        const hasMultipleBets = gameBets.length > 1
-        const handleCashoutClick = (e) => {
-            e.stopPropagation()
-            e.preventDefault()
-            setOpenLossCutSection(null)
-            if (gameBets.length === 0) return
-            if (hasOneBet) {
-                const bid = gameBets[0]._id ?? gameBets[0].id
-                if (bid) handleCashoutBetslip(bid)
-                return
-            }
-            if (hasMultipleBets) setOpenCashoutSection((prev) => (prev === sectionKey ? null : sectionKey))
-        }
         // Mobile betslip should appear only in the block whose marketType matches the selected bet (cricket + soccer + tennis)
         const currentMarketType = selectedBets[0]?.placePayload?.marketType
         const isMatchOddsSection = sectionKey === 'match_odds' || sectionKey.startsWith('match_odds_') || sectionKey.startsWith('soccer_below_') || sectionKey.startsWith('tennis_extra_')
@@ -1150,7 +1157,8 @@ function CricketDetail() {
 
                         <BookSummary marketTitle={marketTitle} bets={bookBets} />
 
-                        <div className='d-flex gap-2'>
+                        {/* Temporarily disabled cashout and loss cut controls */}
+                        {/* <div className='d-flex gap-2'>
                             <div className="odds_section_cashout_wrap">
                                 <button
                                     type="button"
@@ -1208,7 +1216,7 @@ function CricketDetail() {
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        </div> */}
 
                     </div>
                 </div>

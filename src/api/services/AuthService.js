@@ -477,6 +477,64 @@ const AuthService = {
     return { liveScore };
   },
 
+  /** Professorji scorecard: GET https://apis.professorji.in/api/scorecard?eventId=...&sport=cricket&matchName=... */
+  sportsbookProfessorjiScorecard: async ({ eventId, sport = "cricket", matchName } = {}) => {
+    if (!eventId) return { liveScore: null, raw: null };
+    const params = new URLSearchParams();
+    params.set("eventId", String(eventId));
+    params.set("sport", String(sport || "cricket"));
+    if (matchName != null && String(matchName).trim() !== "") {
+      params.set("matchName", String(matchName).trim());
+    }
+    const url = `https://apis.professorji.in/api/scorecard?${params.toString()}`;
+    let raw = null;
+    try {
+      // Use fetch to avoid axios auth interceptor side-effects (unexpected logout on external 401).
+      const resp = await fetch(url, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        credentials: "omit",
+      });
+      if (!resp.ok) return { liveScore: null, raw: null };
+      raw = await resp.json();
+    } catch {
+      return { liveScore: null, raw: null };
+    }
+    const liveScore =
+      raw?.liveScore ??
+      raw?.LiveScore ??
+      (raw?.ScoreData ? raw : null);
+    return { liveScore, raw };
+  },
+
+  /** Professorji TV URL: GET https://apis.professorji.in/api/tv?eventId=...&sport=cricket */
+  sportsbookProfessorjiTv: async ({ eventId, sport = "cricket" } = {}) => {
+    if (!eventId) return { tvUrl: null, raw: null };
+    const params = new URLSearchParams();
+    params.set("eventId", String(eventId));
+    params.set("sport", String(sport || "cricket"));
+    const url = `https://apis.professorji.in/api/tv?${params.toString()}`;
+    let raw = null;
+    try {
+      const resp = await fetch(url, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        credentials: "omit",
+      });
+      if (!resp.ok) return { tvUrl: null, raw: null };
+      raw = await resp.json();
+    } catch {
+      return { tvUrl: null, raw: null };
+    }
+    const tvUrl =
+      raw?.tvUrl ??
+      raw?.tv_url ??
+      raw?.data?.tvUrl ??
+      raw?.data?.tv_url ??
+      null;
+    return { tvUrl, raw };
+  },
+
   /** GET /api/v1/sportsbook/event/config?eventId=<gameId> – tvUrl for live stream (Berlin). Response: { response: { tvUrl, eventId, minStack, maxStack, ... } }. */
   sportsbookEventConfig: async (eventId) => {
     if (!eventId) return { tvUrl: null };
