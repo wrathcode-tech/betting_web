@@ -537,7 +537,7 @@ const AuthService = {
   sportsbookProfessorjiScorecard: async ({ eventId, sport = "cricket", matchName } = {}) => {
     if (!eventId) return { liveScore: null, raw: null };
     const params = new URLSearchParams();
-    params.set("eventId", String(eventId));
+    params.set("id", String(eventId));
     params.set("sport", String(sport || "cricket"));
     if (matchName != null && String(matchName).trim() !== "") {
       params.set("matchName", String(matchName).trim());
