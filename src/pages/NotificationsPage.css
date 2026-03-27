@@ -1,0 +1,114 @@
+.notifications_section {
+  width: 100%;
+}
+
+.notifications_header {
+  align-items: flex-start !important;
+  gap: 12px;
+}
+
+.notifications_subtitle {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 13px;
+}
+
+.notifications_mark_all_btn {
+  padding: 6px 12px;
+  background: #f3bb2b;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.notifications_mark_all_btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.notification_table h4 {
+  margin: 0 0 10px;
+  color: #fff;
+}
+
+.notifications_table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.notifications_table td {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.notifications_table td h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: #fff;
+}
+
+.tb_background {
+  background: rgba(249, 122, 49, 0.08) !important;
+}
+
+.cnt_p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cnt_p p {
+  margin: 0;
+  color: #d8deea;
+  font-size: 13px;
+}
+
+.markbtn {
+  background: transparent;
+  border: none;
+  color: #f3bb2b;
+  text-decoration: underline;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.markbtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.learn_more a {
+  font-size: 12px;
+  color: #9863ce;
+  text-decoration: underline;
+  display: inline-block;
+  margin-top: 6px;
+}
+
+.notifications_no_data {
+  padding: 16px 0;
+}
+
+@media (max-width: 768px) {
+  .notifications_header {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .notifications_mark_all_btn {
+    width: fit-content;
+  }
+
+  .cnt_p {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

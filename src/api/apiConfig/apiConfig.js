@@ -84,6 +84,8 @@ export const ApiConfig = {
   depositAccountsMaster: "deposit-accounts/master",
   platformConfiguration: "platform-configuration",
   transactionLimits: "transaction-limits",
+  userNotifications: "notifications",
+  userNotificationsMarkAllRead: "notifications/mark-all-read",
 
   // Support / Tickets (Section 7)
   baseBettingSupport: `${bettingUrl}/api/v1/support`,

@@ -732,10 +732,6 @@ function CricketDetail() {
         return selectedBets.some(bet => bet.elementId === elementId)
     }
 
-    const removeBet = (betId) => {
-        setSelectedBets(selectedBets.filter(bet => bet.id !== betId))
-    }
-
     const clearAllBets = () => {
         setSelectedBets([])
         setSlipOdds(null)
@@ -744,17 +740,6 @@ function CricketDetail() {
 
     const [placeBetLoading, setPlaceBetLoading] = useState(false)
     const [placeBetError, setPlaceBetError] = useState(null)
-    const [placeBetSuccessMessage, setPlaceBetSuccessMessage] = useState(null)
-
-    useEffect(() => {
-        if (!placeBetSuccessMessage) return
-        const t = setTimeout(() => setPlaceBetSuccessMessage(null), 4000)
-        return () => clearTimeout(t)
-    }, [placeBetSuccessMessage])
-
-    useEffect(() => {
-        if (selectedBets.length > 0) setPlaceBetSuccessMessage(null)
-    }, [selectedBets.length])
 
     const handlePlaceBet = async () => {
         if (isDemo) {
@@ -822,11 +807,11 @@ function CricketDetail() {
                 const { ok, message: failMsg } = unwrapPlaceBetResponse(res)
                 if (!ok) throw new Error(failMsg || res?.message || 'Bet failed')
             }
-            setSelectedBets([])
-            setStake(effectiveStakeBounds.min)
+            // Keep current selection visible after successful place-bet.
+            // User can manually clear/edit via existing action buttons.
             const { message: placedMsg, balanceAfter } = unwrapPlaceBetResponse(lastRes)
             const successMsg = placedMsg || lastRes?.message
-            setPlaceBetSuccessMessage(successMsg || 'Bet placed successfully.')
+            alertSuccessMessage(successMsg || 'Bet placed successfully.')
             if (balanceAfter != null) {
                 window.dispatchEvent(new CustomEvent('walletBalanceUpdate', { detail: { balance: balanceAfter } }))
             }
@@ -3176,14 +3161,6 @@ function CricketDetail() {
                                         <div className='betslip_open_bets betslip_open_bets_panel'>{renderOpenBetsContent()}</div>
                                     )}
                                 </>
-                            ) : placeBetSuccessMessage ? (
-                                <>
-                                    <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
-                                    <div className='betslip_success'>
-                                        <p className='betslip_success_title'>Bet placed</p>
-                                        <p className='betslip_success_msg'>{placeBetSuccessMessage}</p>
-                                    </div>
-                                </>
                             ) : selectedBets.length > 0 ? (
                                 <>
                                     <LossCutIndicator currentLoss={betslipCurrentLoss ?? betslipExposure ?? 0} lossLimit={betslipLossLimit} compact onSetLimit={handleSetLossLimit} />
@@ -3196,7 +3173,6 @@ function CricketDetail() {
                                             <div key={bet.id} className={cardClass}>
                                                 <div className='betslip_card_header'>
                                                     <span className='betslip_match_title'>{eventNameForBets}</span>
-                                                    <button type='button' className='betslip_card_close' onClick={() => removeBet(bet.id)} aria-label='Remove'>×</button>
                                                 </div>
                                                 <div className='betslip_selection'>
                                                     {bet.betName} @ {(Number(slipOdds ?? bet.oddsDisplay ?? bet.odds) || 0).toFixed(2)}

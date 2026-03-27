@@ -35,13 +35,13 @@ function saveSession(data) {
         demoPlayBalance: data.demoPlayBalance != null ? data.demoPlayBalance : null,
       }));
     }
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function clearStoredSession() {
   try {
     sessionStorage.removeItem(GAME_SESSION_KEY);
-  } catch (_) {}
+  } catch (_) { }
 }
 
 /** Only restore iframe from sessionStorage when it matches the game in the URL (avoid "URL says X but Aviator plays"). */
@@ -452,8 +452,8 @@ function GamePlay() {
       <div className='container-fluid'>
         <div className='dashboard_page'>
           <div className='gameplay_section_wrapper'>
-      <div className="gameplay_page_with_iframe">
-        {/* <div className="gameplay_iframe_header">
+            <div className="gameplay_page_with_iframe">
+              {/* <div className="gameplay_iframe_header">
           <div className="gameplay_iframe_header_inner">
             <button type="button" className="gameplay_back_btn" onClick={handleBack} aria-label="Back to Casino">
               <i className="ri-arrow-left-s-line" /> Back
@@ -464,102 +464,102 @@ function GamePlay() {
             )}
           </div>
         </div> */}
-        <div ref={gameplayIframeWrapRef} className="gameplay_iframe_wrap">
-          {loading && !launchURL ? (
-            <div className="gameplay_iframe_loading" role="status" aria-live="polite">
-              <p>Loading game…</p>
+              <div ref={gameplayIframeWrapRef} className="gameplay_iframe_wrap">
+                {loading && !launchURL ? (
+                  <div className="gameplay_iframe_loading" role="status" aria-live="polite">
+                    <p>Loading game…</p>
+                  </div>
+                ) : null}
+                {launchURL ? (
+                  <iframe
+                    title="Game"
+                    src={launchURL}
+                    className="gameplay_iframe"
+                    allowFullScreen
+                    allow="payment; fullscreen; autoplay; geolocation; microphone; camera"
+                  />
+                ) : null}
+              </div>
             </div>
-          ) : null}
-          {launchURL ? (
-            <iframe
-              title="Game"
-              src={launchURL}
-              className="gameplay_iframe"
-              allowFullScreen
-              allow="payment; fullscreen; autoplay; geolocation; microphone; camera"
-            />
-          ) : null}
-        </div>
-      </div>
 
-      <div className="top_slot_outer top_slot_outer_casino">
-        <div className="container-fluid">
-          <div className="top_hd d-flex align-items-center justify-content-between">
-            <h2 className="heading_h2">{providerDisplayName ? `Best ${providerDisplayName} games` : 'Best Pragmatic Play games'}</h2>
-            <div className="top_hd_right d-flex align-items-center gap-2">
-              <Link to={providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino'}><button type="button" className="slotbtn">View All</button></Link>
-            </div>
-          </div>
-          {gamesLoading ? (
-            <div className="game_items_slider_wrapper"><div className="game_items_slider mt-2 text-muted">Loading...</div></div>
-          ) : (
-            <div
-              ref={bestGamesSliderWrapperRef}
-              className="game_items_slider_wrapper"
-              onMouseDown={(e) => handleSliderMouseDown(e, bestGamesSliderWrapperRef)}
-              onClickCapture={handleSliderClickCapture}
-              style={{ cursor: 'grab' }}
-            >
-              <div className="game_items_slider mt-2">
-                {bestGamesDisplayItems.map((item, index) =>
-                  item.viewAll ? (
-                    <Link key="view-all" to={item.to} className="game_items_inner slider_view_all_card link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                      <span className="slider_view_all_text">View All</span>
-                    </Link>
-                  ) : (
-                    <Link key={item.code || index} to={buildGameTileTo(item)} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                      <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
-                      {item.badge && <div className="top_ads">{item.badge}</div>}
-                      <img loading="lazy" alt="game" src={item.thumb || item.thumbnail || item.image} />
-                    </Link>
-                  )
+            <div className="top_slot_outer top_slot_outer_casino">
+              <div className="container-fluid">
+                <div className="top_hd d-flex align-items-center justify-content-between">
+                  <h2 className="heading_h2">{providerDisplayName ? `Best ${providerDisplayName} games` : 'Best Pragmatic Play games'}</h2>
+                  <div className="top_hd_right d-flex align-items-center gap-2">
+                    <Link to={providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino'}><button type="button" className="slotbtn">View All</button></Link>
+                  </div>
+                </div>
+                {gamesLoading ? (
+                  <div className="game_items_slider_wrapper"><div className="game_items_slider mt-2 text-muted">Loading...</div></div>
+                ) : (
+                  <div
+                    ref={bestGamesSliderWrapperRef}
+                    className="game_items_slider_wrapper"
+                    onMouseDown={(e) => handleSliderMouseDown(e, bestGamesSliderWrapperRef)}
+                    onClickCapture={handleSliderClickCapture}
+                    style={{ cursor: 'grab' }}
+                  >
+                    <div className="game_items_slider mt-2">
+                      {bestGamesDisplayItems.map((item, index) =>
+                        item.viewAll ? (
+                          <Link key="view-all" to={item.to} className="game_items_inner slider_view_all_card link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                            <span className="slider_view_all_text">View All</span>
+                          </Link>
+                        ) : (
+                          <Link key={item.code || index} to={buildGameTileTo(item)} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                            <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
+                            {item.badge && <div className="top_ads">{item.badge}</div>}
+                            <img loading="lazy" alt="game" src={item.thumb || item.thumbnail || item.image} />
+                          </Link>
+                        )
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      <div className="top_slot_outer most_popular_games_outer_casino">
-        <div className="container-fluid">
-          <div className="top_hd d-flex align-items-center justify-content-between">
-            <h2 className="heading_h2">Trending games</h2>
-            <div className="top_hd_right d-flex align-items-center gap-2">
-              <Link to="/casino"><button type="button" className="slotbtn">View All</button></Link>
-            </div>
-          </div>
-          {gamesLoading ? (
-            <div className="game_items_slider_wrapper"><div className="game_items_slider mt-2 text-muted">Loading...</div></div>
-          ) : (
-            <div
-              ref={trendingSliderWrapperRef}
-              className="game_items_slider_wrapper"
-              onMouseDown={(e) => handleSliderMouseDown(e, trendingSliderWrapperRef)}
-              onClickCapture={handleSliderClickCapture}
-              style={{ cursor: 'grab' }}
-            >
-              <div className="game_items_slider mt-2">
-                {trendingDisplayItems.map((item, index) =>
-                  item.viewAll ? (
-                    <Link key="view-all-trending" to={item.to} className="game_items_inner slider_view_all_card link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                      <span className="slider_view_all_text">View All</span>
-                    </Link>
-                  ) : (
-                    <Link key={item.code || index} to={buildGameTileTo(item)} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                      <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
-                      {item.badge && <div className="top_ads">{item.badge}</div>}
-                      <img loading="lazy" alt="game" src={item.thumb || item.thumbnail || item.image} />
-                    </Link>
-                  )
+            <div className="top_slot_outer most_popular_games_outer_casino">
+              <div className="container-fluid">
+                <div className="top_hd d-flex align-items-center justify-content-between">
+                  <h2 className="heading_h2">Trending games</h2>
+                  <div className="top_hd_right d-flex align-items-center gap-2">
+                    <Link to="/casino"><button type="button" className="slotbtn">View All</button></Link>
+                  </div>
+                </div>
+                {gamesLoading ? (
+                  <div className="game_items_slider_wrapper"><div className="game_items_slider mt-2 text-muted">Loading...</div></div>
+                ) : (
+                  <div
+                    ref={trendingSliderWrapperRef}
+                    className="game_items_slider_wrapper"
+                    onMouseDown={(e) => handleSliderMouseDown(e, trendingSliderWrapperRef)}
+                    onClickCapture={handleSliderClickCapture}
+                    style={{ cursor: 'grab' }}
+                  >
+                    <div className="game_items_slider mt-2">
+                      {trendingDisplayItems.map((item, index) =>
+                        item.viewAll ? (
+                          <Link key="view-all-trending" to={item.to} className="game_items_inner slider_view_all_card link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                            <span className="slider_view_all_text">View All</span>
+                          </Link>
+                        ) : (
+                          <Link key={item.code || index} to={buildGameTileTo(item)} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                            <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
+                            {item.badge && <div className="top_ads">{item.badge}</div>}
+                            <img loading="lazy" alt="game" src={item.thumb || item.thumbnail || item.image} />
+                          </Link>
+                        )
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      </div>
-      </div>
+          </div>
+        </div>
       </div>
       <MobileMenu />
     </>

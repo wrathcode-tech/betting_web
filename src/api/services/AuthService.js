@@ -14,6 +14,17 @@ const getStoredToken = () => {
   }
 };
 
+const isDemoSession = () => {
+  try {
+    const raw = sessionStorage.getItem("user");
+    if (!raw) return false;
+    const user = JSON.parse(raw);
+    return user?.isDemo === true;
+  } catch {
+    return false;
+  }
+};
+
 const AuthService = {
 
 
@@ -195,6 +206,42 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
+  /** GET /api/v1/user/notifications – auth required. Supports optional page/limit query params. */
+  getUserNotifications: async (params = {}) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingUser, userNotifications } = ApiConfig;
+    const q = new URLSearchParams();
+    if (params.page != null) q.set("page", String(params.page));
+    if (params.limit != null) q.set("limit", String(params.limit));
+    const qs = q.toString();
+    const url = `${baseBettingUser}/${userNotifications}${qs ? `?${qs}` : ""}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallGet(url, headers);
+  },
+
+  /** PATCH /api/v1/user/notifications/mark-all-read – auth required. */
+  markAllNotificationsRead: async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const { baseBettingUser, userNotificationsMarkAllRead } = ApiConfig;
+    const url = `${baseBettingUser}/${userNotificationsMarkAllRead}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPatch(url, {}, headers);
+  },
+
+  /** PATCH /api/v1/user/notifications/:id/read – auth required. */
+  markNotificationRead: async (notificationId) => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "Login required" };
+    const id = notificationId != null ? String(notificationId).trim() : "";
+    if (!id) return { success: false, message: "Notification id required" };
+    const { baseBettingUser, userNotifications } = ApiConfig;
+    const url = `${baseBettingUser}/${userNotifications}/${encodeURIComponent(id)}/read`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    return ApiCallPatch(url, {}, headers);
+  },
+
   bettingGetBalance: async () => {
     const token = sessionStorage.getItem("token");
     const { baseBettingWallet, bettingBalance } = ApiConfig;
@@ -219,6 +266,15 @@ const AuthService = {
 
   /** GET /api/v1/wallet/transactions – list with pagination (page, limit, type). Returns { data: { transactions, pagination } }. */
   walletTransactions: async (page = 1, limit = 10, type = "all") => {
+    if (isDemoSession()) {
+      return {
+        success: true,
+        data: {
+          transactions: [],
+          pagination: { page: Number(page) || 1, limit: Number(limit) || 10, total: 0, totalPages: 1 },
+        },
+      };
+    }
     const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingWallet, bettingWalletTransactions } = ApiConfig;
@@ -549,6 +605,11 @@ const AuthService = {
 
   /** GET /api/v1/games/history – sessions list. Query: page, limit, from, to (ISO date). */
   gamesHistory: async (params = {}) => {
+    if (isDemoSession()) {
+      const page = Number(params.page ?? 1) || 1;
+      const limit = Number(params.limit ?? 10) || 10;
+      return { success: true, data: { sessions: [], pagination: { page, limit, total: 0, totalPages: 1 } } };
+    }
     const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingGames, bettingGamesHistory } = ApiConfig;
@@ -564,6 +625,12 @@ const AuthService = {
 
   /** GET /api/v1/games/transactions – rounds (game, date, bet, result, amount). Query: page, limit, gameCode, providerCode. */
   gamesTransactions: async (page = 1, limit = 20, opts = {}) => {
+    if (isDemoSession()) {
+      return {
+        success: true,
+        data: { transactions: [], pagination: { page: Number(page) || 1, limit: Number(limit) || 20, total: 0, totalPages: 1 } },
+      };
+    }
     const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingGames, bettingGamesTransactions } = ApiConfig;
@@ -577,6 +644,11 @@ const AuthService = {
 
   /** GET /api/v1/games/transaction-history – ledger (date, credit, debit, balance, remark). Query: page, limit, from, to. */
   gamesTransactionHistory: async (params = {}) => {
+    if (isDemoSession()) {
+      const page = Number(params.page ?? 1) || 1;
+      const limit = Number(params.limit ?? 20) || 20;
+      return { success: true, data: { transactions: [], pagination: { page, limit, total: 0, totalPages: 1 } } };
+    }
     const token = sessionStorage.getItem("token");
     if (!token) return { success: false, message: "Login required" };
     const { baseBettingGames, bettingGamesTransactionHistory } = ApiConfig;
@@ -592,6 +664,12 @@ const AuthService = {
 
   /** GET /api/v1/games/sportsbook/transactions – auth required. Returns { status, data: { transactions, pagination } }. */
   gamesSportsbookTransactions: async (page = 1, limit = 10) => {
+    if (isDemoSession()) {
+      return {
+        success: true,
+        data: { transactions: [], pagination: { page: Number(page) || 1, limit: Number(limit) || 10, total: 0, totalPages: 1 } },
+      };
+    }
     const token = sessionStorage.getItem("token");
     if (!token) return { status: "error", message: "Login required" };
     const { baseBettingGames, gamesSportsbookTransactions } = ApiConfig;
@@ -680,6 +758,11 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/bet/open – Open bets. Query: gameId, marketType, sport, page, limit. Auth: Bearer. Response: { data: { bets: [...] } } or similar. */
   sportsbookOpenBets: async (params = {}) => {
+    if (isDemoSession()) {
+      const page = Number(params.page ?? 1) || 1;
+      const limit = Number(params.limit ?? 20) || 20;
+      return { success: true, data: { bets: [], pagination: { page, limit, total: 0, totalPages: 1 } } };
+    }
     const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
     const q = new URLSearchParams(params).toString();
@@ -690,6 +773,11 @@ const AuthService = {
 
   /** GET /api/v1/sportsbook/bet/history – Bet history. Query: page, limit, sport, from, to, result (won | lost | void). */
   sportsbookBetHistory: async (params = {}) => {
+    if (isDemoSession()) {
+      const page = Number(params.page ?? 1) || 1;
+      const limit = Number(params.limit ?? 20) || 20;
+      return { success: true, data: { bets: [], pagination: { page, limit, total: 0, totalPages: 1 } } };
+    }
     const token = sessionStorage.getItem("token");
     const { baseBettingSportsbook } = ApiConfig;
     const q = new URLSearchParams(params).toString();

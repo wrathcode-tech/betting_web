@@ -13,6 +13,7 @@ import { disconnectBalanceSocket } from '../socket/balanceSocket'
 import AuthService from '../api/services/AuthService'
 import { ApiConfig } from '../api/apiConfig/apiConfig'
 import { getDisplayWalletBalance } from '../utils/authUtils'
+import { clearAuth } from '../utils/authStorage'
 
 const CURRENCY_LIST = [
   { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹', icon: 'images/digital_currency.svg' },
@@ -105,7 +106,9 @@ export default function UserHeader() {
   useEffect(() => {
     fetchUserDisplayName();
     window.addEventListener('loginStateChange', fetchUserDisplayName);
-    return () => window.removeEventListener('loginStateChange', fetchUserDisplayName);
+    return () => {
+      window.removeEventListener('loginStateChange', fetchUserDisplayName);
+    };
   }, []);
 
   useEffect(() => {
@@ -216,7 +219,11 @@ export default function UserHeader() {
           <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>
             <img src="/images/search-icon.svg" alt="search" />
           </div>
-          <Link to="/notifications" className="searchbtn" aria-label="Notifications">
+          <Link
+            to="/notifications"
+            className="searchbtn notification_icon_btn"
+            aria-label="Notifications"
+          >
             <i className="ri-notification-3-line" aria-hidden style={{ fontSize: '20px', color: 'rgb(255 255 255)' }} />
           </Link>
 
@@ -321,10 +328,9 @@ export default function UserHeader() {
                   className="dropdown_logout_btn"
                   onClick={() => {
                     disconnectBalanceSocket();
-                    sessionStorage.removeItem('token');
-                    sessionStorage.removeItem('refreshToken');
-                    sessionStorage.removeItem('user');
+                    clearAuth();
                     setUserDisplayName('');
+                    setUserProfileImage('');
                     window.dispatchEvent(new CustomEvent('loginStateChange'));
                     setIsProfileDropdownOpen(false);
                     navigate('/', { replace: true });
