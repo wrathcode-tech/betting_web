@@ -104,8 +104,8 @@ export default function SideBar({ isOpen, onClose }) {
               {platformConfig.inPlayServiceStatus && (
                 <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sports' ? 'active' : ''}`}>
                   <Link to="/sports" onClick={onLinkClick}>
-<span><i className="ri-gamepad-fill sidebar_inplay_icon" aria-hidden />InPlay</span>
-                  <span className="sidebar_collapsed_label">InPlay</span>
+                    <span><i className="ri-gamepad-fill sidebar_inplay_icon" aria-hidden />InPlay</span>
+                    <span className="sidebar_collapsed_label">InPlay</span>
                   </Link>
                 </li>
               )}
@@ -159,14 +159,14 @@ export default function SideBar({ isOpen, onClose }) {
                   <span className="sidebar_collapsed_label">Game Rules</span>
                 </Link>
               </li>
-              {platformConfig.bonusServiceStatus && (
+              {/* {platformConfig.bonusServiceStatus && (
                 <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/promotions' ? 'active' : ''}`}>
                   <Link to="/promotions" onClick={onLinkClick}>
                     <span><i className="ri-megaphone-line" aria-hidden />Promotions</span>
                     <span className="sidebar_collapsed_label">Promotions</span>
                   </Link>
                 </li>
-              )}
+              )} */}
               {platformConfig.referralServiceStatus && (
                 <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/referral' ? 'active' : ''}`}>
                   <Link to="/referral" onClick={onLinkClick}>
@@ -205,12 +205,12 @@ export default function SideBar({ isOpen, onClose }) {
                   <span className="sidebar_collapsed_label">My Wallet</span>
                 </Link>
               </li>
-              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/betting-profit-loss' ? 'active' : ''}`}>
+              {/* <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/betting-profit-loss' ? 'active' : ''}`}>
                 <Link to="/betting-profit-loss" onClick={onLinkClick}>
                   <span><i className="ri-line-chart-line" aria-hidden />Betting P&L</span>
                   <span className="sidebar_collapsed_label">Betting P&L</span>
                 </Link>
-              </li>
+              </li> */}
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/account-statement' ? 'active' : ''}`}>
                 <Link to="/account-statement" onClick={onLinkClick}>
                   <span><i className="ri-bank-card-line" aria-hidden />Account Statement</span>
@@ -225,6 +225,12 @@ export default function SideBar({ isOpen, onClose }) {
                   </Link>
                 </li>
               )}
+              <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/notifications' ? 'active' : ''}`}>
+                <Link to="/notifications" onClick={onLinkClick}>
+                  <span><i className="ri-notification-3-line" aria-hidden />Notifications</span>
+                  <span className="sidebar_collapsed_label">Notifications</span>
+                </Link>
+              </li>
 
             </ul>
           </nav>

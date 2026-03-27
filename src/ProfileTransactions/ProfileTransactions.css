@@ -291,6 +291,71 @@
     color: #ffffff;
 }
 
+/* My Wallet — full-width overview (GET /wallet/balance) */
+.my_wallet_overview {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 16px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1f2835 0%, #212b3a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-sizing: border-box;
+}
+
+.my_wallet_overview_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    gap: 12px;
+}
+
+.my_wallet_overview_item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.my_wallet_overview_item.my_wallet_overview_highlight {
+    background: rgba(249, 122, 49, 0.12);
+    border-color: rgba(249, 122, 49, 0.25);
+}
+
+.my_wallet_overview_label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+}
+
+.my_wallet_overview_value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    word-break: break-word;
+}
+
+.my_wallet_withdraw_badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.wallet_withdraw_yes {
+    background-color: rgba(76, 175, 80, 0.22);
+    color: #81c784;
+}
+
+.wallet_withdraw_no {
+    background-color: rgba(244, 67, 54, 0.2);
+    color: #e57373;
+}
+
 @media (max-width: 768px) {
     .wallet_summary {
         flex-direction: row;

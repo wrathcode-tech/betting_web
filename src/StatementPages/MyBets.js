@@ -10,15 +10,18 @@ import './MyBets.css'
 const COLUMNS = [
   { key: 'time', label: 'Time' },
   { key: 'betId', label: 'Bet ID' },
+  { key: 'sport', label: 'Sport' },
   { key: 'event', label: 'Event' },
   { key: 'market', label: 'Market' },
   { key: 'selection', label: 'Selection' },
   { key: 'betType', label: 'Type' },
   { key: 'odds', label: 'Odds' },
-  { key: 'stake', label: 'Stake' },
+  { key: 'stake', label: 'Stake', type: 'amount' },
   { key: 'status', label: 'Status', type: 'status' },
+  { key: 'result', label: 'Result' },
+  { key: 'profitLoss', label: 'P/L', type: 'amount' },
   { key: 'potentialWin', label: 'Potential Win', type: 'amount' },
-  { key: 'actions', label: 'Actions' },
+  // { key: 'actions', label: 'Actions' },
 ]
 
 function formatDate(iso) {
@@ -29,6 +32,13 @@ function formatDate(iso) {
   } catch {
     return iso
   }
+}
+
+function formatInrAmount(v) {
+  if (v == null || v === '') return '—'
+  const n = Number(v)
+  if (Number.isNaN(n)) return '—'
+  return `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 /** GET open-bets — backend shapes (same idea as CricketDetail parseOpenBetsFromResponse). */
@@ -94,21 +104,47 @@ function isBetCancellableStatus(statusRaw) {
 
 function mapBetToRow(b) {
   const betId = pickBetId(b)
-  const statusRaw = (b.status || 'open').toLowerCase()
+  const statusRaw = String(b.status || 'open').toLowerCase()
+  const marketName = b.marketName != null && String(b.marketName).trim() !== '' ? String(b.marketName).trim() : ''
+  const marketType = b.marketType != null && String(b.marketType).trim() !== '' ? String(b.marketType).trim() : ''
+  const market =
+    marketName && marketType ? `${marketName} (${marketType})` : marketName || marketType || '—'
+  const oddsNum =
+    b.odds != null
+      ? Number(b.odds)
+      : b.executedOdds != null
+        ? Number(b.executedOdds)
+        : b.requestedOdds != null
+          ? Number(b.requestedOdds)
+          : NaN
+  const oddsDisplay = Number.isFinite(oddsNum) ? oddsNum.toFixed(2) : '—'
+  const potential =
+    b.potentialProfit != null
+      ? b.potentialProfit
+      : b.profitIfWin != null
+        ? b.profitIfWin
+        : b.returnIfWin != null && b.stake != null
+          ? Number(b.returnIfWin) - Number(b.stake)
+          : null
+
   return {
     id: betId,
     betId: (betId && String(betId).slice(-8)) || '—',
-    time: formatDate(b.createdAt),
-    event: b.eventName || '—',
-    market: b.marketName || b.marketType || '—',
-    selection: b.selectionName || '—',
-    betType: b.betType || '—',
-    odds: b.odds != null ? Number(b.odds) : (b.executedOdds != null ? Number(b.executedOdds) : '—'),
-    stake: b.stake != null ? `₹${Number(b.stake).toLocaleString()}` : '—',
+    time: formatDate(b.createdAt ?? b.created_at),
+    sport: b.sport != null ? String(b.sport) : '—',
+    event: b.eventName || b.event_name || '—',
+    market,
+    selection: b.selectionName || b.selection_name || '—',
+    betType: b.betType || b.bet_type || '—',
+    odds: oddsDisplay,
+    stake: formatInrAmount(b.stake),
     status: b.status || 'open',
     statusRaw,
-    potentialWin: b.potentialProfit != null ? `₹${Number(b.potentialProfit).toLocaleString()}` : '—',
-    cardTitle: b.eventName || betId,
+    result: b.result != null && String(b.result).trim() !== '' ? String(b.result) : '—',
+    resultRaw: String(b.result || '').toLowerCase(),
+    profitLoss: formatInrAmount(b.profitLoss ?? b.profit_loss),
+    potentialWin: formatInrAmount(potential),
+    cardTitle: b.eventName || b.event_name || betId,
     _raw: { ...b, _id: betId },
   }
 }
@@ -184,12 +220,16 @@ export default function MyBets() {
         const market = String(row.market || '').toLowerCase()
         const selection = String(row.selection || '').toLowerCase()
         const betType = String(row.betType || '').toLowerCase()
+        const sport = String(row.sport || '').toLowerCase()
+        const result = String(row.result || '').toLowerCase()
         return (
           event.includes(searchLower) ||
           betId.includes(searchLower) ||
           market.includes(searchLower) ||
           selection.includes(searchLower) ||
-          betType.includes(searchLower)
+          betType.includes(searchLower) ||
+          sport.includes(searchLower) ||
+          result.includes(searchLower)
         )
       })
     : bets
@@ -197,20 +237,26 @@ export default function MyBets() {
   const data = filteredBets.map((row) => ({
     ...row,
     actions: isBetCancellableStatus(row.statusRaw) ? (
-      <div className="mybets_actions_wrap">
-        <button type="button" className="mybets_cashout_btn_sm" onClick={goToOpenBets}>
-          Cash Out
-        </button>
-        <button
-          type="button"
-          className="mybets_cancel_btn_sm"
-          onClick={() => handleCancelBet(row.id)}
-          disabled={cancellingId === String(row.id)}
-        >
-          {cancellingId === String(row.id) ? 'Cancelling...' : 'Cancel'}
-        </button>
-      </div>
-    ) : <span className="mybets_bet_closed">BET CLOSED</span>,
+      '—'
+    ) : (
+      <span className="mybets_bet_closed">BET CLOSED</span>
+    ),
+    // Temporarily disabled Cash Out + Cancel
+    // actions: isBetCancellableStatus(row.statusRaw) ? (
+    //   <div className="mybets_actions_wrap">
+    //     <button type="button" className="mybets_cashout_btn_sm" onClick={goToOpenBets}>
+    //       Cash Out
+    //     </button>
+    //     <button
+    //       type="button"
+    //       className="mybets_cancel_btn_sm"
+    //       onClick={() => handleCancelBet(row.id)}
+    //       disabled={cancellingId === String(row.id)}
+    //     >
+    //       {cancellingId === String(row.id) ? 'Cancelling...' : 'Cancel'}
+    //     </button>
+    //   </div>
+    // ) : <span className="mybets_bet_closed">BET CLOSED</span>,
   }))
 
   return (
@@ -230,18 +276,20 @@ export default function MyBets() {
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label="Search"
                 />
+                {/* Temporarily disabled header Cash Out
                 <button type="button" className="mybets_cashout_btn" onClick={goToOpenBets}>
                   Cash Out
                 </button>
+                */}
               </div>
             </div>
 
             {loading ? (
-              <p className="text-white-50">Loading...</p>
+              <p className="empty_state_message">Loading...</p>
             ) : bets.length === 0 ? (
               <p className="text-white-50">No open bets.</p>
             ) : data.length === 0 ? (
-              <p className="text-white-50">No matches for your search.</p>
+              <p className="empty_state_message">No matches for your search.</p>
             ) : (
               <>
                 <div className="transactions_table_wrapper">
@@ -263,23 +311,12 @@ export default function MyBets() {
                             return (
                               <td key={col.key}>
                                 {col.key === 'actions' ? (
-                                    isBetCancellableStatus(row.statusRaw) ? (
-                                    <div className="mybets_actions_wrap">
-                                      <button type="button" className="mybets_cashout_btn_sm" onClick={goToOpenBets}>
-                                        Cash Out
-                                      </button>
-                                      <button
-                                        type="button"
-                                        className="mybets_cancel_btn_sm"
-                                        onClick={() => handleCancelBet(row.id)}
-                                        disabled={cancellingId === String(row.id)}
-                                      >
-                                        {cancellingId === String(row.id) ? 'Cancelling...' : 'Cancel'}
-                                      </button>
-                                    </div>
-                                  ) : (
+                                    /* Temporarily disabled Cash Out + Cancel — was buttons for cancellable rows */
                                     '—'
-                                  )
+                                ) : col.key === 'result' && row.resultRaw ? (
+                                  <span className={`status_badge status_${String(row.resultRaw).replace(/\s+/g, '_')}`}>
+                                    {val}
+                                  </span>
                                 ) : isStatus && row.statusRaw != null ? (
                                   <span className={`status_badge status_${String(row.statusRaw).toLowerCase()}`}>
                                     {val}
@@ -318,6 +355,7 @@ export default function MyBets() {
                             </span>
                           </div>
                         ))}
+                        {/* Temporarily disabled Cash Out + Cancel on cards
                         {isBetCancellableStatus(row.statusRaw) && (
                           <div className="transaction_card_row transaction_card_actions">
                             <span className="transaction_label">Actions</span>
@@ -336,6 +374,7 @@ export default function MyBets() {
                             </div>
                           </div>
                         )}
+                        */}
                       </div>
                     </div>
                   ))}

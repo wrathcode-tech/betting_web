@@ -72,6 +72,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Centered empty / loading list messages (statements, bets, wallet, etc.) */
+.empty_state_message {
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  padding: 32px 16px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

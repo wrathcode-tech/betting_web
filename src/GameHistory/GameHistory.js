@@ -111,16 +111,28 @@ function GameHistory() {
       } else {
         res = await AuthService.gamesSportsbookTransactions(page, PAGE_SIZE);
       }
-      const data = res?.data ?? res;
+      const payload = res?.data ?? res;
+
       let list;
-      if (filter === FILTER_SPORTSBOOK) {
-        list = data?.transactions ?? data?.sessions ?? data?.bets ?? [];
-      } else if (casinoView === VIEW_SESSIONS) {
-        list = data?.sessions ?? [];
+      let p = {};
+
+      if (Array.isArray(payload)) {
+        list = payload;
+      } else if (Array.isArray(payload?.data)) {
+        list = payload.data;
+        p = payload.pagination ?? {};
       } else {
-        list = data?.transactions ?? data?.sessions ?? [];
+        const data = payload;
+        p = data?.pagination ?? {};
+        if (filter === FILTER_SPORTSBOOK) {
+          list = data?.transactions ?? data?.sessions ?? data?.bets ?? [];
+        } else if (casinoView === VIEW_SESSIONS) {
+          list = data?.sessions ?? [];
+        } else {
+          list = data?.transactions ?? data?.sessions ?? [];
+        }
       }
-      const p = data?.pagination ?? {};
+
       if (Array.isArray(list)) {
         setTransactions(list);
         setPagination({
@@ -244,9 +256,9 @@ function GameHistory() {
             </div>
 
             {loading ? (
-              <p className="text-white-50">Loading game history...</p>
+              <p className="empty_state_message">Loading game history...</p>
             ) : filteredTransactions.length === 0 ? (
-              <p className="text-white-50">
+              <p className="empty_state_message">
                 {search ? 'No matches for your search.' : (filter === FILTER_CASINO ? (casinoView === VIEW_SESSIONS ? 'No casino sessions yet.' : casinoView === VIEW_LEDGER ? 'No ledger entries yet.' : 'No casino transactions yet.') : 'No sportsbook transactions yet.')}
               </p>
             ) : (

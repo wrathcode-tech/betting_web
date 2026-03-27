@@ -55,6 +55,7 @@ function StatementPage({
   exportFileName = 'statement',
   headerRightClassName = '',
   headerExtra = null,
+  topBanner = null,
 }) {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -185,10 +186,12 @@ function StatementPage({
               </div>
             </div>
 
+            {topBanner}
+
             {data.length === 0 ? (
-              <p className="text-white-50">{emptyMessage}</p>
+              <p className="empty_state_message">{emptyMessage}</p>
             ) : pageData.length === 0 ? (
-              <p className="text-white-50">No matches for your search.</p>
+              <p className="empty_state_message">No matches for your search.</p>
             ) : (
               <>
                 <div className="transactions_table_wrapper">

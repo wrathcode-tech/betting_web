@@ -114,6 +114,31 @@ function CasinoGame() {
         });
     }, [navigate]);
 
+    /** Deep link /casino?gameName=… — after games load, go straight to /game (home uses /game; this covers old URLs). */
+    const autoLaunchFromQueryKeyRef = useRef('');
+    useEffect(() => {
+        const wantName = (searchParams.get('gameName') || '').trim().toLowerCase();
+        if (!wantName) return;
+        if (loadingProviderCategory) return;
+        const raw = sortedProviderCategoryGames.find(
+            (g) => String(g.name || '').trim().toLowerCase() === wantName
+        );
+        const gc = raw?.gameCode ?? raw?.code;
+        const pc = raw?.providerCode;
+        if (!raw || !gc || !pc) return;
+        const key = `${wantName}|${selectedProviderCode}|${selectedCategoryCode}`;
+        if (autoLaunchFromQueryKeyRef.current === key) return;
+        autoLaunchFromQueryKeyRef.current = key;
+        handlePlayGame({ ...raw, gameCode: gc, providerCode: pc });
+    }, [
+        searchParams,
+        sortedProviderCategoryGames,
+        loadingProviderCategory,
+        selectedProviderCode,
+        selectedCategoryCode,
+        handlePlayGame,
+    ]);
+
     const selectedProvider = useMemo(
         () =>
             selectedProviderCode && selectedProviderCode !== 'all'

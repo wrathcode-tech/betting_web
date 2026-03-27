@@ -26,7 +26,6 @@ function ReferralProgram() {
     const [rewardsPagination, setRewardsPagination] = useState({ page: 1, totalPages: 0 })
     const [profitList, setProfitList] = useState([])
     const [profitPagination, setProfitPagination] = useState({ page: 1, totalPages: 0 })
-    const [rewardsLive, setRewardsLive] = useState([])
     const [isClaiming, setIsClaiming] = useState(false)
     const [activeTab, setActiveTab] = useState('dashboard')
 
@@ -52,7 +51,6 @@ function ReferralProgram() {
         if (activeTab === 'dashboard') {
             loadRewardsHistory(1)
             loadProfit(1)
-            loadRewardsLive()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab])
@@ -128,10 +126,34 @@ function ReferralProgram() {
                 return
             }
             const data = res?.data ?? res
-            const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.referrals) ? data.referrals : Array.isArray(data) ? data : []
+            const payload = data?.data && typeof data?.data === 'object' && !Array.isArray(data?.data) ? data.data : data
+            const rawList = Array.isArray(payload?.data)
+                ? payload.data
+                : Array.isArray(payload?.referrals)
+                    ? payload.referrals
+                    : Array.isArray(data?.referrals)
+                        ? data.referrals
+                        : Array.isArray(payload)
+                            ? payload
+                            : Array.isArray(data)
+                                ? data
+                                : []
+
+            // Normalize API variants so UI always renders rows for referral history.
+            const list = rawList.map((row) => ({
+                ...row,
+                dateTime: row?.dateTime ?? row?.joinedAt ?? row?.createdAt ?? row?.created_at ?? null,
+                joinedAt: row?.joinedAt ?? row?.dateTime ?? row?.createdAt ?? row?.created_at ?? null,
+                userName: row?.userName ?? row?.username ?? row?.name ?? row?.fullName ?? row?.user?.fullName ?? row?.user?.username ?? '—',
+                username: row?.username ?? row?.userName ?? row?.user?.username ?? row?.user?.fullName ?? '—',
+                mobile: row?.mobile ?? row?.phone ?? row?.mobileNumber ?? row?.user?.mobile ?? row?.user?.mobileNumber ?? '—',
+                status: row?.status ?? '—',
+                totalEarnings: row?.totalEarnings ?? row?.total_earnings ?? 0,
+            }))
+
             setReferralList(list)
-            const total = data?.total ?? data?.totalCount ?? data?.pagination?.totalRecords ?? list.length
-            const totalPages = data?.totalPages ?? data?.pagination?.totalPages ?? Math.max(1, Math.ceil(Number(total) / REFERRALS_PAGE_SIZE))
+            const total = payload?.total ?? payload?.totalCount ?? payload?.pagination?.totalRecords ?? data?.total ?? data?.totalCount ?? list.length
+            const totalPages = payload?.totalPages ?? payload?.pagination?.totalPages ?? data?.totalPages ?? Math.max(1, Math.ceil(Number(total) / REFERRALS_PAGE_SIZE))
             setReferralPagination({ page, total: Number(total) || 0, totalPages })
         } catch (e) {
             setReferralList([])
@@ -196,18 +218,6 @@ function ReferralProgram() {
             if (e?.message) alertErrorMessage(e.message)
         } finally {
             LoaderHelper.hide()
-        }
-    }
-
-    const loadRewardsLive = async () => {
-        try {
-            const res = await AuthService.referralRewardsLive(10)
-            if (res?.success === false) return
-            const data = res?.data ?? res
-            const list = Array.isArray(data?.data) ? data.data : Array.isArray(data?.rewards) ? data.rewards : Array.isArray(data) ? data : []
-            setRewardsLive(list)
-        } catch {
-            setRewardsLive([])
         }
     }
 
@@ -451,7 +461,7 @@ function ReferralProgram() {
                                     </button>
                                 </div>
 
-                                <div className="referral_apply_section">
+                                {/* <div className="referral_apply_section">
                                     <h4>Apply Referral Code</h4>
                                     <div className="referral_apply_row">
                                         <input
@@ -465,22 +475,7 @@ function ReferralProgram() {
                                             {isApplying ? 'Applying...' : 'Apply'}
                                         </button>
                                     </div>
-                                </div>
-
-                                {rewardsLive.length > 0 && (
-                                    <div className="referral_table_block referral_live_block">
-                                        <h3>Live Rewards</h3>
-                                        <div className="referral_live_list">
-                                            {rewardsLive.slice(0, 10).map((row, idx) => (
-                                                <div key={row?.id ?? row?._id ?? idx} className="referral_live_item">
-                                                    <span className="text_uppercase">{row?.userId?.fullName ?? row?.userName ?? '—'}</span>
-                                                    <span>₹ {row?.amount ?? row?.commissionAmount ?? '0'}</span>
-                                                    <span>{formatDate(row?.createdAt ?? row?.created_at)}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
+                                </div> */}
 
                                 <div className="referral_table_block">
                                     <div className="transactions_header align-items-center">
@@ -575,11 +570,11 @@ function ReferralProgram() {
                                     <div className="referral_filters_row referrals_filters_row_his">
                                         <input type="date" value={referralFrom} onChange={(e) => setReferralFrom(e.target.value)} className="referral_date_input" placeholder="From" />
                                         <input type="date" value={referralTo} onChange={(e) => setReferralTo(e.target.value)} className="referral_date_input" placeholder="To" />
-                                      <div className="referral_filters_row_buttons d-flex align-items-center gap-2">
-                                        <button type="button" className="referral_btn_filter" onClick={() => loadReferralList(1)}>Apply</button>
-                                        <button type="button" className="referral_btn_export" onClick={handleExport} disabled={isExporting}>
-                                            {isExporting ? 'Exporting...' : <><i className="ri-download-2-line" aria-hidden /> CSV</>}
-                                        </button>
+                                        <div className="referral_filters_row_buttons d-flex align-items-center gap-2">
+                                            <button type="button" className="referral_btn_filter" onClick={() => loadReferralList(1)}>Apply</button>
+                                            <button type="button" className="referral_btn_export" onClick={handleExport} disabled={isExporting}>
+                                                {isExporting ? 'Exporting...' : <><i className="ri-download-2-line" aria-hidden /> CSV</>}
+                                            </button>
                                         </div>
                                         <input
                                             type="text"

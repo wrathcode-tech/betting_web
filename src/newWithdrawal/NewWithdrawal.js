@@ -185,11 +185,11 @@ function NewWithdrawal() {
               </div>
 
               {loading ? (
-                <p className="text-white-50">Loading bank accounts...</p>
+                <p className="empty_state_message">Loading bank accounts...</p>
               ) : accounts.length === 0 ? (
                 <div className="choose_payment_option">
                   <h3 className="choose_payment_option_title">Add Bank Details</h3>
-                  <p className="text-white-50 mb-3">No bank account added yet. Add one to request withdrawal.</p>
+                  <p className="empty_state_message mb-3">No bank account added yet. Add one to request withdrawal.</p>
                   <button
                     type="button"
                     className="add_account_upload add_account_upload_btn"

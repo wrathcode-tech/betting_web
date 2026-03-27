@@ -260,7 +260,7 @@ function NewDeposit() {
               {step === 1 && (
                 <>
                   {!optionsLoading && masterAccounts.length === 0 && (
-                    <p className="text-white-50 mb-3">Using default options. Add accounts via API to see dynamic list.</p>
+                    <p className="empty_state_message mb-3">Using default options. Add accounts via API to see dynamic list.</p>
                   )}
                   {/* Desktop: buttons; Mobile: dropdown */}
                   <div className="payment_type_select_mobile">
@@ -441,7 +441,7 @@ function NewDeposit() {
                               aria-label="Scan to deposit crypto"
                             />
                           ) : (
-                            <p className="text-white-50">Address unavailable</p>
+                            <p className="empty_state_message">Address unavailable</p>
                           )}
                         </div>
                       </div>
@@ -467,7 +467,7 @@ function NewDeposit() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-white-50">No account selected.</p>
+                    <p className="empty_state_message">No account selected.</p>
                   )}
 
                   {selectedPayment !== 'crypto' && (

@@ -133,9 +133,9 @@ export default function BetHistory() {
             </div>
 
             {loading ? (
-              <p className="text-white-50">Loading...</p>
+              <p className="empty_state_message">Loading...</p>
             ) : data.length === 0 ? (
-              <p className="text-white-50">No bet history.</p>
+              <p className="empty_state_message">No bet history.</p>
             ) : (
               <>
                 <div className="transactions_table_wrapper">

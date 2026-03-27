@@ -5,11 +5,8 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+// StrictMode intentionally off: in React 18 dev it runs effects twice → duplicate API calls on every page.
+root.render(<App />);
 
 // Defer so it doesn't compete with initial render
 if (typeof window !== 'undefined' && window.requestIdleCallback) {

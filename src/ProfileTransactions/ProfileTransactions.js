@@ -12,6 +12,72 @@ function getPaymentProofFullUrl(url) {
   return base ? `${base.replace(/\/$/, '')}${url.startsWith('/') ? url : `/${url}`}` : url
 }
 
+function resolvePaymentProofUrl(txn) {
+  if (!txn || typeof txn !== 'object') return null
+  const raw =
+    txn.paymentProofUrl ??
+    txn.paymentProofURL ??
+    txn.paymentProof ??
+    txn.proofUrl ??
+    txn.proofURL ??
+    txn.trans?.paymentProofUrl ??
+    txn.trans?.paymentProofURL ??
+    txn.trans?.paymentProof ??
+    txn.transaction?.paymentProofUrl ??
+    txn.transaction?.paymentProofURL ??
+    txn.transaction?.paymentProof ??
+    txn.payment_proof_url ??
+    txn.payment_proof
+  // Some APIs send object shape: { url } / { path }.
+  if (raw && typeof raw === 'object') {
+    return getPaymentProofFullUrl(raw.url ?? raw.path ?? raw.location ?? null)
+  }
+  return getPaymentProofFullUrl(raw)
+}
+
+function PaymentProofThumb({ url, className = 'transaction_payment_proof_thumb', alt = 'Payment proof' }) {
+  const [src, setSrc] = useState(url || '')
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    const cleanUrl = typeof url === 'string' ? url.trim() : ''
+    setSrc(cleanUrl)
+    setFailed(false)
+    if (!cleanUrl) return
+
+    const rawToken = sessionStorage.getItem('token')
+    const token = String(rawToken || '').replace(/^\s*Bearer\s+/i, '').trim()
+    if (!token) return
+
+    let active = true
+    let objectUrl = null
+
+      ; (async () => {
+        try {
+          const resp = await fetch(cleanUrl, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (!resp.ok) return
+          const blob = await resp.blob()
+          if (!active || !blob) return
+          objectUrl = URL.createObjectURL(blob)
+          setSrc(objectUrl)
+        } catch {
+          // Keep direct URL fallback if protected fetch fails.
+        }
+      })()
+
+    return () => {
+      active = false
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [url])
+
+  if (!src || failed) return <span>View</span>
+  return <img src={src} alt={alt} className={className} onError={() => setFailed(true)} />
+}
+
 const PAGE_SIZE = 10
 
 const TYPE_FILTER_OPTIONS = [
@@ -51,7 +117,38 @@ function formatPaymentMethod(pm) {
   if (!pm) return '—'
   const s = String(pm).toUpperCase()
   if (s === 'BANK' || s === 'BANK_TRANSFER') return 'Bank Transfer'
+  if (s === 'IMPS') return 'IMPS'
   return s
+}
+
+function isBankTypeTransaction(txn) {
+  if (!txn || typeof txn !== 'object') return false
+  const depositType = String(txn.depositToDetail?.type || '').toLowerCase()
+  const withdrawalType = String(txn.withdrawalToDetail?.type || '').toLowerCase()
+  const paymentMethod = String(txn.paymentMethod || '').toLowerCase()
+  return depositType === 'bank' || withdrawalType === 'bank' || paymentMethod === 'bank' || paymentMethod === 'bank_transfer'
+}
+
+/** Wallet API: { data: [...] } | { data: { transactions, pagination } } | { transactions } */
+function parseWalletTransactionsList(res) {
+  if (!res || typeof res !== 'object') return { list: [], pagination: {} }
+  if (res.success === false) return { list: [], pagination: {} }
+  const top = res.data != null ? res.data : res
+  if (Array.isArray(top)) {
+    return { list: top, pagination: res.pagination ?? {} }
+  }
+  if (top && typeof top === 'object') {
+    if (Array.isArray(top.transactions)) {
+      return { list: top.transactions, pagination: top.pagination ?? res.pagination ?? {} }
+    }
+    if (Array.isArray(top.data)) {
+      return { list: top.data, pagination: top.pagination ?? res.pagination ?? {} }
+    }
+  }
+  if (Array.isArray(res.transactions)) {
+    return { list: res.transactions, pagination: res.pagination ?? {} }
+  }
+  return { list: [], pagination: {} }
 }
 
 function formatStatus(s) {
@@ -78,9 +175,7 @@ function ProfileTransactions() {
       const effectiveType = typeParam != null ? typeParam : typeFilter
       const res = await AuthService.walletTransactions(page, PAGE_SIZE, effectiveType)
       setLoading(false)
-      const raw = res?.data
-      const list = Array.isArray(raw) ? raw : (raw?.transactions || [])
-      const pag = res?.pagination ?? raw?.pagination ?? {}
+      const { list, pagination: pag } = parseWalletTransactionsList(res)
       if (list.length >= 0) {
         setTransactions(list)
         setPagination({
@@ -142,11 +237,17 @@ function ProfileTransactions() {
         const status = formatStatus(t.status) || ''
         const method = formatPaymentMethod(t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod) || ''
         const notes = (t.adminRemarks || t.remarks || '') + ''
-        return [time, id, type, amount, status, method, notes].some((s) => String(s).toLowerCase().includes(searchLower))
+        const utr = (t.utrNumber || t.utr || '') + ''
+        const chain = (t.chain || '') + ''
+        const currency = (t.currency || '') + ''
+        return [time, id, type, amount, status, method, notes, utr, chain, currency].some((s) =>
+          String(s).toLowerCase().includes(searchLower)
+        )
       })
       : statusFiltered
     return searchFiltered.map((t, idx) => {
       const rowId = t.id ?? idx
+      const showChain = !isBankTypeTransaction(t)
       return {
         id: rowId != null ? String(rowId) : `row-${idx}`,
         time: formatTime(t.createdAt),
@@ -157,12 +258,16 @@ function ProfileTransactions() {
         status: formatStatus(t.status),
         statusRaw: t.status,
         notes: t.adminRemarks || t.remarks || '—',
+        utrNumber: t.utrNumber || t.utr || '—',
+        chain: showChain ? (t.chain || '—') : '—',
+        currency: t.currency || 'INR',
         balanceBefore: t.balanceBefore != null ? formatAmount(t.balanceBefore, t.currency) : '—',
         balanceAfter: t.balanceAfter != null ? formatAmount(t.balanceAfter, t.currency) : '—',
         paymentMethod: formatPaymentMethod(
           t.type === 'deposit' ? (t.depositToDetail?.type ?? t.paymentMethod) : t.type === 'withdrawal' ? (t.withdrawalToDetail?.type ?? t.paymentMethod) : t.paymentMethod
         ),
-        paymentProofUrl: t.type === 'deposit' ? getPaymentProofFullUrl(t.paymentProofUrl) : null,
+        paymentProofUrl: t.type === 'deposit' ? resolvePaymentProofUrl(t) : null,
+        processedAt: t.processedAt ? formatTime(t.processedAt) : '—',
       }
     })
   }, [transactions, statusFilter, search])
@@ -192,34 +297,34 @@ function ProfileTransactions() {
                   aria-label="Search"
                 />
                 <div className='transactions_filter_select_wrapper d-flex gap-3'>
-                <select
-                  id="txn-type-filter"
-                  className='transactions_filter_select deposit_btn_style'
-                  value={typeFilter}
-                  onChange={handleFilterChange}
-                >
-                  {TYPE_FILTER_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-                <select
-                  id="txn-status-filter"
-                  className='transactions_filter_select deposit_btn_style'
-                  value={statusFilter}
-                  onChange={handleStatusFilterChange}
-                >
-                  {STATUS_FILTER_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                  <select
+                    id="txn-type-filter"
+                    className='transactions_filter_select deposit_btn_style'
+                    value={typeFilter}
+                    onChange={handleFilterChange}
+                  >
+                    {TYPE_FILTER_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                  <select
+                    id="txn-status-filter"
+                    className='transactions_filter_select deposit_btn_style'
+                    value={statusFilter}
+                    onChange={handleStatusFilterChange}
+                  >
+                    {STATUS_FILTER_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
 
             {loading ? (
-              <p className="text-white-50">Loading...</p>
+              <p className="empty_state_message">Loading...</p>
             ) : list.length === 0 ? (
-              <p className="text-white-50">No deposit or withdrawal transactions yet.</p>
+              <p className="empty_state_message">No deposit or withdrawal transactions yet.</p>
             ) : (
               <>
                 <div className='transactions_table_wrapper'>
@@ -230,11 +335,15 @@ function ProfileTransactions() {
                         <th>Transaction ID</th>
                         <th>Type</th>
                         <th>Amount</th>
+                        <th>Currency</th>
                         <th>Balance Before</th>
                         <th>Balance After</th>
                         <th>Status</th>
                         <th>Payment Method</th>
+                        <th>UTR</th>
+                        <th>Chain</th>
                         <th>Admin / Notes</th>
+                        <th>Processed At</th>
                         <th>Payment Proof</th>
                       </tr>
                     </thead>
@@ -242,9 +351,10 @@ function ProfileTransactions() {
                       {list.map((tx) => (
                         <tr key={tx.id}>
                           <td>{tx.time}</td>
-                          <td>Transaction #{tx.id}</td>
+                          <td>{tx.id}</td>
                           <td>{tx.type}</td>
                           <td>{tx.amount}</td>
+                          <td>{tx.currency}</td>
                           <td>{tx.balanceBefore}</td>
                           <td>{tx.balanceAfter}</td>
                           <td>
@@ -253,11 +363,14 @@ function ProfileTransactions() {
                             </span>
                           </td>
                           <td>{tx.paymentMethod}</td>
+                          <td>{tx.utrNumber}</td>
+                          <td>{tx.chain}</td>
                           <td>{tx.notes}</td>
+                          <td>{tx.processedAt}</td>
                           <td>
                             {tx.paymentProofUrl ? (
                               <a href={tx.paymentProofUrl} target="_blank" rel="noopener noreferrer" className="transaction_payment_proof_link" aria-label="View payment proof">
-                                <img src={tx.paymentProofUrl} alt="Payment proof" className="transaction_payment_proof_thumb" />
+                                <PaymentProofThumb url={tx.paymentProofUrl} />
                               </a>
                             ) : (
                               '—'
@@ -294,6 +407,18 @@ function ProfileTransactions() {
                           <span className='transaction_value amount_value'>{tx.amount}</span>
                         </div>
                         <div className='transaction_card_row'>
+                          <span className='transaction_label'>Currency</span>
+                          <span className='transaction_value'>{tx.currency}</span>
+                        </div>
+                        <div className='transaction_card_row'>
+                          <span className='transaction_label'>UTR</span>
+                          <span className='transaction_value'>{tx.utrNumber}</span>
+                        </div>
+                        <div className='transaction_card_row'>
+                          <span className='transaction_label'>Chain</span>
+                          <span className='transaction_value'>{tx.chain}</span>
+                        </div>
+                        <div className='transaction_card_row'>
                           <span className='transaction_label'>Balance Before</span>
                           <span className='transaction_value amount_value'>{tx.balanceBefore}</span>
                         </div>
@@ -313,6 +438,10 @@ function ProfileTransactions() {
                           <span className='transaction_label'>Admin / Notes</span>
                           <span className='transaction_value'>{tx.notes}</span>
                         </div>
+                        <div className='transaction_card_row'>
+                          <span className='transaction_label'>Processed At</span>
+                          <span className='transaction_value'>{tx.processedAt}</span>
+                        </div>
                         {tx.paymentProofUrl && (
                           <details className='transaction_payment_proof_dropdown'>
                             <summary className='transaction_payment_proof_summary'>
@@ -321,7 +450,7 @@ function ProfileTransactions() {
                             </summary>
                             <div className='transaction_payment_proof_content'>
                               <a href={tx.paymentProofUrl} target="_blank" rel="noopener noreferrer" className="transaction_payment_proof_link" aria-label="View payment proof">
-                                <img src={tx.paymentProofUrl} alt="Payment proof" className="transaction_payment_proof_thumb" />
+                                <PaymentProofThumb url={tx.paymentProofUrl} />
                               </a>
                             </div>
                           </details>

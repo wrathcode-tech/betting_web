@@ -1,6 +1,30 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
+
+const SIGNUP_REFERRAL_STORAGE_KEY = 'signupReferralCode'
+const REFERRAL_QUERY_KEYS = ['r', 'ref', 'referral', 'referralCode']
+
+function extractReferralFromSearch(search) {
+  const q = new URLSearchParams(search || '')
+  for (const k of REFERRAL_QUERY_KEYS) {
+    const v = (q.get(k) || '').trim()
+    if (v) return v
+  }
+  return ''
+}
+
+function stripReferralParamsFromSearch(search) {
+  const q = new URLSearchParams(search || '')
+  let changed = false
+  REFERRAL_QUERY_KEYS.forEach((k) => {
+    if (q.has(k)) {
+      q.delete(k)
+      changed = true
+    }
+  })
+  return { nextSearch: q.toString(), changed }
+}
 
 const LoginModal = lazy(() => import('./LoginModal'))
 const Chat = lazy(() => import('../cricket/Chat'))
@@ -10,9 +34,17 @@ const Search = lazy(() => import('./Search'))
 
 export default function AuthHeader() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [showModal, setShowModal] = useState(false);
   const [modalTab, setModalTab] = useState('login');
-  const returnTo = location.pathname + location.search;
+  const [referralPrefill, setReferralPrefill] = useState(() => {
+    try {
+      return sessionStorage.getItem(SIGNUP_REFERRAL_STORAGE_KEY) || ''
+    } catch {
+      return ''
+    }
+  })
+  const returnTo = `${location.pathname}${location.search}`
   const { sidebarOpen, setSidebarOpen } = useSidebar();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
@@ -26,14 +58,49 @@ export default function AuthHeader() {
 
   const handleSignupClick = () => {
     setModalTab('signup');
+    try {
+      const s = sessionStorage.getItem(SIGNUP_REFERRAL_STORAGE_KEY)
+      if (s) setReferralPrefill(s)
+    } catch (_) { /* ignore */ }
     setShowModal(true);
   };
 
+  /** Referral visit: https://gaming.wrathcode.com/?r=AXHRFKEG — Sign up opens with code prefilled */
+  useEffect(() => {
+    const code = extractReferralFromSearch(location.search)
+    if (!code) return
+    try {
+      sessionStorage.setItem(SIGNUP_REFERRAL_STORAGE_KEY, code)
+    } catch (_) { /* ignore */ }
+    setReferralPrefill(code)
+    setModalTab('signup')
+    setShowModal(true)
+    const { nextSearch, changed } = stripReferralParamsFromSearch(location.search)
+    if (changed) {
+      navigate(
+        { pathname: location.pathname, search: nextSearch ? `?${nextSearch}` : '' },
+        { replace: true }
+      )
+    }
+  }, [location.pathname, location.search, navigate])
+
   useEffect(() => {
     const openModal = (e) => {
-      setModalTab(e.detail === 'signup' ? 'signup' : 'login');
-      setShowModal(true);
-    };
+      const d = e.detail
+      if (d && typeof d === 'object') {
+        setModalTab(d.tab === 'signup' ? 'signup' : 'login')
+        if (d.referralCode != null && String(d.referralCode).trim()) {
+          const c = String(d.referralCode).trim()
+          setReferralPrefill(c)
+          try {
+            sessionStorage.setItem(SIGNUP_REFERRAL_STORAGE_KEY, c)
+          } catch (_) { /* ignore */ }
+        }
+      } else {
+        setModalTab(d === 'signup' ? 'signup' : 'login')
+      }
+      setShowModal(true)
+    }
     window.addEventListener('openLoginModal', openModal);
     return () => window.removeEventListener('openLoginModal', openModal);
   }, []);
@@ -87,7 +154,17 @@ export default function AuthHeader() {
         </div>
       </header>
 
-      {showModal && <Suspense fallback={null}><LoginModal show={showModal} onHide={() => setShowModal(false)} initialTab={modalTab} returnTo={returnTo} /></Suspense>}
+      {showModal && (
+        <Suspense fallback={null}>
+          <LoginModal
+            show={showModal}
+            onHide={() => setShowModal(false)}
+            initialTab={modalTab}
+            initialReferralCode={modalTab === 'signup' ? referralPrefill : ''}
+            returnTo={returnTo}
+          />
+        </Suspense>
+      )}
       {isChatOpen && <Suspense fallback={null}><Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} /></Suspense>}
       {isDepositOpen && <Suspense fallback={null}><Deposit isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} /></Suspense>}
       {isWithdrawalOpen && <Suspense fallback={null}><Withdrawal isOpen={isWithdrawalOpen} onClose={() => setIsWithdrawalOpen(false)} /></Suspense>}

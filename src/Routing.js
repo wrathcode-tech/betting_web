@@ -47,7 +47,7 @@ const ProfileTransactions = lazyWithRetry(() => import("./ProfileTransactions/Pr
 const Promotions = lazyWithRetry(() => import("./promotions/Promotions"));
 const MyBets = lazyWithRetry(() => import("./StatementPages/MyBets"));
 const MyWallet = lazyWithRetry(() => import("./StatementPages/MyWallet"));
-const BettingProfitLoss = lazyWithRetry(() => import("./StatementPages/BettingProfitLoss"));
+// const BettingProfitLoss = lazyWithRetry(() => import("./StatementPages/BettingProfitLoss"));
 const TurnoverHistory = lazyWithRetry(() => import("./StatementPages/TurnoverHistory"));
 const AccountStatement = lazyWithRetry(() => import("./StatementPages/AccountStatement"));
 const BonusStatement = lazyWithRetry(() => import("./StatementPages/BonusStatement"));
@@ -55,7 +55,6 @@ const DepositTurnover = lazyWithRetry(() => import("./StatementPages/DepositTurn
 const GameRules = lazyWithRetry(() => import("./GameRule/GameRules"));
 const TermsAndConditions = lazyWithRetry(() => import("./pages/TermsAndConditions"));
 const CricketDetail = lazyWithRetry(() => import("./cricket/CricketDetail"));
-const RankSystem = lazyWithRetry(() => import("./RankSystem/RankSystem"));
 const NewDeposit = lazyWithRetry(() => import("./newDeposit/NewDeposit"));
 const NewWithdrawal = lazyWithRetry(() => import("./newWithdrawal/NewWithdrawal"));
 const AddAccount = lazyWithRetry(() => import("./BankDetails/AddAccount"));
@@ -68,74 +67,75 @@ const StatementHistory = lazyWithRetry(() => import("./pages/StatementHistory"))
 const OpenBets = lazyWithRetry(() => import("./pages/OpenBets"));
 const BetHistoryPage = lazyWithRetry(() => import("./pages/BetHistoryPage"));
 const ReferralRewards = lazyWithRetry(() => import("./pages/ReferralRewards"));
+const NotificationsPage = lazyWithRetry(() => import("./pages/NotificationsPage"));
 
 const Routing = memo(function Routing() {
   return (
     <Router>
       <AuthProvider>
-      <SidebarProvider>
-        <PlatformConfigProvider>
-        <CasinoProvidersProvider>
-        <SportsbookStoreProvider>
-        <BalanceProvider>
-        <BetSlipProvider>
-        <ScrollToTop />
-        <Suspense fallback={null}>
-          <Routes>
-            <Route element={<Layout />}>
-              {/* Public routes – no login required */}
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<LoginPage />} />
-              <Route path="/casino" element={<CasinoGame />} />
-              <Route path="/casino/category/:categoryId" element={<CasinoCategoryPage />} />
-              <Route path="/sports" element={<SportsGame />} />
-              <Route path="/sportsbook" element={<SportsBook />} />
-              <Route path="/cricket" element={<CricketDetail />} />
-              <Route path="/tennis" element={<CricketDetail />} />
-              <Route path="/soccer" element={<CricketDetail />} />
-              <Route path="/promotions" element={<Promotions />} />
-              <Route path="/game-rules" element={<GameRules />} />
-              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-              {/* Protected routes – demo blocked from deposit/withdrawal (not /game – casino play money) */}
-              <Route element={<ProtectedRoute />}>
-                <Route element={<DemoBlockRoute />}>
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/game" element={<GamePlay />} />
-                <Route path="/game-history" element={<GameHistory />} />
-                <Route path="/transactions" element={<ProfileTransactions />} />
-                <Route path="/my-bets" element={<MyBets />} />
-                <Route path="/bet-history" element={<BetHistoryPage />} />
-                <Route path="/deposit-history" element={<DepositHistory />} />
-                <Route path="/withdrawal-history" element={<WithdrawalHistory />} />
-                <Route path="/statement-history" element={<StatementHistory />} />
-                <Route path="/open-bets" element={<OpenBets />} />
-                <Route path="/referral-rewards" element={<ReferralRewards />} />
-                <Route path="/my-wallet" element={<MyWallet />} />
-                <Route path="/betting-profit-loss" element={<BettingProfitLoss />} />
-                <Route path="/turnover-history" element={<TurnoverHistory />} />
-                <Route path="/account-statement" element={<AccountStatement />} />
-                <Route path="/bonus-statement" element={<BonusStatement />} />
-                <Route path="/deposit-turnover" element={<DepositTurnover />} />
-                <Route path="/referral" element={<ReferralProgram />} />
-                <Route path="/rank" element={<RankSystem />} />
-                <Route path="/deposit" element={<NewDeposit />} />
-                <Route path="/withdrawal" element={<NewWithdrawal />} />
-                <Route path="/add-account" element={<AddAccount />} />
-                <Route path="/add-bank" element={<AddBank />} />
-                <Route path="/support" element={<SupportPage />} />
-                </Route>
-              </Route>
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          </Routes>
-        </Suspense>
-        </BetSlipProvider>
-        </BalanceProvider>
-        </SportsbookStoreProvider>
-        </CasinoProvidersProvider>
-        </PlatformConfigProvider>
-      </SidebarProvider>
+        <SidebarProvider>
+          <PlatformConfigProvider>
+            <CasinoProvidersProvider>
+              <SportsbookStoreProvider>
+                <BalanceProvider>
+                  <BetSlipProvider>
+                    <ScrollToTop />
+                    <Suspense fallback={null}>
+                      <Routes>
+                        <Route element={<Layout />}>
+                          {/* Public routes – no login required */}
+                          <Route path="/" element={<LandingPage />} />
+                          <Route path="/login" element={<LoginPage />} />
+                          <Route path="/signup" element={<LoginPage />} />
+                          <Route path="/casino" element={<CasinoGame />} />
+                          <Route path="/casino/category/:categoryId" element={<CasinoCategoryPage />} />
+                          <Route path="/sports" element={<SportsGame />} />
+                          <Route path="/sportsbook" element={<SportsBook />} />
+                          <Route path="/cricket" element={<CricketDetail />} />
+                          <Route path="/tennis" element={<CricketDetail />} />
+                          <Route path="/soccer" element={<CricketDetail />} />
+                          {/* <Route path="/promotions" element={<Promotions />} /> */}
+                          <Route path="/game-rules" element={<GameRules />} />
+                          <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+                          {/* Protected routes – demo blocked from deposit/withdrawal (not /game – casino play money) */}
+                          <Route element={<ProtectedRoute />}>
+                            <Route element={<DemoBlockRoute />}>
+                              <Route path="/profile" element={<ProfilePage />} />
+                              <Route path="/game" element={<GamePlay />} />
+                              <Route path="/game-history" element={<GameHistory />} />
+                              <Route path="/transactions" element={<ProfileTransactions />} />
+                              <Route path="/my-bets" element={<MyBets />} />
+                              <Route path="/bet-history" element={<BetHistoryPage />} />
+                              <Route path="/deposit-history" element={<DepositHistory />} />
+                              <Route path="/withdrawal-history" element={<WithdrawalHistory />} />
+                              <Route path="/statement-history" element={<StatementHistory />} />
+                              <Route path="/open-bets" element={<OpenBets />} />
+                              <Route path="/referral-rewards" element={<ReferralRewards />} />
+                              <Route path="/my-wallet" element={<MyWallet />} />
+                              {/* <Route path="/betting-profit-loss" element={<BettingProfitLoss />} /> */}
+                              <Route path="/turnover-history" element={<TurnoverHistory />} />
+                              <Route path="/account-statement" element={<AccountStatement />} />
+                              <Route path="/bonus-statement" element={<BonusStatement />} />
+                              <Route path="/deposit-turnover" element={<DepositTurnover />} />
+                              <Route path="/referral" element={<ReferralProgram />} />
+                              <Route path="/deposit" element={<NewDeposit />} />
+                              <Route path="/withdrawal" element={<NewWithdrawal />} />
+                              <Route path="/add-account" element={<AddAccount />} />
+                              <Route path="/add-bank" element={<AddBank />} />
+                              <Route path="/support" element={<SupportPage />} />
+                              <Route path="/notifications" element={<NotificationsPage />} />
+                            </Route>
+                          </Route>
+                          <Route path="*" element={<Navigate to="/" replace />} />
+                        </Route>
+                      </Routes>
+                    </Suspense>
+                  </BetSlipProvider>
+                </BalanceProvider>
+              </SportsbookStoreProvider>
+            </CasinoProvidersProvider>
+          </PlatformConfigProvider>
+        </SidebarProvider>
       </AuthProvider>
     </Router>
   );

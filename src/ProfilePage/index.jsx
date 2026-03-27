@@ -200,8 +200,8 @@ function ProfilePage() {
                       <li><span>Total Bets</span><strong>{Number(stats?.totalBets ?? bettingStats?.totalBets ?? 0).toLocaleString('en-IN')}</strong></li>
                       <li><span>Sports Bets</span><strong>{Number(bettingStats?.totalSportsBets ?? 0).toLocaleString('en-IN')}</strong><small>W: {bettingStats?.sportsBetsWon ?? 0} / L: {bettingStats?.sportsBetsLost ?? 0}</small></li>
                       <li><span>Casino Bets</span><strong>{Number(bettingStats?.totalCasinoBets ?? 0).toLocaleString('en-IN')}</strong></li>
-                      <li><span>Lifetime P&amp;L</span><strong>₹{Number(bettingStats?.lifetimePnl ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></li>
-                      <li><span>Earned (Staking)</span><strong>₹{Number(stats?.earnedStaking ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></li>
+                      {/* <li><span>Lifetime P&amp;L</span><strong>₹{Number(bettingStats?.lifetimePnl ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></li> */}
+                      {/* <li><span>Earned (Staking)</span><strong>₹{Number(stats?.earnedStaking ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></li> */}
                     </ul>
                   </div>
 

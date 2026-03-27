@@ -44,6 +44,15 @@ function clearStoredSession() {
   } catch (_) {}
 }
 
+/** Only restore iframe from sessionStorage when it matches the game in the URL (avoid "URL says X but Aviator plays"). */
+function storedSessionMatchesUrl(session, gameCode, providerCode) {
+  if (!session?.gameCode || !session?.providerCode || !gameCode || !providerCode) return false;
+  return (
+    String(session.gameCode).toLowerCase() === String(gameCode).toLowerCase() &&
+    String(session.providerCode).toLowerCase() === String(providerCode).toLowerCase()
+  );
+}
+
 /** Normalize launch API body (different backends use success/status and nested data). */
 function extractLaunchPayload(res) {
   if (!res || typeof res !== 'object') return null;
@@ -75,6 +84,24 @@ function qp(searchParams, key) {
   return v != null && String(v).trim() !== '' ? String(v).trim() : undefined;
 }
 
+/** Same as home: /game when codes exist, else casino lobby hint. */
+function buildGameTileTo(item, fallbackProvider) {
+  if (!item || item.viewAll) return '/casino';
+  const gameCode = item.gameCode ?? item.code;
+  const providerCode = item.providerCode ?? fallbackProvider;
+  if (gameCode != null && String(gameCode).trim() !== '' && providerCode != null && String(providerCode).trim() !== '') {
+    const q = new URLSearchParams({
+      gameCode: String(gameCode).trim(),
+      providerCode: String(providerCode).trim(),
+    });
+    if (item.name) q.set('gameName', String(item.name));
+    return `/game?${q.toString()}`;
+  }
+  const cat = item.category?.[0]?.code || item.category?.[0]?.name || 'lobby';
+  const prov = item.providerCode || fallbackProvider || 'all';
+  return `/casino?provider=${encodeURIComponent(prov)}&category=${encodeURIComponent(cat)}&gameName=${encodeURIComponent(item.name || '')}`;
+}
+
 function GamePlay() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -86,28 +113,54 @@ function GamePlay() {
   const stateGameName = stateGame.gameName ?? qp(searchParams, 'gameName');
   const stateProviderName = stateGame.providerName ?? qp(searchParams, 'providerName');
 
-  // sessionStorage me session sirf page refresh pe use hoga (casino se navigate = already cleared)
   const restored = useMemo(() => getStoredSession(), []);
   const { balance, setBalance, setDemoPlayBalance } = useBalance();
   const { isDemo } = useAuth();
 
-  const [launchURL, setLaunchURL] = useState(restored?.launchURL ?? null);
-  const [, setGameName] = useState(restored?.gameName ?? stateGameName ?? '');
-  const [, setGameCode] = useState(restored?.gameCode ?? stateGameCode ?? null);
-  const [providerCode, setProviderCode] = useState(restored?.providerCode ?? stateProviderCode ?? null);
+  const [launchURL, setLaunchURL] = useState(() => {
+    const r = getStoredSession();
+    if (!r?.launchURL || typeof window === 'undefined') return r?.launchURL ?? null;
+    const params = new URLSearchParams(window.location.search);
+    const gc = params.get('gameCode');
+    const pc = params.get('providerCode');
+    if (gc && pc && storedSessionMatchesUrl(r, gc, pc)) return r.launchURL;
+    if (!gc || !pc) return r.launchURL;
+    return null;
+  });
+  const [, setGameName] = useState(() => {
+    const r = getStoredSession();
+    if (typeof window === 'undefined') return stateGameName ?? r?.gameName ?? '';
+    const params = new URLSearchParams(window.location.search);
+    const gc = params.get('gameCode');
+    const pc = params.get('providerCode');
+    if (gc && pc && r && storedSessionMatchesUrl(r, gc, pc)) return r.gameName || stateGameName || '';
+    return stateGameName ?? r?.gameName ?? '';
+  });
+  const [, setGameCode] = useState(() => stateGameCode ?? getStoredSession()?.gameCode ?? null);
+  const [providerCode, setProviderCode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const pc = new URLSearchParams(window.location.search).get('providerCode');
+      if (pc) return pc;
+    }
+    return getStoredSession()?.providerCode ?? stateProviderCode ?? null;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const hasStateOrRestored = !!(stateGameCode && stateProviderCode) || !!restored;
 
   const launchCalledRef = useRef(false);
   const bestGamesSliderWrapperRef = useRef(null);
-  const topSlotsSliderWrapperRef = useRef(null);
+  const trendingSliderWrapperRef = useRef(null);
+  /** Same ref — avoids ReferenceError if a stale dev HMR chunk still uses this name. */
+  const topSlotsSliderWrapperRef = trendingSliderWrapperRef;
   const gameplayIframeWrapRef = useRef(null);
   const sliderDragRef = useRef({ isDragging: false, startX: 0, startScrollLeft: 0, wrapperEl: null });
   const justDraggedRef = useRef(false);
 
   const [featuredGames, setFeaturedGames] = useState([]);
-  const [popularGames, setPopularGames] = useState([]);
+  const [trendingGames, setTrendingGames] = useState([]);
+  /** Alias for `trendingGames` — stale fast-refresh patches sometimes still reference this name. */
+  const popularGames = trendingGames;
   const [gamesLoading, setGamesLoading] = useState(true);
 
   const providerForList = providerCode || stateProviderCode;
@@ -121,13 +174,15 @@ function GamePlay() {
     ];
   }, [featuredGames, providerForList]);
 
-  const topSlotsDisplayItems = useMemo(() => {
-    if (!popularGames.length) return [{ viewAll: true, to: providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino' }];
+  const trendingDisplayItems = useMemo(() => {
+    if (!trendingGames.length) return [{ viewAll: true, to: '/casino' }];
     return [
-      ...popularGames.map((g) => ({ ...g, viewAll: false })),
-      { viewAll: true, to: providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino' },
+      ...trendingGames.map((g) => ({ ...g, viewAll: false })),
+      { viewAll: true, to: '/casino' },
     ];
-  }, [popularGames, providerForList]);
+  }, [trendingGames]);
+
+  const topSlotsDisplayItems = trendingDisplayItems;
 
   useEffect(() => {
     let cancelled = false;
@@ -143,22 +198,26 @@ function GamePlay() {
       return Array.isArray(d) ? d : [];
     };
 
+    const parseTrending = (landingRes) => {
+      const data =
+        landingRes?.data && typeof landingRes.data === 'object' ? landingRes.data : landingRes || {};
+      return Array.isArray(data.trending) ? data.trending : [];
+    };
+
     if (providerForList) {
       Promise.all([
         AuthService.bettingGamesList(providerForList, 'all', 1, 20),
-        AuthService.bettingGamesList(providerForList, 'all', 2, 20),
+        AuthService.bettingGamesLanding(),
       ])
-        .then(([page1Res, page2Res]) => {
+        .then(([page1Res, landingRes]) => {
           if (cancelled) return;
-          const list1 = toList(page1Res);
-          const list2 = toList(page2Res);
-          setFeaturedGames(list1);
-          setPopularGames(list2.length > 0 ? list2 : list1);
+          setFeaturedGames(toList(page1Res));
+          setTrendingGames(parseTrending(landingRes));
         })
         .catch(() => {
           if (!cancelled) {
             setFeaturedGames([]);
-            setPopularGames([]);
+            setTrendingGames([]);
           }
         })
         .finally(() => {
@@ -167,17 +226,17 @@ function GamePlay() {
     } else {
       Promise.all([
         AuthService.bettingGamesFeatured(20),
-        AuthService.bettingGamesPopular(20),
+        AuthService.bettingGamesLanding(),
       ])
-        .then(([featuredRes, popularRes]) => {
+        .then(([featuredRes, landingRes]) => {
           if (cancelled) return;
           setFeaturedGames(toList(featuredRes));
-          setPopularGames(toList(popularRes));
+          setTrendingGames(parseTrending(landingRes));
         })
         .catch(() => {
           if (!cancelled) {
             setFeaturedGames([]);
-            setPopularGames([]);
+            setTrendingGames([]);
           }
         })
         .finally(() => {
@@ -250,28 +309,41 @@ function GamePlay() {
   }, []);
 
   useEffect(() => {
-    // Page refresh: sessionStorage se restore karo; balance from context (already synced by BalanceProvider)
-    if (restored?.launchURL) {
-      setLaunchURL(restored.launchURL);
-      setGameName(restored.gameName || stateGameName || '');
-      setGameCode(restored.gameCode);
-      setProviderCode(restored.providerCode);
+    launchCalledRef.current = false;
+  }, [stateGameCode, stateProviderCode]);
+
+  useEffect(() => {
+    if (!stateGameCode || !stateProviderCode) return;
+
+    const session = getStoredSession();
+    const canRestore = session?.launchURL && storedSessionMatchesUrl(session, stateGameCode, stateProviderCode);
+
+    if (canRestore) {
+      setLaunchURL(session.launchURL);
+      setGameName(session.gameName || stateGameName || '');
+      setGameCode(session.gameCode);
+      setProviderCode(session.providerCode);
+      setLoading(false);
+      setError(null);
       if (isDemo) {
         setBalance(0);
-        const dpb = restored.demoPlayBalance ?? getLastDemoPlayBalance();
+        const dpb = session.demoPlayBalance ?? getLastDemoPlayBalance();
         if (dpb != null && Number.isFinite(Number(dpb))) setDemoPlayBalance(Number(dpb));
       } else {
-        const initialBalance = getLastBalance() ?? restored.balance ?? null;
+        const initialBalance = getLastBalance() ?? session.balance ?? null;
         if (typeof initialBalance === 'number') {
           setBalance(initialBalance);
-          saveSession({ ...restored, balance: initialBalance });
+          saveSession({ ...session, balance: initialBalance });
         }
       }
       return;
     }
 
-    // Casino se navigate: fresh API call (sirf ek baar — ref StrictMode me persist hota hai)
-    if (!stateGameCode || !stateProviderCode) return;
+    if (session?.launchURL && !storedSessionMatchesUrl(session, stateGameCode, stateProviderCode)) {
+      clearStoredSession();
+      setLaunchURL(null);
+    }
+
     if (launchCalledRef.current) return;
     launchCalledRef.current = true;
 
@@ -322,7 +394,7 @@ function GamePlay() {
       .finally(() => {
         setLoading(false);
       });
-  }, [stateGameCode, stateProviderCode, stateGameName, stateProviderName, restored, isDemo, setBalance, setDemoPlayBalance]);
+  }, [stateGameCode, stateProviderCode, stateGameName, stateProviderName, isDemo, setBalance, setDemoPlayBalance]);
 
   // Persist context balance to session when it changes (e.g. socket update)
   useEffect(() => {
@@ -435,7 +507,7 @@ function GamePlay() {
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={item.code || index} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key={item.code || index} to={buildGameTileTo(item)} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
                       {item.badge && <div className="top_ads">{item.badge}</div>}
                       <img loading="lazy" alt="game" src={item.thumb || item.thumbnail || item.image} />
@@ -451,29 +523,29 @@ function GamePlay() {
       <div className="top_slot_outer most_popular_games_outer_casino">
         <div className="container-fluid">
           <div className="top_hd d-flex align-items-center justify-content-between">
-            <h2 className="heading_h2">{providerDisplayName ? `Most popular ${providerDisplayName} games` : 'Most popular games'}</h2>
+            <h2 className="heading_h2">Trending games</h2>
             <div className="top_hd_right d-flex align-items-center gap-2">
-              <Link to={providerForList ? `/casino?provider=${encodeURIComponent(providerForList)}` : '/casino'}><button type="button" className="slotbtn">View All</button></Link>
+              <Link to="/casino"><button type="button" className="slotbtn">View All</button></Link>
             </div>
           </div>
           {gamesLoading ? (
             <div className="game_items_slider_wrapper"><div className="game_items_slider mt-2 text-muted">Loading...</div></div>
           ) : (
             <div
-              ref={topSlotsSliderWrapperRef}
+              ref={trendingSliderWrapperRef}
               className="game_items_slider_wrapper"
-              onMouseDown={(e) => handleSliderMouseDown(e, topSlotsSliderWrapperRef)}
+              onMouseDown={(e) => handleSliderMouseDown(e, trendingSliderWrapperRef)}
               onClickCapture={handleSliderClickCapture}
               style={{ cursor: 'grab' }}
             >
               <div className="game_items_slider mt-2">
-                {topSlotsDisplayItems.map((item, index) =>
+                {trendingDisplayItems.map((item, index) =>
                   item.viewAll ? (
-                    <Link key="view-all-slots" to={item.to} className="game_items_inner slider_view_all_card link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key="view-all-trending" to={item.to} className="game_items_inner slider_view_all_card link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={item.code || index} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                    <Link key={item.code || index} to={buildGameTileTo(item)} className="game_items_inner link_plain_block" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                       <div className="playbtn"><img loading="lazy" alt="game" src="images/playbtn.png" /></div>
                       {item.badge && <div className="top_ads">{item.badge}</div>}
                       <img loading="lazy" alt="game" src={item.thumb || item.thumbnail || item.image} />

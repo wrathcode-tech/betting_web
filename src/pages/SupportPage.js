@@ -10,13 +10,12 @@ import "./SupportPage.css";
 
 // API: category (deposit|withdrawal|betting|casino|launchpad|account|other), priority (low|medium|high), status (open|in_progress|resolved|closed)
 const SUPPORT_CATEGORIES = [
-  { id: "deposit", name: "Deposit" },
-  { id: "withdrawal", name: "Withdrawal" },
-  { id: "betting", name: "Betting" },
-  { id: "casino", name: "Casino" },
-  { id: "launchpad", name: "Launchpad" },
-  { id: "account", name: "Account" },
-  { id: "other", name: "Other" },
+  { id: "deposit", name: "Deposit (Add Money)" },
+  { id: "withdrawal", name: "Withdrawal (Payout)" },
+  { id: "betting", name: "Sportsbook / Betting" },
+  { id: "casino", name: "Casino Games" },
+  { id: "account", name: "Account / Login" },
+  { id: "other", name: "Other Issue" },
 ];
 const SUPPORT_PRIORITIES = [
   { id: "low", name: "Low" },
@@ -44,6 +43,84 @@ function formatTicketDate(dateStr) {
     minute: "2-digit",
     hour12: true,
   });
+}
+
+function isAdminMessage(msg) {
+  if (!msg || typeof msg !== "object") return false;
+  const replyBy = msg.replyBy ?? msg.repliedBy ?? msg.senderType ?? msg.fromType ?? msg.by;
+  if (replyBy != null) {
+    const normalized = String(replyBy).trim().toLowerCase();
+    if (normalized === "0" || normalized === "admin" || normalized === "support" || normalized === "agent" || normalized === "staff") {
+      return true;
+    }
+  }
+  const role = String(msg.role ?? msg.userRole ?? msg.senderRole ?? "").trim().toLowerCase();
+  if (role === "admin" || role === "support" || role === "agent" || role === "staff") return true;
+  return false;
+}
+
+function extractTicketMessages(payload) {
+  const root = payload?.data ?? payload;
+  const candidates = [
+    root?.messages,
+    payload?.messages,
+    root?.ticket,
+    payload?.ticket,
+    root?.replies,
+    payload?.replies,
+    root?.conversation,
+    payload?.conversation,
+    root?.chats,
+    payload?.chats,
+    root?.chat,
+    payload?.chat,
+    root?.data?.messages,
+    root?.data?.ticket,
+  ];
+  for (const arr of candidates) {
+    if (Array.isArray(arr)) return arr;
+  }
+  if (Array.isArray(root)) return root;
+  if (Array.isArray(payload)) return payload;
+  return [];
+}
+
+function extractTicketMeta(payload) {
+  const root = payload?.data ?? payload;
+  return {
+    status: root?.status ?? payload?.status,
+    subject: root?.subject ?? payload?.subject,
+    description: root?.description ?? payload?.description,
+    createdAt: root?.createdAt ?? root?.created_at ?? payload?.createdAt ?? payload?.created_at,
+  };
+}
+
+function messageStableKey(msg, idx = 0) {
+  if (!msg || typeof msg !== "object") return `msg-${idx}`;
+  const id = msg._id ?? msg.id ?? msg.messageId ?? msg.replyId;
+  if (id != null && String(id).trim() !== "") return `id:${String(id)}`;
+  const text = String(msg.query ?? msg.message ?? msg.text ?? "").trim();
+  const ts = String(msg.createdAt ?? msg.created_at ?? msg.time ?? msg.timestamp ?? "");
+  const side = isAdminMessage(msg) ? "a" : "u";
+  return `txt:${side}:${text}:${ts}:${idx}`;
+}
+
+function mergeTicketMessages(prevList, nextList) {
+  const prev = Array.isArray(prevList) ? prevList : [];
+  const next = Array.isArray(nextList) ? nextList : [];
+  if (next.length === 0) return prev;
+  if (prev.length === 0) return next;
+
+  const merged = [...prev];
+  const seen = new Set(merged.map((m, i) => messageStableKey(m, i)));
+  next.forEach((m, i) => {
+    const key = messageStableKey(m, i);
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(m);
+    }
+  });
+  return merged;
 }
 
 const SupportPage = () => {
@@ -123,8 +200,9 @@ const SupportPage = () => {
             String(item?.id ?? item?._id ?? item?.ticketId ?? "") === String(ticketIdToSelect)
         );
         if (found) {
-          const msgs = Array.isArray(found?.messages) ? found.messages : Array.isArray(found?.ticket) ? found.ticket : [];
-          setMessageQuery(msgs);
+          const foundMsgs = extractTicketMessages(found);
+          // Ticket list endpoint often omits chat thread; don't wipe currently visible messages.
+          setMessageQuery((prev) => mergeTicketMessages(prev, foundMsgs));
           setStatus(found?.status || "");
         }
       }
@@ -205,16 +283,13 @@ const SupportPage = () => {
     LoaderHelper.show();
     AuthService.getTicketDetail(id)
       .then((res) => {
-        const d = res?.data ?? res;
-        if (d && typeof d === "object") {
-          const msgs = Array.isArray(d.messages) ? d.messages : Array.isArray(d.ticket) ? d.ticket : [];
-          setMessageQuery(msgs);
-          if (d.status != null) setStatus(d.status);
-          if (d.subject != null) setSelectedSubject(d.subject);
-          if (d.description != null) setSelectedDescription(d.description);
-          if (d.createdAt != null) setSelectedCreatedAt(d.createdAt);
-          if (d.created_at != null) setSelectedCreatedAt(d.created_at);
-        }
+        const msgs = extractTicketMessages(res);
+        setMessageQuery((prev) => mergeTicketMessages(prev, msgs));
+        const meta = extractTicketMeta(res);
+        if (meta.status != null) setStatus(meta.status);
+        if (meta.subject != null) setSelectedSubject(meta.subject);
+        if (meta.description != null) setSelectedDescription(meta.description);
+        if (meta.createdAt != null) setSelectedCreatedAt(meta.createdAt);
       })
       .catch(() => setMessageQuery([]))
       .finally(() => {
@@ -233,7 +308,8 @@ const SupportPage = () => {
       if (ok) {
         setStatus("closed");
         alertSuccessMessage(result?.message || "Ticket closed.");
-        getIssueList(ticketPage);
+        // Keep current thread selected while refreshing list, otherwise getIssueList clears chat state.
+        getIssueList(ticketPage, selectedTicketId);
       } else {
         alertErrorMessage(result?.message || "Failed to close ticket");
       }
@@ -270,28 +346,12 @@ const SupportPage = () => {
         // Refetch from server; replace only if server returns at least as many messages (so we don't overwrite and lose previous chats)
         try {
           const detailRes = await AuthService.getTicketDetail(selectedTicketId);
-          const d = detailRes?.data ?? detailRes;
-          const raw = d?.data ?? d;
-          const msgs = Array.isArray(raw?.messages)
-            ? raw.messages
-            : Array.isArray(d?.messages)
-              ? d.messages
-              : Array.isArray(raw?.ticket)
-                ? raw.ticket
-                : Array.isArray(d?.ticket)
-                  ? d.ticket
-                  : Array.isArray(raw)
-                    ? raw
-                    : [];
-          setMessageQuery((curr) => {
-            const curLen = Array.isArray(curr) ? curr.length : 0;
-            if (msgs.length >= curLen) return msgs;
-            return curr;
-          });
+          const msgs = extractTicketMessages(detailRes);
+          setMessageQuery((curr) => mergeTicketMessages(curr, msgs));
         } catch (_) {
           /* keep optimistic list on refetch error */
         }
-        getIssueList(ticketPage);
+        getIssueList(ticketPage, selectedTicketId);
       } else {
         alertErrorMessage(result?.message || result?.msg || "Failed to send message");
       }
@@ -339,7 +399,7 @@ const SupportPage = () => {
         const name = parsed?.firstName || parsed?.name || parsed?.emailId;
         if (name) return String(name).charAt(0).toUpperCase();
       }
-    } catch (_) {}
+    } catch (_) { }
     return "U";
   }, []);
 
@@ -374,241 +434,219 @@ const SupportPage = () => {
             </div>
           )}
           {platformConfig.supportServiceStatus && (
-          <div className="profile_transactions_section">
-            <div className="transactions_header">
-              <h1>Help / Support</h1>
-            </div>
+            <div className="profile_transactions_section">
+              <div className="transactions_header">
+                <h1>Help / Support</h1>
+              </div>
 
-            <div className="support_form_section">
-              <h2>Raise a ticket</h2>
-              <form className="profile_form" onSubmit={handleSupport}>
-                <div className="support_form_row form_coloum3">
-                  <div className="support_form_group">
-                    <label>Subject</label>
-                    <input
-                      type="text"
-                      className="support_form_input"
-                      placeholder="Enter subject"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      maxLength={200}
-                    />
-                  </div>
-                  <div className="support_form_group">
-                    <label>Category</label>
-                    <select
-                      className="support_form_select"
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                    >
-                      <option value="" hidden>Select Category</option>
-                      {SUPPORT_CATEGORIES.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+              <div className="support_form_section">
+                <h2>Raise a ticket</h2>
+                <form className="profile_form" onSubmit={handleSupport}>
+                  <div className="support_form_row form_coloum3">
+                    <div className="support_form_group">
+                      <label>Subject</label>
+                      <input
+                        type="text"
+                        className="support_form_input"
+                        placeholder="Enter subject"
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        maxLength={200}
+                      />
+                    </div>
+                    <div className="support_form_group">
+                      <label>Category</label>
+                      <select
+                        className="support_form_select"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                      >
+                        <option value="" hidden>Select Category</option>
+                        {SUPPORT_CATEGORIES.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                  <div className="support_form_group">
-                    <label>Priority</label>
-                    <select
-                      className="support_form_select"
-                      value={priority}
-                      onChange={(e) => setPriority(e.target.value)}
-                    >
-                      {SUPPORT_PRIORITIES.map((pri) => (
-                        <option key={pri.id} value={pri.id}>
-                          {pri.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    <div className="support_form_group">
+                      <label>Priority</label>
+                      <select
+                        className="support_form_select"
+                        value={priority}
+                        onChange={(e) => setPriority(e.target.value)}
+                      >
+                        {SUPPORT_PRIORITIES.map((pri) => (
+                          <option key={pri.id} value={pri.id}>
+                            {pri.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                </div>
-                {/* <div className="support_form_row">
+                  </div>
+                  {/* <div className="support_form_row">
                 
                 </div> */}
-                <div className="support_form_row full">
-                  <div className="support_form_group">
-                    <label>Description</label>
-                    <textarea
-                      className="support_form_textarea"
-                      placeholder="Describe your issue in detail"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      maxLength={2000}
+                  <div className="support_form_row full">
+                    <div className="support_form_group">
+                      <label>Description</label>
+                      <textarea
+                        className="support_form_textarea"
+                        placeholder="Describe your issue in detail"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        maxLength={2000}
+                      />
+                    </div>
+                  </div>
+                  <div className="support_form_row">
+                    <div className="support_form_group">
+                      <button
+                        type="submit"
+                        className="support_btn_submit"
+                        disabled={isSubmitting || !subject?.trim() || !category || !message?.trim()}
+                      >
+                        {isSubmitting ? "Submitting..." : "Submit"}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <div className="support_list_header">
+                <h2>Issue list</h2>
+                <div className="support_filters_row nowrap">
+                  <select
+                    className="support_form_select support_status_select"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    {SUPPORT_STATUSES.map((s) => (
+                      <option key={s.id || "all"} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="support_search_wrap">
+                    <i className="ri-search-2-line" aria-hidden />
+                    <input
+                      type="search"
+                      className="transactions_search_input"
+                      placeholder="Search ticket ID, subject, status"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && fetchList()}
                     />
                   </div>
+                  <button type="button" className="support_btn_apply" onClick={fetchList}>
+                    Search
+                  </button>
                 </div>
-                <div className="support_form_row">
-                  <div className="support_form_group">
-                    <button
-                      type="submit"
-                      className="support_btn_submit"
-                      disabled={isSubmitting || !subject?.trim() || !category || !message?.trim()}
-                    >
-                      {isSubmitting ? "Submitting..." : "Submit"}
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <div className="support_list_header">
-              <h2>Issue list</h2>
-              <div className="support_filters_row nowrap">
-                <select
-                  className="support_form_select support_status_select"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  {SUPPORT_STATUSES.map((s) => (
-                    <option key={s.id || "all"} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="support_search_wrap">
-                  <i className="ri-search-2-line" aria-hidden />
-                  <input
-                    type="search"
-                    className="transactions_search_input"
-                    placeholder="Search ticket ID, subject, status"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && fetchList()}
-                  />
-                </div>
-                <button type="button" className="support_btn_apply" onClick={fetchList}>
-                  Search
-                </button>
               </div>
-            </div>
 
-            <div className="transactions_table_wrapper support_tickets_table_wrapper">
-              <table className="transactions_table">
-                <thead>
-                  <tr>
-                    <th>Sr No.</th>
-                    <th>Ticket ID</th>
-                    <th>Category</th>
-                    <th>Subject</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {issueList?.length > 0 ? (
-                    issueList.map((item, index) => {
-                      const tid = ticketIdFromRow(item);
-                      return (
-                        <tr
-                          key={tid || index}
-                          className={
-                            item?.seen === 0 && (item?.status === "Open" || item?.status === "open")
-                              ? "font-weight-bold issue_text"
-                              : "issue_text"
-                          }
-                        >
-                          <td data-label="Sr No.">{(ticketPage - 1) * TICKETS_PAGE_SIZE + index + 1}</td>
-                          <td data-label="Ticket ID">
-                            {tid || "N/A"}{" "}
-                            <button
-                              type="button"
-                              className="support_copy_btn"
-                              onClick={() => handleCopyTicketId(tid)}
-                              aria-label="Copy ticket ID"
-                            >
-                              <i className="ri-file-copy-line" aria-hidden />
-                            </button>
-                          </td>
-                          <td data-label="Category" className="text-capitalize">
-                            {item?.category?.replace(/_/g, " ") || "N/A"}
-                          </td>
-                          <td data-label="Subject">{item?.subject || "N/A"}</td>
-                          <td data-label="Priority">
-                            <span className="support_priority_badge">
-                              {item?.priority || "N/A"}
-                            </span>
-                          </td>
-                          <td data-label="Status">
-                            <span className={`status_badge ${getStatusClass(item?.status)}`}>
-                              {item?.status || "N/A"}
-                            </span>
-                            {(item?.seen === 0 && (item?.status === "Open" || item?.status === "open")) && (
-                              <small>
-                                <i className="ri-circle-fill" style={{ color: "green" }} aria-hidden />
-                              </small>
-                            )}
-                          </td>
-                          <td data-label="Action">
-                            <button
-                              type="button"
-                              className="support_btn_view"
-                              onClick={() => handleViewTicket(item)}
-                            >
-                              View
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr className="no-data-row">
-                      <td colSpan="7">
-                        <div
-                          style={{ textAlign: "center" }}
-                          className="no-data justify-content-center h-100 d-flex align-items-center"
-                        >
-                          <div className="favouriteData">
-                            <div className="no_data_s">
-                              <img
-                                src="/images/no_data_vector.svg"
-                                className="img-fluid dark_img"
-                                width="96"
-                                height="96"
-                                alt="No data"
-                              />
-                              <img
-                                src="/images/no_data_vector_light.png"
-                                className="img-fluid light_img"
-                                width="96"
-                                height="96"
-                                alt="No data"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </td>
+              <div className="transactions_table_wrapper support_tickets_table_wrapper">
+                <table className="transactions_table">
+                  <thead>
+                    <tr>
+                      <th>Sr No.</th>
+                      <th>Ticket ID</th>
+                      <th>Category</th>
+                      <th>Subject</th>
+                      <th>Priority</th>
+                      <th>Status</th>
+                      <th>Action</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            {ticketTotalPages > 1 && (
-              <div className="support_pagination">
-                <button
-                  type="button"
-                  className="support_pagination_btn"
-                  disabled={ticketPage <= 1}
-                  onClick={() => getIssueList(ticketPage - 1)}
-                >
-                  Prev
-                </button>
-                <span>Page {ticketPage} of {ticketTotalPages}</span>
-                <button
-                  type="button"
-                  className="support_pagination_btn"
-                  disabled={ticketPage >= ticketTotalPages}
-                  onClick={() => getIssueList(ticketPage + 1)}
-                >
-                  Next
-                </button>
+                  </thead>
+                  <tbody>
+                    {issueList?.length > 0 ? (
+                      issueList.map((item, index) => {
+                        const tid = ticketIdFromRow(item);
+                        return (
+                          <tr
+                            key={tid || index}
+                            className={
+                              item?.seen === 0 && (item?.status === "Open" || item?.status === "open")
+                                ? "font-weight-bold issue_text"
+                                : "issue_text"
+                            }
+                          >
+                            <td data-label="Sr No.">{(ticketPage - 1) * TICKETS_PAGE_SIZE + index + 1}</td>
+                            <td data-label="Ticket ID">
+                              {tid || "N/A"}{" "}
+                              <button
+                                type="button"
+                                className="support_copy_btn"
+                                onClick={() => handleCopyTicketId(tid)}
+                                aria-label="Copy ticket ID"
+                              >
+                                <i className="ri-file-copy-line" aria-hidden />
+                              </button>
+                            </td>
+                            <td data-label="Category" className="text-capitalize">
+                              {item?.category?.replace(/_/g, " ") || "N/A"}
+                            </td>
+                            <td data-label="Subject">{item?.subject || "N/A"}</td>
+                            <td data-label="Priority">
+                              <span className="support_priority_badge">
+                                {item?.priority || "N/A"}
+                              </span>
+                            </td>
+                            <td data-label="Status">
+                              <span className={`status_badge ${getStatusClass(item?.status)}`}>
+                                {item?.status || "N/A"}
+                              </span>
+                              {(item?.seen === 0 && (item?.status === "Open" || item?.status === "open")) && (
+                                <small>
+                                  <i className="ri-circle-fill" style={{ color: "green" }} aria-hidden />
+                                </small>
+                              )}
+                            </td>
+                            <td data-label="Action">
+                              <button
+                                type="button"
+                                className="support_btn_view"
+                                onClick={() => handleViewTicket(item)}
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr className="no-data-row">
+                        <td colSpan="7">
+                          <p className="empty_state_message">No tickets found.</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
-            )}
-          </div>
+              {ticketTotalPages > 1 && (
+                <div className="support_pagination">
+                  <button
+                    type="button"
+                    className="support_pagination_btn"
+                    disabled={ticketPage <= 1}
+                    onClick={() => getIssueList(ticketPage - 1)}
+                  >
+                    Prev
+                  </button>
+                  <span>Page {ticketPage} of {ticketTotalPages}</span>
+                  <button
+                    type="button"
+                    className="support_pagination_btn"
+                    disabled={ticketPage >= ticketTotalPages}
+                    onClick={() => getIssueList(ticketPage + 1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -690,13 +728,15 @@ const SupportPage = () => {
 
               <div className="support_chat_body">
                 {messageQuery?.length > 0 ? (
-                  messageQuery.map((item, index) => (
+                  messageQuery.map((item, index) => {
+                    const adminSide = isAdminMessage(item);
+                    return (
                     <div
                       key={item?._id || index}
-                      className={`support_message ${item?.replyBy === 0 ? "left" : "right"}`}
+                      className={`support_message ${adminSide ? "left" : "right"}`}
                     >
                       <div className="support_message_avatar">
-                        {item?.replyBy === 0 ? "T" : getUserInitial()}
+                        {adminSide ? "A" : getUserInitial()}
                       </div>
                       <div
                         className="support_message_bubble"
@@ -705,7 +745,7 @@ const SupportPage = () => {
                         }}
                       />
                     </div>
-                  ))
+                  )})
                 ) : (
                   <div className="support_message left">
                     <div className="support_message_avatar">T</div>
@@ -756,8 +796,8 @@ const SupportPage = () => {
               </div>
             </div>
           </div>
-          </div>
-          )}
+        </div>
+      )}
       <MobileMenu />
     </>
   );

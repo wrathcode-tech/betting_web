@@ -125,79 +125,82 @@ export default function UserHeader() {
             <img src="/images/toggle_menu.svg" alt="menu" />
           </div>
           <Link to="/" className="header_logo">
-          <img className="desktopview" src="/images/logo.png" alt="logo" />
-          <img className="mobileview" src="/images/logo_mobile.svg" alt="logo" />
+            <img className="desktopview" src="/images/logo.png" alt="logo" />
+            <img className="mobileview" src="/images/logo_mobile.svg" alt="logo" />
           </Link>
         </div>
 
-      
-    
+
+
         <div className="header_right">
-        {isDemo ? (
-          <span className="demo_mode_badge" title="Explore the app with a demo account. Use real login for wallet & sports bets.">
-            Demo Mode
-          </span>
-        ) : (
-        <div className='d-flex align-items-center gap-2 depositheader'>
-        <div className="currency_balance_wrapper currency_balance_inr_only">
-          <div className='d-flex flex-column align-items-start currency_balance'>
-            <div className='d-flex align-items-center gap-2'>
-              <span className="currency_flag_emoji" aria-hidden>🇮🇳</span>
-              <span>{balanceDisplay}</span>
+          {isDemo ? (
+            <span className="demo_mode_badge" title="Explore the app with a demo account. Use real login for wallet & sports bets.">
+              Demo Mode
+            </span>
+          ) : (
+            <div className='d-flex align-items-center gap-2 depositheader'>
+              <div className="currency_balance_wrapper currency_balance_inr_only">
+                <div className='d-flex flex-column align-items-start currency_balance'>
+                  <div className='d-flex align-items-center gap-2'>
+                    <span className="currency_flag_emoji" aria-hidden>🇮🇳</span>
+                    <span>{balanceDisplay}</span>
+                  </div>
+                </div>
+                {currencyDropdownOpen && (
+                  <div className="currency_dropdown">
+                    <div className="currency_dropdown_search">
+                      <i className="ri-search-line" aria-hidden />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        value={currencySearch}
+                        onChange={(e) => setCurrencySearch(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    <ul className="currency_dropdown_list" role="listbox">
+                      {filteredCurrencies.map((curr) => (
+                        <li
+                          key={curr.code}
+                          role="option"
+                          aria-selected={selectedCurrencyCode === curr.code}
+                          className={`currency_dropdown_item ${selectedCurrencyCode === curr.code ? 'selected' : ''}`}
+                          onClick={() => {
+                            setSelectedCurrencyCode(curr.code);
+                            setCurrencyDropdownOpen(false);
+                            setCurrencySearch('');
+                          }}
+                        >
+                          {curr.flag ? (
+                            <span className="currency_flag_emoji" aria-hidden>{curr.flag}</span>
+                          ) : (
+                            <img src={curr.icon} alt="" />
+                          )}
+                          <span className="currency_code">{curr.code} ({curr.symbol})</span>
+                          <span className="currency_balance_value">{curr.balance}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              {isDemo ? null : platformConfig.depositServiceStatus ? (
+                <button className="deposit_btn" onClick={() => navigate('/deposit')} aria-label="Deposit">
+                  <i className="ri-add-line deposit_btn_icon" aria-hidden />
+                  <span className="deposit_btn_text">Deposit</span>
+                </button>
+              ) : (
+                <span className="deposit_disabled_banner" aria-live="polite">Deposits temporarily unavailable</span>
+              )}
             </div>
-          </div>
-          {currencyDropdownOpen && (
-          <div className="currency_dropdown">
-            <div className="currency_dropdown_search">
-              <i className="ri-search-line" aria-hidden />
-              <input
-                type="text"
-                placeholder="Search"
-                value={currencySearch}
-                onChange={(e) => setCurrencySearch(e.target.value)}
-                onKeyDown={(e) => e.stopPropagation()}
-              />
-            </div>
-            <ul className="currency_dropdown_list" role="listbox">
-              {filteredCurrencies.map((curr) => (
-                <li
-                  key={curr.code}
-                  role="option"
-                  aria-selected={selectedCurrencyCode === curr.code}
-                  className={`currency_dropdown_item ${selectedCurrencyCode === curr.code ? 'selected' : ''}`}
-                  onClick={() => {
-                    setSelectedCurrencyCode(curr.code);
-                    setCurrencyDropdownOpen(false);
-                    setCurrencySearch('');
-                  }}
-                >
-                  {curr.flag ? (
-                    <span className="currency_flag_emoji" aria-hidden>{curr.flag}</span>
-                  ) : (
-                    <img src={curr.icon} alt="" />
-                  )}
-                  <span className="currency_code">{curr.code} ({curr.symbol})</span>
-                  <span className="currency_balance_value">{curr.balance}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
           )}
-        </div>
-        {isDemo ? null : platformConfig.depositServiceStatus ? (
-          <button className="deposit_btn" onClick={() => navigate('/deposit')} aria-label="Deposit">
-            <i className="ri-add-line deposit_btn_icon" aria-hidden />
-            <span className="deposit_btn_text">Deposit</span>
-          </button>
-        ) : (
-          <span className="deposit_disabled_banner" aria-live="polite">Deposits temporarily unavailable</span>
-        )}
-      </div>
-        )}
-     
+
           <div className="searchbtn" onClick={() => setIsSearchOpen(true)}>
             <img src="/images/search-icon.svg" alt="search" />
           </div>
+          <Link to="/notifications" className="searchbtn" aria-label="Notifications">
+            <i className="ri-notification-3-line" aria-hidden style={{ fontSize: '20px', color: 'rgb(255 255 255)' }} />
+          </Link>
 
           {/* <div className="header_casino_dropdown_wrapper" ref={casinoDropdownRef} style={{ position: 'relative' }}>
             <button
@@ -233,78 +236,78 @@ export default function UserHeader() {
             )}
           </div> */}
 
-        <div className='user_header_right' ref={dropdownRef} style={{ position: 'relative' }}>
-          <div className='d-flex' onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}>
-            <img className='user_header_img' src="/images/user_vector.png" alt="user" />
-            <i className="ri-arrow-down-s-line"></i>
-          </div>
-          
-          {isProfileDropdownOpen && (
-            <div className="user_profile_dropdown">
-              <div className="user_profile_dropdown_header">
-                <div className='user_top_dropdown_header d-flex align-items-center gap-2'>
-              <img className='user_img' src="/images/user_vector.png" alt="user" />
-                <h4 className="text_uppercase">{userDisplayName || 'User'}</h4>
+          <div className='user_header_right' ref={dropdownRef} style={{ position: 'relative' }}>
+            <div className='d-flex' onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}>
+              <img className='user_header_img' src="/images/user_vector.png" alt="user" />
+              <i className="ri-arrow-down-s-line"></i>
+            </div>
+
+            {isProfileDropdownOpen && (
+              <div className="user_profile_dropdown">
+                <div className="user_profile_dropdown_header">
+                  <div className='user_top_dropdown_header d-flex align-items-center gap-2'>
+                    <img className='user_img' src="/images/user_vector.png" alt="user" />
+                    <h4 className="text_uppercase">{userDisplayName || 'User'}</h4>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="user_profile_dropdown_menu">
-                <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
-                  <i className="ri-user-line"></i>
-                  <span>My Profile</span>
-                </Link>
-                <Link to="/add-account" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
-                  <i className="ri-settings-3-line"></i>
-                  <span>Account</span>
-                </Link>
-                <Link to="/transactions" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
-                  <i className="ri-file-list-3-line"></i>
-                  <span>Transaction History</span>
-                </Link>
-                <Link to="/game-history" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
-                  <i className="ri-history-line"></i>
-                  <span>Game History</span>
-                </Link>
-                {/* <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+
+                <div className="user_profile_dropdown_menu">
+                  <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                    <i className="ri-user-line"></i>
+                    <span>My Profile</span>
+                  </Link>
+                  <Link to="/add-account" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                    <i className="ri-settings-3-line"></i>
+                    <span>Account</span>
+                  </Link>
+                  <Link to="/transactions" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                    <i className="ri-file-list-3-line"></i>
+                    <span>Transaction History</span>
+                  </Link>
+                  <Link to="/game-history" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                    <i className="ri-history-line"></i>
+                    <span>Game History</span>
+                  </Link>
+                  {/* <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-time-line"></i>
                   <span>Sessions</span>
                 </Link> */}
-                {/* <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
+                  {/* <Link to="/profile" className="dropdown_menu_item" onClick={() => setIsProfileDropdownOpen(false)}>
                   <i className="ri-safe-2-line"></i>
                   <span>Vault</span>
                 </Link> */}
-                {platformConfig.withdrawalServiceStatus && !isDemo && (
-                  <Link 
-                    to="/withdrawal" 
-                    className="dropdown_menu_item" 
-                    onClick={() => setIsProfileDropdownOpen(false)}
-                  >
-                    <i className="ri-bank-line"></i>
-                    <span>Withdrawal</span>
-                  </Link>
-                )}
+                  {platformConfig.withdrawalServiceStatus && !isDemo && (
+                    <Link
+                      to="/withdrawal"
+                      className="dropdown_menu_item"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                    >
+                      <i className="ri-bank-line"></i>
+                      <span>Withdrawal</span>
+                    </Link>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  className="dropdown_logout_btn"
+                  onClick={() => {
+                    disconnectBalanceSocket();
+                    sessionStorage.removeItem('token');
+                    sessionStorage.removeItem('refreshToken');
+                    sessionStorage.removeItem('user');
+                    setUserDisplayName('');
+                    window.dispatchEvent(new CustomEvent('loginStateChange'));
+                    setIsProfileDropdownOpen(false);
+                    navigate('/', { replace: true });
+                  }}
+                >
+                  Log out
+                </button>
               </div>
-              
-              <button
-                type="button"
-                className="dropdown_logout_btn"
-                onClick={() => {
-                  disconnectBalanceSocket();
-                  sessionStorage.removeItem('token');
-                  sessionStorage.removeItem('refreshToken');
-                  sessionStorage.removeItem('user');
-                  setUserDisplayName('');
-                  window.dispatchEvent(new CustomEvent('loginStateChange'));
-                  setIsProfileDropdownOpen(false);
-                  navigate('/', { replace: true });
-                }}
-              >
-                Log out
-              </button>
-            </div>
-          )}
-        </div>  
-    
+            )}
+          </div>
+
           {/* <div className="setting_hdr">
             <img src="/images/en.png" alt="language" />
             <div className="setting_icon">

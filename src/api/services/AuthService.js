@@ -890,15 +890,6 @@ const AuthService = {
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
     return ApiCallGet(url, headers);
   },
-  /** GET /api/v1/referral/rewards/live?limit – live rewards feed. */
-  referralRewardsLive: async (limit) => {
-    const token = sessionStorage.getItem("token");
-    if (!token) return { success: false, message: "Login required" };
-    const { baseBettingReferral } = ApiConfig;
-    const url = `${baseBettingReferral}/rewards/live${limit != null ? `?limit=${limit}` : ""}`;
-    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
-    return ApiCallGet(url, headers);
-  },
 
   // ============================================================================
   // SEARCH (Section 6) – public, rate limited. Doc: ?q= or ?query= & limit

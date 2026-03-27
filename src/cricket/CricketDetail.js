@@ -278,7 +278,6 @@ function CricketDetail() {
     const settlementToastDedupeRef = useRef({ key: '', at: 0 })
     const openBetsCount = openBetsList.length
     /** Betslip khula ya Open Bets tab — open bets + exposure dono yahi par sync */
-    const slipOrOpenBetsUi = isBetslipOpen || activeTab === 'open-bets'
     const pullOpenBets = useCallback(async ({ showLoading = false } = {}) => {
         if (isDemo) {
             setOpenBetsList([])
@@ -635,10 +634,10 @@ function CricketDetail() {
         return () => { cancelled = true; clearInterval(t) }
     }, [eventId, gameId, isDemo, sportName])
 
-    // Open bets: ek hi effect — pehle 3 alag effects se same mount par 2–3 baar GET open-bets ja raha tha
+    // Open bets: sirf match (gameId) change par — betslip / cashout UI toggle par dubara GET mat bhejo
     useEffect(() => {
         pullOpenBets({ showLoading: true })
-    }, [pullOpenBets, gameId, openCashoutSection, slipOrOpenBetsUi])
+    }, [pullOpenBets, gameId])
 
     // Socket betUpdate → wallet; BalanceContext `sportsbookBetUpdate` — yahan list turant sync (debounced)
     useEffect(() => {
@@ -2110,7 +2109,7 @@ function CricketDetail() {
         return () => {
             cancelled = true
         }
-    }, [isDemo, slipOrOpenBetsUi])
+    }, [isDemo])
 
     useEffect(() => {
         if (platformConfig.sportsBookServiceStatus === false || platformConfig.inPlayServiceStatus === false) {

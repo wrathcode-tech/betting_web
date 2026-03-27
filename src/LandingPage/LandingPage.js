@@ -127,6 +127,28 @@ function getLandingGameImage(item) {
   return item?.thumb || item?.thumbnail || item?.image || item?.icon || item?.logo || `${process.env.PUBLIC_URL || ''}/images/game_itemslider.png`
 }
 
+/**
+ * Home → play: jump straight to /game when API row has codes; else /casino with filters (lobby may auto-start).
+ * @param {object} item – landing or lobby game row
+ * @param {string} [fallbackProvider] – e.g. 'EZ' for lobby rows when item.providerCode missing
+ */
+function getHomeCasinoGameTo(item, fallbackProvider) {
+  if (!item || item.viewAll) return '/casino'
+  const gameCode = item.gameCode ?? item.code
+  const providerCode = item.providerCode ?? fallbackProvider
+  if (gameCode != null && String(gameCode).trim() !== '' && providerCode != null && String(providerCode).trim() !== '') {
+    const q = new URLSearchParams({
+      gameCode: String(gameCode).trim(),
+      providerCode: String(providerCode).trim(),
+    })
+    if (item.name) q.set('gameName', String(item.name))
+    return `/game?${q.toString()}`
+  }
+  const cat = item.category?.[0]?.code || item.category?.[0]?.name || 'lobby'
+  const prov = item.providerCode || fallbackProvider || 'all'
+  return `/casino?provider=${encodeURIComponent(prov)}&category=${encodeURIComponent(cat)}&gameName=${encodeURIComponent(item.name || '')}`
+}
+
 function formatOddsSize(size) {
   if (size == null || size === '') return '0.00'
   const n = Number(size)
@@ -449,7 +471,7 @@ function LandingPage() {
     { id: 2, src: 'images/home_bnr2.png', alt: 'game', heading: 'Sports & Betting', subContent: 'Play Smart. Bet Big. Win with the Best Odds.', to: '/sportsbook' },
     { id: 3, src: 'images/home_bnr3.png', alt: 'game', heading: 'Casino', subContent: 'Play Live. Bet Bold. Win Real Rewards.', to: '/casino' },
     { id: 4, src: 'images/home_bnr4.png', alt: 'game', heading: 'Dragon Tiger', subContent: 'Choose Your Side. Bet Fast. Win Instantly.', to: '/casino?category=Dragon+Tiger' },
-    { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Aviator', subContent: 'Take Off Early. Cash Out Big. Win Smart.', to: '/casino?gameName=Aviator' },
+    { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Aviator', subContent: 'Take Off Early. Cash Out Big. Win Smart.', to: '/game?gameCode=aviator&providerCode=SPB&gameName=Aviator' },
     { id: 6, src: 'images/home_bnr6.png', alt: 'game', heading: 'Cricket', subContent: 'Level up and unlock exclusive perks.', to: '/sports' },
     { id: 7, src: 'images/home_bnr7.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Bet Every Ball. Play Every Moment. Win Bigger.', to: '/casino' },
   ];
@@ -951,7 +973,9 @@ function LandingPage() {
             }
             return trendingVideos.map((src, i) => {
               const category = trendingCategories[i] ?? 'lobby';
-              const to = `/casino?provider=all&category=${encodeURIComponent(category)}`;
+              const to = category === 'Aviator'
+                ? '/casino?provider=SPB&category=Crash+Type'
+                : `/casino?provider=all&category=${encodeURIComponent(category)}`;
               return (
                 <Link key={i} to={to} className='game_video_bl' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                   <video width="100%" height="auto" autoPlay muted loop playsInline loading="lazy">
@@ -978,7 +1002,7 @@ function LandingPage() {
                     <span className="slider_view_all_text">View All</span>
                   </Link>
                 ) : (
-                  <Link key={`trend-${item.code}-${index}`} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain">
+                  <Link key={`trend-${item.code}-${index}`} to={getHomeCasinoGameTo(item)} className="game_items_inner link_plain">
                     <div className='playbtn'>
                       <img loading="lazy" src="images/playbtn.png" alt="game" />
                     </div>
@@ -1015,7 +1039,7 @@ function LandingPage() {
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`live-${item.code}-${index}`} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain">
+                    <Link key={`live-${item.code}-${index}`} to={getHomeCasinoGameTo(item)} className="game_items_inner link_plain">
                       <div className='playbtn'>
                         <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
@@ -1053,7 +1077,7 @@ function LandingPage() {
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`slot-${item.code}-${index}`} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain">
+                    <Link key={`slot-${item.code}-${index}`} to={getHomeCasinoGameTo(item)} className="game_items_inner link_plain">
                       <div className='playbtn'>
                         <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
@@ -1091,7 +1115,7 @@ function LandingPage() {
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`trend-${item.code}-${index}`} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain">
+                    <Link key={`trend-${item.code}-${index}`} to={getHomeCasinoGameTo(item)} className="game_items_inner link_plain">
                       <div className='playbtn'>
                         <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
@@ -1129,7 +1153,7 @@ function LandingPage() {
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`roulette-${item.code}-${index}`} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain">
+                    <Link key={`roulette-${item.code}-${index}`} to={getHomeCasinoGameTo(item)} className="game_items_inner link_plain">
                       <div className='playbtn'>
                         <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
@@ -1167,7 +1191,7 @@ function LandingPage() {
                       <span className="slider_view_all_text">View All</span>
                     </Link>
                   ) : (
-                    <Link key={`card-${item.code}-${index}`} to={`/casino?provider=${encodeURIComponent(item.providerCode || 'all')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`} className="game_items_inner link_plain">
+                    <Link key={`card-${item.code}-${index}`} to={getHomeCasinoGameTo(item)} className="game_items_inner link_plain">
                       <div className='playbtn'>
                         <img loading="lazy" src="images/playbtn.png" alt="game" />
                       </div>
@@ -1214,7 +1238,7 @@ function LandingPage() {
                       ) : (
                         <Link
                           key={`lobby-1-${item.code}-${index}`}
-                          to={`/casino?provider=${encodeURIComponent(item.providerCode || 'EZ')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`}
+                          to={getHomeCasinoGameTo(item, 'EZ')}
                           className="game_items_inner link_plain"
                         >
                           <div className="playbtn">
@@ -1235,7 +1259,7 @@ function LandingPage() {
                     ) : (
                       <Link
                         key={`lobby-2-${item.code}-${index}`}
-                        to={`/casino?provider=${encodeURIComponent(item.providerCode || 'EZ')}&category=${encodeURIComponent(item.category?.[0]?.code || item.category?.[0]?.name || 'lobby')}&gameName=${encodeURIComponent(item.name || '')}`}
+                        to={getHomeCasinoGameTo(item, 'EZ')}
                         className="game_items_inner link_plain"
                       >
                         <div className="playbtn">
