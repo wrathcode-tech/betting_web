@@ -2585,8 +2585,8 @@ span.quicktext {
     text-align: left !important;
     color: #fff;
     font-weight: 500;
-    min-width: 924px;
-    width: 924px;
+    min-width: 62%;
+    width: 62%;
     position: sticky;
     left: 0;
     z-index: 3;
@@ -3261,9 +3261,9 @@ td.odds_section_status_overlay_td {
         max-width: 33%;
     }
 
-    .right_content_side.cricketDetail_block .odds_section_table td {
+    /* .right_content_side.cricketDetail_block .odds_section_table td {
         border: none;
-    }
+    } */
 
     .odds_section_cell {
         min-width: 50px;
