@@ -542,7 +542,7 @@ const AuthService = {
     if (matchName != null && String(matchName).trim() !== "") {
       params.set("matchName", String(matchName).trim());
     }
-    const url = `https://apis.professorji.in/api/scorecard?${params.toString()}`;
+    const url = `https://score.akamaized.uk/?${params.toString()}`;
     let raw = null;
     try {
       // Use fetch to avoid axios auth interceptor side-effects (unexpected logout on external 401).

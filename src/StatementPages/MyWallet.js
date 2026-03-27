@@ -40,6 +40,22 @@ function formatStatus(s) {
   return String(s).charAt(0).toUpperCase() + String(s).slice(1).toLowerCase()
 }
 
+/** Type column: `bet_win` → `bet`; snake_case (e.g. `wallet_transaction`) → Title Case words. */
+function formatWalletTxnType(raw) {
+  if (raw == null || raw === '') return '—'
+  const norm = String(raw).trim().toLowerCase().replace(/\s+/g, '_')
+  if (norm === 'bet_win') return 'bet'
+  if (norm.includes('_')) {
+    return norm
+      .split('_')
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ')
+  }
+  const s = String(raw).trim()
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+}
+
 /** Unwrap GET /wallet/balance: { data: { balance, ... } } | { wallet: {...} } | flat object */
 function extractWalletFromBalanceResponse(res) {
   const root = res?.data ?? res
@@ -123,14 +139,14 @@ function WalletOverview({ wallet }) {
 function mapStatementToRow(item, index) {
   const id = item.id ?? index
   const statusRaw = (item.status || '').toLowerCase()
-  const type = item.type ?? item.transactionType ?? '—'
+  const rawType = item.type ?? item.transactionType ?? '—'
   const amount = item.amount != null ? formatAmount(item.amount, item.currency) : '—'
   const balanceAfter = item.balanceAfter != null ? formatAmount(item.balanceAfter, item.currency) : '—'
   return {
     id: String(id),
     time: formatTime(item.createdAt ?? item.date ?? item.transactionDate),
     txnId: item.id ?? '—',
-    type: String(type).charAt(0).toUpperCase() + String(type).slice(1).toLowerCase(),
+    type: formatWalletTxnType(rawType),
     amount,
     balanceAfter,
     status: formatStatus(item.status),

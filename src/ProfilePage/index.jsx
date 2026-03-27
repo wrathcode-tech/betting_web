@@ -27,7 +27,7 @@ function ProfilePage() {
   const displayName = user?.fullName || user?.username || 'User'
   const baseUrl = (ApiConfig.baseBettingUrl || '').replace(/\/$/, '')
   const profileImageSrc = user?.profileImage
-    ? (user.profileImage.startsWith('http') ? user.profileImage : baseUrl + (user.profileImage.startsWith('/') ? user.profileImage : '/' + user.profileImage)) + (user.updatedAt ? `?t=${new Date(user.updatedAt).getTime()}` : '')
+    ? (user.profileImage.startsWith('http') ? baseUrl + (user.profileImage) : baseUrl + (user.profileImage.startsWith('/') ? user.profileImage : '/' + user.profileImage)) + (user.updatedAt ? `?t=${new Date(user.updatedAt).getTime()}` : '')
     : null
   const safeUser = user ?? {}
 
@@ -163,7 +163,7 @@ function ProfilePage() {
                 <div className="profile_bio_info d-flex align-items-center gap-3">
                   <div className="profile_bio_info_img">
                     {profileImageSrc ? (
-                      <img className="user" src={profileImageSrc} alt="profile" />
+                      <img className="user" crossOrigin="anonymous" src={profileImageSrc} alt="profile" />
                     ) : (
                       <img className="user" src="images/user_vector.png" alt="user" />
                     )}

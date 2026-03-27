@@ -3,20 +3,35 @@ import StatementPage from './StatementPage'
 import { getAccountStatementFromAccount } from '../api/historyApi'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 
+
+function formatWalletTxnType(raw) {
+  if (raw == null || raw === '') return '—'
+  const norm = String(raw).trim().toLowerCase().replace(/\s+/g, '_')
+  if (norm === 'bet_win') return 'bet'
+  if (norm.includes('_')) {
+    return norm
+      .split('_')
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ')
+  }
+  const s = String(raw).trim()
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+}
 /** Columns match backend keys only (GET account/statement items). */
 const COLUMNS = [
   { key: 'createdAt', label: 'createdAt' },
   // { key: '_id', label: '_id' },
   // { key: 'userId', label: 'userId' },
-  { key: 'type', label: 'type' },
-  { key: 'amount', label: 'amount', type: 'amount' },
-  { key: 'balanceBefore', label: 'balanceBefore', type: 'amount' },
-  { key: 'balanceAfter', label: 'balanceAfter', type: 'amount' },
-  { key: 'currency', label: 'currency' },
+  { key: 'type', label: 'Type' },
+  { key: 'amount', label: 'Amount', type: 'amount' },
+  { key: 'balanceBefore', label: 'Balance Before', type: 'amount' },
+  { key: 'balanceAfter', label: 'Balance After', type: 'amount' },
+  { key: 'currency', label: 'Currency' },
   // { key: 'referenceId', label: 'referenceId' },
-  { key: 'referenceType', label: 'referenceType' },
-  { key: 'updatedAt', label: 'updatedAt' },
-  { key: 'description', label: 'description' },
+  { key: 'referenceType', label: 'Reference Type' },
+  { key: 'updatedAt', label: 'Updated At' },
+  { key: 'description', label: 'Description' },
   // { key: 'metadata', label: 'metadata' },
 ]
 
@@ -92,7 +107,7 @@ function mapStatementToRow(item, index) {
     id: String(rowId),
     _id: item._id != null ? String(item._id) : '—',
     userId: item.userId != null ? String(item.userId) : '—',
-    type: item.type != null ? String(item.type) : '—',
+    type: item.type != null ? formatWalletTxnType(item.type) : '—',
     amount: item.amount != null && item.amount !== '' ? formatSignedAmount(item.amount, cur) : '—',
     balanceBefore: item.balanceBefore != null ? formatMoney(item.balanceBefore, cur) : '—',
     balanceAfter: item.balanceAfter != null ? formatMoney(item.balanceAfter, cur) : '—',
@@ -101,9 +116,9 @@ function mapStatementToRow(item, index) {
     description: item.description != null && String(item.description).trim() !== '' ? String(item.description) : '—',
     metadata: formatMetadata(item.metadata),
     referenceId: item.referenceId != null ? String(item.referenceId) : '—',
-    referenceType: item.referenceType != null ? String(item.referenceType) : '—',
+    referenceType: item.referenceType != null ? formatWalletTxnType(item.referenceType) : '—',
     updatedAt: formatDateTime(item.updatedAt),
-    cardTitle: `${item.type ?? '—'} · ${formatDateTime(item.createdAt)}`,
+    cardTitle: `${item.type != null ? formatWalletTxnType(item.type) : '—'} · ${formatDateTime(item.createdAt)}`,
   }
 }
 

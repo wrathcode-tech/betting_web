@@ -14,28 +14,28 @@ const FOOTER_MOBILE_MENU = [
             { to: '/sports', label: 'Cricket' },
             { to: '/sportsbook', label: 'SportsBook' },
             { to: '/casino', label: 'Live casino' },
-            { to: '/game', label: 'Slots' },
-            { to: '/rank', label: 'Rank system' },
+            { to: '/casino', label: 'Slots' },
+            // { to: '/rank', label: 'Rank system' },
         ],
     },
     {
         id: 'features',
         label: 'FEATURES',
         links: [
-            { to: '/rank', label: 'Rank system' },
+            // { to: '/rank', label: 'Rank system' },
             { to: '/referral', label: 'Referral' },
             { to: '/transactions', label: 'Transactions' },
             { to: '/my-bets', label: 'My Bets' },
             { to: '/bet-history', label: 'Bet History' },
         ],
     },
-    {
-        id: 'promo',
-        label: 'PROMO',
-        links: [
-            { to: '/promotions', label: 'Promotions' },
-        ],
-    },
+    // {
+    //     id: 'promo',
+    //     label: 'PROMO',
+    //     links: [
+    //         { to: '/promotions', label: 'Promotions' },
+    //     ],
+    // },
     {
         id: 'about',
         label: 'ABOUT US',
@@ -140,7 +140,7 @@ function Footer() {
 </div>
 
 <p className="footer_disclaimer">This site offers gaming and involves risk. You must be 18 or older to use our services. We are not responsible for any breach of your local laws regarding online gaming. Please play responsibly.</p>
-            <p className="footer_copyright">© {new Date().getFullYear()} All Rights Reserved.</p>
+            <p className="footer_copyright">© {new Date().getFullYear()} All Rights Reserved <span>Powered by <a href="https://betgugly.com" target="_blank" rel="noopener noreferrer">Betgugly</a></span></p>
             </div>
 
           </div>

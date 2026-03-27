@@ -19,7 +19,7 @@ const COLUMNS = [
   { key: 'stake', label: 'Stake', type: 'amount' },
   { key: 'status', label: 'Status', type: 'status' },
   { key: 'result', label: 'Result' },
-  { key: 'profitLoss', label: 'P/L', type: 'amount' },
+  // { key: 'profitLoss', label: 'P/L', type: 'amount' },
   { key: 'potentialWin', label: 'Potential Win', type: 'amount' },
   // { key: 'actions', label: 'Actions' },
 ]
@@ -54,7 +54,7 @@ function parseOpenBetsList(res) {
 
 function pickBetId(b) {
   if (!b || typeof b !== 'object') return null
-  const v = b._id ?? b.id ?? b.betId ?? b.bet_id
+  const v = b.betId ?? b.id ?? b.betId ?? b.bet_id
   if (v == null || v === '') return null
   return String(v)
 }
@@ -129,7 +129,7 @@ function mapBetToRow(b) {
 
   return {
     id: betId,
-    betId: (betId && String(betId).slice(-8)) || '—',
+    betId: (betId) || '—',
     time: formatDate(b.createdAt ?? b.created_at),
     sport: b.sport != null ? String(b.sport) : '—',
     event: b.eventName || b.event_name || '—',
@@ -142,7 +142,7 @@ function mapBetToRow(b) {
     statusRaw,
     result: b.result != null && String(b.result).trim() !== '' ? String(b.result) : '—',
     resultRaw: String(b.result || '').toLowerCase(),
-    profitLoss: formatInrAmount(b.profitLoss ?? b.profit_loss),
+    // profitLoss: formatInrAmount(b.profitLoss ?? b.profit_loss),
     potentialWin: formatInrAmount(potential),
     cardTitle: b.eventName || b.event_name || betId,
     _raw: { ...b, _id: betId },

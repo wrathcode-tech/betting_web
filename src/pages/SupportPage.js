@@ -574,11 +574,11 @@ const SupportPage = () => {
                           >
                             <td data-label="Sr No.">{(ticketPage - 1) * TICKETS_PAGE_SIZE + index + 1}</td>
                             <td data-label="Ticket ID">
-                              {tid || "N/A"}{" "}
+                              {item?.ticketId || "N/A"}{" "}
                               <button
                                 type="button"
                                 className="support_copy_btn"
-                                onClick={() => handleCopyTicketId(tid)}
+                                onClick={() => handleCopyTicketId(item?.ticketId)}
                                 aria-label="Copy ticket ID"
                               >
                                 <i className="ri-file-copy-line" aria-hidden />
