@@ -11,6 +11,7 @@ import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { useAuth } from '../context/AuthContext'
 import { disconnectBalanceSocket } from '../socket/balanceSocket'
 import AuthService from '../api/services/AuthService'
+import { ApiConfig } from '../api/apiConfig/apiConfig'
 import { getDisplayWalletBalance } from '../utils/authUtils'
 
 const CURRENCY_LIST = [
@@ -22,6 +23,17 @@ const CURRENCY_LIST = [
 ];
 
 const INR_SYMBOL = '₹';
+
+function resolveProfileImageUrl(user) {
+  if (!user || typeof user !== 'object') return null
+  const raw = user.profileImage ?? user.profileImageUrl ?? user.profile_image ?? user.avatar ?? user.avatarUrl ?? null
+  if (!raw || typeof raw !== 'string') return null
+  const val = raw.trim()
+  if (!val) return null
+  if (/^https?:\/\//i.test(val)) return val
+  const baseUrl = (ApiConfig.baseBettingUrl || '').replace(/\/$/, '')
+  return baseUrl ? `${baseUrl}${val.startsWith('/') ? val : `/${val}`}` : val
+}
 
 export default function UserHeader() {
   const navigate = useNavigate();
@@ -43,6 +55,7 @@ export default function UserHeader() {
   const { config: platformConfig } = usePlatformConfig();
   const { isDemo, user } = useAuth();
   const [userDisplayName, setUserDisplayName] = useState('');
+  const [userProfileImage, setUserProfileImage] = useState('');
   const dropdownRef = useRef(null);
   const casinoDropdownRef = useRef(null);
 
@@ -71,6 +84,8 @@ export default function UserHeader() {
       .then((res) => {
         const raw = res?.data ?? res;
         const user = raw?.user ?? raw;
+        const profileImg = resolveProfileImageUrl(user);
+        setUserProfileImage(profileImg || '');
         const name = user?.fullName ?? user?.full_name ?? user?.username ?? '';
         if (name && String(name).trim()) {
           setUserDisplayName(String(name).trim());
@@ -81,7 +96,10 @@ export default function UserHeader() {
           setUserDisplayName('User');
         }
       })
-      .catch(() => setUserDisplayName('User'));
+      .catch(() => {
+        setUserDisplayName('User');
+        setUserProfileImage('');
+      });
   };
 
   useEffect(() => {
@@ -238,7 +256,12 @@ export default function UserHeader() {
 
           <div className='user_header_right' ref={dropdownRef} style={{ position: 'relative' }}>
             <div className='d-flex' onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}>
-              <img className='user_header_img' src="/images/user_vector.png" alt="user" />
+              <img
+                className='user_header_img'
+                src={userProfileImage || "/images/user_vector.png"}
+                alt="user"
+                onError={(e) => { e.currentTarget.src = "/images/user_vector.png"; }}
+              />
               <i className="ri-arrow-down-s-line"></i>
             </div>
 
@@ -246,7 +269,12 @@ export default function UserHeader() {
               <div className="user_profile_dropdown">
                 <div className="user_profile_dropdown_header">
                   <div className='user_top_dropdown_header d-flex align-items-center gap-2'>
-                    <img className='user_img' src="/images/user_vector.png" alt="user" />
+                    <img
+                      className='user_img'
+                      src={userProfileImage || "/images/user_vector.png"}
+                      alt="user"
+                      onError={(e) => { e.currentTarget.src = "/images/user_vector.png"; }}
+                    />
                     <h4 className="text_uppercase">{userDisplayName || 'User'}</h4>
                   </div>
                 </div>

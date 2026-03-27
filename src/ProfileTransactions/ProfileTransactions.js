@@ -73,8 +73,6 @@ function PaymentProofThumb({ url, className = 'transaction_payment_proof_thumb',
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
   }, [url])
-
-  if (!src || failed) return <span>View</span>
   return <img src={src} alt={alt} className={className} onError={() => setFailed(true)} />
 }
 
@@ -342,9 +340,9 @@ function ProfileTransactions() {
                         <th>Payment Method</th>
                         <th>UTR</th>
                         <th>Chain</th>
-                        <th>Admin / Notes</th>
                         <th>Processed At</th>
                         <th>Payment Proof</th>
+                        <th>Admin / Notes</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -365,17 +363,18 @@ function ProfileTransactions() {
                           <td>{tx.paymentMethod}</td>
                           <td>{tx.utrNumber}</td>
                           <td>{tx.chain}</td>
-                          <td>{tx.notes}</td>
                           <td>{tx.processedAt}</td>
                           <td>
                             {tx.paymentProofUrl ? (
-                              <a href={tx.paymentProofUrl} target="_blank" rel="noopener noreferrer" className="transaction_payment_proof_link" aria-label="View payment proof">
+                              <a href={tx.paymentProofUrl} target="_blank" rel="noopener noreferrer" className="transaction_payment_proof_link" aria-label="payment proof">
                                 <PaymentProofThumb url={tx.paymentProofUrl} />
                               </a>
                             ) : (
                               '—'
                             )}
+
                           </td>
+                          <td>{tx.notes}</td>
                         </tr>
                       ))}
                     </tbody>

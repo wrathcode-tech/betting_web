@@ -171,7 +171,8 @@ function ProfilePage() {
                   </div>
                   <div className="profile_bio_info_cnt">
                     <h3 className="text_uppercase">{displayName}</h3>
-                    <span>{safeUser.email || (safeUser.countryCode && safeUser.mobile ? `${safeUser.countryCode} ${safeUser.mobile}` : safeUser.mobile) || '—'}</span>
+                    <span>{safeUser?.email || '—'}</span>  <br />{/* TODO: Add mobile number */}
+                    <span>{safeUser?.mobile || '—'}</span>
                     {user?.username && <span className="d-block text-white-50 small">@{user.username}</span>}
                     <div className="d-flex align-items-center gap-2 mt-2">
                       {user?.riskLevel && <p><img src="images/noto_trophy.svg" alt="level" /> Risk: {user.riskLevel}</p>}
