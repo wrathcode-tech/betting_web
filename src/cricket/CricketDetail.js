@@ -377,7 +377,7 @@ function CricketDetail() {
         gameId
     const professorScoreIframeUrl = useMemo(() => {
         if (sportName !== 'cricket' || !eventId) return null
-        return `https://apis.professorji.in/api/scorecard?eventId=${encodeURIComponent(String(eventId))}&sport=cricket`
+        return `https://score.akamaized.uk/?eventId=${encodeURIComponent(String(eventId))}&sport=cricket`
     }, [sportName, eventId])
     const professorTvIframeUrl = useMemo(() => {
         if (sportName !== 'cricket' || !eventId) return null
