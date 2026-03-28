@@ -131,11 +131,11 @@ footer .container-fluid {
   margin-bottom: 4px;
 }
 
-/* CrownBet crypto sports content – creative UI */
-.crownbet_content {
+/* BetGugly crypto sports content – creative UI */
+.betgugly_content {
   max-width: 100%;
 }
-.crownbet_title {
+.betgugly_title {
   font-size: 22px;
   font-weight: 800;
   color: #fff;
@@ -145,25 +145,25 @@ footer .container-fluid {
   padding-bottom: 12px;
   border-bottom: 2px solid rgba(249, 122, 49, 0.4);
 }
-.crownbet_heading {
+.betgugly_heading {
   font-size: 16px;
   font-weight: 700;
   color: #f97a31;
   margin: 24px 0 14px;
   line-height: 1.35;
 }
-.crownbet_content p {
+.betgugly_content p {
   margin-bottom: 14px;
   color: #cbd5e1;
   font-size: 14px;
   line-height: 1.6;
 }
-.crownbet_content p:last-of-type {
+.betgugly_content p:last-of-type {
   margin-bottom: 0;
 }
 
 /* Lists – dotted circle only, extra space */
-.crownbet_list {
+.betgugly_list {
   padding-left: 22px;
   margin: 14px 0 18px;
   list-style-type: circle;
@@ -172,69 +172,69 @@ footer .container-fluid {
   font-size: 14px;
   line-height: 1.7;
 }
-.crownbet_list li {
+.betgugly_list li {
   margin-bottom: 10px;
 }
-.crownbet_list li::before {
+.betgugly_list li::before {
   display: none;
 }
-.crownbet_list_bullet,
-.crownbet_list_dash,
-.crownbet_list_numbered,
-.crownbet_list_tick {
+.betgugly_list_bullet,
+.betgugly_list_dash,
+.betgugly_list_numbered,
+.betgugly_list_tick {
   list-style-type: circle;
   padding-left: 22px;
 }
-.crownbet_list_numbered {
+.betgugly_list_numbered {
   list-style-type: decimal;
 }
-.crownbet_list strong {
+.betgugly_list strong {
   color: rgba(255, 255, 255, 0.95);
 }
 
 /* Table – simple plain */
-.crownbet_table_wrap {
+.betgugly_table_wrap {
   width: 100%;
   overflow-x: auto;
   margin: 18px 0;
 }
-.crownbet_table {
+.betgugly_table {
   width: 100%;
   min-width: 320px;
   border-collapse: collapse;
   font-size: 13px;
   background: transparent;
 }
-.crownbet_table th,
-.crownbet_table td {
+.betgugly_table th,
+.betgugly_table td {
   padding: 10px 14px;
   text-align: left;
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.5;
 }
-.crownbet_table th {
+.betgugly_table th {
   font-weight: 600;
   color: #fff;
   font-size: 12px;
   background: rgba(255, 255, 255, 0.06);
 }
-.crownbet_table td:first-child {
+.betgugly_table td:first-child {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.95);
 }
 
 @media (max-width: 767px) {
-  .crownbet_title {
+  .betgugly_title {
     font-size: 18px;
     margin-bottom: 12px;
   }
-  .crownbet_heading {
+  .betgugly_heading {
     font-size: 15px;
     margin-top: 18px;
   }
-  .crownbet_table th,
-  .crownbet_table td {
+  .betgugly_table th,
+  .betgugly_table td {
     padding: 10px 12px;
     font-size: 12px;
   }

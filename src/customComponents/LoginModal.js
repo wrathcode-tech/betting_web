@@ -385,7 +385,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
           <div className="premium_login_inner">
             <div className="premium_login_right">
               <div className="premium_login_logo">
-                <img alt="logo" src="images/logo.png" />
+                <img alt="BetGugly" src="images/logo.png" />
               </div>
               {showForgotPassword ? (
                 <>

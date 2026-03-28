@@ -126,8 +126,9 @@ export default function AuthHeader() {
           <div className={`toggle_menu ${sidebarOpen ? 'toggle_menu_open' : ''}`} onClick={() => setSidebarOpen((prev) => !prev)}>
             <img src="/images/toggle_menu.svg" alt="menu" />
           </div>
-          <Link to="/" className="header_logo">
-            <img src="/images/logo.png" alt="logo" />
+          <Link to="/" className="header_logo" aria-label="BetGugly home">
+            <img className="desktopview" src="/images/logo.png" alt="BetGugly" />
+            <img className="mobileview" src="/images/favicon.png" alt="BetGugly" />
           </Link>
         </div>
 

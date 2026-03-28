@@ -140,7 +140,7 @@ function Footer() {
 </div>
 
 <p className="footer_disclaimer">This site offers gaming and involves risk. You must be 18 or older to use our services. We are not responsible for any breach of your local laws regarding online gaming. Please play responsibly.</p>
-            <p className="footer_copyright">© {new Date().getFullYear()} All Rights Reserved <span>Powered by <a href="https://betgugly.com" target="_blank" rel="noopener noreferrer">Betgugly</a></span></p>
+            <p className="footer_copyright">© {new Date().getFullYear()} All Rights Reserved <span>Powered by <a href="https://betgugly.com" target="_blank" rel="noopener noreferrer">BetGugly</a></span></p>
             </div>
 
           </div>

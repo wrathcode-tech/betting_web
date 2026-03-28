@@ -2116,6 +2116,18 @@ function CricketDetail() {
 
     return (
         <React.Fragment>
+              {professorTvIframeUrl && (
+                                        <div className='match_tv_iframe_wrap rightside_iframe'>
+                                            <div className='match_tv_iframe_header'>Live TV</div>
+                                            <iframe
+                                                title='Professorji Live TV'
+                                                src={professorTvIframeUrl}
+                                                className='match_tv_iframe'
+                                                allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                                                allowFullScreen
+                                            />
+                                        </div>
+                                    )}
             <div className='dashboard_page removebgsports'>
                 <div className='container-fluid'>
                     {(!platformConfig.sportsBookServiceStatus || !platformConfig.inPlayServiceStatus) && (
@@ -2247,18 +2259,7 @@ function CricketDetail() {
                                             <p className='cricket_page_stake_limits'>{globalStakeLimitsLabel}</p>
                                         ) : null}
                                     </div>
-                                    {professorTvIframeUrl && (
-                                        <div className='match_tv_iframe_wrap'>
-                                            <div className='match_tv_iframe_header'>Live TV</div>
-                                            <iframe
-                                                title='Professorji Live TV'
-                                                src={professorTvIframeUrl}
-                                                className='match_tv_iframe'
-                                                allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-                                                allowFullScreen
-                                            />
-                                        </div>
-                                    )}
+                                  
                                     {/* <div className='cricket_info_inner'>
                                 <div className='cricket_vector_icon'>
                                     <img src="images/t20_vector.svg" alt="cricket" width="48" height="48" decoding="async" fetchPriority="high" />

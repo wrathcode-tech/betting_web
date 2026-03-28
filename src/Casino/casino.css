@@ -7,7 +7,7 @@
     opacity: 1 !important;
 }
 
-.casino_category_page_wrapper header .header_logo img,
+.casino_category_page_wrapper header .header_logo .header_brand_wordmark,
 .casino_category_page_wrapper header .login_hdr,
 .casino_category_page_wrapper header .login_hdr button,
 .casino_category_page_wrapper header .user_header_right,
@@ -15,14 +15,6 @@
     display: inline-flex !important;
     visibility: visible !important;
     opacity: 1 !important;
-}
-
-.casino_category_page_wrapper header .header_logo img {
-    display: block !important;
-}
-
-.casino_category_page_wrapper header .header_logo img.mobileview {
-    display: none !important;
 }
 
 /* Category detail page header */

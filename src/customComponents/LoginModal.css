@@ -153,12 +153,25 @@
 .premium_login_logo {
   text-align: center;
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
-.premium_login_logo img {
-  max-width: 140px;
-  height: auto;
-  display: inline-block;
+.premium_login_logo_mark {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  display: block;
+}
+
+.premium_login_brand {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1.2;
 }
 
 .premium_login_title {

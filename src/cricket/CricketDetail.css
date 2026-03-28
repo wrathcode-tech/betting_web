@@ -193,9 +193,24 @@
     display: block;
 }
 
+.match_tv_iframe_wrap.rightside_iframe {
+    width: 320px;
+    position: absolute;
+    right: 5px;
+    top: 89px;
+}
+
 @media (min-width: 768px) {
-    .match_tv_iframe {
-        height: 420px;
+
+        .match_tv_iframe {
+            height: 280px;
+        }
+
+
+.cricket_detail_section .cricket_live_scoreboard .match_tv_iframe {
+        height: 100%;
+        min-height: 200px !important;
+        background: none !important;
     }
 }
 
@@ -2153,7 +2168,7 @@ button.toggleup_btn {
 
 .betslip_content {
     overflow-y: auto;
-    max-height: calc(100vh - 0px);
+    max-height: calc(100vh - 200px);
 }
 
 .betslip_stake_input:focus-visible {
@@ -2700,6 +2715,54 @@ td.odds_section_status_overlay_td {
     width: 65px;
 }
 
+/*
+ * Cricket detail only: each Back/Lay price cell exactly 65px; Back block = Lay block (3×65).
+ * Market column absorbs remaining width on full-width table.
+ */
+.cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) {
+    table-layout: fixed;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) thead tr > th:first-child {
+    width: auto;
+    min-width: 160px;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) thead tr > th:nth-child(3),
+.cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) thead tr > th:nth-child(4) {
+    width: 195px; /* 3 × 65px */
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) td.odds_section_market_name {
+    width: auto;
+    min-width: 160px;
+    max-width: none;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) .odds_section_cell_back,
+.cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) .odds_section_cell_lay {
+    width: 65px;
+    min-width: 65px;
+    max-width: 65px;
+    box-sizing: border-box;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) td.odds_section_status_overlay_td {
+    min-width: calc(6 * 65px);
+    max-width: none;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) .odds_section_status_overlay_cells .odds_section_status_overlay_cell.odds_section_cell {
+    flex: 0 0 65px;
+    width: 65px;
+    min-width: 65px;
+    max-width: 65px;
+    box-sizing: border-box;
+}
+
 .odds_section_btn {
     display: flex;
     flex-direction: column;
@@ -2969,7 +3032,12 @@ td.odds_section_status_overlay_td {
         text-align: left;
     }
 
-
+    .match_tv_iframe_wrap.rightside_iframe {
+        width: 100%;
+        position: relative;
+        right: 0px;
+        top: 80px;
+    }
 
 }
 
@@ -2985,6 +3053,11 @@ td.odds_section_status_overlay_td {
 
     .cricket_info_inner h2 {
         font-size: 16px;
+    }
+
+    .match_tv_iframe {
+        height: 220px;
+        min-height: 220px !important;
     }
 
     tr.cricketbet_mobile_row td {
@@ -3616,6 +3689,75 @@ td.odds_section_status_overlay_td {
         width: calc(220px - 36px);
         min-width: calc(220px - 36px);
         max-width: calc(220px - 36px);
+    }
+
+}
+
+/*
+ * Cricket detail — mobile compact: pixel-fixed market widths above steal space from Back/Lay;
+ * suspended overlay td shrinks so lock/scrim look wrong. Flexible market + full-width overlay strip.
+ * !important beats calc(480px/300px/270px/220px) market rules in smaller breakpoints (same max-width stack).
+ */
+@media (max-width: 767px) {
+
+    .cricket_detail_section .odds_section_block .odds_section_table_compact thead th:first-child,
+    .cricket_detail_section .odds_section_block .odds_section_table_compact td.odds_section_market_name {
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+
+    .cricket_detail_section .odds_section_block .odds_section_table_compact th[colspan="1"]:not(:first-child) {
+        min-width: 65px;
+    }
+
+    .cricket_detail_section .odds_section_block .odds_section_table_compact thead th:nth-child(3),
+    .cricket_detail_section .odds_section_block .odds_section_table_compact thead th:nth-child(4) {
+        width: 65px;
+        min-width: 65px;
+        max-width: 65px;
+    }
+
+    .cricket_detail_section .odds_section_block .odds_section_table_compact .odds_section_cell {
+        width: 65px;
+        min-width: 65px;
+        max-width: 65px;
+        box-sizing: border-box;
+    }
+
+    .cricket_detail_section .odds_section_block .odds_section_table_compact td.odds_section_status_overlay_td {
+        min-width: calc(var(--odds-status-cols, 2) * 65px);
+    }
+
+    .cricket_detail_section .odds_section_block .odds_section_table_compact .odds_section_status_overlay_root {
+        width: 100%;
+        min-width: 100%;
+        max-width: none;
+    }
+
+    .cricket_detail_section .odds_section_block .odds_section_table_compact .odds_section_status_overlay_muted {
+        display: block;
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .cricket_detail_section .odds_section_block .odds_section_table_compact .odds_section_status_overlay_cells {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .cricket_detail_section .odds_section_block .odds_section_table_compact .odds_section_status_overlay_cells .odds_section_status_overlay_cell.odds_section_cell {
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: none;
+        width: auto;
+    }
+
+    .cricket_detail_section .odds_section_block .odds_section_table_compact .odds_section_status_overlay_text {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 0 6px;
     }
 
 }
