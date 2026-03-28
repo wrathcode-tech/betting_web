@@ -359,6 +359,8 @@ function CricketDetail() {
     const seriesOrTournamentName = location.state?.seriesName ?? location.state?.tournamentName ?? location.state?.series_name ?? defaultMatch?.seriesName ?? defaultMatch?.series_name ?? defaultMatch?.tournamentName ?? defaultMatch?.tournament ?? ''
     const sportFromPath = location.pathname?.includes('/tennis') ? 'tennis' : location.pathname?.includes('/soccer') ? 'soccer' : null
     const sportName = (location.state?.sportName || sportFromPath || 'cricket').toLowerCase()
+    /** Professorji / score.akamaized `sport` query (app tab is `soccer`). */
+    const professorjiSportParam = sportName === 'soccer' ? 'football' : sportName === 'tennis' ? 'tennis' : 'cricket'
     // Old tab ids (sessions, wp-market, …) — migrate to single markets view
     useEffect(() => {
         const legacy = ['sessions', 'wp-market', 'extra-market', 'odd-even']
@@ -376,13 +378,18 @@ function CricketDetail() {
         defaultMatch?.eventId ??
         gameId
     const professorScoreIframeUrl = useMemo(() => {
-        if (sportName !== 'cricket' || !eventId) return null
-        return `https://score.akamaized.uk/?id=${encodeURIComponent(String(eventId))}`
-    }, [sportName, eventId])
+        if (!['cricket', 'tennis', 'soccer'].includes(sportName) || !eventId) return null
+        const params = new URLSearchParams()
+        params.set('id', String(eventId))
+        params.set('sport', professorjiSportParam)
+        const mn = eventNameFromState
+        if (mn != null && String(mn).trim() !== '') params.set('matchName', String(mn).trim())
+        return `https://score.akamaized.uk/?${params.toString()}`
+    }, [sportName, eventId, eventNameFromState, professorjiSportParam])
     const professorTvIframeUrl = useMemo(() => {
-        if (sportName !== 'cricket' || !eventId) return null
-        return `https://apis.professorji.in/api/tv?eventId=${encodeURIComponent(String(eventId))}&sport=cricket`
-    }, [sportName, eventId])
+        if (!['cricket', 'tennis', 'soccer'].includes(sportName) || !eventId) return null
+        return `https://apis.professorji.in/api/tv?eventId=${encodeURIComponent(String(eventId))}&sport=${encodeURIComponent(professorjiSportParam)}`
+    }, [sportName, eventId, professorjiSportParam])
     const [oddsData, setOddsData] = useState(null)
     /** Event config / REST — minStack, maxStack, etc.; merged under socket odds for MIN/MAX labels */
     const [eventStakeLimits, setEventStakeLimits] = useState(() => ({}))
@@ -615,8 +622,8 @@ function CricketDetail() {
     // Guests + demo: fetch live score via REST (no Socket score polling when logged-in real user)
     useEffect(() => {
         if (!eventId && !gameId) return
-        // Cricket page par Professorji scorecard polling already chal rahi hai; duplicate REST poll avoid karein.
-        if (sportName === 'cricket' && eventId) return
+        // Professorji scorecard iframe (cricket/tennis/football) + socket — duplicate REST poll avoid karein.
+        if (['cricket', 'tennis', 'soccer'].includes(sportName) && eventId) return
         const token = sessionStorage.getItem('token')
         if (token && !isDemo) return
         let cancelled = false
