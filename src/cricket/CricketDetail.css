@@ -1603,8 +1603,13 @@ button.toggleup_btn {
     justify-content: center;
 }
 
-.betslip_odd_btn:hover {
+.betslip_odd_btn:hover:not(:disabled) {
     background-color: rgba(249, 122, 49, 0.3);
+}
+
+.betslip_odd_btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 .betslip_odd_input {

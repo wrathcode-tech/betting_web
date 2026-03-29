@@ -1441,10 +1441,8 @@ function CricketDetail() {
                                                                                 <button
                                                                                     type="button"
                                                                                     className="betslip_odd_btn"
-                                                                                    onClick={() => {
-                                                                                        const curr = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
-                                                                                        if (curr > 1.01) setSlipOdds(Number((curr - 0.01).toFixed(2)))
-                                                                                    }}
+                                                                                    disabled
+                                                                                    aria-label="Decrease odds (disabled)"
                                                                                 >−</button>
                                                                                 <input
                                                                                     className="betslip_odd_input"
@@ -1455,11 +1453,8 @@ function CricketDetail() {
                                                                                 <button
                                                                                     type="button"
                                                                                     className="betslip_odd_btn"
-                                                                                    onClick={() => {
-                                                                                        const base = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
-                                                                                        const next = base + 0.01
-                                                                                        setSlipOdds(Number(next.toFixed(2)))
-                                                                                    }}
+                                                                                    disabled
+                                                                                    aria-label="Increase odds (disabled)"
                                                                                 >+</button>
                                                                             </div>
                                                                         </div>
@@ -1559,10 +1554,8 @@ function CricketDetail() {
                                             <button
                                                 type="button"
                                                 className="betslip_odd_btn"
-                                                onClick={() => {
-                                                    const curr = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
-                                                    if (curr > 1.01) setSlipOdds(Number((curr - 0.01).toFixed(2)))
-                                                }}
+                                                disabled
+                                                aria-label="Decrease odds (disabled)"
                                             >−</button>
                                             <input
                                                 className="betslip_odd_input"
@@ -1573,11 +1566,8 @@ function CricketDetail() {
                                             <button
                                                 type="button"
                                                 className="betslip_odd_btn"
-                                                onClick={() => {
-                                                    const base = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
-                                                    const next = base + 0.01
-                                                    setSlipOdds(Number(next.toFixed(2)))
-                                                }}
+                                                disabled
+                                                aria-label="Increase odds (disabled)"
                                             >+</button>
                                         </div>
                                     </div>
@@ -3192,21 +3182,14 @@ function CricketDetail() {
                                     <div className='betslip_odd_section'>
                                         <label className='betslip_label'>Odd Value</label>
                                         <div className='betslip_odd_stepper'>
-                                            <button type='button' className='betslip_odd_btn' onClick={() => {
-                                                const curr = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
-                                                if (curr > 1.01) setSlipOdds(Number((curr - 0.01).toFixed(2)))
-                                            }}>−</button>
+                                            <button type='button' className='betslip_odd_btn' disabled aria-label='Decrease odds (disabled)'>−</button>
                                             <input
                                                 type='text'
                                                 className='betslip_odd_input'
                                                 value={selectedBets.length > 0 ? (Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0).toFixed(2) : '0.00'}
                                                 readOnly
                                             />
-                                            <button type='button' className='betslip_odd_btn' onClick={() => {
-                                                const base = Number(slipOdds ?? selectedBets[0]?.oddsDisplay ?? selectedBets[0]?.odds) || 0
-                                                const next = base + 0.01
-                                                setSlipOdds(Number(next.toFixed(2)))
-                                            }}>+</button>
+                                            <button type='button' className='betslip_odd_btn' disabled aria-label='Increase odds (disabled)'>+</button>
                                         </div>
                                     </div>
 
