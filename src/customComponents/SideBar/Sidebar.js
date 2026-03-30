@@ -32,14 +32,14 @@ export default function SideBar({ isOpen, onClose }) {
   const isCricketActive = pathname === '/cricket'
   /* eslint-enable no-unused-vars */
 
-  const closeIfMobile = () => {
+  /* Mobile: close drawer after nav. Desktop: do not onClose — was collapsing then Layout re-opened on route → layout jump. */
+  const onLinkClick = (e) => {
+    if (e) {
+      e.stopPropagation()
+    }
     if (typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT) {
       onClose()
     }
-  }
-  const onLinkClick = () => {
-    closeIfMobile()
-    onClose()
   }
 
   const prefetchLink = (to) => ({
