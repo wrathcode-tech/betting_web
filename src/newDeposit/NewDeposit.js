@@ -30,13 +30,6 @@ const BANK_TRANSFER_OPTIONS = [
   { value: 'rtgs', label: 'RTGS' },
 ];
 
-// Fallback when API returns no accounts – options tab dikhane ke liye
-const FALLBACK_BANK_ACCOUNTS = [
-  { _id: 'fallback-1', type: 'bank', bankName: 'State Bank of India', accountHolderName: 'Admin Account', accountNumber: '1234567890123456', ifscCode: 'SBIN0001234', minDeposit: MIN_AMOUNT, maxDeposit: MAX_AMOUNT },
-  { _id: 'fallback-2', type: 'bank', bankName: 'HDFC Bank', accountHolderName: 'Admin Account', accountNumber: '9876543210987654', ifscCode: 'HDFC0000567', minDeposit: MIN_AMOUNT, maxDeposit: MAX_AMOUNT },
-  { _id: 'fallback-3', type: 'bank', bankName: 'ICICI Bank', accountHolderName: 'Admin Account', accountNumber: '5555666677778888', ifscCode: 'ICIC0000890', minDeposit: MIN_AMOUNT, maxDeposit: MAX_AMOUNT },
-];
-
 function NewDeposit() {
   const navigate = useNavigate();
   const { isDemo } = useAuth();
@@ -74,14 +67,23 @@ function NewDeposit() {
   useEffect(() => {
     const fetchAccounts = async () => {
       setOptionsLoading(true);
-      const res = await AuthService.getMasterDepositAccounts();
-      setOptionsLoading(false);
-      if (res?.success && res?.data?.accounts) {
-        const accounts = res.data.accounts;
-        setMasterAccounts(accounts);
-        const types = [...new Set(accounts.map((a) => a.type).filter(Boolean))];
-        if (types.length > 0 && !types.includes('bank')) setSelectedPayment(types[0]);
-        else if (accounts.filter((a) => a.type === 'bank').length === 0 && accounts.filter((a) => a.type === 'upi').length > 0) setSelectedPayment('upi');
+      try {
+        const res = await AuthService.getMasterDepositAccounts();
+        if (res?.success && Array.isArray(res?.data?.accounts)) {
+          const accounts = res.data.accounts;
+          setMasterAccounts(accounts);
+          const types = [...new Set(accounts.map((a) => a.type).filter(Boolean))];
+          if (types.length > 0 && !types.includes('bank')) setSelectedPayment(types[0]);
+          else if (accounts.filter((a) => a.type === 'bank').length === 0 && accounts.filter((a) => a.type === 'upi').length > 0) {
+            setSelectedPayment('upi');
+          }
+        } else {
+          setMasterAccounts([]);
+        }
+      } catch {
+        setMasterAccounts([]);
+      } finally {
+        setOptionsLoading(false);
       }
     };
     fetchAccounts();
@@ -96,10 +98,9 @@ function NewDeposit() {
   }, []);
 
   const bankAccounts = masterAccounts.filter((a) => a.type === 'bank');
-  // Unique payment types from backend (e.g. ['bank', 'upi']); fallback to ['bank'] when no accounts
+  /** Payment tabs only for types returned by API (no placeholder when empty). */
   const paymentTypesFromBackend = React.useMemo(() => {
-    const types = [...new Set(masterAccounts.map((a) => a.type).filter(Boolean))];
-    return types.length > 0 ? types : ['bank'];
+    return [...new Set(masterAccounts.map((a) => a.type).filter(Boolean))];
   }, [masterAccounts]);
   const typeToLabel = (type) => (type === 'bank' ? 'Bank' : type === 'upi' ? 'UPI' : String(type).charAt(0).toUpperCase() + String(type).slice(1).toLowerCase());
 
@@ -111,14 +112,12 @@ function NewDeposit() {
     }
   }, [paymentTypesFromBackend, selectedPayment]);
 
-  // API se accounts na aaye to fallback – Option 1, 2, 3 hamesha dikhenge (Bank)
   const currentOptionList =
     selectedPayment === 'bank'
-      ? (bankAccounts.length > 0 ? bankAccounts : FALLBACK_BANK_ACCOUNTS)
+      ? bankAccounts
       : masterAccounts.filter((a) => a.type === selectedPayment);
   const safeOptionIndex = currentOptionList.length > 0 && selectedOptionIndex >= currentOptionList.length ? 0 : selectedOptionIndex;
   const selectedAccount = currentOptionList[safeOptionIndex] || currentOptionList[0] || null;
-  const usingFallback = selectedPayment === 'bank' && bankAccounts.length === 0 && FALLBACK_BANK_ACCOUNTS.length > 0;
 
   const handleAmountOption = (value) => {
     setSelectedAmount(value);
@@ -135,7 +134,7 @@ function NewDeposit() {
     setSelectedOptionIndex(0);
   };
 
-  const currentDetailId = usingFallback ? null : (selectedAccount?._id || null);
+  const currentDetailId = selectedAccount?._id || null;
 
   // Validation strictly as per GET /api/v1/user/transaction-limits (minDepositLimit, maxDepositLimit)
   const limitMin = transactionLimits?.minDepositLimit != null ? Number(transactionLimits.minDepositLimit) : null;
@@ -147,6 +146,7 @@ function NewDeposit() {
 
   const handleNext = async () => {
     if (!platformConfig.depositServiceStatus) return;
+    if (masterAccounts.length === 0) return;
     const amount = Number(amountInput?.replace(/,/g, '')) || 0;
     if (amount < minAllowed) {
       alertErrorMessage(`Minimum deposit amount is ₹${minAllowed}`);
@@ -178,6 +178,7 @@ function NewDeposit() {
 
   const handleConfirmPayment = async () => {
     if (!platformConfig.depositServiceStatus) return;
+    if (masterAccounts.length === 0) return;
     const amount = Number(amountInput?.replace(/,/g, '')) || 0;
     const utr = (utrInput || '').trim();
     if (amount < minAllowed) {
@@ -256,117 +257,123 @@ function NewDeposit() {
               {/* Step indicator */}
 
 
-              {/* 1. Method: Bank / UPI (Step 1 only) */}
+              {/* 1. Method: Bank / UPI (Step 1 only) — deposit options only when API returns accounts */}
               {step === 1 && (
                 <>
-                  {!optionsLoading && masterAccounts.length === 0 && (
-                    <p className="empty_state_message mb-3">Using default options. Add accounts via API to see dynamic list.</p>
-                  )}
-                  {/* Desktop: buttons; Mobile: dropdown */}
-                  <div className="payment_type_select_mobile">
-                    <select
-                      className="payment_type_select deposit_btn_style"
-                      value={selectedPayment}
-                      onChange={(e) => handlePaymentTypeChange(e.target.value)}
-                      aria-label="Select payment method"
-                    >
-                      {paymentTypesFromBackend.map((type) => (
-                        <option key={type} value={type}>{typeToLabel(type)}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="payment_topbr payment_topbr_buttons">
-                    {paymentTypesFromBackend.map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        className={selectedPayment === type ? 'active' : ''}
-                        onClick={() => handlePaymentTypeChange(type)}
-                      >
-                        {typeToLabel(type)}
-                      </button>
-                    ))}
-                  </div>
-
-                  {selectedPayment === 'crypto' ? (
-                    <div className="enter_amount_deposit">
-                      <h5>Select Currency</h5>
-                      <select
-                        className="premium_form_input"
-                        value={selectedCryptoCurrency}
-                        onChange={(e) => setSelectedCryptoCurrency(e.target.value)}
-                        style={{ width: '100%', maxWidth: '320px', padding: '10px 12px' }}
-                        aria-label="Select crypto currency"
-                      >
-                        <option value="USDT">USDT</option>
-                      </select>
-                    </div>
+                  {optionsLoading ? (
+                    <p className="empty_state_message mb-3">Loading deposit options...</p>
+                  ) : masterAccounts.length === 0 ? (
+                    <p className="empty_state_message mb-3" role="status">
+                      No account found
+                    </p>
                   ) : (
-                    /* Option 1, Option 2, ... – API se jitne aaye utne, nahi to fallback 3 options */
-                    <div className="payment_topbr payment_topbr_options">
-                      {currentOptionList.map((acc, idx) => (
-                        <button
-                          key={acc._id}
-                          type="button"
-                          className={safeOptionIndex === idx ? 'active' : ''}
-                          onClick={() => setSelectedOptionIndex(idx)}
+                    <>
+                      {/* Desktop: buttons; Mobile: dropdown */}
+                      <div className="payment_type_select_mobile">
+                        <select
+                          className="payment_type_select deposit_btn_style"
+                          value={selectedPayment}
+                          onChange={(e) => handlePaymentTypeChange(e.target.value)}
+                          aria-label="Select payment method"
                         >
-                          Option {idx + 1}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Predefined amount list */}
-                  <div className="payment_selected_dl">
-                    <ul>
-                      {AMOUNT_OPTIONS.map((value) => (
-                        <li key={value}>
+                          {paymentTypesFromBackend.map((type) => (
+                            <option key={type} value={type}>{typeToLabel(type)}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="payment_topbr payment_topbr_buttons">
+                        {paymentTypesFromBackend.map((type) => (
                           <button
+                            key={type}
                             type="button"
-                            className={selectedAmount === value ? 'active' : ''}
-                            onClick={() => handleAmountOption(value)}
+                            className={selectedPayment === type ? 'active' : ''}
+                            onClick={() => handlePaymentTypeChange(type)}
                           >
-                            +{value.toLocaleString('en-IN')}
+                            {typeToLabel(type)}
                           </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                        ))}
+                      </div>
 
-                  {/* Amount input */}
-                  <div className="enter_amount_deposit">
-                    <h5>Enter Amount (INR)</h5>
-                    {(minAllowed !== MIN_AMOUNT || maxAllowed !== MAX_AMOUNT || (transactionLimits?.bonusPercentage != null)) && (
-                      <p className="text-white-50 small mb-2">
-                        Limit: ₹{minAllowed.toLocaleString('en-IN')} – ₹{maxAllowed.toLocaleString('en-IN')}.
-                        {transactionLimits?.bonusPercentage != null && ` Bonus: ${Number(transactionLimits.bonusPercentage)}%.`}
-                      </p>
-                    )}
-                    <div className="enter_filed d-flex">
-                      <input
-                        type="text"
-                        placeholder="Enter Amount To Be Deposited"
-                        value={amountInput}
-                        onChange={(e) => setAmountInput(e.target.value)}
-                      />
-                      <button type="button" onClick={handleClearAmount}>
-                        Clear
-                      </button>
-                    </div>
-                  </div>
+                      {selectedPayment === 'crypto' ? (
+                        <div className="enter_amount_deposit">
+                          <h5>Select Currency</h5>
+                          <select
+                            className="premium_form_input"
+                            value={selectedCryptoCurrency}
+                            onChange={(e) => setSelectedCryptoCurrency(e.target.value)}
+                            style={{ width: '100%', maxWidth: '320px', padding: '10px 12px' }}
+                            aria-label="Select crypto currency"
+                          >
+                            <option value="USDT">USDT</option>
+                          </select>
+                        </div>
+                      ) : (
+                        <div className="payment_topbr payment_topbr_options">
+                          {currentOptionList.map((acc, idx) => (
+                            <button
+                              key={acc._id}
+                              type="button"
+                              className={safeOptionIndex === idx ? 'active' : ''}
+                              onClick={() => setSelectedOptionIndex(idx)}
+                            >
+                              Option {idx + 1}
+                            </button>
+                          ))}
+                        </div>
+                      )}
 
-                  {/* Next button – Step 1 */}
-                  <div className="payment_btn">
-                    <button
-                      type="button"
-                      className="confirm_payment_btn next_btn"
-                      onClick={handleNext}
-                      disabled={optionsLoading || cryptoAddressLoading}
-                    >
-                      {cryptoAddressLoading ? 'Fetching address...' : 'Next'}
-                    </button>
-                  </div>
+                      {/* Predefined amount list */}
+                      <div className="payment_selected_dl">
+                        <ul>
+                          {AMOUNT_OPTIONS.map((value) => (
+                            <li key={value}>
+                              <button
+                                type="button"
+                                className={selectedAmount === value ? 'active' : ''}
+                                onClick={() => handleAmountOption(value)}
+                              >
+                                +{value.toLocaleString('en-IN')}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Amount input */}
+                      <div className="enter_amount_deposit">
+                        <h5>Enter Amount (INR)</h5>
+                        {(minAllowed !== MIN_AMOUNT || maxAllowed !== MAX_AMOUNT || (transactionLimits?.bonusPercentage != null)) && (
+                          <p className="text-white-50 small mb-2">
+                            Limit: ₹{minAllowed.toLocaleString('en-IN')} – ₹{maxAllowed.toLocaleString('en-IN')}.
+                            {transactionLimits?.bonusPercentage != null && ` Bonus: ${Number(transactionLimits.bonusPercentage)}%.`}
+                          </p>
+                        )}
+                        <div className="enter_filed d-flex">
+                          <input
+                            type="text"
+                            placeholder="Enter Amount To Be Deposited"
+                            value={amountInput}
+                            onChange={(e) => setAmountInput(e.target.value)}
+                          />
+                          <button type="button" onClick={handleClearAmount}>
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Next button – Step 1 */}
+                      <div className="payment_btn">
+                        <button
+                          type="button"
+                          className="confirm_payment_btn next_btn"
+                          onClick={handleNext}
+                          disabled={cryptoAddressLoading}
+                        >
+                          {cryptoAddressLoading ? 'Fetching address...' : 'Next'}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 
