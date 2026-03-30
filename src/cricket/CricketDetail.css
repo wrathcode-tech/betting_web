@@ -177,6 +177,10 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.cricket_score_iframe_wrap {
+    margin-bottom: 0;
+}
+
 .match_tv_iframe_header {
     padding: 10px 14px;
     font-size: 14px;
@@ -184,6 +188,26 @@
     color: #e8e8e8;
     background: #1e2a38;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.match_tv_iframe_header_btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.match_tv_iframe_header_btn i {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+.match_tv_iframe_header_btn:focus-visible {
+    outline: 2px solid rgba(34, 131, 246, 0.65);
+    outline-offset: -2px;
 }
 
 .match_tv_iframe {

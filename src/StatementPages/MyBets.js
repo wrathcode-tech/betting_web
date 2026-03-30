@@ -215,23 +215,23 @@ export default function MyBets() {
   const searchLower = (search || '').trim().toLowerCase()
   const filteredBets = searchLower
     ? bets.filter((row) => {
-        const event = String(row.event || '').toLowerCase()
-        const betId = String(row.betId || '').toLowerCase()
-        const market = String(row.market || '').toLowerCase()
-        const selection = String(row.selection || '').toLowerCase()
-        const betType = String(row.betType || '').toLowerCase()
-        const sport = String(row.sport || '').toLowerCase()
-        const result = String(row.result || '').toLowerCase()
-        return (
-          event.includes(searchLower) ||
-          betId.includes(searchLower) ||
-          market.includes(searchLower) ||
-          selection.includes(searchLower) ||
-          betType.includes(searchLower) ||
-          sport.includes(searchLower) ||
-          result.includes(searchLower)
-        )
-      })
+      const event = String(row.event || '').toLowerCase()
+      const betId = String(row.betId || '').toLowerCase()
+      const market = String(row.market || '').toLowerCase()
+      const selection = String(row.selection || '').toLowerCase()
+      const betType = String(row.betType || '').toLowerCase()
+      const sport = String(row.sport || '').toLowerCase()
+      const result = String(row.result || '').toLowerCase()
+      return (
+        event.includes(searchLower) ||
+        betId.includes(searchLower) ||
+        market.includes(searchLower) ||
+        selection.includes(searchLower) ||
+        betType.includes(searchLower) ||
+        sport.includes(searchLower) ||
+        result.includes(searchLower)
+      )
+    })
     : bets
 
   const data = filteredBets.map((row) => ({
@@ -311,8 +311,8 @@ export default function MyBets() {
                             return (
                               <td key={col.key}>
                                 {col.key === 'actions' ? (
-                                    /* Temporarily disabled Cash Out + Cancel — was buttons for cancellable rows */
-                                    '—'
+                                  /* Temporarily disabled Cash Out + Cancel — was buttons for cancellable rows */
+                                  '—'
                                 ) : col.key === 'result' && row.resultRaw ? (
                                   <span className={`status_badge status_${String(row.resultRaw).replace(/\s+/g, '_')}`}>
                                     {val}

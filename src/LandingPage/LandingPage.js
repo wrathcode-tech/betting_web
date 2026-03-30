@@ -86,7 +86,8 @@ function getDayGroup(isoStr) {
     tomorrow.setDate(tomorrow.getDate() + 1)
     if (d.toDateString() === today.toDateString()) return 'Today'
     if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow'
-    return d.toLocaleDateString('en-IN', { weekday: 'long' })
+    // Use date (not weekday) so multiple weeks don't merge into one section.
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
   } catch {
     return ''
   }
@@ -586,26 +587,47 @@ function LandingPage() {
     const list = matches.map((m) => {
       const et = m.eventTime ?? pickMatchEventTime(m);
       let timeOnly = '';
+      let eventMs = null;
       if (et) {
         try {
           const d = new Date(et);
-          if (!isNaN(d.getTime())) timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+          if (!isNaN(d.getTime())) {
+            eventMs = d.getTime();
+            timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+          }
         } catch { }
       }
-      return { ...m, eventTime: et, dayGroup: getDayGroup(et), timeOnly };
+      const dayGroup = getDayGroup(et);
+      const dayMs =
+        eventMs != null
+          ? new Date(eventMs).setHours(0, 0, 0, 0)
+          : null;
+      return { ...m, eventTime: et, dayGroup, timeOnly, __eventMs: eventMs, __dayMs: dayMs };
     });
     const sorted = [...list].sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
-    const liveMatches = sorted.filter((m) => m.inPlay);
-    const nonLive = sorted.filter((m) => !m.inPlay);
+    const liveMatches = sorted
+      .filter((m) => m.inPlay)
+      .sort((a, b) => (a.__eventMs ?? Number.POSITIVE_INFINITY) - (b.__eventMs ?? Number.POSITIVE_INFINITY));
+    const nonLive = sorted
+      .filter((m) => !m.inPlay)
+      .sort((a, b) => (a.__eventMs ?? Number.POSITIVE_INFINITY) - (b.__eventMs ?? Number.POSITIVE_INFINITY));
     const groups = {};
+    const groupDayMs = {};
     nonLive.forEach((m) => {
       const day = m.dayGroup || 'Other';
       if (!groups[day]) groups[day] = [];
       groups[day].push(m);
+      if (groupDayMs[day] == null && m.__dayMs != null) groupDayMs[day] = m.__dayMs;
     });
     const order = ['Today', 'Tomorrow'];
-    const rest = Object.keys(groups).filter((d) => !order.includes(d));
-    const daySections = [...order.filter((d) => groups[d]?.length), ...rest].map((day) => ({ day, matches: groups[day], isLiveSection: false }));
+    const rest = Object.keys(groups)
+      .filter((d) => !order.includes(d))
+      .sort((a, b) => (groupDayMs[a] ?? Number.POSITIVE_INFINITY) - (groupDayMs[b] ?? Number.POSITIVE_INFINITY));
+    const daySections = [...order.filter((d) => groups[d]?.length), ...rest].map((day) => ({
+      day,
+      matches: groups[day],
+      isLiveSection: false,
+    }));
     if (liveMatches.length > 0) {
       return [{ day: 'Live', matches: liveMatches, isLiveSection: true }, ...daySections];
     }

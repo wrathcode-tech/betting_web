@@ -418,6 +418,13 @@ function CricketDetail() {
     const [liveScore, setLiveScore] = useState(null)
     // eslint-disable-next-line no-unused-vars -- used in commented-out Live TV iframe
     const [streamUrl, setStreamUrl] = useState(null)
+    const [isLiveTvDropdownOpen, setIsLiveTvDropdownOpen] = useState(false)
+    const [isLiveScoreDropdownOpen, setIsLiveScoreDropdownOpen] = useState(false)
+
+    useEffect(() => {
+        setIsLiveTvDropdownOpen(false)
+        setIsLiveScoreDropdownOpen(false)
+    }, [professorTvIframeUrl, professorScoreIframeUrl, gameId, eventId, sportName])
 
     /** Place bet API ke liye — sirf state pe depend na ho; odds / match list se fallback */
     const eventNameForBets = useMemo(() => {
@@ -587,7 +594,7 @@ function CricketDetail() {
                     if (url) setStreamUrl(url)
                 }
             })
-            .catch(() => {})
+            .catch(() => { })
         return () => {
             cancelled = true
         }
@@ -1278,7 +1285,7 @@ function CricketDetail() {
                                             <td
                                                 colSpan={oddsAreaColSpan}
                                                 className="odds_section_status_overlay_td"
-                                                style={{ ['--odds-status-cols']: String(overlayPriceCount) }}
+                                                style={{ '--odds-status-cols': String(overlayPriceCount) }}
                                             >
                                                 <div className="odds_section_status_overlay_root">
                                                     <div className="odds_section_status_overlay_muted" aria-hidden>
@@ -1826,7 +1833,7 @@ function CricketDetail() {
                         return (
                             <div key={rIdx} className="market_no_yes_row">
                                 <div className="market_no_yes_label">{row.label}</div>
-                              
+
                                 <div className="market_no_yes_limits_container d-flex justify-content-between">
                                     {row.limitsLine ? (
                                         <div className="market_no_yes_limits">{row.limitsLine}</div>
@@ -2113,18 +2120,28 @@ function CricketDetail() {
 
     return (
         <React.Fragment>
-              {professorTvIframeUrl && (
-                                        <div className='match_tv_iframe_wrap rightside_iframe'>
-                                            <div className='match_tv_iframe_header'>Live TV</div>
-                                            <iframe
-                                                title='Professorji Live TV'
-                                                src={professorTvIframeUrl}
-                                                className='match_tv_iframe'
-                                                allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-                                                allowFullScreen
-                                            />
-                                        </div>
-                                    )}
+            {professorTvIframeUrl && sportName === 'cricket' && (
+                <div className='match_tv_iframe_wrap rightside_iframe'>
+                    <button
+                        type="button"
+                        className={`match_tv_iframe_header match_tv_iframe_header_btn ${isLiveTvDropdownOpen ? 'open' : ''}`}
+                        onClick={() => setIsLiveTvDropdownOpen((v) => !v)}
+                        aria-expanded={isLiveTvDropdownOpen ? 'true' : 'false'}
+                    >
+                        <span>Live TV</span>
+                        <i className={`ri-arrow-${isLiveTvDropdownOpen ? 'up' : 'down'}-s-line`} aria-hidden />
+                    </button>
+                    {isLiveTvDropdownOpen && (
+                        <iframe
+                            title='Professorji Live TV'
+                            src={professorTvIframeUrl}
+                            className='match_tv_iframe'
+                            allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                            allowFullScreen
+                        />
+                    )}
+                </div>
+            )}
             <div className='dashboard_page removebgsports'>
                 <div className='container-fluid'>
                     {(!platformConfig.sportsBookServiceStatus || !platformConfig.inPlayServiceStatus) && (
@@ -2228,7 +2245,7 @@ function CricketDetail() {
                         </div> */}
 
                                 <div className='match_info_section_wrapper'>
-
+                                    
                                     {/* Live streaming – commented out
                             {(sportName === 'soccer' || sportName === 'tennis' || sportName === 'cricket') && (
                                 <div className='match_tv_iframe_wrap'>
@@ -2252,11 +2269,8 @@ function CricketDetail() {
 
                                     <div className='series_name_row'>
                                         <p>{seriesOrTournamentName || '—'}</p>
-                                        {globalStakeLimitsLabel ? (
-                                            <p className='cricket_page_stake_limits'>{globalStakeLimitsLabel}</p>
-                                        ) : null}
                                     </div>
-                                  
+
                                     {/* <div className='cricket_info_inner'>
                                 <div className='cricket_vector_icon'>
                                     <img src="images/t20_vector.svg" alt="cricket" width="48" height="48" decoding="async" fetchPriority="high" />
@@ -2324,12 +2338,25 @@ function CricketDetail() {
                                         {(() => {
                                             if (professorScoreIframeUrl) {
                                                 return (
-                                                    <iframe
-                                                        title='Professorji Scorecard'
-                                                        src={professorScoreIframeUrl}
-                                                        className='match_tv_iframe'
-                                                        style={{ minHeight: '420px', background: '#1a2332' }}
-                                                    />
+                                                    <div className="match_tv_iframe_wrap cricket_score_iframe_wrap">
+                                                        <button
+                                                            type="button"
+                                                            className={`match_tv_iframe_header match_tv_iframe_header_btn ${isLiveScoreDropdownOpen ? 'open' : ''}`}
+                                                            onClick={() => setIsLiveScoreDropdownOpen((v) => !v)}
+                                                            aria-expanded={isLiveScoreDropdownOpen ? 'true' : 'false'}
+                                                        >
+                                                            <span>Live Score</span>
+                                                            <i className={`ri-arrow-${isLiveScoreDropdownOpen ? 'up' : 'down'}-s-line`} aria-hidden />
+                                                        </button>
+                                                        {isLiveScoreDropdownOpen && (
+                                                            <iframe
+                                                                title='Professorji Scorecard'
+                                                                src={professorScoreIframeUrl}
+                                                                className='match_tv_iframe'
+                                                                style={{ minHeight: '420px', background: '#1a2332' }}
+                                                            />
+                                                        )}
+                                                    </div>
                                                 )
                                             }
                                             const hasLiveScore = liveScore && !liveScore.error && liveScore.ScoreData?.Score?.[0]
@@ -2394,7 +2421,7 @@ function CricketDetail() {
                                                                 <span className='cricket_live_score_box'>{s.Team1OnlyScore || s.Team1Score || '—'}</span>
                                                                 <span className='cricket_live_crr'>CRR: {crr}</span>
                                                             </div>
-                                                         
+
                                                         </div>
 
                                                         <div className='cricket_live_team_right'>
@@ -2489,7 +2516,7 @@ function CricketDetail() {
                                         <>
                                             <div className='top_tabs_cricket top_tabs_markets'>
                                                 <ul>
-                                                    
+
                                                     <li className={activeTab !== 'open-bets' ? 'active' : ''}>
                                                         <button type="button" onClick={() => setActiveTab('all')}>Markets</button>
                                                     </li>
@@ -2513,15 +2540,15 @@ function CricketDetail() {
                                                                 {oddsData?.matchOdds?.[0] && renderOddsSection('match_odds_0', oddsData.matchOdds[0].marketName || oddsData.matchOdds[0].market || 'MATCH ODDS', 'ri-settings-3-line', '', [oddsData.matchOdds[0]], 'match_odds')}
                                                                 {oddsData?.bookMakerOdds?.length > 0
                                                                     ? oddsData.bookMakerOdds.map((m, i) =>
-                                                                          renderOddsSection(
-                                                                              `bookmaker_${i}`,
-                                                                              m.marketName || m.market || 'BOOKMAKER',
-                                                                              'ri-settings-3-line',
-                                                                              '',
-                                                                              [m],
-                                                                              'bookmaker'
-                                                                          )
-                                                                      )
+                                                                        renderOddsSection(
+                                                                            `bookmaker_${i}`,
+                                                                            m.marketName || m.market || 'BOOKMAKER',
+                                                                            'ri-settings-3-line',
+                                                                            '',
+                                                                            [m],
+                                                                            'bookmaker'
+                                                                        )
+                                                                    )
                                                                     : (() => {
                                                                         const firstMarket = oddsData?.matchOdds?.[0]
                                                                         const runners = (firstMarket && (Array.isArray(firstMarket.runners) ? firstMarket.runners : toOddDatasArray(firstMarket.oddDatas))) || []
