@@ -2522,3 +2522,30 @@ ul.match_type_tabs li.active button {
         width: 60%;
     }
 }
+
+/* Sports (/sports) Football tab: make Back/Lay cells equal-width on mobile */
+@media (max-width: 767px) {
+    .sports_game_section.inplay_section_bl .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .sports_grid_odds_columns.sports_grid_desktop_odds_strip.sports_grid_bl6_strip {
+        min-width: max-content;
+        width: max-content;
+    }
+
+    .sports_game_section.inplay_section_bl .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .sports_grid_bl6_runner_row {
+        grid-template-columns: repeat(6, 65px);
+        width: max-content;
+    }
+
+    .sports_game_section.inplay_section_bl .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .sports_grid_bl6_strip .sports_grid_bl6_runner_row .sports_grid_odds_cell {
+        min-width: 65px;
+        width: 65px;
+        max-width: 65px;
+    }
+
+    .sports_game_section.inplay_section_bl .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .sports_grid_odds_btn,
+    .sports_game_section.inplay_section_bl .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .sports_grid_odds_dash {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        box-sizing: border-box;
+    }
+}
