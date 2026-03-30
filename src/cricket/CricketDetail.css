@@ -2744,15 +2744,43 @@ td.odds_section_status_overlay_td {
     width: 65px;
 }
 
+.odds_section_cell_back:focus-within,
+.odds_section_cell_lay:focus-within {
+    outline: none !important;
+}
+
 /*
  * Cricket detail only: each Back/Lay price cell exactly 65px; Back block = Lay block (3×65).
  * Market column absorbs remaining width on full-width table.
  */
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl .odds_section_indicator_th,
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl .odds_section_indicator_cell {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl .odds_section_indicator_th {
+    font-size: 11px;
+    letter-spacing: 0.02em;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl .odds_section_indicator_cell {
+    background: #1a2332;
+    box-shadow: none;
+    border-bottom: 1px solid #2a313f;
+    border-right: none;
+
+}
+
 .cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) {
     table-layout: fixed;
     width: 100%;
     max-width: 100%;
     min-width: 0;
+}
+
+.odds_section_table td:focus-visible {
+ border:none;   outline: none;
 }
 
 .cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) thead tr > th:first-child {
@@ -2807,6 +2835,20 @@ td.odds_section_status_overlay_td {
     font-weight: 600;
     color: #fff;
     transition: all 0.2s ease, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Click/mouse focus often still shows default ring; keep selection via .selected only */
+.odds_section_btn:focus,
+.odds_section_btn:focus-visible,
+.odds_section_btn:focus-within,
+.odds_section_btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.odds_section_btn::-moz-focus-inner {
+    border: 0;
 }
 
 .odds_section_btn:active {
@@ -2842,10 +2884,13 @@ td.odds_section_status_overlay_td {
 
 .odds_section_back.selected {
     background: #7fd7ff;
-    border-color: #7fd7ff !important;
+    /* border-color: #7fd7ff !important; */
     color: #000000 !important;
-    box-shadow: 0 0 0 2px #56afd7;
+    /* box-shadow: 0 0 0 2px #56afd7; */
 }
+
+.odds_section_back:active { border:none; }
+.odds_section_lay:active { border:none; }
 
 /* Lay = light pink (magenta) – image jaisa */
 .odds_section_lay {
@@ -2862,9 +2907,9 @@ td.odds_section_status_overlay_td {
 
 .odds_section_lay.selected {
     background: #f48fb1;
-    border-color: #fa7fa9 !important;
+    /* border-color: #fa7fa9 !important; */
     color: #000000 !important;
-    box-shadow: 0 0 0 2px #f66c9a;
+    /* box-shadow: 0 0 0 2px #f66c9a; */
 }
 
 .odds_section_locked {

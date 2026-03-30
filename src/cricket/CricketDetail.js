@@ -1129,6 +1129,8 @@ function CricketDetail() {
         const oddList = getMarketOddList(market)
         if (!oddList.length) return null
         const isOpen = market.status !== 'CLOSED'
+        const showMatchOddsPlColumn =
+            (marketTypeApi === 'match_odds' || marketTypeApi === 'bookmaker') && oddList.length >= 2
         const sectionOpenBets = (openBetsList || []).filter((b) =>
             openBetMatchesSection(b, gameId, marketId, marketTypeApi, eventId)
         )
@@ -1221,11 +1223,16 @@ function CricketDetail() {
                     </div>
                 </div>
                 <div className="odds_section_table_wrap">
-                    <table className={`odds_section_table${isOddsTableCompact ? ' odds_section_table_compact' : ''}`}>
+                    <table
+                        className={`odds_section_table${isOddsTableCompact ? ' odds_section_table_compact' : ''}${showMatchOddsPlColumn ? ' odds_section_table_with_pl' : ''
+                            }`}
+                    >
                         <thead>
                             <tr>
                                 <th>Market</th>
-                                <th className="odds_section_indicator_th" aria-label="Spread / Value" />
+                                <th className="odds_section_indicator_th odds_section_pl_header" scope="col" title="Profit / loss (betslip or open bets)">
+                                    {/* P/L */}
+                                </th>
                                 <th colSpan={isOddsTableCompact ? 1 : 3}>Back</th>
                                 <th colSpan={isOddsTableCompact ? 1 : 3}>Lay</th>
                             </tr>
@@ -1374,24 +1381,24 @@ function CricketDetail() {
                                                     <>
                                                         {showProfitOnThisRow && profitAmount != null && (
                                                             <span className="odds_section_pl_box odds_section_pl_box_positive" title="Jit gaya to itna profit">
-                                                                +{profitAmount.toFixed(2)}
+                                                                +₹{profitAmount.toFixed(2)}
                                                             </span>
                                                         )}
                                                         {showLossOnThisRow && lossAmount != null && (
                                                             <span className="odds_section_pl_box odds_section_pl_box_negative" title="Harega to itna loss">
-                                                                -{lossAmount.toFixed(2)}
+                                                                −₹{lossAmount.toFixed(2)}
                                                             </span>
                                                         )}
                                                     </>
                                                 )}
                                                 {showPlFromOpenBets && (
                                                     plIfThisRunnerWins >= 0 ? (
-                                                        <span className="odds_section_pl_box odds_section_pl_box_positive" title="Is selection par open bets ke hisaab se agar yeh jeete">
-                                                            +{plIfThisRunnerWins.toFixed(2)}
+                                                        <span className="odds_section_pl_box odds_section_pl_box_positive" title="Is selection par open bets · agar yeh jeete">
+                                                            +₹{plIfThisRunnerWins.toFixed(2)}
                                                         </span>
                                                     ) : (
-                                                        <span className="odds_section_pl_box odds_section_pl_box_negative" title="Is selection par open bets ke hisaab se agar yeh jeete">
-                                                            {plIfThisRunnerWins.toFixed(2)}
+                                                        <span className="odds_section_pl_box odds_section_pl_box_negative" title="Is selection par open bets · agar yeh jeete">
+                                                            −₹{Math.abs(plIfThisRunnerWins).toFixed(2)}
                                                         </span>
                                                     )
                                                 )}
@@ -2245,7 +2252,7 @@ function CricketDetail() {
                         </div> */}
 
                                 <div className='match_info_section_wrapper'>
-                                    
+
                                     {/* Live streaming – commented out
                             {(sportName === 'soccer' || sportName === 'tennis' || sportName === 'cricket') && (
                                 <div className='match_tv_iframe_wrap'>
