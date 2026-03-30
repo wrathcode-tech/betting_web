@@ -1,4 +1,4 @@
-import React, { Suspense, memo } from "react";
+import React, { memo } from "react";
 import { lazyWithRetry } from "./utils/lazyWithRetry";
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 import ScrollToTop from "./ScrollToTop";
@@ -73,7 +73,7 @@ const NotificationsPage = lazyWithRetry(() => import("./pages/NotificationsPage"
 
 const Routing = memo(function Routing() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true }}>
       <AuthProvider>
         <SidebarProvider>
           <PlatformConfigProvider>
@@ -82,8 +82,7 @@ const Routing = memo(function Routing() {
                 <BalanceProvider>
                   <BetSlipProvider>
                     <ScrollToTop />
-                    <Suspense fallback={null}>
-                      <Routes>
+                    <Routes>
                         <Route element={<Layout />}>
                           {/* Public routes – no login required */}
                           <Route path="/" element={<LandingPage />} />
@@ -130,8 +129,7 @@ const Routing = memo(function Routing() {
                           </Route>
                           <Route path="*" element={<Navigate to="/" replace />} />
                         </Route>
-                      </Routes>
-                    </Suspense>
+                    </Routes>
                   </BetSlipProvider>
                 </BalanceProvider>
               </SportsbookStoreProvider>

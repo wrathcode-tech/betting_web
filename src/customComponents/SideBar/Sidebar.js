@@ -3,6 +3,7 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useSidebar } from '../../context/SidebarContext'
 import { useCasinoProviders } from '../../context/CasinoProvidersContext'
 import { usePlatformConfig } from '../../context/PlatformConfigContext'
+import { prefetchRoute } from '../../utils/routePrefetch'
 import './sidebar.css'
 
 const MOBILE_BREAKPOINT = 991
@@ -41,6 +42,11 @@ export default function SideBar({ isOpen, onClose }) {
     onClose()
   }
 
+  const prefetchLink = (to) => ({
+    onMouseEnter: () => prefetchRoute(to),
+    onTouchStart: () => prefetchRoute(to),
+  })
+
   // Keep submenu open based on current route (works after reload)
   useEffect(() => {
     if (pathname.startsWith('/casino')) {
@@ -76,11 +82,11 @@ export default function SideBar({ isOpen, onClose }) {
       <div ref={sidebarRef} className={`sidebar ${isOpen ? 'sidebar_open' : 'sidebar_collapsed'}`}>
         <div className="sidebar_content">
           <div className="deposit_withdrawal_btn">
-            <Link to="/deposit" className={`deposit_withdrawal_menu_btn deposit_btn ${pathname === '/deposit' ? 'active' : ''}`} onClick={onLinkClick}>
+            <Link to="/deposit" className={`deposit_withdrawal_menu_btn deposit_btn ${pathname === '/deposit' ? 'active' : ''}`} onClick={onLinkClick} {...prefetchLink('/deposit')}>
               <i className="ri-wallet-3-line" aria-hidden />
               <span>Deposit</span>
             </Link>
-            <Link to="/withdrawal" className={`deposit_withdrawal_menu_btn withdraw_btn ${pathname === '/withdrawal' ? 'active' : ''}`} onClick={onLinkClick}>
+            <Link to="/withdrawal" className={`deposit_withdrawal_menu_btn withdraw_btn ${pathname === '/withdrawal' ? 'active' : ''}`} onClick={onLinkClick} {...prefetchLink('/withdrawal')}>
               <i className="ri-bank-line" aria-hidden />
               <span>Withdraw</span>
             </Link>
@@ -94,7 +100,7 @@ export default function SideBar({ isOpen, onClose }) {
               </li> */}
               {platformConfig.gameServiceStatus && (
                 <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
-                  <Link to="/casino" onClick={onLinkClick}>
+                  <Link to="/casino" onClick={onLinkClick} {...prefetchLink('/casino')}>
                     <span><i className="ri-poker-spades-fill" aria-hidden />Casino</span>
                     <span className="sidebar_collapsed_label">Casino</span>
                   </Link>
@@ -103,7 +109,7 @@ export default function SideBar({ isOpen, onClose }) {
 
               {platformConfig.inPlayServiceStatus && (
                 <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sports' ? 'active' : ''}`}>
-                  <Link to="/sports" onClick={onLinkClick}>
+                  <Link to="/sports" onClick={onLinkClick} {...prefetchLink('/sports')}>
                     <span><i className="ri-gamepad-fill sidebar_inplay_icon" aria-hidden />InPlay</span>
                     <span className="sidebar_collapsed_label">InPlay</span>
                   </Link>
@@ -111,7 +117,7 @@ export default function SideBar({ isOpen, onClose }) {
               )}
               {platformConfig.sportsBookServiceStatus && (
                 <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/sportsbook' ? 'active' : ''}`}>
-                  <Link to="/sportsbook" onClick={onLinkClick}>
+                  <Link to="/sportsbook" onClick={onLinkClick} {...prefetchLink('/sportsbook')}>
                     <span><i className="ri-basketball-fill" aria-hidden />SportsBook</span>
                     <span className="sidebar_collapsed_label">SportsBook</span>
                   </Link>
@@ -154,7 +160,7 @@ export default function SideBar({ isOpen, onClose }) {
                 <span className="sh-sub-title_text">Other Menu</span>
               </div> */}
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-rules' ? 'active' : ''}`}>
-                <Link to="/game-rules" onClick={onLinkClick}>
+                <Link to="/game-rules" onClick={onLinkClick} {...prefetchLink('/game-rules')}>
                   <span><i className="ri-book-2-line" aria-hidden />Game Rules</span>
                   <span className="sidebar_collapsed_label">Game Rules</span>
                 </Link>
@@ -176,31 +182,31 @@ export default function SideBar({ isOpen, onClose }) {
                 </li>
               )}
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/transactions' ? 'active' : ''}`}>
-                <Link to="/transactions" onClick={onLinkClick}>
+                <Link to="/transactions" onClick={onLinkClick} {...prefetchLink('/transactions')}>
                   <span><i className="ri-file-list-3-line" aria-hidden />Transactions</span>
                   <span className="sidebar_collapsed_label">Transactions</span>
                 </Link>
               </li>
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/my-bets' ? 'active' : ''}`}>
-                <Link to="/my-bets" onClick={onLinkClick}>
+                <Link to="/my-bets" onClick={onLinkClick} {...prefetchLink('/my-bets')}>
                   <span><i className="ri-flag-line" aria-hidden />My Bets</span>
                   <span className="sidebar_collapsed_label">My Bets</span>
                 </Link>
               </li>
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/bet-history' ? 'active' : ''}`}>
-                <Link to="/bet-history" onClick={onLinkClick}>
+                <Link to="/bet-history" onClick={onLinkClick} {...prefetchLink('/bet-history')}>
                   <span><i className="ri-history-line" aria-hidden />Bet History</span>
                   <span className="sidebar_collapsed_label">Bet History</span>
                 </Link>
               </li>
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/game-history' ? 'active' : ''}`}>
-                <Link to="/game-history" onClick={onLinkClick}>
+                <Link to="/game-history" onClick={onLinkClick} {...prefetchLink('/game-history')}>
                   <span><i className="ri-gamepad-line" aria-hidden />Game History</span>
                   <span className="sidebar_collapsed_label">Game History</span>
                 </Link>
               </li>
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/my-wallet' ? 'active' : ''}`}>
-                <Link to="/my-wallet" onClick={onLinkClick}>
+                <Link to="/my-wallet" onClick={onLinkClick} {...prefetchLink('/my-wallet')}>
                   <span><i className="ri-wallet-3-line" aria-hidden />My Wallet</span>
                   <span className="sidebar_collapsed_label">My Wallet</span>
                 </Link>
@@ -212,21 +218,21 @@ export default function SideBar({ isOpen, onClose }) {
                 </Link>
               </li> */}
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/account-statement' ? 'active' : ''}`}>
-                <Link to="/account-statement" onClick={onLinkClick}>
+                <Link to="/account-statement" onClick={onLinkClick} {...prefetchLink('/account-statement')}>
                   <span><i className="ri-bank-card-line" aria-hidden />Account Statement</span>
                   <span className="sidebar_collapsed_label">Statement</span>
                 </Link>
               </li>
               {platformConfig.supportServiceStatus && (
                 <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/support' ? 'active' : ''}`}>
-                  <Link to="/support" onClick={onLinkClick}>
+                  <Link to="/support" onClick={onLinkClick} {...prefetchLink('/support')}>
                     <span><i className="ri-customer-service-2-line" aria-hidden />Live Support</span>
                     <span className="sidebar_collapsed_label">Live Support</span>
                   </Link>
                 </li>
               )}
               <li className={`sidebar_menu_item sidebar_direct_link ${pathname === '/notifications' ? 'active' : ''}`}>
-                <Link to="/notifications" onClick={onLinkClick}>
+                <Link to="/notifications" onClick={onLinkClick} {...prefetchLink('/notifications')}>
                   <span><i className="ri-notification-3-line" aria-hidden />Notifications</span>
                   <span className="sidebar_collapsed_label">Notifications</span>
                 </Link>

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, memo } from 'react';
+import { useEffect, useLayoutEffect, useState, useCallback, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
@@ -20,16 +20,8 @@ function ScrollToTop() {
 
   // `key` changes on every navigation, including same path with new location.state
   // (e.g. search → /cricket with a specific match).
-  useEffect(() => {
+  useLayoutEffect(() => {
     scrollToTopNow();
-    const t = setTimeout(scrollToTopNow, 0);
-    const t2 = requestAnimationFrame(scrollToTopNow);
-    const t3 = setTimeout(scrollToTopNow, 150);
-    return () => {
-      clearTimeout(t);
-      cancelAnimationFrame(t2);
-      clearTimeout(t3);
-    };
   }, [pathname, key]);
 
   // Show button on any page that has scroll, when user has scrolled down; hide when full page fits on screen

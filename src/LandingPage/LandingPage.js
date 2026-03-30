@@ -42,6 +42,25 @@ const topSportsItems = [
   { id: 15, title: 'Handball', iconClass: 'ri-hand-coin-line', to: '/sportsbook' },
 ]
 
+/** Hero 3D carousel — module scope for stable preload URLs */
+const HERO_3D_SLIDES = [
+  { id: 1, src: 'images/home_bnr.png', alt: 'game', heading: 'All Mini Games', subContent: 'Play More. Win Faster. Endless Fun Awaits.', to: '/casino' },
+  { id: 2, src: 'images/home_bnr2.png', alt: 'game', heading: 'Sports & Betting', subContent: 'Play Smart. Bet Big. Win with the Best Odds.', to: '/sportsbook' },
+  { id: 3, src: 'images/home_bnr3.png', alt: 'game', heading: 'Casino', subContent: 'Play Live. Bet Bold. Win Real Rewards.', to: '/casino' },
+  { id: 4, src: 'images/home_bnr4.png', alt: 'game', heading: 'Dragon Tiger', subContent: 'Choose Your Side. Bet Fast. Win Instantly.', to: '/casino?category=Dragon+Tiger' },
+  { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Aviator', subContent: 'Take Off Early. Cash Out Big. Win Smart.', to: '/game?gameCode=aviator&providerCode=SPB&gameName=Aviator' },
+  { id: 6, src: 'images/home_bnr6.png', alt: 'game', heading: 'Cricket', subContent: 'Level up and unlock exclusive perks.', to: '/sports' },
+  { id: 7, src: 'images/home_bnr7.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Bet Every Ball. Play Every Moment. Win Bigger.', to: '/casino' },
+]
+
+function hero3dSlideAbsoluteUrl(src) {
+  if (!src) return ''
+  if (/^https?:\/\//i.test(src)) return src
+  const base = (process.env.PUBLIC_URL || '').replace(/\/$/, '')
+  const path = String(src).replace(/^\//, '')
+  return base ? `${base}/${path}` : `/${path}`
+}
+
 function formatMatchTime(isoStr) {
   if (!isoStr) return ''
   try {
@@ -466,16 +485,53 @@ function LandingPage() {
 
   // Hero 3D slider – 7 items, 5 visible at a time, infinite repeat
   const [hero3dIndex, setHero3dIndex] = useState(0);
-  const hero3dSlides = [
-    { id: 1, src: 'images/home_bnr.png', alt: 'game', heading: 'All Mini Games', subContent: 'Play More. Win Faster. Endless Fun Awaits.', to: '/casino' },
-    { id: 2, src: 'images/home_bnr2.png', alt: 'game', heading: 'Sports & Betting', subContent: 'Play Smart. Bet Big. Win with the Best Odds.', to: '/sportsbook' },
-    { id: 3, src: 'images/home_bnr3.png', alt: 'game', heading: 'Casino', subContent: 'Play Live. Bet Bold. Win Real Rewards.', to: '/casino' },
-    { id: 4, src: 'images/home_bnr4.png', alt: 'game', heading: 'Dragon Tiger', subContent: 'Choose Your Side. Bet Fast. Win Instantly.', to: '/casino?category=Dragon+Tiger' },
-    { id: 5, src: 'images/home_bnr5.png', alt: 'game', heading: 'Aviator', subContent: 'Take Off Early. Cash Out Big. Win Smart.', to: '/game?gameCode=aviator&providerCode=SPB&gameName=Aviator' },
-    { id: 6, src: 'images/home_bnr6.png', alt: 'game', heading: 'Cricket', subContent: 'Level up and unlock exclusive perks.', to: '/sports' },
-    { id: 7, src: 'images/home_bnr7.png', alt: 'game', heading: 'Casino & Sports Hub', subContent: 'Bet Every Ball. Play Every Moment. Win Bigger.', to: '/casino' },
-  ];
+  const [hero3dImagesReady, setHero3dImagesReady] = useState(false);
+  const hero3dSlides = HERO_3D_SLIDES;
   const hero3dTotal = hero3dSlides.length;
+
+  useEffect(() => {
+    let cancelled = false;
+    const urls = HERO_3D_SLIDES.map((s) => hero3dSlideAbsoluteUrl(s.src));
+    const n = HERO_3D_SLIDES.length;
+    /** hero3dIndex starts 0: offsets -2..+2 → slide indices mod n */
+    const initialVisibleIdx = [-2, -1, 0, 1, 2].map((o) => ((o % n) + n) % n);
+    const initialVisibleUrls = initialVisibleIdx.map((i) => urls[i]);
+
+    let revealed = false;
+    const reveal = () => {
+      if (cancelled || revealed) return;
+      revealed = true;
+      setHero3dImagesReady(true);
+    };
+
+    const capMs = 520;
+    const capId = window.setTimeout(reveal, capMs);
+
+    const loadOne = (href) =>
+      new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        img.src = href;
+      });
+
+    urls.forEach((href) => {
+      const warm = new Image();
+      warm.src = href;
+    });
+
+    Promise.all(initialVisibleUrls.map(loadOne)).then(() => {
+      if (!cancelled) {
+        window.clearTimeout(capId);
+        reveal();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(capId);
+    };
+  }, []);
   const hero3dOffsets = [-2, -1, 0, 1, 2];
   const getHero3dIndex = (offset) => (hero3dIndex + offset + hero3dTotal * 10) % hero3dTotal;
 
@@ -803,6 +859,10 @@ function LandingPage() {
         <div className='container'>
           <div className="heroslider_3d">
             <div
+              className={`slider3d_stage ${hero3dImagesReady ? 'slider3d_stage_ready' : ''}`}
+              aria-busy={!hero3dImagesReady}
+            >
+            <div
               className="slider3d_wrapper"
               onPointerDown={handleHero3dPointerDown}
               onPointerUp={handleHero3dPointerUp}
@@ -833,7 +893,8 @@ function LandingPage() {
                         src={slide.src}
                         alt={slide.alt}
                         decoding="async"
-                        {...(isCenter ? { fetchPriority: 'high' } : { loading: 'lazy' })}
+                        loading="eager"
+                        {...(isCenter ? { fetchPriority: 'high' } : {})}
                       />
                       {isCenter && slide.heading != null && (
                         <div className="slider3d_card_overlay slider3d_card_overlay_animate">
@@ -875,6 +936,7 @@ function LandingPage() {
               >
                 <i className="ri-arrow-right-s-line" aria-hidden="true" />
               </button>
+            </div>
             </div>
 
             <div className="casino_hero_s_lft">

@@ -286,6 +286,18 @@ header {
     box-sizing: border-box;
 }
 
+/* Carousel + controls: brief hide until first paint ready; fast fade so delay feels < ~1s */
+.slider3d_stage {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease-out, visibility 0.18s ease-out;
+}
+
+.slider3d_stage.slider3d_stage_ready {
+    opacity: 1;
+    visibility: visible;
+}
+
 .slider3d_wrapper {
     display: block;
     perspective: 1400px;
