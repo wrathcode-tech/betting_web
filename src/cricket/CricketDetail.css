@@ -1455,7 +1455,7 @@ button.toggleup_btn {
     bottom: 0;
     right: 5px;
     width: 320px;
-    max-height: 100vh;
+    max-height: 60vh;
     background-color: #16202c;
     border-radius: 12px 12px 0 0;
     z-index: 10050;
@@ -1524,8 +1524,8 @@ button.toggleup_btn {
 
 .betslip_card_light {
     border-radius: 8px;
-    padding: 12px 14px;
-    margin-bottom: 14px;
+    padding: 5px 12px;
+    margin-bottom: 12px;
     position: relative;
     color: #000000;
 }
@@ -1589,7 +1589,7 @@ button.toggleup_btn {
     font-size: 13px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.95);
-    margin-top: 6px;
+    margin-top: 3px;
 }
 
 .betslip_label {
@@ -1600,7 +1600,7 @@ button.toggleup_btn {
 }
 
 .betslip_odd_section {
-    margin-bottom: 14px;
+    margin-bottom: 10px;
 }
 
 .betslip_odd_stepper {
@@ -1675,8 +1675,8 @@ button.toggleup_btn {
 .betslip_quick_stakes {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 5px;
+    margin-bottom: 5px;
 }
 
 .betslip_quick_btn {
