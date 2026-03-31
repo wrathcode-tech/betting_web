@@ -41,7 +41,7 @@ export function getMatchDataSocketOrigin() {
   const raw =
     process.env.REACT_APP_MATCH_DATA_SOCKET_URL ||
     process.env.REACT_APP_BETTING_API_URL ||
-    'http://localhost:5000';
+    'https://backend.betgugly.com';
   return String(raw).trim().replace(/\s+/g, '').replace(/\/$/, '');
 }
 

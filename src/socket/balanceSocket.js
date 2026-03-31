@@ -9,7 +9,7 @@
 import { io } from 'socket.io-client';
 
 const getBaseUrl = () => {
-  const url = process.env.REACT_APP_BETTING_API_URL || process.env.VITE_API_URL || 'https://gamingbackend.wrathcode.com';
+  const url = process.env.REACT_APP_BETTING_API_URL || process.env.VITE_API_URL || 'https://backend.betgugly.com';
   return url.replace(/\/$/, '');
 };
 
