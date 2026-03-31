@@ -324,22 +324,22 @@ function SportsGame() {
 
     const goMatch = useCallback(
         (e, match) => {
-            if (e.target.closest('button')) {
-                e.preventDefault()
-                e.stopPropagation()
-                return
-            }
-            const sportName = activeTab
+        if (e.target.closest('button')) {
+            e.preventDefault()
+            e.stopPropagation()
+            return
+        }
+        const sportName = activeTab
             if (!INPLAY_SPORTS.includes(sportName)) return
             const path = SPORT_UI[sportName].route
             const id = match?.gameId ?? match?.eventId
             navigate(path, {
                 state: id
                     ? {
-                          gameId: match.gameId,
-                          eventId: match.eventId,
-                          eventName: match.teams,
-                          sportName,
+            gameId: match.gameId,
+            eventId: match.eventId,
+            eventName: match.teams,
+            sportName,
                           inPlay: match.inPlay,
                           seriesName: match.tournament,
                           tv_url: match.tvUrl,
@@ -376,48 +376,48 @@ function SportsGame() {
             const oddsPayload = match.matchOdds?.length ? { matchOdds: match.matchOdds } : null
             const cells = topCells(match, oddsPayload)
             const pills = rowPills(match, oddsPayload)
-            return (
-                <div
-                    key={match.eventId ?? index}
+        return (
+            <div
+                key={match.eventId ?? index}
                     className="match_slider"
                     onClick={(e) => goMatch(e, match)}
-                    style={{ display: 'block', cursor: 'pointer' }}
-                >
+                style={{ display: 'block', cursor: 'pointer' }}
+            >
                     <div className="match_slider_inner">
                         <div className="matchtp_hd d-flex justify-content-between align-items-center gap-2">
                             <div className="hd_match d-flex align-items-center gap-2">
                                 <img src={match.icon} alt="" loading="lazy" decoding="async" />
-                                <h3>Match</h3>
-                                {match.inPlay && (
+                            <h3>Match</h3>
+                            {match.inPlay && (
                                     <span
                                         className="match_live_badge"
                                         style={{
-                                            background: '#e53935',
-                                            color: '#fff',
-                                            fontSize: '10px',
-                                            fontWeight: 700,
-                                            padding: '2px 6px',
-                                            borderRadius: '4px',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.5px',
+                                    background: '#e53935',
+                                    color: '#fff',
+                                    fontSize: '10px',
+                                    fontWeight: 700,
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
                                         }}
                                     >
-                                        Live
-                                    </span>
-                                )}
-                            </div>
+                                    Live
+                                </span>
+                            )}
+                        </div>
                             {pills.length > 0 ? (
                                 <ul>
                                     {pills.map((p, i) => (
                                         <li key={`${p}-${i}`}>{p}</li>
                                     ))}
-                                </ul>
+                        </ul>
                             ) : null}
-                        </div>
-                        <p>{match.tournament}</p>
+                    </div>
+                    <p>{match.tournament}</p>
                         <div className="match_info">
                             <p className="match_team">{match.teams}</p>
-                            <span>{match.inPlay ? 'Live' : match.time}</span>
+                        <span>{match.inPlay ? 'Live' : match.time}</span>
                         </div>
                         <div className="sports_card_bl6_head d-flex mb-1">
                             <span className="sports_card_bl6_head_back flex-fill text-center">1 X 2</span>
@@ -435,7 +435,7 @@ function SportsGame() {
                                         >
                                             {pair.back.price != null ? pair.back.price : '—'}{' '}
                                             <span>{pair.back.sizeFormatted}</span>
-                                        </button>
+                            </button>
                                     ))}
                                 </div>
                                 <div className="d-flex justify-content-center gap-1">
@@ -448,7 +448,7 @@ function SportsGame() {
                                         >
                                             {pair.lay.price != null ? pair.lay.price : '—'}{' '}
                                             <span>{pair.lay.sizeFormatted}</span>
-                                        </button>
+                            </button>
                                     ))}
                                 </div>
                             </div>
@@ -458,7 +458,7 @@ function SportsGame() {
             )
         },
         [goMatch, topCells],
-    )
+        )
 
     const inplay = platformConfig.sportsBookServiceStatus && platformConfig.inPlayServiceStatus
 
@@ -472,10 +472,10 @@ function SportsGame() {
                         </div>
                     )}
                     {inplay && (
-                        <>
+                    <>
                             <div className="sports_hero_section">
-                                <div
-                                    className={`sports_bnr_gallery_wrapper ${arrowsVisible ? 'sports_bnr_arrows_visible' : ''}`}
+                        <div
+                            className={`sports_bnr_gallery_wrapper ${arrowsVisible ? 'sports_bnr_arrows_visible' : ''}`}
                                     onMouseEnter={() => setArrowsVisible(true)}
                                     onMouseLeave={() => setArrowsVisible(false)}
                                     onTouchStart={() => {
@@ -500,43 +500,43 @@ function SportsGame() {
                                         if (d < -50) setCurrentSlide((p) => (p + 1) % totalSlides)
                                         else if (d > 50) setCurrentSlide((p) => (p <= 0 ? totalSlides - 1 : p - 1))
                                     }}
-                                    style={{ touchAction: 'pan-y' }}
-                                >
+                            style={{ touchAction: 'pan-y' }}
+                        >
                                     <button type="button" className="sports_bnr_arrow sports_bnr_arrow_prev" onClick={() => setCurrentSlide((p) => (p <= 0 ? totalSlides - 1 : p - 1))} aria-label="Previous slide">
                                         <i className="ri-arrow-left-s-line" />
-                                    </button>
+                            </button>
                                     <button type="button" className="sports_bnr_arrow sports_bnr_arrow_next" onClick={() => setCurrentSlide((p) => (p + 1) % totalSlides)} aria-label="Next slide">
                                         <i className="ri-arrow-right-s-line" />
-                                    </button>
-                                    <div className="sports_bnr_gallery_track" ref={sliderRef}>
+                            </button>
+                            <div className="sports_bnr_gallery_track" ref={sliderRef}>
                                         {GALLERY_SLIDES.map((src, i) => (
                                             <div key={src} className="sports_bnr_gallery_slide">
                                                 <img src={src} alt="" className="sports_bnr_desktop" loading={i === 0 ? undefined : 'lazy'} decoding="async" {...(i === 0 ? { fetchPriority: 'high' } : {})} />
                                                 <img src={GALLERY_SLIDES_MOBILE[i]} alt="" className="sports_bnr_mobile" loading={i === 0 ? undefined : 'lazy'} decoding="async" />
-                                            </div>
-                                        ))}
                                     </div>
-                                    <div className="sports_bnr_slider_dots">
+                                ))}
+                            </div>
+                            <div className="sports_bnr_slider_dots">
                                         {Array.from({ length: totalSlides }, (_, i) => (
                                             <button key={i} type="button" className={`dot ${i === currentSlide ? 'active' : ''}`} onClick={() => setCurrentSlide(i)} aria-label={`Page ${i + 1}`} />
-                                        ))}
-                                    </div>
-                                </div>
+                                ))}
                             </div>
+                        </div>
+                    </div>
 
                             <div className="sports_game_section inplay_section_bl">
                                 <div className="sports_top_match_section">
-                                    <div className="top_match_section pt-0">
+                            <div className="top_match_section pt-0">
                                         <ul className="match_type_tabs">
-                                            {TABS.map((tab) => (
+                                    {TABS.map((tab) => (
                                                 <li key={tab.id} className={tab.to ? '' : activeTab === tab.id ? 'active' : ''}>
                                                     <button type="button" onClick={() => (tab.to ? navigate(tab.to) : setActiveTab(tab.id))}>
                                                         {tab.icon.startsWith('ri-') ? <i className={tab.icon} aria-hidden /> : <img alt="" src={tab.icon} loading="lazy" decoding="async" />}
-                                                        <span>{tab.label}</span>
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
+                                                <span>{tab.label}</span>
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
 
                                         {INPLAY_SPORTS.includes(activeTab) && (
                                             <div className="sports_grid_section sports_grid_section_landing">
@@ -556,14 +556,14 @@ function SportsGame() {
                                                             <button type="button" className={`sports_filter_btn ${sportFilter === 'premium' ? 'active' : ''}`} onClick={() => toggleFilter('premium')}>
                                                                 + Premium
                                                             </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                            </div>
+                                            </div>
+                                        </div>
                                                 <div className="sports_grid_table_wrap desktop_view">
                                                     <div className="sports_grid_desktop_layout">
                                                         {listLoading ? (
                                                             <div className="sports_grid_loading sports_grid_desktop_fullbleed">Loading {activeTab} matches...</div>
-                                                        ) : matchesByDay.length === 0 ? (
+                                                    ) : matchesByDay.length === 0 ? (
                                                             <div className="sports_grid_empty sports_grid_desktop_fullbleed">{NO_MATCHES}</div>
                                                         ) : (
                                                             <>
@@ -578,8 +578,8 @@ function SportsGame() {
                                                                                     <div className="sports_grid_1x2_header_pair">2</div>
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
-                                                                    </div>
+                                                                            </div>
+                                                                            </div>
                                                                 ) : null}
                                                             <div className="odds_scroll_wrapper">
                                                                 {matchesByDay.map(({ day, matches }) => (
@@ -644,8 +644,8 @@ function SportsGame() {
                                                                                                                     <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); goMatch(e, match); }}>
                                                                                                                         <span className="sports_grid_odds_val">{pair.back.price}</span>
                                                                                                                         <span className="sports_grid_odds_size">{pair.back.sizeFormatted}</span>
-                                                                                                                    </button>
-                                                                                                                ) : (
+                                                                                            </button>
+                                                                                        ) : (
                                                                                                                     <span className="sports_grid_odds_dash sports_grid_bl6_dash_cell">
                                                                                                                         <span className="sports_grid_odds_val">—</span>
                                                                                                                         <span className="sports_grid_odds_size">—</span>
@@ -657,40 +657,40 @@ function SportsGame() {
                                                                                                                     <button type="button" className="sports_grid_odds_btn" onClick={(e) => { e.stopPropagation(); goMatch(e, match); }}>
                                                                                                                         <span className="sports_grid_odds_val">{pair.lay.price}</span>
                                                                                                                         <span className="sports_grid_odds_size">{pair.lay.sizeFormatted}</span>
-                                                                                                                    </button>
-                                                                                                                ) : (
+                                                                                            </button>
+                                                                                        ) : (
                                                                                                                     <span className="sports_grid_odds_dash sports_grid_bl6_dash_cell">
                                                                                                                         <span className="sports_grid_odds_val">—</span>
                                                                                                                         <span className="sports_grid_odds_size">—</span>
                                                                                                                     </span>
-                                                                                                                )}
+                                                                                        )}
                                                                                                             </div>
-                                                                                                        </React.Fragment>
-                                                                                                    )
-                                                                                                })}
-                                                                                            </div>
-                                                                                        </div>
+                                                                                </React.Fragment>
+                                                                            )
+                                                                        })}
+                                                                            </div>
+                                                                            </div>
                                                                                     </div>
                                                                                 </div>
                                                                             )
                                                                         })}
                                                                     </React.Fragment>
-                                                                ))}
-                                                            </div>
+                                                                                ))}
+                                                                            </div>
                                                             </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
+                                                                                        )}
+                                                                                    </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                         <div className={`match_slider_wrapper ${INPLAY_SPORTS.includes(activeTab) ? 'sports_grid_cards_hidden' : ''}`}>
                                             {INPLAY_SPORTS.includes(activeTab) && listLoading ? (
-                                                <div className="match_slider_loading" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #888)' }}>
-                                                    Loading {activeTab} matches...
-                                                </div>
+                                        <div className="match_slider_loading" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #888)' }}>
+                                            Loading {activeTab} matches...
+                                        </div>
                                             ) : INPLAY_SPORTS.includes(activeTab) && activeRows.length === 0 ? (
-                                                <div className="match_slider_empty" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #888)' }}>
+                                        <div className="match_slider_empty" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #888)' }}>
                                                     {NO_MATCHES}
                                                 </div>
                                             ) : INPLAY_SPORTS.includes(activeTab) ? (
@@ -699,8 +699,8 @@ function SportsGame() {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </>
+                    </div>
+                    </>
                     )}
                 </div>
             </div>

@@ -507,11 +507,11 @@ function CricketDetail() {
                     const first = rows.find((m) => m.gameId || m.game_id)
                     if (first) {
                         setDefaultMatch({
-                            gameId: first.gameId ?? first.game_id,
-                            eventName: first.eventName ?? first.event_name,
-                            eventId: first.eventId ?? first.event_id,
-                            seriesName: first.seriesName ?? first.series_name ?? first.tournamentName ?? first.tournament ?? first.competitionName ?? null,
-                        })
+                gameId: first.gameId ?? first.game_id,
+                eventName: first.eventName ?? first.event_name,
+                eventId: first.eventId ?? first.event_id,
+                seriesName: first.seriesName ?? first.series_name ?? first.tournamentName ?? first.tournament ?? first.competitionName ?? null,
+            })
                     }
                 }
             }
@@ -591,7 +591,7 @@ function CricketDetail() {
                         setEventStakeLimits(extractStakeLimitFields(cfg))
                     }
                     const url = cfgRes?.tvUrl ?? cfgRes?.response?.tvUrl ?? cfgRes?.response?.tv_url ?? null
-                    if (url) setStreamUrl(url)
+                if (url) setStreamUrl(url)
                 }
             })
             .catch(() => { })
@@ -1713,18 +1713,18 @@ function CricketDetail() {
                     (n0.toLowerCase() === 'no' && n1.toLowerCase() === 'yes') ||
                     (n0.toLowerCase() === 'yes' && n1.toLowerCase() === 'no')
                 if (pairedNoYes) {
-                    const noSel = oddList[0]
-                    const yesSel = oddList[1]
-                    const noOdds = noSel?.l1 ?? noSel?.b1
-                    const yesOdds = yesSel?.b1 ?? yesSel?.l1
-                    const noSize = noSel?.ls1 ?? noSel?.bs1
-                    const yesSize = yesSel?.bs1 ?? yesSel?.ls1
-                    rows.push({
+                const noSel = oddList[0]
+                const yesSel = oddList[1]
+                const noOdds = noSel?.l1 ?? noSel?.b1
+                const yesOdds = yesSel?.b1 ?? yesSel?.l1
+                const noSize = noSel?.ls1 ?? noSel?.bs1
+                const yesSize = yesSel?.bs1 ?? yesSel?.ls1
+                rows.push({
                         label: marketName,
-                        noOdds: noOdds ?? '—',
-                        noSize: noSize ?? '—',
-                        yesOdds: yesOdds ?? '—',
-                        yesSize: yesSize ?? '—',
+                    noOdds: noOdds ?? '—',
+                    noSize: noSize ?? '—',
+                    yesOdds: yesOdds ?? '—',
+                    yesSize: yesSize ?? '—',
                         limitsLine: formatMinMaxLabel(m, limitsFallbackPayload),
                         marketId,
                         marketName,
@@ -1840,7 +1840,7 @@ function CricketDetail() {
                         return (
                             <div key={rIdx} className="market_no_yes_row">
                                 <div className="market_no_yes_label">{row.label}</div>
-
+                              
                                 <div className="market_no_yes_limits_container d-flex justify-content-between">
                                     {row.limitsLine ? (
                                         <div className="market_no_yes_limits">{row.limitsLine}</div>
@@ -1856,40 +1856,40 @@ function CricketDetail() {
                                                 className={`market_no_yes_odds_overlay_wrap${row.rowStatusText === 'Suspended' ? ' market_no_yes_odds_overlay_wrap_suspended' : ''}`}
                                             >
                                                 <div className="market_no_yes_odds_overlay_muted" aria-hidden>
-                                                    <div className="market_no_yes_odds">
+                                        <div className="market_no_yes_odds">
                                                         <button
                                                             type="button"
                                                             className={`market_no_yes_btn market_yes_btn ${yesLocked ? 'locked' : ''}`}
                                                             disabled
                                                             tabIndex={-1}
                                                         >
-                                                            {yesLocked ? (
-                                                                <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
-                                                            ) : (
-                                                                <>
-                                                                    <span className="odds_val">{row.yesOdds}</span>
-                                                                    <span className="odds_size">{formatOddsSize(row.yesSize)}</span>
-                                                                </>
-                                                            )}
-                                                        </button>
-                                                    </div>
-                                                    <div className="market_no_yes_odds">
+                                                {yesLocked ? (
+                                                    <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
+                                                ) : (
+                                                    <>
+                                                        <span className="odds_val">{row.yesOdds}</span>
+                                                        <span className="odds_size">{formatOddsSize(row.yesSize)}</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                        <div className="market_no_yes_odds">
                                                         <button
                                                             type="button"
                                                             className={`market_no_yes_btn market_no_btn ${noLocked ? 'locked' : ''}`}
                                                             disabled
                                                             tabIndex={-1}
                                                         >
-                                                            {noLocked ? (
-                                                                <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
-                                                            ) : (
-                                                                <>
-                                                                    <span className="odds_val">{row.noOdds}</span>
-                                                                    <span className="odds_size">{formatOddsSize(row.noSize)}</span>
-                                                                </>
-                                                            )}
-                                                        </button>
-                                                    </div>
+                                                {noLocked ? (
+                                                    <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
+                                                ) : (
+                                                    <>
+                                                        <span className="odds_val">{row.noOdds}</span>
+                                                        <span className="odds_size">{formatOddsSize(row.noSize)}</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
                                                 </div>
                                                 <div className="market_no_yes_odds_overlay_scrim" aria-hidden />
                                                 <div className="market_no_yes_odds_overlay_text">{formatStatusOverlayText(row.rowStatusText)}</div>
@@ -2078,9 +2078,9 @@ function CricketDetail() {
     // Loss limit + exposure: ek effect (pehle mount + slip/tab dono par alag-alag = duplicate GET)
     useEffect(() => {
         if (isDemo) {
-            setBetslipLossLimit(null)
-            setBetslipExposure(null)
-            setBetslipCurrentLoss(null)
+                setBetslipLossLimit(null)
+                setBetslipExposure(null)
+                setBetslipCurrentLoss(null)
             return
         }
         let cancelled = false

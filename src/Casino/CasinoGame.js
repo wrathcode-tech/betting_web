@@ -8,6 +8,44 @@ import { usePlatformConfig } from '../context/PlatformConfigContext'
 import { useAuth } from '../context/AuthContext'
 import { alertErrorMessage } from '../customComponents/CustomAlertMessage'
 
+function normalizeCategoryFromUrl(s) {
+    return String(s || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\+/g, ' ')
+        .replace(/\s+/g, ' ');
+}
+
+function isCrashTypeCategoryFromUrl(categoryParam) {
+    const n = normalizeCategoryFromUrl(categoryParam);
+    return n === 'crash type' || n === 'crashtype';
+}
+
+/** Crash Type lobby: Chicken Road (IO) first, then other crash-style games, then the rest. */
+function orderCrashTypeCategoryGames(games) {
+    if (!Array.isArray(games) || games.length === 0) return games;
+    const isPrimary = (g) =>
+        String(g.gameCode ?? g.code ?? '').toLowerCase() === 'chicken-road' &&
+        String(g.providerCode ?? '').toLowerCase() === 'io';
+    const isRelated = (g) => {
+        if (isPrimary(g)) return false;
+        const hay = `${String(g.gameCode ?? '')} ${String(g.name ?? '')}`.toLowerCase();
+        return (
+            hay.includes('chicken') ||
+            hay.includes('crash') ||
+            hay.includes('aviator') ||
+            hay.includes('jet') ||
+            hay.includes('mines') ||
+            hay.includes('plinko') ||
+            hay.includes('rocket')
+        );
+    };
+    const primary = games.filter(isPrimary);
+    const related = games.filter(isRelated);
+    const rest = games.filter((g) => !isPrimary(g) && !isRelated(g));
+    return [...primary, ...related, ...rest];
+}
+
 function CasinoGame() {
     const navigate = useNavigate();
     const { config: platformConfig } = usePlatformConfig();
@@ -50,16 +88,23 @@ function CasinoGame() {
     // URL gameName: when user clicks a game from home, show that game first in the list
     const gameNameParam = searchParams.get('gameName');
     const sortedProviderCategoryGames = useMemo(() => {
-        if (!gameNameParam || !providerCategoryGames.length) return providerCategoryGames;
-        const want = String(gameNameParam).trim().toLowerCase();
-        if (!want) return providerCategoryGames;
-        const idx = providerCategoryGames.findIndex((g) => String(g.name || '').trim().toLowerCase() === want);
-        if (idx <= 0) return providerCategoryGames;
-        const arr = [...providerCategoryGames];
+        let list = providerCategoryGames;
+        const catFromUrl = searchParams.get('category');
+        if (isCrashTypeCategoryFromUrl(catFromUrl)) {
+            list = orderCrashTypeCategoryGames(list);
+        }
+        if (!gameNameParam || !list.length) return list;
+        const want = String(gameNameParam).trim().toLowerCase().replace(/\+/g, ' ');
+        if (!want) return list;
+        const idx = list.findIndex(
+            (g) => String(g.name || '').trim().toLowerCase().replace(/\+/g, ' ') === want
+        );
+        if (idx <= 0) return list;
+        const arr = [...list];
         const [item] = arr.splice(idx, 1);
         arr.unshift(item);
         return arr;
-    }, [providerCategoryGames, gameNameParam]);
+    }, [providerCategoryGames, gameNameParam, searchParams]);
 
     // Sync category FROM URL once we have categoriesForProvider (depends on provider)
     const categoryParam = searchParams.get('category');
@@ -117,12 +162,16 @@ function CasinoGame() {
     /** Deep link /casino?gameName=… — after games load, go straight to /game (home uses /game; this covers old URLs). */
     const autoLaunchFromQueryKeyRef = useRef('');
     useEffect(() => {
-        const wantName = (searchParams.get('gameName') || '').trim().toLowerCase();
+        const wantName = (searchParams.get('gameName') || '')
+            .trim()
+            .toLowerCase()
+            .replace(/\+/g, ' ');
         if (!wantName) return;
         if (loadingProviderCategory) return;
-        const raw = sortedProviderCategoryGames.find(
-            (g) => String(g.name || '').trim().toLowerCase() === wantName
-        );
+        const raw = sortedProviderCategoryGames.find((g) => {
+            const nm = String(g.name || '').trim().toLowerCase().replace(/\+/g, ' ');
+            return nm === wantName;
+        });
         const gc = raw?.gameCode ?? raw?.code;
         const pc = raw?.providerCode;
         if (!raw || !gc || !pc) return;

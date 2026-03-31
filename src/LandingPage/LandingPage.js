@@ -147,6 +147,58 @@ function getLandingGameImage(item) {
   return item?.thumb || item?.thumbnail || item?.image || item?.icon || item?.logo || `${process.env.PUBLIC_URL || ''}/images/game_itemslider.png`
 }
 
+/** Chicken Road–style games (e.g. chicken-road-race, IO) — match code/name. */
+function isChickenRoadStyleGame(g) {
+  if (!g || typeof g !== 'object') return false
+  const code = String(g.gameCode ?? g.code ?? '').toLowerCase()
+  const name = String(g.name ?? '').toLowerCase()
+  return code.includes('chicken') || name.includes('chicken')
+}
+
+/** Crash / multiplier games (Aviator SPB, JetX, etc.) — not chicken-road. */
+function isCrashGameStyleGame(g) {
+  if (!g || typeof g !== 'object') return false
+  if (isChickenRoadStyleGame(g)) return false
+  const hay = `${String(g.gameCode ?? g.code ?? '')} ${String(g.name ?? '')}`.toLowerCase()
+  return (
+    hay.includes('aviator') ||
+    hay.includes('crash') ||
+    hay.includes('jetx') ||
+    hay.includes('jet x') ||
+    hay.includes('spaceman') ||
+    hay.includes('lucky jet') ||
+    hay.includes('luckyjet') ||
+    (hay.includes('rocket') && hay.includes('crash'))
+  )
+}
+
+/** Merge game arrays — same row from landing + SPB + category API appears once. */
+function mergeDedupeGames(...lists) {
+  const seen = new Set()
+  const out = []
+  for (const list of lists) {
+    if (!Array.isArray(list)) continue
+    for (const g of list) {
+      if (!g || typeof g !== 'object') continue
+      const id = g._id ?? g.id
+      const key =
+        id != null && String(id).trim() !== ''
+          ? `id:${String(id)}`
+          : `gc:${String(g.providerCode ?? g.provider ?? '').trim().toLowerCase()}:${String(g.gameCode ?? g.code ?? '').trim().toLowerCase()}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      out.push(g)
+    }
+  }
+  return out
+}
+
+/** GET /games?provider=all&category=… — backend “Crash Type” (URL: Crash+Type). */
+const CRASH_TYPE_CATEGORY_PARAM = 'Crash Type'
+
+/** Evolution Gaming — must match backend `providerCode` (change here if your API uses e.g. EVOLUTION). */
+const EVOLUTION_PROVIDER_CODE = 'EVO'
+
 /**
  * Home → play: jump straight to /game when API row has codes; else /casino with filters (lobby may auto-start).
  * @param {object} item – landing or lobby game row
@@ -338,14 +390,25 @@ function LandingPage() {
   const landingOddsScrollRefs = useRef(new Map());
   const isSyncingLandingOddsScrollRef = useRef(false);
 
-  // Landing API games (liveCasino, slots, trending, roulette, cardGames)
+  // Landing API games (liveCasino, slots, trending, roulette, cardGames, chickenRoad, crashGames)
   const [landingGames, setLandingGames] = useState({
-    liveCasino: [], slots: [], trending: [], roulette: [], cardGames: [],
+    liveCasino: [], slots: [], trending: [], roulette: [], cardGames: [], chickenRoad: [], crashGames: [],
   });
+  /** IO provider list filtered for chicken-road style — fallback when landing bucket empty */
+  const [ioChickenRoadGames, setIoChickenRoadGames] = useState([]);
+  /** SPB provider list filtered for crash-style (e.g. Aviator) — fallback when landing bucket empty */
+  const [spbCrashGames, setSpbCrashGames] = useState([]);
+  /** GET games?provider=all&category=Crash Type — extra crash titles for slider */
+  const [allCrashTypeCategoryGames, setAllCrashTypeCategoryGames] = useState([]);
+  /** GET games?provider=EVO&category=all — Evolution live games for home row */
+  const [evolutionGames, setEvolutionGames] = useState([]);
   const landingLiveCasinoRef = useRef(null);
   const landingSlotsRef = useRef(null);
   const landingTrendingRef = useRef(null);
   const trendingTopRef = useRef(null);
+  const landingChickenRoadRef = useRef(null);
+  const landingCrashGamesRef = useRef(null);
+  const landingEvolutionRef = useRef(null);
   const landingRouletteRef = useRef(null);
   const landingCardGamesRef = useRef(null);
   const lobbySliderRef = useRef(null);
@@ -355,6 +418,9 @@ function LandingPage() {
   const [trendingTopIndex, setTrendingTopIndex] = useState(0);
   const [landingRouletteIndex, setLandingRouletteIndex] = useState(0);
   const [landingCardGamesIndex, setLandingCardGamesIndex] = useState(0);
+  const [landingChickenRoadIndex, setLandingChickenRoadIndex] = useState(0);
+  const [landingCrashGamesIndex, setLandingCrashGamesIndex] = useState(0);
+  const [landingEvolutionIndex, setLandingEvolutionIndex] = useState(0);
   const [lobbySliderIndex, setLobbySliderIndex] = useState(0);
 
   // Casino Lobby: top 50 games from API (providerCode=EZ)
@@ -382,7 +448,7 @@ function LandingPage() {
     return () => io.disconnect();
   }, []);
 
-  // Fetch landing games (no auth). API returns { data: { liveCasino, slots, trending, roulette, cardGames } } or same keys at top level
+  // Fetch landing games (no auth). API may include chickenRoad / chicken_road for crash-style games
   useEffect(() => {
     let cancelled = false;
     AuthService.bettingGamesLanding()
@@ -396,9 +462,67 @@ function LandingPage() {
           trending: arr(data.trending),
           roulette: arr(data.roulette),
           cardGames: arr(data.cardGames),
+          chickenRoad: arr(data.chickenRoad ?? data.chicken_road),
+          crashGames: arr(data.crashGames ?? data.crash_games),
         });
       })
       .catch(() => { });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fallback: IO provider games (e.g. chicken-road-race) when landing bucket is empty
+  useEffect(() => {
+    let cancelled = false;
+    AuthService.bettingGamesList('IO', 'all', 1, 50)
+      .then((res) => {
+        if (cancelled) return;
+        const raw = res?.data ?? res;
+        const list = Array.isArray(raw?.games) ? raw.games : (Array.isArray(raw) ? raw : []);
+        setIoChickenRoadGames(list.filter(isChickenRoadStyleGame));
+      })
+      .catch(() => { if (!cancelled) setIoChickenRoadGames([]); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fallback: SPB provider (e.g. Aviator) when landing crashGames bucket is empty
+  useEffect(() => {
+    let cancelled = false;
+    AuthService.bettingGamesList('SPB', 'all', 1, 50)
+      .then((res) => {
+        if (cancelled) return;
+        const raw = res?.data ?? res;
+        const list = Array.isArray(raw?.games) ? raw.games : (Array.isArray(raw) ? raw : []);
+        setSpbCrashGames(list.filter(isCrashGameStyleGame));
+      })
+      .catch(() => { if (!cancelled) setSpbCrashGames([]); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Crash Games: also load provider=all&category=Crash Type (URL: …category=Crash+Type)
+  useEffect(() => {
+    let cancelled = false;
+    AuthService.bettingGamesList('all', CRASH_TYPE_CATEGORY_PARAM, 1, 50)
+      .then((res) => {
+        if (cancelled) return;
+        const raw = res?.data ?? res;
+        const list = Array.isArray(raw?.games) ? raw.games : (Array.isArray(raw) ? raw : []);
+        setAllCrashTypeCategoryGames(list);
+      })
+      .catch(() => { if (!cancelled) setAllCrashTypeCategoryGames([]); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Evolution: provider lobby list (same pattern as IO / SPB fallbacks)
+  useEffect(() => {
+    let cancelled = false;
+    AuthService.bettingGamesList(EVOLUTION_PROVIDER_CODE, 'all', 1, 50)
+      .then((res) => {
+        if (cancelled) return;
+        const raw = res?.data ?? res;
+        const list = Array.isArray(raw?.games) ? raw.games : (Array.isArray(raw) ? raw : []);
+        setEvolutionGames(list);
+      })
+      .catch(() => { if (!cancelled) setEvolutionGames([]); });
     return () => { cancelled = true; };
   }, []);
 
@@ -703,14 +827,44 @@ function LandingPage() {
     else navigate('/sports');
   };
 
+  const chickenRoadGamesResolved = useMemo(() => {
+    const fromLanding = landingGames.chickenRoad || [];
+    if (fromLanding.length > 0) return fromLanding;
+    if (ioChickenRoadGames.length > 0) return ioChickenRoadGames;
+    return (casinoLobbyGames || []).filter(isChickenRoadStyleGame);
+  }, [landingGames.chickenRoad, ioChickenRoadGames, casinoLobbyGames]);
+
+  const crashGamesResolved = useMemo(() => {
+    const fromLanding = landingGames.crashGames || [];
+    const spb = spbCrashGames || [];
+    const fromAllCat = allCrashTypeCategoryGames || [];
+    const lobby = (casinoLobbyGames || []).filter(isCrashGameStyleGame);
+    return mergeDedupeGames(fromLanding, spb, fromAllCat, lobby);
+  }, [landingGames.crashGames, spbCrashGames, allCrashTypeCategoryGames, casinoLobbyGames]);
+
   // Landing API sections: display items = games + View All card
   const landingSectionConfig = useMemo(() => ({
     liveCasino: { title: 'Live Casino', viewAllTo: '/casino?provider=EZ', games: landingGames.liveCasino },
     slots: { title: 'Slots', viewAllTo: '/casino?provider=all&category=Slots', games: landingGames.slots },
     trending: { title: 'Trending', viewAllTo: '/casino', games: landingGames.trending },
+    chickenRoad: {
+      title: 'Chicken Road',
+      viewAllTo: '/casino?provider=IO&category=Chicken+Road',
+      games: chickenRoadGamesResolved,
+    },
+    crashGames: {
+      title: 'Crash Games',
+      viewAllTo: `/casino?provider=all&category=${encodeURIComponent(CRASH_TYPE_CATEGORY_PARAM).replace(/%20/g, '+')}`,
+      games: crashGamesResolved,
+    },
+    evolution: {
+      title: 'Evolution',
+      viewAllTo: `/casino?provider=${encodeURIComponent(EVOLUTION_PROVIDER_CODE)}`,
+      games: evolutionGames,
+    },
     roulette: { title: 'Roulette', viewAllTo: '/casino?provider=all&category=Roulette', games: landingGames.roulette },
     cardGames: { title: 'Card Games', viewAllTo: '/casino?provider=all&category=Teen+Patti', games: landingGames.cardGames },
-  }), [landingGames]);
+  }), [landingGames, chickenRoadGamesResolved, crashGamesResolved, evolutionGames]);
 
   // Static sections: always show games + View All (data format remains same)
   const landingLiveCasinoDisplayItems = useMemo(() => {
@@ -725,6 +879,18 @@ function LandingPage() {
     const g = landingSectionConfig.trending.games;
     return [...g.map((game) => ({ ...game, viewAll: false })), { viewAll: true, to: landingSectionConfig.trending.viewAllTo }];
   }, [landingSectionConfig.trending]);
+  const landingChickenRoadDisplayItems = useMemo(() => {
+    const g = landingSectionConfig.chickenRoad.games;
+    return [...g.map((game) => ({ ...game, viewAll: false })), { viewAll: true, to: landingSectionConfig.chickenRoad.viewAllTo }];
+  }, [landingSectionConfig.chickenRoad]);
+  const landingCrashGamesDisplayItems = useMemo(() => {
+    const g = landingSectionConfig.crashGames.games;
+    return [...g.map((game) => ({ ...game, viewAll: false })), { viewAll: true, to: landingSectionConfig.crashGames.viewAllTo }];
+  }, [landingSectionConfig.crashGames]);
+  const landingEvolutionDisplayItems = useMemo(() => {
+    const g = landingSectionConfig.evolution.games;
+    return [...g.map((game) => ({ ...game, viewAll: false })), { viewAll: true, to: landingSectionConfig.evolution.viewAllTo }];
+  }, [landingSectionConfig.evolution]);
   const landingRouletteDisplayItems = useMemo(() => {
     const g = landingSectionConfig.roulette.games;
     return [...g.map((game) => ({ ...game, viewAll: false })), { viewAll: true, to: landingSectionConfig.roulette.viewAllTo }];
@@ -750,6 +916,9 @@ function LandingPage() {
   const landingLiveCasinoItemsPerSet = landingLiveCasinoDisplayItems.length;
   const landingSlotsItemsPerSet = landingSlotsDisplayItems.length;
   const landingTrendingItemsPerSet = landingTrendingDisplayItems.length;
+  const landingChickenRoadItemsPerSet = landingChickenRoadDisplayItems.length;
+  const landingCrashGamesItemsPerSet = landingCrashGamesDisplayItems.length;
+  const landingEvolutionItemsPerSet = landingEvolutionDisplayItems.length;
   const landingRouletteItemsPerSet = landingRouletteDisplayItems.length;
   const landingCardGamesItemsPerSet = landingCardGamesDisplayItems.length;
 
@@ -781,6 +950,18 @@ function LandingPage() {
     const el = landingTrendingRef.current;
     if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingTrendingIndex * landingItemWidth)}px)`;
   }, [landingTrendingIndex, landingItemWidth]);
+  useEffect(() => {
+    const el = landingChickenRoadRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingChickenRoadIndex * landingItemWidth)}px)`;
+  }, [landingChickenRoadIndex, landingItemWidth]);
+  useEffect(() => {
+    const el = landingCrashGamesRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingCrashGamesIndex * landingItemWidth)}px)`;
+  }, [landingCrashGamesIndex, landingItemWidth]);
+  useEffect(() => {
+    const el = landingEvolutionRef.current;
+    if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -landingEvolutionIndex * landingItemWidth)}px)`;
+  }, [landingEvolutionIndex, landingItemWidth]);
   useEffect(() => {
     const el = trendingTopRef.current;
     if (el) el.style.transform = `translateX(${clampSliderTranslate(el, -trendingTopIndex * landingItemWidth)}px)`;
@@ -1057,9 +1238,13 @@ function LandingPage() {
             }
             return trendingVideos.map((src, i) => {
               const category = trendingCategories[i] ?? 'lobby';
-              const to = category === 'Aviator'
-                ? '/casino?provider=SPB&category=Crash+Type'
-                : `/casino?provider=all&category=${encodeURIComponent(category)}`;
+              /** Aviator + Chicken Road promo tiles → Crash Type (Chicken Road IO pinned first on casino page) */
+              const to =
+                category === 'Aviator' ||
+                src.includes('68689.mp4') ||
+                src.includes('68693.mp4')
+                  ? '/casino?provider=all&category=Crash+Type'
+                  : `/casino?provider=all&category=${encodeURIComponent(category)}`;
               return (
                 <Link key={i} to={to} className='game_video_bl' style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                   <video width="100%" height="auto" autoPlay muted loop playsInline loading="lazy">
@@ -1178,7 +1363,7 @@ function LandingPage() {
             </div>
           </div>
         </div>
-        <div className="top_slot_outer top_slot_outer_casino">
+        {/* <div className="top_slot_outer top_slot_outer_casino">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">
               <h2 className="heading_h2"><img loading="lazy" src={`${process.env.PUBLIC_URL || ''}/images/live_icon.svg`} alt="game" width="24" height="24" /> {landingSectionConfig.trending.title}</h2>
@@ -1215,7 +1400,127 @@ function LandingPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
+        {chickenRoadGamesResolved.length > 0 && (
+          <div className="top_slot_outer top_slot_outer_casino">
+            <div className="container-fluid">
+              <div className="top_hd d-flex align-items-center justify-content-between">
+                <h2 className="heading_h2"><img loading="lazy" src={`${process.env.PUBLIC_URL || ''}/images/live_icon.svg`} alt="game" width="24" height="24" /> {landingSectionConfig.chickenRoad.title}</h2>
+                <div className="top_hd_right d-flex align-items-center gap-2">
+                  <Link to={landingSectionConfig.chickenRoad.viewAllTo}><button type="button" className="slotbtn">Go to {landingSectionConfig.chickenRoad.title}</button></Link>
+                </div>
+              </div>
+              <div
+                className="game_items_slider_wrapper"
+                onMouseDown={(e) => handleSliderMouseDown(e, { sliderRef: landingChickenRoadRef, getItemWidth: landingItemWidth, itemsPerSet: landingChickenRoadItemsPerSet, currentIndex: landingChickenRoadIndex, setIndex: setLandingChickenRoadIndex })}
+                onClickCapture={handleSliderClickCapture}
+                style={{ cursor: 'grab' }}
+              >
+                <div className="game_items_slider" ref={landingChickenRoadRef}>
+                  {landingChickenRoadDisplayItems.map((item, index) =>
+                    item.viewAll ? (
+                      <Link key="view-all-chicken-road" to={item.to} className="game_items_inner slider_view_all_card link_plain">
+                        <span className="slider_view_all_text">View All</span>
+                      </Link>
+                    ) : (
+                      <Link key={`chicken-${item.code ?? item.gameCode}-${index}`} to={getHomeCasinoGameTo(item, 'IO')} className="game_items_inner link_plain">
+                        <div className='playbtn'>
+                          <img loading="lazy" src="images/playbtn.png" alt="game" />
+                        </div>
+                        {item.badge && (
+                          <div className="top_ads">
+                            {item.badge}
+                          </div>
+                        )}
+                        <img loading="lazy" src={getLandingGameImage(item)} alt="game" />
+                      </Link>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {crashGamesResolved.length > 0 && (
+          <div className="top_slot_outer top_slot_outer_casino">
+            <div className="container-fluid">
+              <div className="top_hd d-flex align-items-center justify-content-between">
+                <h2 className="heading_h2"><img loading="lazy" src={`${process.env.PUBLIC_URL || ''}/images/live_icon.svg`} alt="game" width="24" height="24" /> {landingSectionConfig.crashGames.title}</h2>
+                <div className="top_hd_right d-flex align-items-center gap-2">
+                  <Link to={landingSectionConfig.crashGames.viewAllTo}><button type="button" className="slotbtn">Go to {landingSectionConfig.crashGames.title}</button></Link>
+                </div>
+              </div>
+              <div
+                className="game_items_slider_wrapper"
+                onMouseDown={(e) => handleSliderMouseDown(e, { sliderRef: landingCrashGamesRef, getItemWidth: landingItemWidth, itemsPerSet: landingCrashGamesItemsPerSet, currentIndex: landingCrashGamesIndex, setIndex: setLandingCrashGamesIndex })}
+                onClickCapture={handleSliderClickCapture}
+                style={{ cursor: 'grab' }}
+              >
+                <div className="game_items_slider" ref={landingCrashGamesRef}>
+                  {landingCrashGamesDisplayItems.map((item, index) =>
+                    item.viewAll ? (
+                      <Link key="view-all-crash-games" to={item.to} className="game_items_inner slider_view_all_card link_plain">
+                        <span className="slider_view_all_text">View All</span>
+                      </Link>
+                    ) : (
+                      <Link key={`crash-${item.code ?? item.gameCode}-${index}`} to={getHomeCasinoGameTo(item)} className="game_items_inner link_plain">
+                        <div className='playbtn'>
+                          <img loading="lazy" src="images/playbtn.png" alt="game" />
+                        </div>
+                        {item.badge && (
+                          <div className="top_ads">
+                            {item.badge}
+                          </div>
+                        )}
+                        <img loading="lazy" src={getLandingGameImage(item)} alt="game" />
+                      </Link>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {evolutionGames.length > 0 && (
+          <div className="top_slot_outer top_slot_outer_casino">
+            <div className="container-fluid">
+              <div className="top_hd d-flex align-items-center justify-content-between">
+                <h2 className="heading_h2"><img loading="lazy" src={`${process.env.PUBLIC_URL || ''}/images/live_icon.svg`} alt="game" width="24" height="24" /> {landingSectionConfig.evolution.title}</h2>
+                <div className="top_hd_right d-flex align-items-center gap-2">
+                  <Link to={landingSectionConfig.evolution.viewAllTo}><button type="button" className="slotbtn">Go to {landingSectionConfig.evolution.title}</button></Link>
+                </div>
+              </div>
+              <div
+                className="game_items_slider_wrapper"
+                onMouseDown={(e) => handleSliderMouseDown(e, { sliderRef: landingEvolutionRef, getItemWidth: landingItemWidth, itemsPerSet: landingEvolutionItemsPerSet, currentIndex: landingEvolutionIndex, setIndex: setLandingEvolutionIndex })}
+                onClickCapture={handleSliderClickCapture}
+                style={{ cursor: 'grab' }}
+              >
+                <div className="game_items_slider" ref={landingEvolutionRef}>
+                  {landingEvolutionDisplayItems.map((item, index) =>
+                    item.viewAll ? (
+                      <Link key="view-all-evolution" to={item.to} className="game_items_inner slider_view_all_card link_plain">
+                        <span className="slider_view_all_text">View All</span>
+                      </Link>
+                    ) : (
+                      <Link key={`evo-${item.code ?? item.gameCode}-${index}`} to={getHomeCasinoGameTo(item, EVOLUTION_PROVIDER_CODE)} className="game_items_inner link_plain">
+                        <div className='playbtn'>
+                          <img loading="lazy" src="images/playbtn.png" alt="game" />
+                        </div>
+                        {item.badge && (
+                          <div className="top_ads">
+                            {item.badge}
+                          </div>
+                        )}
+                        <img loading="lazy" src={getLandingGameImage(item)} alt="game" />
+                      </Link>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="top_slot_outer top_slot_outer_casino">
           <div className="container-fluid">
             <div className="top_hd d-flex align-items-center justify-content-between">

@@ -472,7 +472,7 @@ const AuthService = {
     const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
     return ApiCallGet(url, headers);
   },
-  /** GET /api/v1/games/landing – no auth. Returns liveCasino, slots, trending, roulette, cardGames. */
+  /** GET /api/v1/games/landing – no auth. Returns liveCasino, slots, trending, roulette, cardGames; optional chickenRoad / chicken_road, crashGames / crash_games. */
   bettingGamesLanding: async () => {
     const { baseBettingGames, bettingGamesLanding } = ApiConfig;
     const url = baseBettingGames + bettingGamesLanding;

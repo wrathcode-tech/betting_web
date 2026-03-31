@@ -1637,10 +1637,10 @@ ul.match_type_tabs li.active button {
         font-size: 5px;
     }
 
-    .sports_grid_table_wrap.desktop_view .sports_grid_desktop_tool_icon {
+        .sports_grid_table_wrap.desktop_view .sports_grid_desktop_tool_icon {
         font-size: 12px;
     }
-
+    
     .sports_top_match_section {
         margin-top: 10px;
     }
