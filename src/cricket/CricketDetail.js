@@ -377,10 +377,15 @@ function CricketDetail() {
         gameIdFromState ??
         defaultMatch?.eventId ??
         gameId
+    /** Cricket: Professorji / score.akamaized; Tennis & Football: cricketbz.app iframe by event id */
     const professorScoreIframeUrl = useMemo(() => {
         if (!['cricket', 'tennis', 'soccer'].includes(sportName) || !eventId) return null
+        const id = String(eventId)
+        if (sportName === 'tennis' || sportName === 'soccer') {
+            return `https://cricketbz.app/iframe/${encodeURIComponent(id)}`
+        }
         const params = new URLSearchParams()
-        params.set('id', String(eventId))
+        params.set('id', id)
         params.set('sport', professorjiSportParam)
         const mn = eventNameFromState
         if (mn != null && String(mn).trim() !== '') params.set('matchName', String(mn).trim())
@@ -2357,7 +2362,7 @@ function CricketDetail() {
                                                         </button>
                                                         {isLiveScoreDropdownOpen && (
                                                             <iframe
-                                                                title='Professorji Scorecard'
+                                                                title={sportName === 'cricket' ? 'Professorji Scorecard' : 'Live score'}
                                                                 src={professorScoreIframeUrl}
                                                                 className='match_tv_iframe'
                                                                 style={{ minHeight: '420px', background: '#1a2332' }}
