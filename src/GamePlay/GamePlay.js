@@ -6,6 +6,7 @@ import AuthService from '../api/services/AuthService';
 import { useBalance } from '../context/BalanceContext';
 import { useAuth } from '../context/AuthContext';
 import { getLastBalance, getLastDemoPlayBalance } from '../socket/balanceSocket';
+import { getWarmLaunch, setWarmLaunch, preconnectToUrl } from '../utils/gameLaunchWarmup';
 
 const GAME_SESSION_KEY = 'wcoGameSession';
 
@@ -312,6 +313,9 @@ function GamePlay() {
     launchCalledRef.current = false;
   }, [stateGameCode, stateProviderCode]);
 
+  const getPlatform = () =>
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 'mobile' : 'desktop';
+
   useEffect(() => {
     if (!stateGameCode || !stateProviderCode) return;
 
@@ -353,7 +357,30 @@ function GamePlay() {
     setProviderCode(stateProviderCode);
     setGameName(stateGameName || '');
 
-    const platform = typeof window !== 'undefined' && window.innerWidth < 768 ? 'mobile' : 'desktop';
+    const platform = getPlatform();
+    const warm = getWarmLaunch(stateGameCode, stateProviderCode, platform);
+    if (warm?.launchURL) {
+      setLaunchURL(warm.launchURL);
+      setLoading(false);
+      setError(null);
+      if (isDemo) {
+        setBalance(0);
+        if (warm.demoPlayBalance != null) setDemoPlayBalance(Number(warm.demoPlayBalance));
+      } else if (warm.balance != null) {
+        setBalance(warm.balance);
+      }
+      saveSession({
+        launchURL: warm.launchURL,
+        sessionId: warm.sessionId,
+        gameCode: warm.gameCode ?? stateGameCode,
+        providerCode: warm.providerCode ?? stateProviderCode,
+        providerName: stateProviderName || '',
+        gameName: stateGameName || warm?.game?.name || '',
+        balance: isDemo ? 0 : warm.balance,
+        demoPlayBalance: isDemo ? warm.demoPlayBalance : null,
+      });
+      return;
+    }
     AuthService.bettingGamesLaunch(stateGameCode, stateProviderCode, platform)
       .then((res) => {
         const payload = extractLaunchPayload(res);
@@ -367,6 +394,8 @@ function GamePlay() {
           return;
         }
         if (payload?.launchURL) {
+          setWarmLaunch(stateGameCode, stateProviderCode, platform, payload);
+          preconnectToUrl(payload.launchURL);
           setLaunchURL(payload.launchURL);
           if (isDemo) {
             setBalance(0);
@@ -395,6 +424,11 @@ function GamePlay() {
         setLoading(false);
       });
   }, [stateGameCode, stateProviderCode, stateGameName, stateProviderName, isDemo, setBalance, setDemoPlayBalance]);
+
+  useEffect(() => {
+    if (!launchURL) return;
+    preconnectToUrl(launchURL);
+  }, [launchURL]);
 
   // Persist context balance to session when it changes (e.g. socket update)
   useEffect(() => {
