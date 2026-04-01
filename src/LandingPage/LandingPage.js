@@ -15,7 +15,14 @@ import {
   getMatchStreamVisible,
   mergeAndSortPillCodes,
 } from '../utils/matchMarketPills'
-import { normalizeMatchDataEventTime, pickMatchEventTime } from '../utils/matchDataNormalize'
+import { pickMatchEventTime } from '../utils/matchDataNormalize'
+import {
+  formatMatchDateTimeLabelIST,
+  formatTimeOnlyIST,
+  getDayGroupIST,
+  resolveEventTimeForIndiaDisplay,
+  ymdKeyIST,
+} from '../utils/matchTimeIST'
 import { computeTop1x2Cells } from '../utils/sportsGameOdds'
 import '../customComponents/Footer.css'
 import '../sports/sportsGame.css'
@@ -61,38 +68,6 @@ function hero3dSlideAbsoluteUrl(src) {
   return base ? `${base}/${path}` : `/${path}`
 }
 
-function formatMatchTime(isoStr) {
-  if (!isoStr) return ''
-  try {
-    const d = new Date(isoStr)
-    if (isNaN(d.getTime())) return isoStr
-    const today = new Date()
-    const isToday = d.toDateString() === today.toDateString()
-    const dateStr = isToday ? 'Today' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-    const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
-    return `${dateStr} ${timeStr}`
-  } catch {
-    return isoStr
-  }
-}
-
-function getDayGroup(isoStr) {
-  if (!isoStr) return ''
-  try {
-    const d = new Date(isoStr)
-    if (isNaN(d.getTime())) return ''
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    if (d.toDateString() === today.toDateString()) return 'Today'
-    if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow'
-    // Use date (not weekday) so multiple weeks don't merge into one section.
-    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-  } catch {
-    return ''
-  }
-}
-
 /** Home TOP rows from `matchData:update` MatchRow[] — align with server: id = gameId ?? eventId. */
 function mapMatchDataRowsToTopMatches(matches, defaults) {
   if (!Array.isArray(matches)) return []
@@ -105,16 +80,8 @@ function mapMatchDataRowsToTopMatches(matches, defaults) {
     .map((r) => {
       const gid = String(r.gameId ?? r.eventId)
       const rawTime = pickMatchEventTime(r)
-      const et = rawTime != null ? normalizeMatchDataEventTime(rawTime) : null
-      let timeOnly = ''
-      if (et) {
-        try {
-          const d = new Date(et)
-          if (!isNaN(d.getTime())) {
-            timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
-          }
-        } catch { /* ignore */ }
-      }
+      const et = resolveEventTimeForIndiaDisplay(rawTime)
+      const timeOnly = et != null ? formatTimeOnlyIST(et) : ''
       const mid = r.marketId
       return {
         id: gid,
@@ -124,7 +91,7 @@ function mapMatchDataRowsToTopMatches(matches, defaults) {
         tournament: defaults.tournament,
         teams: r.eventName ?? '—',
         eventName: r.eventName ?? '—',
-        time: formatMatchTime(et),
+        time: et != null ? formatMatchDateTimeLabelIST(et) : '',
         eventTime: et,
         inPlay: !!r.inPlay,
         timeOnly,
@@ -709,25 +676,23 @@ function LandingPage() {
   // TOP Matches: grouped by day (Live, Today, Tomorrow, …) for table view
   const groupMatchesByDay = (matches) => {
     const list = matches.map((m) => {
-      const et = m.eventTime ?? pickMatchEventTime(m);
-      let timeOnly = '';
-      let eventMs = null;
-      if (et) {
-        try {
-          const d = new Date(et);
-          if (!isNaN(d.getTime())) {
-            eventMs = d.getTime();
-            timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-          }
-        } catch { }
+      const etMs =
+        m.eventTime != null && m.eventTime !== ''
+          ? typeof m.eventTime === 'number'
+            ? m.eventTime
+            : resolveEventTimeForIndiaDisplay(m.eventTime)
+          : resolveEventTimeForIndiaDisplay(pickMatchEventTime(m))
+      let timeOnly = ''
+      let eventMs = null
+      let dayYmd = null
+      if (etMs != null) {
+        eventMs = etMs
+        timeOnly = formatTimeOnlyIST(etMs)
+        dayYmd = ymdKeyIST(etMs)
       }
-      const dayGroup = getDayGroup(et);
-      const dayMs =
-        eventMs != null
-          ? new Date(eventMs).setHours(0, 0, 0, 0)
-          : null;
-      return { ...m, eventTime: et, dayGroup, timeOnly, __eventMs: eventMs, __dayMs: dayMs };
-    });
+      const dayGroup = getDayGroupIST(etMs)
+      return { ...m, eventTime: etMs, dayGroup, timeOnly, __eventMs: eventMs, __dayYmd: dayYmd }
+    })
     const sorted = [...list].sort((a, b) => (b.inPlay ? 1 : 0) - (a.inPlay ? 1 : 0));
     const liveMatches = sorted
       .filter((m) => m.inPlay)
@@ -736,17 +701,17 @@ function LandingPage() {
       .filter((m) => !m.inPlay)
       .sort((a, b) => (a.__eventMs ?? Number.POSITIVE_INFINITY) - (b.__eventMs ?? Number.POSITIVE_INFINITY));
     const groups = {};
-    const groupDayMs = {};
+    const groupDayYmd = {};
     nonLive.forEach((m) => {
       const day = m.dayGroup || 'Other';
       if (!groups[day]) groups[day] = [];
       groups[day].push(m);
-      if (groupDayMs[day] == null && m.__dayMs != null) groupDayMs[day] = m.__dayMs;
+      if (groupDayYmd[day] == null && m.__dayYmd) groupDayYmd[day] = m.__dayYmd;
     });
     const order = ['Today', 'Tomorrow'];
     const rest = Object.keys(groups)
       .filter((d) => !order.includes(d))
-      .sort((a, b) => (groupDayMs[a] ?? Number.POSITIVE_INFINITY) - (groupDayMs[b] ?? Number.POSITIVE_INFINITY));
+      .sort((a, b) => String(groupDayYmd[a] || '').localeCompare(String(groupDayYmd[b] || '')));
     const daySections = [...order.filter((d) => groups[d]?.length), ...rest].map((day) => ({
       day,
       matches: groups[day],
@@ -774,7 +739,6 @@ function LandingPage() {
     () => groupMatchesByDay(soccerTopDisplayMatches.slice(0, 25)),
     [soccerTopDisplayMatches]
   );
-
   const navigate = useNavigate();
   const registerLandingOddsScrollRef = useCallback((key, node) => {
     if (node) landingOddsScrollRefs.current.set(key, node)
@@ -1065,81 +1029,81 @@ function LandingPage() {
               className={`slider3d_stage ${hero3dImagesReady ? 'slider3d_stage_ready' : ''}`}
               aria-busy={!hero3dImagesReady}
             >
-            <div
-              className="slider3d_wrapper"
-              onPointerDown={handleHero3dPointerDown}
-              onPointerUp={handleHero3dPointerUp}
-              onPointerCancel={handleHero3dPointerUp}
-            >
-              {hero3dOffsets.map((offset) => {
-                const slideIndex = getHero3dIndex(offset);
-                const slide = hero3dSlides[slideIndex];
-                const isCenter = offset === 0;
-                const positionClass =
-                  offset === -2 ? 'slider3d_pos_left2' :
-                    offset === -1 ? 'slider3d_pos_left1' :
-                      offset === 0 ? 'slider3d_pos_center' :
-                        offset === 1 ? 'slider3d_pos_right1' :
-                          'slider3d_pos_right2';
-                return (
-                  <div
-                    key={slideIndex}
-                    className={`slider3d ${positionClass} ${isCenter ? 'slider3d_active' : ''} ${isCenter ? 'slider3d_has_overlay' : ''}`}
-                    role="button"
-                    tabIndex={0}
-                    onClick={(e) => handleHero3dCardClick(e, slide)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(slide.to || '/casino'); } }}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className="slider3d_slide_link link_plain" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-                      <img
-                        src={slide.src}
-                        alt={slide.alt}
-                        decoding="async"
-                        loading="eager"
-                        {...(isCenter ? { fetchPriority: 'high' } : {})}
-                      />
-                      {isCenter && slide.heading != null && (
-                        <div className="slider3d_card_overlay slider3d_card_overlay_animate">
-                          <span className="slider3d_card_overlay_title">{slide.heading}</span>
-                          <span className="slider3d_card_overlay_subtitle">{slide.subContent}</span>
-                        </div>
-                      )}
+              <div
+                className="slider3d_wrapper"
+                onPointerDown={handleHero3dPointerDown}
+                onPointerUp={handleHero3dPointerUp}
+                onPointerCancel={handleHero3dPointerUp}
+              >
+                {hero3dOffsets.map((offset) => {
+                  const slideIndex = getHero3dIndex(offset);
+                  const slide = hero3dSlides[slideIndex];
+                  const isCenter = offset === 0;
+                  const positionClass =
+                    offset === -2 ? 'slider3d_pos_left2' :
+                      offset === -1 ? 'slider3d_pos_left1' :
+                        offset === 0 ? 'slider3d_pos_center' :
+                          offset === 1 ? 'slider3d_pos_right1' :
+                            'slider3d_pos_right2';
+                  return (
+                    <div
+                      key={slideIndex}
+                      className={`slider3d ${positionClass} ${isCenter ? 'slider3d_active' : ''} ${isCenter ? 'slider3d_has_overlay' : ''}`}
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => handleHero3dCardClick(e, slide)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(slide.to || '/casino'); } }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="slider3d_slide_link link_plain" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                        <img
+                          src={slide.src}
+                          alt={slide.alt}
+                          decoding="async"
+                          loading="eager"
+                          {...(isCenter ? { fetchPriority: 'high' } : {})}
+                        />
+                        {isCenter && slide.heading != null && (
+                          <div className="slider3d_card_overlay slider3d_card_overlay_animate">
+                            <span className="slider3d_card_overlay_title">{slide.heading}</span>
+                            <span className="slider3d_card_overlay_subtitle">{slide.subContent}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="slider3d_controls">
-              <button
-                type="button"
-                className="slider3d_arrow slider3d_arrow_prev"
-                onClick={() => setHero3dIndex((prev) => (prev === 0 ? hero3dTotal - 1 : prev - 1))}
-                aria-label="Previous slide"
-              >
-                <i className="ri-arrow-left-s-line" aria-hidden="true" />
-              </button>
-              <div className="slider3d_dots">
-                {hero3dSlides.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    className={`slider3d_dot ${i === hero3dIndex ? 'slider3d_dot_active' : ''}`}
-                    onClick={() => setHero3dIndex(i)}
-                    aria-label={`Go to slide ${i + 1}`}
-                    aria-current={i === hero3dIndex ? 'true' : undefined}
-                  />
-                ))}
+                  );
+                })}
               </div>
-              <button
-                type="button"
-                className="slider3d_arrow slider3d_arrow_next"
-                onClick={() => setHero3dIndex((prev) => (prev === hero3dTotal - 1 ? 0 : prev + 1))}
-                aria-label="Next slide"
-              >
-                <i className="ri-arrow-right-s-line" aria-hidden="true" />
-              </button>
-            </div>
+              <div className="slider3d_controls">
+                <button
+                  type="button"
+                  className="slider3d_arrow slider3d_arrow_prev"
+                  onClick={() => setHero3dIndex((prev) => (prev === 0 ? hero3dTotal - 1 : prev - 1))}
+                  aria-label="Previous slide"
+                >
+                  <i className="ri-arrow-left-s-line" aria-hidden="true" />
+                </button>
+                <div className="slider3d_dots">
+                  {hero3dSlides.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`slider3d_dot ${i === hero3dIndex ? 'slider3d_dot_active' : ''}`}
+                      onClick={() => setHero3dIndex(i)}
+                      aria-label={`Go to slide ${i + 1}`}
+                      aria-current={i === hero3dIndex ? 'true' : undefined}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="slider3d_arrow slider3d_arrow_next"
+                  onClick={() => setHero3dIndex((prev) => (prev === hero3dTotal - 1 ? 0 : prev + 1))}
+                  aria-label="Next slide"
+                >
+                  <i className="ri-arrow-right-s-line" aria-hidden="true" />
+                </button>
+              </div>
             </div>
 
             <div className="casino_hero_s_lft">
@@ -1241,8 +1205,8 @@ function LandingPage() {
               /** Aviator + Chicken Road promo tiles → Crash Type (Chicken Road IO pinned first on casino page) */
               const to =
                 category === 'Aviator' ||
-                src.includes('68689.mp4') ||
-                src.includes('68693.mp4')
+                  src.includes('68689.mp4') ||
+                  src.includes('68693.mp4')
                   ? '/casino?provider=all&category=Crash+Type'
                   : `/casino?provider=all&category=${encodeURIComponent(category)}`;
               return (

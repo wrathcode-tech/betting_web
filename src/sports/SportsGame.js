@@ -11,7 +11,13 @@ import {
     normalizeMatchDataUpdatePayload,
 } from '../socket/matchDataSocket'
 import { getMarketPillsFromSources, getMatchStreamVisible, mergeAndSortPillCodes } from '../utils/matchMarketPills'
-import { normalizeMatchDataEventTime, pickMatchEventTime } from '../utils/matchDataNormalize'
+import { pickMatchEventTime } from '../utils/matchDataNormalize'
+import {
+    formatMatchDateTimeLabelIST,
+    formatTimeOnlyIST,
+    getDayGroupIST,
+    resolveEventTimeForIndiaDisplay,
+} from '../utils/matchTimeIST'
 import { computeTop1x2Cells } from '../utils/sportsGameOdds'
 
 const GALLERY_SLIDES = ['images/sports_slider_img2.png', 'images/sports_slider_img.png', 'images/sports_slider_img3.png']
@@ -45,7 +51,7 @@ function mapSocketRows(matches, seriesLabel) {
         .map((r) => {
             const gid = String(r.gameId ?? r.eventId)
             const rawTime = pickMatchEventTime(r)
-            const et = rawTime != null ? normalizeMatchDataEventTime(rawTime) : null
+            const et = resolveEventTimeForIndiaDisplay(rawTime)
             return {
                 gameId: gid,
                 eventId: gid,
@@ -81,48 +87,14 @@ function rowPills(match, oddsPayload) {
     return mergeAndSortPillCodes(flags, getMarketPillsFromSources(match, oddsPayload))
 }
 
-function formatMatchTime(isoStr) {
-    if (!isoStr) return ''
-    try {
-        const d = new Date(isoStr)
-        if (isNaN(d.getTime())) return isoStr
-        const today = new Date()
-        const isToday = d.toDateString() === today.toDateString()
-        const dateStr = isToday ? 'Today' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-        const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
-        return `${dateStr} ${timeStr}`
-    } catch {
-        return isoStr
-    }
-}
-
-function dayGroupLabel(isoStr) {
-    if (!isoStr) return ''
-    try {
-        const d = new Date(isoStr)
-        if (isNaN(d.getTime())) return ''
-        const today = new Date()
-        const tomorrow = new Date(today)
-        tomorrow.setDate(tomorrow.getDate() + 1)
-        if (d.toDateString() === today.toDateString()) return 'Today'
-        if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow'
-        return d.toLocaleDateString('en-IN', { weekday: 'long' })
-    } catch {
-        return ''
-    }
-}
-
 function toDisplayRow(m, sport) {
     const ui = SPORT_UI[sport]
     const rawTime = m.eventTime ?? pickMatchEventTime(m)
-    const eventTime = rawTime != null ? normalizeMatchDataEventTime(rawTime) : null
-    let timeOnly = ''
-    if (eventTime) {
-        try {
-            const d = new Date(eventTime)
-            if (!isNaN(d.getTime())) timeOnly = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
-        } catch { /* ignore */ }
-    }
+    const eventTime =
+        typeof rawTime === 'number' && Number.isFinite(rawTime)
+            ? rawTime
+            : resolveEventTimeForIndiaDisplay(rawTime)
+    const timeOnly = eventTime != null ? formatTimeOnlyIST(eventTime) : ''
     const inPlay = !!(
         m.inPlay ||
         (m.status && String(m.status).toLowerCase() === 'live') ||
@@ -134,9 +106,9 @@ function toDisplayRow(m, sport) {
         tournament: m.seriesName ?? ui.title,
         teams: title,
         eventName: title,
-        time: formatMatchTime(eventTime),
+        time: eventTime != null ? formatMatchDateTimeLabelIST(eventTime) : '',
         timeOnly,
-        dayGroup: dayGroupLabel(eventTime),
+        dayGroup: eventTime != null ? getDayGroupIST(eventTime) : '',
         icon: ui.cardIcon,
         eventId: m.eventId,
         gameId: m.gameId,
