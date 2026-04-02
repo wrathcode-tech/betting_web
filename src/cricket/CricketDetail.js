@@ -1145,15 +1145,22 @@ function CricketDetail() {
         const isOpen = market.status !== 'CLOSED'
         const showMatchOddsPlColumn =
             (marketTypeApi === 'match_odds' || marketTypeApi === 'bookmaker') && oddList.length >= 2
+        /** Cricket (/cricket): P/L column on every market table; tennis/football: match odds + bookmaker only */
+        const showIndicatorPlColumn = sportName === 'cricket' || showMatchOddsPlColumn
         const sectionOpenBets = (openBetsList || []).filter((b) =>
             openBetMatchesSection(b, gameId, marketId, marketTypeApi, eventId)
         )
         // Mobile betslip should appear only in the block whose marketType matches the selected bet (cricket + soccer + tennis)
         const currentMarketType = selectedBets[0]?.placePayload?.marketType
         const isMatchOddsSection = sectionKey === 'match_odds' || sectionKey.startsWith('match_odds_') || sectionKey.startsWith('soccer_below_') || sectionKey.startsWith('tennis_extra_')
+        const isBookmakerSection = sectionKey === 'bookmaker' || sectionKey.startsWith('bookmaker_')
         const isSlipForMatchOdds = isMatchOddsSection && currentMarketType === 'match_odds'
+        const isSlipForBookmaker = isBookmakerSection && currentMarketType === 'bookmaker'
         const isSlipForMiniBookmaker = sectionKey.startsWith('mini_bookmaker') && currentMarketType === 'fancy'
-        const showMobileSlipHere = isMobileBetslipOpen && selectedBets.length > 0 && (isSlipForMatchOdds || isSlipForMiniBookmaker)
+        const showMobileSlipHere =
+            isMobileBetslipOpen &&
+            selectedBets.length > 0 &&
+            (isSlipForMatchOdds || isSlipForBookmaker || isSlipForMiniBookmaker)
 
         const bookBets = collectBookBetsFromOpenAndSlip({
             openBetsInSection: sectionOpenBets,
@@ -1238,14 +1245,15 @@ function CricketDetail() {
                 </div>
                 <div className="odds_section_table_wrap">
                     <table
-                        className={`odds_section_table${isOddsTableCompact ? ' odds_section_table_compact' : ''}${showMatchOddsPlColumn ? ' odds_section_table_with_pl' : ''
-                            }`}
+                        className={`odds_section_table${isOddsTableCompact ? ' odds_section_table_compact' : ''}${
+                            showIndicatorPlColumn ? ' odds_section_table_with_pl' : ''
+                        }`}
                     >
                         <thead>
                             <tr>
                                 <th>Market</th>
                                 <th className="odds_section_indicator_th odds_section_pl_header" scope="col" title="Profit / loss (betslip or open bets)">
-                                    {/* P/L */}
+                                    P/L
                                 </th>
                                 <th colSpan={isOddsTableCompact ? 1 : 3}>Back</th>
                                 <th colSpan={isOddsTableCompact ? 1 : 3}>Lay</th>
@@ -1382,9 +1390,9 @@ function CricketDetail() {
                                     (showLossOnThisRow && lossAmount != null && isLargePlRupeeAmount(lossAmount)) ||
                                     (showPlFromOpenBets && isLargePlRupeeAmount(plIfThisRunnerWins))
 
-                                // Indicator column is CSS-hidden on this table, so mobile inline slip
-                                // row should span only visible columns (Market + Back cells + Lay cells).
-                                const totalCols = 1 + backCells.length + layCells.length
+                                // Mobile slip row colspan: Market + optional visible P/L + Back + Lay
+                                const totalCols =
+                                    (showIndicatorPlColumn ? 2 : 1) + backCells.length + layCells.length
                                 const isMiniBookRowSelected =
                                     showMobileSlipHere &&
                                     sectionKey.startsWith('mini_bookmaker') &&
@@ -1590,7 +1598,7 @@ function CricketDetail() {
                 </div>
 
 
-                {showMobileSlipHere && isMatchOddsSection && (
+                {showMobileSlipHere && (isMatchOddsSection || isBookmakerSection) && (
                     <div className="cricketbet_mobile">
                         <div className="betslip_panel">
                             <div className="betslip_content">
