@@ -131,6 +131,15 @@ function formatStatusOverlayText(label) {
     return String(label).toUpperCase()
 }
 
+/** P/L box: lakh+ rupee amounts need smaller / wrapping layout so they do not overlap Back cells */
+const LARGE_PL_RUPEE_THRESHOLD = 100000
+
+function isLargePlRupeeAmount(value) {
+    const n = Number(value)
+    if (!Number.isFinite(n)) return false
+    return Math.abs(n) >= LARGE_PL_RUPEE_THRESHOLD
+}
+
 function partitionFancyOdds(fancyArr) {
     if (!Array.isArray(fancyArr)) return { miniFancy: [], sessionFancy: [], oddEvenFancy: [] }
     const oddEven = []
@@ -1368,6 +1377,11 @@ function CricketDetail() {
                                     sectionOpenBets.length > 0 &&
                                     (Math.abs(plIfThisRunnerWins) > 0.005)
 
+                                const indicatorCellPlLarge =
+                                    (showProfitOnThisRow && profitAmount != null && isLargePlRupeeAmount(profitAmount)) ||
+                                    (showLossOnThisRow && lossAmount != null && isLargePlRupeeAmount(lossAmount)) ||
+                                    (showPlFromOpenBets && isLargePlRupeeAmount(plIfThisRunnerWins))
+
                                 // Indicator column is CSS-hidden on this table, so mobile inline slip
                                 // row should span only visible columns (Market + Back cells + Lay cells).
                                 const totalCols = 1 + backCells.length + layCells.length
@@ -1381,16 +1395,24 @@ function CricketDetail() {
                                     <React.Fragment key={odd.sid ?? odd.selectionId ?? oIdx}>
                                         <tr>
                                             <td className="odds_section_market_name">{name}</td>
-                                            <td className="odds_section_indicator_cell">
+                                            <td
+                                                className={`odds_section_indicator_cell${indicatorCellPlLarge ? ' odds_section_indicator_cell_pl_large' : ''}`}
+                                            >
                                                 {isMatchOdds && matchOddsBet && stakeNum > 0 && (
                                                     <>
                                                         {showProfitOnThisRow && profitAmount != null && (
-                                                            <span className="odds_section_pl_box odds_section_pl_box_positive" title="Jit gaya to itna profit">
+                                                            <span
+                                                                className={`odds_section_pl_box odds_section_pl_box_positive${isLargePlRupeeAmount(profitAmount) ? ' odds_section_pl_box_large' : ''}`}
+                                                                title="Jit gaya to itna profit"
+                                                            >
                                                                 +₹{profitAmount.toFixed(2)}
                                                             </span>
                                                         )}
                                                         {showLossOnThisRow && lossAmount != null && (
-                                                            <span className="odds_section_pl_box odds_section_pl_box_negative" title="Harega to itna loss">
+                                                            <span
+                                                                className={`odds_section_pl_box odds_section_pl_box_negative${isLargePlRupeeAmount(lossAmount) ? ' odds_section_pl_box_large' : ''}`}
+                                                                title="Harega to itna loss"
+                                                            >
                                                                 −₹{lossAmount.toFixed(2)}
                                                             </span>
                                                         )}
@@ -1398,11 +1420,17 @@ function CricketDetail() {
                                                 )}
                                                 {showPlFromOpenBets && (
                                                     plIfThisRunnerWins >= 0 ? (
-                                                        <span className="odds_section_pl_box odds_section_pl_box_positive" title="Is selection par open bets · agar yeh jeete">
+                                                        <span
+                                                            className={`odds_section_pl_box odds_section_pl_box_positive${isLargePlRupeeAmount(plIfThisRunnerWins) ? ' odds_section_pl_box_large' : ''}`}
+                                                            title="Is selection par open bets · agar yeh jeete"
+                                                        >
                                                             +₹{plIfThisRunnerWins.toFixed(2)}
                                                         </span>
                                                     ) : (
-                                                        <span className="odds_section_pl_box odds_section_pl_box_negative" title="Is selection par open bets · agar yeh jeete">
+                                                        <span
+                                                            className={`odds_section_pl_box odds_section_pl_box_negative${isLargePlRupeeAmount(plIfThisRunnerWins) ? ' odds_section_pl_box_large' : ''}`}
+                                                            title="Is selection par open bets · agar yeh jeete"
+                                                        >
                                                             −₹{Math.abs(plIfThisRunnerWins).toFixed(2)}
                                                         </span>
                                                     )

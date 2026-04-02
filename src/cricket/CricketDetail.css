@@ -2772,6 +2772,89 @@ td.odds_section_status_overlay_td {
 
 }
 
+/* Match odds / Bookmaker P/L column: keep amounts inside cell (lakh+ gets extra class from JS) */
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl:not(.odds_section_table_compact) .odds_section_indicator_th,
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl:not(.odds_section_table_compact) .odds_section_indicator_cell {
+    min-width: 80px;
+    max-width: 104px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl:not(.odds_section_table_compact) .odds_section_indicator_cell {
+    vertical-align: middle;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl:not(.odds_section_table_compact):has(.odds_section_indicator_cell_pl_large) .odds_section_indicator_th {
+    min-width: 108px;
+    max-width: 136px;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl:not(.odds_section_table_compact) .odds_section_indicator_cell_pl_large {
+    min-width: 108px;
+    max-width: 136px;
+    white-space: normal;
+}
+
+/* Non-compact: pin P/L column width so table-layout:fixed does not collapse it under Back/Lay */
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl:not(.odds_section_table_compact) thead tr > th:nth-child(2).odds_section_indicator_th,
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl:not(.odds_section_table_compact) tbody tr > td:nth-child(2).odds_section_indicator_cell {
+    width: 96px;
+    min-width: 80px;
+    max-width: 104px;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl:not(.odds_section_table_compact):has(.odds_section_indicator_cell_pl_large) thead tr > th:nth-child(2).odds_section_indicator_th,
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl:not(.odds_section_table_compact) tbody tr > td:nth-child(2).odds_section_indicator_cell_pl_large {
+    width: 136px;
+    min-width: 108px;
+    max-width: 136px;
+}
+
+/*
+ * Compact (≤767px): P/L column was unstyled — global rules used :not(.compact), so lakh+ text bled into Back.
+ */
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl.odds_section_table_compact {
+    table-layout: fixed;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl.odds_section_table_compact .odds_section_indicator_th,
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl.odds_section_table_compact tbody tr > td:nth-child(2).odds_section_indicator_cell {
+    width: 92px;
+    min-width: 92px;
+    max-width: 92px;
+    overflow: hidden;
+    box-sizing: border-box;
+    white-space: normal;
+}
+
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl.odds_section_table_compact:has(.odds_section_indicator_cell_pl_large) .odds_section_indicator_th,
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl.odds_section_table_compact tbody tr > td:nth-child(2).odds_section_indicator_cell_pl_large {
+    width: 132px;
+    min-width: 132px;
+    max-width: 132px;
+}
+
+/* Only when amount >= 1L (see isLargePlRupeeAmount in CricketDetail.js) */
+.cricket_detail_section .odds_section_block .odds_section_table.odds_section_table_with_pl .odds_section_pl_box.odds_section_pl_box_large {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 4px 5px;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-align: center;
+    box-sizing: border-box;
+}
+
 .cricket_detail_section .odds_section_block .odds_section_table:not(.odds_section_table_compact) {
     table-layout: fixed;
     width: 100%;

@@ -1075,6 +1075,7 @@ button.btn.betnow {
 
     .inplay_section_bl .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .odds_scroll_wrapper .sports_grid_bl6_runner_row {
         display: inline-grid;
+        grid-template-columns: repeat(6, minmax(55px, 1fr));
     }
 
     /* .inplay_section_bl .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .odds_scroll_wrapper .sports_grid_bl6_runner_row .sports_grid_odds_cell {
@@ -2083,6 +2084,19 @@ ul.match_type_tabs li.active button {
         width: 280px;
     }
 
+    .cricket_detail_section .cricket_live_scoreboard {
+        padding: 0px;
+        background: none;
+        border: none;
+        box-shadow: none;
+    }
+
+    .match_tv_iframe_wrap.rightside_iframe {
+        width: 94%;
+        top: 65px;
+        margin: 0 auto;
+    }
+
     .sports_grid_table_wrap.mobile_view.sports_grid_sticky_scroll .sports_grid_mobile_odds_block {
         min-width: 280px;
     }
@@ -2188,6 +2202,10 @@ ul.match_type_tabs li.active button {
         gap: 4px;
         align-items: stretch;
         justify-content: space-between;
+    }
+
+    .inplay_section_bl .sports_grid_desktop_row.sports_grid_1x2_header_row.sports_grid_bl_header_row .sports_grid_1x2_header_strip .sports_grid_bl6_runner_row {
+        width: 100% !important;
     }
 
     .sports_grid_table_wrap.mobile_view .sports_grid_mobile_odds_pair .sports_grid_mobile_odds_item {
@@ -2387,6 +2405,9 @@ ul.match_type_tabs li.active button {
         min-width: 320px;
     }
 
+    .match_tv_iframe_wrap.rightside_iframe {
+        top: 60px; }
+
 
     .sports_grid_table_wrap.mobile_view .sports_grid_odds_size {
         font-size: 8px;
@@ -2415,6 +2436,10 @@ ul.match_type_tabs li.active button {
         width: 58px;
     }
 
+    .odds_section_pl_box {
+        padding: 5px 5px;
+        font-size: 11px; }
+
 }
 
 
@@ -2438,13 +2463,15 @@ ul.match_type_tabs li.active button {
         width: 68px;
     }
 
+ 
+
 }
 
 
-@media (max-width: 414px) and (min-width:380px) {
+@media (max-width: 414px) and (min-width:374px) {
 
     .sportsmatch_s.cricket_matches_section .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .sports_grid_odds_columns.sports_grid_desktop_odds_strip {
-        min-width: 345px;
+        min-width: 360px;
     }
 
     .top_match_section .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .odds_scroll_wrapper .sports_grid_desktop_odds_strip .sports_grid_odds_cell {
@@ -2485,7 +2512,7 @@ ul.match_type_tabs li.active button {
 
 
     .sportsmatch_s.cricket_matches_section .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .sports_grid_odds_columns.sports_grid_desktop_odds_strip {
-        min-width: 315px;
+        min-width: 325px;
     }
 
     .inplay_section_bl .sports_grid_section_landing .sports_grid_table_wrap.desktop_view .sports_grid_bl_header_row .rightside_odds .sports_grid_odds_columns.sports_grid_desktop_odds_strip.sports_grid_bl6_strip {
