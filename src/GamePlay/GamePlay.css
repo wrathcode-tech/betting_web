@@ -98,6 +98,43 @@
     border: none;
 }
 
+.gameplay_iframe_loading {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0d131c;
+    border-radius: 20px;
+}
+
+.gameplay_iframe_loading_logo {
+    width: min(200px, 42vw);
+    height: auto;
+    max-height: min(120px, 18vh);
+    object-fit: contain;
+    animation: gameplayLogoPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes gameplayLogoPulse {
+    0%, 100% {
+        opacity: 0.82;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.04);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gameplay_iframe_loading_logo {
+        animation: none;
+        opacity: 1;
+    }
+}
+
 .gameplay_placeholder,
 .gameplay_error {
     padding: 48px 24px;

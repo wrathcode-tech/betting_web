@@ -500,8 +500,18 @@ function GamePlay() {
         </div> */}
               <div ref={gameplayIframeWrapRef} className="gameplay_iframe_wrap">
                 {loading && !launchURL ? (
-                  <div className="gameplay_iframe_loading" role="status" aria-live="polite">
-                    <p>Loading game…</p>
+                  <div
+                    className="gameplay_iframe_loading"
+                    role="status"
+                    aria-live="polite"
+                    aria-label="Loading game"
+                  >
+                    <img
+                      className="gameplay_iframe_loading_logo"
+                      src={`${process.env.PUBLIC_URL || ''}/images/logo.png`}
+                      alt=""
+                      decoding="async"
+                    />
                   </div>
                 ) : null}
                 {launchURL ? (
