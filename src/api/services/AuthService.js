@@ -69,7 +69,7 @@ const AuthService = {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     };
-    return ApiCallPost(url, {}, headers);
+    return ApiCallGet(url, headers);
   },
 
   /** POST /api/v1/auth/demo-login – view-only guest. Returns { token, user: { id, username, balance: 0, currency, isDemo: true, expiresAt } }. */
