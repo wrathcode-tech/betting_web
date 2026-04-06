@@ -56,6 +56,22 @@ const AuthService = {
     return ApiCallPost(url, params, headers);
   },
 
+  /**
+   * POST /api/v1/auth/prewarm-all-provider-launches-on-login – auth required.
+   * Call after successful real-user login/signup (token already stored). Fire-and-forget; failures are non-fatal.
+   */
+  bettingPrewarmAllProviderLaunchesOnLogin: async () => {
+    const token = getStoredToken();
+    if (!token) return { success: false, message: "No token" };
+    const { baseBettingAuth, bettingPrewarmAllProviderLaunchesOnLogin } = ApiConfig;
+    const url = baseBettingAuth + bettingPrewarmAllProviderLaunchesOnLogin;
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+    return ApiCallPost(url, {}, headers);
+  },
+
   /** POST /api/v1/auth/demo-login – view-only guest. Returns { token, user: { id, username, balance: 0, currency, isDemo: true, expiresAt } }. */
   bettingDemoLogin: async () => {
     const { baseBettingAuth, bettingDemoLogin } = ApiConfig;
