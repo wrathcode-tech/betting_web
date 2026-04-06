@@ -754,6 +754,69 @@ ul.lobbytabs_list li.active span {
     }
 }
 
+/* Casino lobby: skeleton while games list loads */
+.casino_game_skeleton_grid {
+    margin-top: 12px;
+}
+
+.casino_game_skeleton_card {
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.casino_game_skeleton_thumb {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border-radius: 12px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0.11) 45%,
+        rgba(255, 255, 255, 0.06) 100%
+    );
+    background-size: 200% 100%;
+    animation: casino_skeleton_shimmer 1.15s ease-in-out infinite;
+}
+
+.casino_game_skeleton_name {
+    margin-top: 8px;
+    height: 12px;
+    width: 72%;
+    border-radius: 4px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.09) 45%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 200% 100%;
+    animation: casino_skeleton_shimmer 1.15s ease-in-out infinite;
+    animation-delay: 0.08s;
+}
+
+.casino_game_skeleton_grid_more {
+    margin-top: 18px;
+}
+
+@keyframes casino_skeleton_shimmer {
+    0% {
+        background-position: 100% 0;
+    }
+    100% {
+        background-position: -100% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .casino_game_skeleton_thumb,
+    .casino_game_skeleton_name {
+        animation: none;
+        background: rgba(255, 255, 255, 0.08);
+    }
+}
+
 .loader-color {
     color: #AC5422;
 }

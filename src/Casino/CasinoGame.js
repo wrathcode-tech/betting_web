@@ -46,6 +46,27 @@ function orderCrashTypeCategoryGames(games) {
     return [...primary, ...related, ...rest];
 }
 
+const CASINO_SKELETON_INITIAL_COUNT = 16;
+const CASINO_SKELETON_MORE_COUNT = 8;
+
+function CasinoGameSkeletonGrid({ count, className = '' }) {
+    return (
+        <div
+            className={`game_items_grid casino_game_skeleton_grid ${className}`.trim()}
+            aria-busy="true"
+            aria-label="Loading games"
+            role="status"
+        >
+            {Array.from({ length: count }, (_, i) => (
+                <div key={i} className="game_items_inner casino_game_skeleton_card">
+                    <div className="casino_game_skeleton_thumb" />
+                    <div className="casino_game_skeleton_name" />
+                </div>
+            ))}
+        </div>
+    );
+}
+
 function CasinoGame() {
     const navigate = useNavigate();
     const { config: platformConfig } = usePlatformConfig();
@@ -600,11 +621,10 @@ function CasinoGame() {
                                                 })}
                                             </div>
                                             {loadingMore && (
-                                                <div className="text-center py-4">
-                                                    <div className="spinner-border  spinner" role="status">
-                                                        <span className="visually-hidden">Loading...</span>
-                                                    </div>
-                                                </div>
+                                                <CasinoGameSkeletonGrid
+                                                    count={CASINO_SKELETON_MORE_COUNT}
+                                                    className="casino_game_skeleton_grid_more"
+                                                />
                                             )}
                                             <div ref={loadMoreSentinelRef} style={{ height: 1 }} aria-hidden />
                                         </div>
@@ -621,11 +641,7 @@ function CasinoGame() {
                                                 </h2>
                                             </div>
                                             {loadingProviderCategory ? (
-                                                <div className="text-center py-5">
-                                                    <div className="spinner-border  spinner" role="status">
-                                                        <span className="visually-hidden">Loading...</span>
-                                                    </div>
-                                                </div>
+                                                <CasinoGameSkeletonGrid count={CASINO_SKELETON_INITIAL_COUNT} />
                                             ) : (
                                                 <div className="game_items_grid" />
                                             )}

@@ -347,6 +347,7 @@ export default function LoginModal({ show, onHide, initialTab = 'login', initial
         if (refresh) sessionStorage.setItem('refreshToken', refresh)
         setUser(user)
         window.dispatchEvent(new CustomEvent('loginStateChange'))
+        void AuthService.bettingPrewarmAllProviderLaunchesOnLogin().catch(() => {})
         alertSuccessMessage('Demo mode: wallet ₹0 · use demo credits for casino · sportsbook betting disabled.')
         onHide()
         navigate(redirectTo, { replace: true })
