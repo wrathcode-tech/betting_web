@@ -51,7 +51,7 @@ export function isDemoMutationUrlAllowed(url) {
   if (u.includes('/auth/demo-login')) return true;
   if (u.includes('refresh-token')) return true;
   if (u.includes('/auth/logout')) return true;
-  if (u.includes('prewarm-all-provider-launches-on-login')) return true;
+  // if (u.includes('prewarm-all-provider-launches-on-login')) return true;
   if (u.includes('/games/launch')) return true;
   return false;
 }

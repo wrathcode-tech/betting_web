@@ -20,7 +20,7 @@ export const ApiConfig = {
   bettingLogout: "logout",
   bettingLogoutAll: "logout-all",
   /** POST /api/v1/auth/prewarm-all-provider-launches-on-login – Bearer; warm game launch URLs after login */
-  bettingPrewarmAllProviderLaunchesOnLogin: "prewarm-all-provider-launches-on-login",
+  // bettingPrewarmAllProviderLaunchesOnLogin: "prewarm-all-provider-launches-on-login",
   bettingChangePassword: "change-password",
   bettingGetMe: "me",
   bettingUpdateProfile: "profile",
