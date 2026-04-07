@@ -111,6 +111,151 @@ function oddDatasLenForNormalize(m) {
     return 0
 }
 
+function oddDatasToArray(oddDatas) {
+    if (!oddDatas) return []
+    if (Array.isArray(oddDatas)) return oddDatas
+    if (typeof oddDatas === 'object') return Object.values(oddDatas).filter(Boolean)
+    return []
+}
+
+/** Exchange ladder helpers — same rules as `renderOddsSection` (compact = best price only). */
+function sortOddsCellsAsc(a, b) {
+    const na = parseFloat(a.odds)
+    const nb = parseFloat(b.odds)
+    if (Number.isNaN(na) && Number.isNaN(nb)) return 0
+    if (Number.isNaN(na)) return 1
+    if (Number.isNaN(nb)) return -1
+    return na - nb
+}
+
+function pickSingleBestBackLadder(raw, isCellLocked) {
+    const valid = raw.filter((c) => !isCellLocked(c.odds))
+    if (valid.length === 0) return [raw[0] ?? { odds: null, size: null }]
+    return [valid.reduce((best, c) => (parseFloat(c.odds) > parseFloat(best.odds) ? c : best))]
+}
+
+function pickSingleBestLayLadder(raw, isCellLocked) {
+    const valid = raw.filter((c) => !isCellLocked(c.odds))
+    if (valid.length === 0) return [raw[0] ?? { odds: null, size: null }]
+    return [valid.reduce((best, c) => (parseFloat(c.odds) < parseFloat(best.odds) ? c : best))]
+}
+
+function collectNormalizedOddsMarkets(od) {
+    if (!od || typeof od !== 'object') return []
+    const keys = ['matchOdds', 'bookMakerOdds', 'fancyOdds', 'fancyOddsSessions', 'otherMarketOdds', 'oddEvenOdds', 'premiumFancy']
+    const out = []
+    for (const k of keys) {
+        const arr = od[k]
+        if (Array.isArray(arr)) out.push(...arr)
+    }
+    return out
+}
+
+function isPairedNoYesOddList(oddList) {
+    if (!oddList || oddList.length !== 2) return false
+    const n0 = String(oddList[0]?.rname ?? oddList[0]?.selectionName ?? '').trim()
+    const n1 = String(oddList[1]?.rname ?? oddList[1]?.selectionName ?? '').trim()
+    return (
+        /^(no|yes|n\/a)$/i.test(n0) ||
+        /^(no|yes|n\/a)$/i.test(n1) ||
+        (n0.toLowerCase() === 'no' && n1.toLowerCase() === 'yes') ||
+        (n0.toLowerCase() === 'yes' && n1.toLowerCase() === 'no')
+    )
+}
+
+/** Parse `…-back-2` / `…-lay-0` from price-cell element ids (full ladder layout). */
+function ladderColumnFromElementId(elementId, side) {
+    if (!elementId || typeof elementId !== 'string') return null
+    const suffix = side === 'lay' ? '-lay-' : '-back-'
+    const i = elementId.lastIndexOf(suffix)
+    if (i < 0) return null
+    const rest = elementId.slice(i + suffix.length)
+    const m = rest.match(/^(\d+)/)
+    return m ? parseInt(m[1], 10) : null
+}
+
+/**
+ * Live socket odds → same selection’s current ladder price for betslip (match odds, bookmaker, fancy ladders).
+ * `isCellLocked` must match component `isOddsLocked`.
+ */
+function resolveSlipOddsFromOddsData(oddsData, bet, isOddsTableCompact, isCellLocked) {
+    const pp = bet?.placePayload
+    if (!pp || !oddsData || typeof oddsData !== 'object') return null
+    const wantMid = String(pp.marketId ?? '')
+    const wantSid = String(pp.selectionId ?? '')
+    if (!wantMid || !wantSid) return null
+    const betType = String(pp.betType ?? 'back').toLowerCase()
+    const isLay = betType === 'lay'
+
+    const market = collectNormalizedOddsMarkets(oddsData).find((m) => String(pickMarketId(m) ?? '') === wantMid)
+    if (!market) return null
+
+    const oddList =
+        Array.isArray(market.runners) && market.runners.length > 0 ? market.runners : oddDatasToArray(market.oddDatas)
+
+    const finalize = (rawVal) => {
+        if (isCellLocked(rawVal)) return null
+        const s = String(rawVal ?? '').trim()
+        const n = parseFloat(s)
+        if (Number.isNaN(n) || n < 1.01) return null
+        return { oddsNum: n, oddsStr: s }
+    }
+
+    if (oddList.length === 2 && isPairedNoYesOddList(oddList)) {
+        const noSel = oddList[0]
+        const yesSel = oddList[1]
+        const yesSid = pickSelectionId(yesSel)
+        const noSid = pickSelectionId(noSel)
+        if (!isLay && wantSid === String(yesSid)) {
+            if (selectionStatusRowLabel(yesSel?.status)) return null
+            return finalize(yesSel.b1)
+        }
+        if (isLay && wantSid === String(noSid)) {
+            if (selectionStatusRowLabel(noSel?.status)) return null
+            return finalize(noSel.l1 ?? noSel.b1)
+        }
+    }
+
+    const odd = oddList.find((o) => String(pickSelectionId(o) ?? '') === wantSid)
+    if (!odd) return null
+    if (selectionStatusRowLabel(odd?.status)) return null
+
+    const backCellsRaw = [
+        { odds: odd.b1, size: odd.bs1 },
+        { odds: odd.b2, size: odd.bs2 },
+        { odds: odd.b3, size: odd.bs3 },
+    ]
+    const layCellsRaw = [
+        { odds: odd.l1, size: odd.ls1 },
+        { odds: odd.l2, size: odd.ls2 },
+        { odds: odd.l3, size: odd.ls3 },
+    ]
+    const rawSide = isLay ? layCellsRaw : backCellsRaw
+    const pickBest = isLay ? pickSingleBestLayLadder : pickSingleBestBackLadder
+
+    if (isOddsTableCompact) {
+        const cells = pickBest(rawSide, isCellLocked)
+        if (!cells.length) return null
+        return finalize(cells[0].odds)
+    }
+
+    const cells = [...rawSide].sort(sortOddsCellsAsc)
+    let cIdx = ladderColumnFromElementId(bet.elementId, isLay ? 'lay' : 'back')
+    if (cIdx != null && cIdx >= 0 && cIdx < cells.length) {
+        const cell = cells[cIdx]
+        if (cell && !isCellLocked(cell.odds)) return finalize(cell.odds)
+    }
+    const best = pickBest(rawSide, isCellLocked)
+    if (!best.length) return null
+    return finalize(best[0].odds)
+}
+
+function isOddsValueLocked(val) {
+    if (val == null || val === '') return true
+    const n = parseFloat(String(val).trim())
+    return Number.isNaN(n) || n <= 0
+}
+
 /**
  * fancyOdds often mixes: Normal (many runners → mini bookmaker table), fancy1 (toss, 2 runners), oddeven (many lines).
  */
@@ -1030,12 +1175,13 @@ function CricketDetail() {
         }
     }, [isDemo])
 
-    // Sync slip odds when first bet changes
+    // Slip header odds: always mirror first selection (socket updates change selectedBets below).
     useEffect(() => {
         if (selectedBets.length > 0) {
             const first = selectedBets[0]
-            const o = first.oddsDisplay != null ? first.oddsDisplay : first.odds
-            setSlipOdds(prev => (prev == null ? o : prev))
+            const raw = first.oddsDisplay != null ? first.oddsDisplay : first.odds
+            const num = Number(raw)
+            if (!Number.isNaN(num) && num >= 1.01) setSlipOdds(num)
         } else {
             setSlipOdds(null)
         }
@@ -1713,11 +1859,27 @@ function CricketDetail() {
     }
 
     // Lock only when odds truly unavailable: null, undefined, 0, or invalid. Never treat 0 as valid odds.
-    const isOddsLocked = (val) => {
-        if (val == null || val === '') return true
-        const n = parseFloat(String(val).trim())
-        return Number.isNaN(n) || n <= 0
-    }
+    const isOddsLocked = isOddsValueLocked
+
+    // Socket `oddsData` refresh → same betslip selection, latest ladder price (match odds / bookmaker / fancy).
+    useEffect(() => {
+        if (!oddsData) return
+        setSelectedBets((prev) => {
+            if (prev.length === 0) return prev
+            const bet = prev[0]
+            if (!bet.placePayload) return prev
+            const r = resolveSlipOddsFromOddsData(oddsData, bet, isOddsTableCompact, isOddsValueLocked)
+            if (!r) return prev
+            const cur = Number(bet.oddsDisplay ?? bet.odds)
+            if (Number.isFinite(cur) && Math.abs(cur - r.oddsNum) < 1e-6) return prev
+            return [{
+                ...bet,
+                odds: r.oddsNum,
+                oddsDisplay: r.oddsStr,
+                placePayload: { ...bet.placePayload, odds: r.oddsNum },
+            }]
+        })
+    }, [oddsData, isOddsTableCompact])
 
     // Neeche: SESSIONS / W/P MARKET / EXTRA MARKET – API se (fancyOdds / otherMarketOdds). Static data nahi.
     const buildNoYesRowsFromMarkets = (markets, marketType = 'fancy') => {
