@@ -93,13 +93,41 @@ function flattenBookMakerOdds(raw) {
             })
             for (const k of bmKeys) {
                 const sub = item[k]
-                if (sub && typeof sub === 'object' && (sub.oddDatas != null || sub.mid != null)) out.push(sub)
+                if (sub && typeof sub === 'object' && (sub.oddDatas != null || sub.odd_datas != null || sub.mid != null)) {
+                    out.push(sub)
+                }
             }
         } else {
             out.push(item)
         }
     }
     return out
+}
+
+/** Socket kabhi `miniBookMakerOdds` array ki jagah ek hi market `{ oddDatas: [...] }` bhejta hai. */
+function coerceMiniBookMakerOddsToArray(raw) {
+    if (raw == null) return []
+    if (Array.isArray(raw)) return raw
+    if (typeof raw !== 'object') return []
+    const bmKeys = Object.keys(raw).filter((k) => /^bm\d+$/i.test(k))
+    if (bmKeys.length > 0) return [raw]
+    const hasOdds =
+        raw.oddDatas != null ||
+        raw.odd_datas != null ||
+        (Array.isArray(raw.runners) && raw.runners.length > 0) ||
+        raw.mid != null ||
+        raw.mId != null ||
+        raw.marketId != null ||
+        raw.market_id != null
+    if (hasOdds) return [raw]
+    return []
+}
+
+function normalizeMarketOddDatasAlias(m) {
+    if (!m || typeof m !== 'object') return m
+    if (m.oddDatas != null) return m
+    if (m.odd_datas != null) return { ...m, oddDatas: m.odd_datas }
+    return m
 }
 
 function oddDatasLenForNormalize(m) {
@@ -142,7 +170,16 @@ function pickSingleBestLayLadder(raw, isCellLocked) {
 
 function collectNormalizedOddsMarkets(od) {
     if (!od || typeof od !== 'object') return []
-    const keys = ['matchOdds', 'bookMakerOdds', 'fancyOdds', 'fancyOddsSessions', 'otherMarketOdds', 'oddEvenOdds', 'premiumFancy']
+    const keys = [
+        'matchOdds',
+        'bookMakerOdds',
+        'miniBookMakerOdds',
+        'fancyOdds',
+        'fancyOddsSessions',
+        'otherMarketOdds',
+        'oddEvenOdds',
+        'premiumFancy',
+    ]
     const out = []
     for (const k of keys) {
         const arr = od[k]
@@ -220,16 +257,22 @@ function resolveSlipOddsFromOddsData(oddsData, bet, isOddsTableCompact, isCellLo
     if (!odd) return null
     if (selectionStatusRowLabel(odd?.status)) return null
 
-    const backCellsRaw = [
+    const swapMiniBookmakerBl = pp.swapMiniBookMakerBl === true
+    let backCellsRaw = [
         { odds: odd.b1, size: odd.bs1 },
         { odds: odd.b2, size: odd.bs2 },
         { odds: odd.b3, size: odd.bs3 },
     ]
-    const layCellsRaw = [
+    let layCellsRaw = [
         { odds: odd.l1, size: odd.ls1 },
         { odds: odd.l2, size: odd.ls2 },
         { odds: odd.l3, size: odd.ls3 },
     ]
+    if (swapMiniBookmakerBl) {
+        const t = backCellsRaw
+        backCellsRaw = layCellsRaw
+        layCellsRaw = t
+    }
     const rawSide = isLay ? layCellsRaw : backCellsRaw
     const pickBest = isLay ? pickSingleBestLayLadder : pickSingleBestBackLadder
 
@@ -283,6 +326,37 @@ function isLargePlRupeeAmount(value) {
     const n = Number(value)
     if (!Number.isFinite(n)) return false
     return Math.abs(n) >= LARGE_PL_RUPEE_THRESHOLD
+}
+
+function normSelectionLabel(s) {
+    return (s || '').trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+/**
+ * Runner jeetne par net P/L (usi market ke open bets) — exchange-style back/lay.
+ * Module scope: `renderOddsSection` kuch branches / HMR par call kar sakta hai; warna bhi `no-undef` fix.
+ */
+// eslint-disable-next-line no-unused-vars -- optional open-bet P/L grid; callers may exist in merged builds
+function computeRunnerPlIfWins(runnerName, betsInMarket) {
+    if (!Array.isArray(betsInMarket) || betsInMarket.length === 0) return 0
+    let pl = 0
+    const rkey = normSelectionLabel(runnerName)
+    for (const bet of betsInMarket) {
+        const sel = normSelectionLabel(bet.selectionName)
+        const s = Number(bet.stake) || 0
+        const o = Number(bet.odds ?? bet.executedOdds) || 0
+        const bt = String(bet.betType ?? bet.bet_type ?? 'back').toLowerCase()
+        if (s <= 0 || o < 1.01) continue
+        const onRunner = sel && rkey && (sel === rkey || sel.includes(rkey) || rkey.includes(sel))
+        if (bt === 'lay') {
+            if (onRunner) pl -= s * (o - 1)
+            else pl += s
+        } else {
+            if (onRunner) pl += s * (o - 1)
+            else pl -= s
+        }
+    }
+    return pl
 }
 
 function partitionFancyOdds(fancyArr) {
@@ -666,11 +740,11 @@ function CricketDetail() {
                     const first = rows.find((m) => m.gameId || m.game_id)
                     if (first) {
                         setDefaultMatch({
-                gameId: first.gameId ?? first.game_id,
-                eventName: first.eventName ?? first.event_name,
-                eventId: first.eventId ?? first.event_id,
-                seriesName: first.seriesName ?? first.series_name ?? first.tournamentName ?? first.tournament ?? first.competitionName ?? null,
-            })
+                            gameId: first.gameId ?? first.game_id,
+                            eventName: first.eventName ?? first.event_name,
+                            eventId: first.eventId ?? first.event_id,
+                            seriesName: first.seriesName ?? first.series_name ?? first.tournamentName ?? first.tournament ?? first.competitionName ?? null,
+                        })
                     }
                 }
             }
@@ -703,6 +777,14 @@ function CricketDetail() {
         const bookMakerOddsFlat = flattenBookMakerOdds(
             Array.isArray(d?.bookMakerOdds) ? d.bookMakerOdds : (Array.isArray(d?.book_maker_odds) ? d.book_maker_odds : [])
         )
+        const miniBookMakerRaw =
+            d?.miniBookMakerOdds ??
+            d?.mini_book_maker_odds ??
+            d?.miniBookmakerOdds ??
+            d?.mini_bookmaker_odds
+        const miniBookMakerOddsFlat = flattenBookMakerOdds(coerceMiniBookMakerOddsToArray(miniBookMakerRaw)).map(
+            normalizeMarketOddDatasAlias
+        )
         return {
             ...extractStakeLimitFields(d),
             ...(firstMarket ? extractStakeLimitFields(firstMarket) : {}),
@@ -717,6 +799,7 @@ function CricketDetail() {
             fancyOddsSessions: fancyPart.sessionFancy,
             otherMarketOdds: [...otherMarketOdds, ...totalGoalsOdds, ...overUnderOdds],
             bookMakerOdds: bookMakerOddsFlat,
+            miniBookMakerOdds: miniBookMakerOddsFlat,
             premiumFancy: Array.isArray(d?.premiumFancy) ? d.premiumFancy : (Array.isArray(d?.premium_fancy) ? d.premium_fancy : []),
             oddEvenOdds: [...baseOddEven, ...fancyPart.oddEvenFancy],
             oddsUpdatedAt: d?.oddsUpdatedAt ?? d?.odds_updated_at ?? null,
@@ -750,7 +833,7 @@ function CricketDetail() {
                         setEventStakeLimits(extractStakeLimitFields(cfg))
                     }
                     const url = cfgRes?.tvUrl ?? cfgRes?.response?.tvUrl ?? cfgRes?.response?.tv_url ?? null
-                if (url) setStreamUrl(url)
+                    if (url) setStreamUrl(url)
                 }
             })
             .catch(() => { })
@@ -1253,31 +1336,7 @@ function CricketDetail() {
         return true
     }
 
-    const normSelectionLabel = (s) => (s || '').trim().toLowerCase().replace(/\s+/g, ' ')
-
-    /** Agar yeh runner jeet jaye to net P/L (open bets, isi market) — exchange-style back/lay */
-    const computeRunnerPlIfWins = (runnerName, betsInMarket) => {
-        let pl = 0
-        const rkey = normSelectionLabel(runnerName)
-        for (const bet of betsInMarket) {
-            const sel = normSelectionLabel(bet.selectionName)
-            const s = Number(bet.stake) || 0
-            const o = Number(bet.odds ?? bet.executedOdds) || 0
-            const bt = String(bet.betType ?? bet.bet_type ?? 'back').toLowerCase()
-            if (s <= 0 || o < 1.01) continue
-            const onRunner = sel && rkey && (sel === rkey || sel.includes(rkey) || rkey.includes(sel))
-            if (bt === 'lay') {
-                if (onRunner) pl -= s * (o - 1)
-                else pl += s
-            } else {
-                if (onRunner) pl += s * (o - 1)
-                else pl -= s
-            }
-        }
-        return pl
-    }
-
-    const renderOddsSection = (sectionKey, title, icon, fallbackMinMax, markets, marketTypeApi) => {
+    const renderOddsSection = (sectionKey, title, icon, fallbackMinMax, markets, marketTypeApi, swapBackLayMiniBookBm = false) => {
         if (!markets?.length) return null
         const market = markets[0]
         const limitsText =
@@ -1391,9 +1450,8 @@ function CricketDetail() {
                 </div>
                 <div className="odds_section_table_wrap">
                     <table
-                        className={`odds_section_table${isOddsTableCompact ? ' odds_section_table_compact' : ''}${
-                            showIndicatorPlColumn ? ' odds_section_table_with_pl' : ''
-                        }`}
+                        className={`odds_section_table${isOddsTableCompact ? ' odds_section_table_compact' : ''}${showIndicatorPlColumn ? ' odds_section_table_with_pl' : ''
+                            }`}
                     >
                         <thead>
                             <tr>
@@ -1413,16 +1471,23 @@ function CricketDetail() {
                                 const backCols = isOddsTableCompact ? 1 : 3
                                 const layCols = isOddsTableCompact ? 1 : 3
                                 const oddsAreaColSpan = backCols + layCols
-                                const backCellsRaw = [
+                                /** Socket `miniBookMakerOdds` only: UI shows API l* in Back column, b* in Lay. */
+                                const swapMiniBookmakerBl = swapBackLayMiniBookBm === true
+                                let backCellsRaw = [
                                     { odds: odd.b1, size: odd.bs1 },
                                     { odds: odd.b2, size: odd.bs2 },
                                     { odds: odd.b3, size: odd.bs3 },
                                 ]
-                                const layCellsRaw = [
+                                let layCellsRaw = [
                                     { odds: odd.l1, size: odd.ls1 },
                                     { odds: odd.l2, size: odd.ls2 },
                                     { odds: odd.l3, size: odd.ls3 },
                                 ]
+                                if (swapMiniBookmakerBl) {
+                                    const t = backCellsRaw
+                                    backCellsRaw = layCellsRaw
+                                    layCellsRaw = t
+                                }
                                 const sortByOddsAsc = (a, b) => {
                                     const na = parseFloat(a.odds)
                                     const nb = parseFloat(b.odds)
@@ -1524,17 +1589,10 @@ function CricketDetail() {
                                 const lossAmount = (stakeNum > 0 && oddsVal >= 1) ? (isBack ? stakeNum : stakeNum * (oddsVal - 1)) : null
                                 const showProfitOnThisRow = isMatchOdds && matchOddsBet && (isThisRowSelectedTeam ? isBack : !isBack)
                                 const showLossOnThisRow = isMatchOdds && matchOddsBet && (isThisRowSelectedTeam ? !isBack : isBack)
-                                const plIfThisRunnerWins = isMatchOdds ? computeRunnerPlIfWins(name, sectionOpenBets) : 0
-                                const showPlFromOpenBets =
-                                    isMatchOdds &&
-                                    !matchOddsBet &&
-                                    sectionOpenBets.length > 0 &&
-                                    (Math.abs(plIfThisRunnerWins) > 0.005)
 
                                 const indicatorCellPlLarge =
                                     (showProfitOnThisRow && profitAmount != null && isLargePlRupeeAmount(profitAmount)) ||
-                                    (showLossOnThisRow && lossAmount != null && isLargePlRupeeAmount(lossAmount)) ||
-                                    (showPlFromOpenBets && isLargePlRupeeAmount(plIfThisRunnerWins))
+                                    (showLossOnThisRow && lossAmount != null && isLargePlRupeeAmount(lossAmount))
 
                                 // Mobile slip row colspan: Market + optional visible P/L + Back + Lay
                                 const totalCols =
@@ -1572,28 +1630,11 @@ function CricketDetail() {
                                                         )}
                                                     </>
                                                 )}
-                                                {showPlFromOpenBets && (
-                                                    plIfThisRunnerWins >= 0 ? (
-                                                        <span
-                                                            className={`odds_section_pl_box odds_section_pl_box_positive${isLargePlRupeeAmount(plIfThisRunnerWins) ? ' odds_section_pl_box_large' : ''}`}
-                                                            title="Is selection par open bets · agar yeh jeete"
-                                                        >
-                                                            +₹{plIfThisRunnerWins.toFixed(2)}
-                                                        </span>
-                                                    ) : (
-                                                        <span
-                                                            className={`odds_section_pl_box odds_section_pl_box_negative${isLargePlRupeeAmount(plIfThisRunnerWins) ? ' odds_section_pl_box_large' : ''}`}
-                                                            title="Is selection par open bets · agar yeh jeete"
-                                                        >
-                                                            −₹{Math.abs(plIfThisRunnerWins).toFixed(2)}
-                                                        </span>
-                                                    )
-                                                )}
                                             </td>
                                             {backCells.map((cell, cIdx) => {
                                                 const locked = isOddsLocked(cell.odds)
                                                 const oddsStr = String(cell.odds ?? '')
-                                                const placePayload = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), marketName: marketTitle, selectionId: String(selId), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0 } : null
+                                                const placePayload = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), marketName: marketTitle, selectionId: String(selId), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0, ...(swapMiniBookmakerBl ? { swapMiniBookMakerBl: true } : {}) } : null
                                                 const elId = `odds-${sectionKey}-${oIdx}-back-${cIdx}`
                                                 return (
                                                     <BackPriceCell
@@ -1611,7 +1652,7 @@ function CricketDetail() {
                                             {layCells.map((cell, cIdx) => {
                                                 const locked = isOddsLocked(cell.odds)
                                                 const oddsStr = String(cell.odds ?? '')
-                                                const placePayloadLay = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), marketName: marketTitle, selectionId: String(selId), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0 } : null
+                                                const placePayloadLay = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), marketName: marketTitle, selectionId: String(selId), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0, ...(swapMiniBookmakerBl ? { swapMiniBookMakerBl: true } : {}) } : null
                                                 const elId = `odds-${sectionKey}-${oIdx}-lay-${cIdx}`
                                                 return (
                                                     <LayPriceCell
@@ -1916,18 +1957,18 @@ function CricketDetail() {
                     (n0.toLowerCase() === 'no' && n1.toLowerCase() === 'yes') ||
                     (n0.toLowerCase() === 'yes' && n1.toLowerCase() === 'no')
                 if (pairedNoYes) {
-                const noSel = oddList[0]
-                const yesSel = oddList[1]
-                const noOdds = noSel?.l1 ?? noSel?.b1
-                const yesOdds = yesSel?.b1 ?? yesSel?.l1
-                const noSize = noSel?.ls1 ?? noSel?.bs1
-                const yesSize = yesSel?.bs1 ?? yesSel?.ls1
-                rows.push({
+                    const noSel = oddList[0]
+                    const yesSel = oddList[1]
+                    const noOdds = noSel?.l1 ?? noSel?.b1
+                    const yesOdds = yesSel?.b1 ?? yesSel?.l1
+                    const noSize = noSel?.ls1 ?? noSel?.bs1
+                    const yesSize = yesSel?.bs1 ?? yesSel?.ls1
+                    rows.push({
                         label: marketName,
-                    noOdds: noOdds ?? '—',
-                    noSize: noSize ?? '—',
-                    yesOdds: yesOdds ?? '—',
-                    yesSize: yesSize ?? '—',
+                        noOdds: noOdds ?? '—',
+                        noSize: noSize ?? '—',
+                        yesOdds: yesOdds ?? '—',
+                        yesSize: yesSize ?? '—',
                         limitsLine: formatMinMaxLabel(m, limitsFallbackPayload),
                         marketId,
                         marketName,
@@ -2043,7 +2084,7 @@ function CricketDetail() {
                         return (
                             <div key={rIdx} className="market_no_yes_row">
                                 <div className="market_no_yes_label">{row.label}</div>
-                              
+
                                 <div className="market_no_yes_limits_container d-flex justify-content-between">
                                     {row.limitsLine ? (
                                         <div className="market_no_yes_limits">{row.limitsLine}</div>
@@ -2059,40 +2100,40 @@ function CricketDetail() {
                                                 className={`market_no_yes_odds_overlay_wrap${row.rowStatusText === 'Suspended' ? ' market_no_yes_odds_overlay_wrap_suspended' : ''}`}
                                             >
                                                 <div className="market_no_yes_odds_overlay_muted" aria-hidden>
-                                        <div className="market_no_yes_odds">
+                                                    <div className="market_no_yes_odds">
                                                         <button
                                                             type="button"
                                                             className={`market_no_yes_btn market_yes_btn ${yesLocked ? 'locked' : ''}`}
                                                             disabled
                                                             tabIndex={-1}
                                                         >
-                                                {yesLocked ? (
-                                                    <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
-                                                ) : (
-                                                    <>
-                                                        <span className="odds_val">{row.yesOdds}</span>
-                                                        <span className="odds_size">{formatOddsSize(row.yesSize)}</span>
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
-                                        <div className="market_no_yes_odds">
+                                                            {yesLocked ? (
+                                                                <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
+                                                            ) : (
+                                                                <>
+                                                                    <span className="odds_val">{row.yesOdds}</span>
+                                                                    <span className="odds_size">{formatOddsSize(row.yesSize)}</span>
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                    <div className="market_no_yes_odds">
                                                         <button
                                                             type="button"
                                                             className={`market_no_yes_btn market_no_btn ${noLocked ? 'locked' : ''}`}
                                                             disabled
                                                             tabIndex={-1}
                                                         >
-                                                {noLocked ? (
-                                                    <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
-                                                ) : (
-                                                    <>
-                                                        <span className="odds_val">{row.noOdds}</span>
-                                                        <span className="odds_size">{formatOddsSize(row.noSize)}</span>
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
+                                                            {noLocked ? (
+                                                                <span className="market_no_yes_locked"><i className="ri-lock-line" aria-hidden /></span>
+                                                            ) : (
+                                                                <>
+                                                                    <span className="odds_val">{row.noOdds}</span>
+                                                                    <span className="odds_size">{formatOddsSize(row.noSize)}</span>
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <div className="market_no_yes_odds_overlay_scrim" aria-hidden />
                                                 <div className="market_no_yes_odds_overlay_text">{formatStatusOverlayText(row.rowStatusText)}</div>
@@ -2281,9 +2322,9 @@ function CricketDetail() {
     // Loss limit + exposure: ek effect (pehle mount + slip/tab dono par alag-alag = duplicate GET)
     useEffect(() => {
         if (isDemo) {
-                setBetslipLossLimit(null)
-                setBetslipExposure(null)
-                setBetslipCurrentLoss(null)
+            setBetslipLossLimit(null)
+            setBetslipExposure(null)
+            setBetslipCurrentLoss(null)
             return
         }
         let cancelled = false
@@ -2815,6 +2856,18 @@ function CricketDetail() {
                                                                         return renderOddsSection(`soccer_below_${idx}`, def.title, 'ri-settings-3-line', '', [dummyMarket], 'match_odds')
                                                                     })
                                                                 })()}
+                                                                {oddsData?.miniBookMakerOdds?.length > 0 &&
+                                                                    oddsData.miniBookMakerOdds.map((m, i) =>
+                                                                        renderOddsSection(
+                                                                            `mini_bookmaker_bm_${i}`,
+                                                                            m.marketName || m.market || 'MINI BOOKMAKER',
+                                                                            'ri-tools-line',
+                                                                            '',
+                                                                            [m],
+                                                                            'fancy',
+                                                                            true
+                                                                        )
+                                                                    )}
                                                                 {(oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) &&
                                                                     (oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy).map((m, i) =>
                                                                         renderOddsSection(
@@ -2823,7 +2876,8 @@ function CricketDetail() {
                                                                             'ri-tools-line',
                                                                             '',
                                                                             [m],
-                                                                            'fancy'
+                                                                            'fancy',
+                                                                            false
                                                                         )
                                                                     )}
                                                             </>
@@ -2854,6 +2908,19 @@ function CricketDetail() {
                                                                         )
                                                                     )}
                                                                 {!oddsData?.marketClosed &&
+                                                                    oddsData?.miniBookMakerOdds?.length > 0 &&
+                                                                    oddsData.miniBookMakerOdds.map((m, i) =>
+                                                                        renderOddsSection(
+                                                                            `mini_bookmaker_bm_${i}`,
+                                                                            m.marketName || m.market || 'MINI BOOKMAKER',
+                                                                            'ri-tools-line',
+                                                                            '',
+                                                                            [m],
+                                                                            'fancy',
+                                                                            true
+                                                                        )
+                                                                    )}
+                                                                {!oddsData?.marketClosed &&
                                                                     (oddsData?.fancyOdds?.length > 0 || oddsData?.premiumFancy?.length > 0) &&
                                                                     (oddsData.fancyOdds?.length ? oddsData.fancyOdds : oddsData.premiumFancy).map((m, i) =>
                                                                         renderOddsSection(
@@ -2862,7 +2929,8 @@ function CricketDetail() {
                                                                             'ri-tools-line',
                                                                             '',
                                                                             [m],
-                                                                            'fancy'
+                                                                            'fancy',
+                                                                            false
                                                                         )
                                                                     )}
                                                             </>
