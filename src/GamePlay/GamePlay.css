@@ -51,14 +51,16 @@
 }
 
 .gameplay_iframe_wrap {
-    flex: 1 1;
-    min-height: 0;
+    flex: 1 1 auto;
     position: relative;
     border-radius: 20px;
     overflow: auto;
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
     -webkit-overflow-scrolling: touch;
+    /* Explicit height so absolute iframe + loading overlay have a box (skeleton before iframe paints) */
+    min-height: min(800px, calc(100vh - 220px));
+    height: min(800px, calc(100vh - 220px));
 }
 
 .gameplay_iframe_wrap:hover,
@@ -96,6 +98,140 @@
     width: 100%;
     height: 100%;
     border: none;
+}
+
+.gameplay_iframe_loading {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    background: #0d131c;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.gameplay_iframe_loading_logo {
+    width: min(200px, 42vw);
+    height: auto;
+    max-height: min(120px, 18vh);
+    object-fit: contain;
+    animation: gameplayLogoPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes gameplayLogoPulse {
+    0%, 100% {
+        opacity: 0.82;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.04);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gameplay_iframe_loading_logo {
+        animation: none;
+        opacity: 1;
+    }
+}
+
+/* Full-area skeleton while launch API runs or iframe is loading */
+.gameplay_iframe_skeleton_overlay {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-height: 0;
+    padding: 10px 12px 12px;
+    box-sizing: border-box;
+}
+
+.gameplay_iframe_skeleton_toolbar {
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.gameplay_iframe_skeleton_main {
+    flex: 1;
+    min-height: 200px;
+    border-radius: 14px;
+    position: relative;
+}
+
+.gameplay_iframe_skeleton_logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(200px, 42vw);
+    max-height: min(120px, 18vh);
+    object-fit: contain;
+    z-index: 2;
+    pointer-events: none;
+    filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.45));
+}
+
+.gameplay_skeleton_shimmer {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0.12) 45%,
+        rgba(255, 255, 255, 0.06) 100%
+    );
+    background-size: 200% 100%;
+    animation: gameplay_skeleton_shimmer 1.15s ease-in-out infinite;
+}
+
+@keyframes gameplay_skeleton_shimmer {
+    0% {
+        background-position: 100% 0;
+    }
+    100% {
+        background-position: -100% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gameplay_skeleton_shimmer {
+        animation: none;
+        background: rgba(255, 255, 255, 0.08);
+    }
+}
+
+/* Horizontal game tiles skeleton (recommendations rows) */
+.gameplay_slider_skeleton_row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 17px;
+    width: max-content;
+    min-width: 100%;
+}
+
+.gameplay_slider_skeleton_card {
+    flex: 0 0 auto;
+    width: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gameplay_slider_skeleton_thumb {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border-radius: 12px;
+}
+
+.gameplay_slider_skeleton_title {
+    height: 12px;
+    width: 78%;
+    border-radius: 4px;
 }
 
 .gameplay_placeholder,
@@ -596,6 +732,12 @@
 
     .main_content_wrapper.sidebar_closed .right_content_side {
         padding: 0px 10px;
+    }
+
+    .gameplay_iframe_wrap {
+        min-height: min(400px, 100vh);
+        height: calc(100vh - 0px);
+        max-height: none;
     }
 
     .gameplay_iframe_wrap iframe {

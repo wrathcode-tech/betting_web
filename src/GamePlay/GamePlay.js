@@ -86,6 +86,33 @@ function qp(searchParams, key) {
 }
 
 /** Same as home: /game when codes exist, else casino lobby hint. */
+function GamePlayIframeSkeleton() {
+  const logoSrc = `${process.env.PUBLIC_URL || ''}/images/logo.png`;
+  return (
+    <div className="gameplay_iframe_skeleton_overlay" aria-hidden>
+      <div className="gameplay_iframe_skeleton_toolbar gameplay_skeleton_shimmer" />
+      <div className="gameplay_iframe_skeleton_main gameplay_skeleton_shimmer">
+        {/* <img className="gameplay_iframe_skeleton_logo" src={logoSrc} alt="" decoding="async" /> */}
+      </div>
+    </div>
+  );
+}
+
+function GamePlaySliderSkeleton() {
+  return (
+    <div className="game_items_slider_wrapper" role="status" aria-busy="true" aria-label="Loading games">
+      <div className="game_items_slider mt-2 gameplay_slider_skeleton_row">
+        {Array.from({ length: 8 }, (_, i) => (
+          <div key={i} className="gameplay_slider_skeleton_card">
+            <div className="gameplay_slider_skeleton_thumb gameplay_skeleton_shimmer" />
+            <div className="gameplay_slider_skeleton_title gameplay_skeleton_shimmer" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function buildGameTileTo(item, fallbackProvider) {
   if (!item || item.viewAll) return '/casino';
   const gameCode = item.gameCode ?? item.code;
@@ -146,6 +173,7 @@ function GamePlay() {
     return getStoredSession()?.providerCode ?? stateProviderCode ?? null;
   });
   const [loading, setLoading] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
   const [error, setError] = useState(null);
   const hasStateOrRestored = !!(stateGameCode && stateProviderCode) || !!restored;
 
@@ -430,6 +458,10 @@ function GamePlay() {
     preconnectToUrl(launchURL);
   }, [launchURL]);
 
+  useEffect(() => {
+    setIframeLoaded(false);
+  }, [launchURL]);
+
   // Persist context balance to session when it changes (e.g. socket update)
   useEffect(() => {
     const stored = getStoredSession();
@@ -440,6 +472,9 @@ function GamePlay() {
     clearStoredSession();
     navigate('/casino');
   };
+
+  const showGameIframeSkeleton =
+    (!launchURL && loading) || (Boolean(launchURL) && !iframeLoaded);
 
   if (!hasStateOrRestored) {
     return (
@@ -499,9 +534,14 @@ function GamePlay() {
           </div>
         </div> */}
               <div ref={gameplayIframeWrapRef} className="gameplay_iframe_wrap">
-                {loading && !launchURL ? (
-                  <div className="gameplay_iframe_loading" role="status" aria-live="polite">
-                    <p>Loading game…</p>
+                {showGameIframeSkeleton ? (
+                  <div
+                    className="gameplay_iframe_loading"
+                    role="status"
+                    aria-live="polite"
+                    aria-label="Loading game"
+                  >
+                    <GamePlayIframeSkeleton />
                   </div>
                 ) : null}
                 {launchURL ? (
@@ -511,6 +551,8 @@ function GamePlay() {
                     className="gameplay_iframe"
                     allowFullScreen
                     allow="payment; fullscreen; autoplay; geolocation; microphone; camera"
+                    onLoad={() => setIframeLoaded(true)}
+                    onError={() => setIframeLoaded(true)}
                   />
                 ) : null}
               </div>
@@ -525,7 +567,7 @@ function GamePlay() {
                   </div>
                 </div>
                 {gamesLoading ? (
-                  <div className="game_items_slider_wrapper"><div className="game_items_slider mt-2 text-muted">Loading...</div></div>
+                  <GamePlaySliderSkeleton />
                 ) : (
                   <div
                     ref={bestGamesSliderWrapperRef}
@@ -563,7 +605,7 @@ function GamePlay() {
                   </div>
                 </div>
                 {gamesLoading ? (
-                  <div className="game_items_slider_wrapper"><div className="game_items_slider mt-2 text-muted">Loading...</div></div>
+                  <GamePlaySliderSkeleton />
                 ) : (
                   <div
                     ref={trendingSliderWrapperRef}
