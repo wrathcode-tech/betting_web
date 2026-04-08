@@ -1968,6 +1968,7 @@ button.toggleup_btn {
     margin: 0 0 8px 0;
 }
 
+/* Legacy: section-level Odds/Stake headers — ab har card ke andar metrics card use hota hai */
 .betslip_open_bets_cols {
     display: flex;
     justify-content: flex-end;
@@ -1998,9 +1999,69 @@ button.toggleup_btn {
 
 .betslip_open_bet_row_main {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+/* Odds + stake — card ke andar compact panel (labels values ke saath aligned) */
+.betslip_open_bet_metrics_card {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    margin-left: auto;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.betslip_open_bet_card.betslip_open_bet_back .betslip_open_bet_metrics_card {
+    border-color: rgba(33, 150, 243, 0.35);
+    background: rgba(0, 0, 0, 0.22);
+}
+
+.betslip_open_bet_card.betslip_open_bet_lay .betslip_open_bet_metrics_card {
+    border-color: rgba(233, 30, 99, 0.35);
+    background: rgba(0, 0, 0, 0.22);
+}
+
+.betslip_open_bet_metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 76px;
+}
+
+.betslip_open_bet_metric_label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.betslip_open_bet_metric_value {
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: rgba(255, 255, 255, 0.98);
+    line-height: 1.2;
+}
+
+@media (max-width: 520px) {
+    .betslip_open_bet_metrics_card {
+        margin-left: 0;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .betslip_open_bet_metric {
+        flex: 1;
+        min-width: 0;
+    }
 }
 
 .betslip_bet_type_badge {

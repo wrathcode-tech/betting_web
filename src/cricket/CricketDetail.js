@@ -1168,9 +1168,17 @@ function CricketDetail() {
                             <span className='betslip_open_bet_selection'>{b.selectionName || '—'}</span>
                             <span className='betslip_open_bet_market'>{b.marketName || b.marketType || '—'}</span>
                         </div>
-                        <div className='betslip_open_bet_values'>
-                            <span className='betslip_open_bet_odds'>{b.odds != null ? Number(b.odds) : '—'}</span>
-                            <span className='betslip_open_bet_stake'>{(Number(b.stake || 0)).toFixed(2)}</span>
+                        <div className='betslip_open_bet_metrics_card' aria-label="Odds and stake">
+                            <div className='betslip_open_bet_metric'>
+                                <span className='betslip_open_bet_metric_label'>Odds</span>
+                                <span className='betslip_open_bet_metric_value'>
+                                    {b.odds != null && b.odds !== '' ? Number(b.odds).toFixed(2) : '—'}
+                                </span>
+                            </div>
+                            <div className='betslip_open_bet_metric'>
+                                <span className='betslip_open_bet_metric_label'>Stake (₹)</span>
+                                <span className='betslip_open_bet_metric_value'>{(Number(b.stake || 0)).toFixed(2)}</span>
+                            </div>
                         </div>
                     </div>
                     {/* Temporarily disabled open bets cashout value */}
@@ -1216,10 +1224,6 @@ function CricketDetail() {
                 {displayBack.length > 0 && (
                     <div className='betslip_open_bets_section'>
                         <h6 className='betslip_open_bets_section_title'>Back (Bet for)</h6>
-                        <div className='betslip_open_bets_cols'>
-                            <span>Odds</span>
-                            <span>Stake</span>
-                        </div>
                         <div className='betslip_open_bets_list'>
                             {displayBack.map((b) => renderBetCard(b, true))}
                         </div>
@@ -1228,10 +1232,6 @@ function CricketDetail() {
                 {displayLay.length > 0 && (
                     <div className='betslip_open_bets_section'>
                         <h6 className='betslip_open_bets_section_title'>Lay (Bet against)</h6>
-                        <div className='betslip_open_bets_cols'>
-                            <span>Odds</span>
-                            <span>Stake</span>
-                        </div>
                         <div className='betslip_open_bets_list'>
                             {displayLay.map((b) => renderBetCard(b, false))}
                         </div>
