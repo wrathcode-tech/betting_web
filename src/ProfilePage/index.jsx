@@ -187,10 +187,10 @@ function ProfilePage() {
                   <div className="statistics_profile">
                     <h2>Wallet &amp; Stats</h2>
                     <ul className="profile_stat_grid">
-                      <li><span>Available Balance</span><strong>₹{Number(wallet?.balance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong></li>
-                      <li><span>Bonus Balance</span><strong>₹{Number(wallet?.bonusBalance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong></li>
-                      <li><span>Total Deposit</span><strong>₹{Number(wallet?.totalDeposited ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong></li>
-                      <li><span>Total Withdrawn</span><strong>₹{Number(wallet?.totalWithdrawn ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong></li>
+                      <li><span>Available Balance</span><strong>₹{Number(wallet?.balance ?? 0).toFixed(2)}</strong></li>
+                      <li><span>Bonus Balance</span><strong>₹{Number(wallet?.bonusBalance ?? 0).toFixed(2)}</strong></li>
+                      <li><span>Total Deposit</span><strong>₹{Number(wallet?.totalDeposited ?? 0).toFixed(2)}</strong></li>
+                      <li><span>Total Withdrawn</span><strong>₹{Number(wallet?.totalWithdrawn ?? 0).toFixed(2)}</strong></li>
                     </ul>
                   </div>
 
