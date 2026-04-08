@@ -126,6 +126,41 @@ button.profilebtn {
     padding: 20px 0px;
 }
 
+.profile_page_heading {
+    position: relative;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(135deg, rgba(249, 122, 49, 0.18), rgba(44, 61, 85, 0.35));
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.profile_page_heading::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #f97a31, rgba(249, 122, 49, 0));
+}
+
+.profile_page_heading h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    color: #fff;
+}
+
+.profile_page_heading p {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
+}
+
 .ranklist ul li span {
     font-size: 12px;
     font-weight: 500;
@@ -288,9 +323,18 @@ button.profilebtn {
         overflow-x: hidden;
     }
 
-    .profile_section h1 {
+    .profile_page_heading {
+        margin-bottom: 14px;
+        padding: 12px 14px;
+        border-radius: 12px;
+    }
+
+    .profile_page_heading h1 {
         font-size: 20px;
-        margin-bottom: 16px;
+    }
+
+    .profile_page_heading p {
+        font-size: 11px;
     }
 
     .profile_bio_info {

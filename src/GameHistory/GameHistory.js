@@ -197,7 +197,10 @@ function GameHistory() {
         <div className="container-fluid">
           <div className="profile_transactions_section">
             <div className="transactions_header game_history_header">
-              <h1>Game History</h1>
+              <div className="transactions_heading_block" role="banner" aria-label="Game History heading">
+                <h1>Game History</h1>
+                <p>Track sessions, transactions, and ledger activity with detailed breakdowns</p>
+              </div>
               <div className="transactions_header_right game_history_header_right d-flex flex-wrap align-items-end gap-2">
                 <div className="game_history_filter_wrapper_row d-flex gap-3 flex-wrap align-items-end">
                   <div className="game_history_filter_wrapper">

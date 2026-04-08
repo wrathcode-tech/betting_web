@@ -153,9 +153,11 @@ function AddAccount() {
     <>
       <div className="new_add_account_page new_deposit_page">
         <div className="container">
-          <div className="top_bar_hd">
-            <h2>Add Account</h2>
-            <p>Add up to 3 bank accounts. OTP will be sent to your registered mobile. Select one for withdrawal.</p>
+          <div className="top_bar_hd add_account_heading_block">
+            <h1>Add Account</h1>
+            <p className="add_account_subtitle">
+              Add up to 3 bank accounts. OTP will be sent to your registered mobile. Select one for withdrawal.
+            </p>
           </div>
           <div className="payment_topbr">
             <button type="button" className="active">Bank</button>
@@ -164,42 +166,42 @@ function AddAccount() {
           <div className="choose_payment_option_bl">
             <h5>Your bank accounts</h5>
             <div className="account_cards_row">
-                {accounts.map((acc) => (
-                  <div
-                    key={acc._id}
-                    role="button"
-                    tabIndex={0}
-                    className={`account_card account_card_details ${acc.isDefaultForWithdrawal ? 'account_card_selected' : ''}`}
-                    onClick={() => selectAccount(acc._id)}
-                    onKeyDown={(e) => e.key === 'Enter' && selectAccount(acc._id)}
-                    aria-label={`Select account ${acc.bankName}`}
+              {accounts.map((acc) => (
+                <div
+                  key={acc._id}
+                  role="button"
+                  tabIndex={0}
+                  className={`account_card account_card_details ${acc.isDefaultForWithdrawal ? 'account_card_selected' : ''}`}
+                  onClick={() => selectAccount(acc._id)}
+                  onKeyDown={(e) => e.key === 'Enter' && selectAccount(acc._id)}
+                  aria-label={`Select account ${acc.bankName}`}
+                >
+                  <button
+                    type="button"
+                    className="account_card_delete"
+                    onClick={(e) => removeAccount(e, acc._id)}
+                    aria-label="Remove account"
                   >
-                    <button
-                      type="button"
-                      className="account_card_delete"
-                      onClick={(e) => removeAccount(e, acc._id)}
-                      aria-label="Remove account"
-                    >
-                      <i className="ri-delete-bin-line" />
-                    </button>
-                    <div className="account_card_content">
-                      <p className="account_card_bank">{acc.bankName}</p>
-                      <p className="account_card_holder text_uppercase">{acc.accountHolderName}</p>
-                      <p className="account_card_number">{maskAccountNumber(acc.accountNumber)}</p>
-                      <p className="account_card_ifsc">IFSC: {acc.ifscCode}</p>
-                      {acc.isDefaultForWithdrawal && (
-                        <span className="account_card_default_badge">Use for withdrawal</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {accounts.length < MAX_ACCOUNTS && (
-                  <button type="button" className="account_card account_card_add" onClick={openBankForm}>
-                    <span className="account_card_add_icon"><i className="ri-add-line" /></span>
-                    <span className="account_card_add_text">Add Account</span>
+                    <i className="ri-delete-bin-line" />
                   </button>
-                )}
-              </div>
+                  <div className="account_card_content">
+                    <p className="account_card_bank">{acc.bankName}</p>
+                    <p className="account_card_holder text_uppercase">{acc.accountHolderName}</p>
+                    <p className="account_card_number">{maskAccountNumber(acc.accountNumber)}</p>
+                    <p className="account_card_ifsc">IFSC: {acc.ifscCode}</p>
+                    {acc.isDefaultForWithdrawal && (
+                      <span className="account_card_default_badge">Use for withdrawal</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {accounts.length < MAX_ACCOUNTS && (
+                <button type="button" className="account_card account_card_add" onClick={openBankForm}>
+                  <span className="account_card_add_icon"><i className="ri-add-line" /></span>
+                  <span className="account_card_add_text">Add Account</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {showBankForm && (
@@ -304,7 +306,7 @@ function AddAccount() {
           )}
 
           <p className="note_text">
-            Select one account above to use for withdrawal requests. You can add up to 3 bank accounts and remove any time.
+            You can add up to 3 bank accounts and remove any time.
           </p>
         </div>
       </div>

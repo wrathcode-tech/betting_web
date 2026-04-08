@@ -157,7 +157,10 @@ function ProfilePage() {
       <div className="dashboard_page">
         <div className="container">
           <div className="profile_section">
-            <h1>My Profile</h1>
+            <div className="profile_page_heading" role="banner" aria-label="Profile heading">
+              <h1>My Profile</h1>
+              <p>Your account, activity, and wallet overview</p>
+            </div>
             <div className="profile_section_row">
               <div className="profile_section_left">
                 <div className="profile_bio_info d-flex align-items-center gap-3">
@@ -197,7 +200,7 @@ function ProfilePage() {
                   <div className="statistics_profile">
                     <h2>Betting Stats</h2>
                     <ul className="profile_stat_grid">
-                      <li><span>Total Wagered</span><strong>₹{Number(stats?.totalWagered ?? bettingStats?.totalStake ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</strong></li>
+                      {/* <li><span>Total Wagered</span><strong>₹{Number(stats?.totalWagered ?? bettingStats?.totalStake ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</strong></li> */}
                       <li><span>Total Bets</span><strong>{Number(stats?.totalBets ?? bettingStats?.totalBets ?? 0).toLocaleString('en-IN')}</strong></li>
                       <li><span>Sports Bets</span><strong>{Number(bettingStats?.totalSportsBets ?? 0).toLocaleString('en-IN')}</strong><small>W: {bettingStats?.sportsBetsWon ?? 0} / L: {bettingStats?.sportsBetsLost ?? 0}</small></li>
                       <li><span>Casino Bets</span><strong>{Number(bettingStats?.totalCasinoBets ?? 0).toLocaleString('en-IN')}</strong></li>

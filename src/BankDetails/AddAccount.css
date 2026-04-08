@@ -4,6 +4,50 @@
   margin: 10px 0px;
 }
 
+/* Premium heading block */
+.add_account_heading_block {
+  position: relative;
+  overflow: hidden;
+  margin: 8px 0 18px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(249, 122, 49, 0.24);
+  background:
+    radial-gradient(120% 160% at 100% 0%, rgba(249, 122, 49, 0.16) 0%, rgba(249, 122, 49, 0) 55%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+}
+
+.add_account_heading_block::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #f7b55f 0%, #f97a31 100%);
+}
+
+.add_account_heading_block h1 {
+  margin: 0;
+  padding-left: 14px;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: #fff;
+}
+
+.add_account_subtitle {
+  margin: 8px 0 0;
+  padding-left: 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #c9d5e5;
+  max-width: 760px;
+}
+
 /* Bank list section */
 .bank_list_section {
   margin-top: 24px;
@@ -415,6 +459,28 @@ button.cancel_btn {
 
 
 @media (max-width: 767px) {
+
+  .add_account_heading_block {
+    margin: 6px 0 14px;
+    padding: 14px 14px 14px 16px;
+    border-radius: 12px;
+  }
+
+  .add_account_heading_block::before {
+    top: 12px;
+    bottom: 12px;
+  }
+
+  .add_account_heading_block h1 {
+    padding-left: 10px;
+    font-size: 22px;
+  }
+
+  .add_account_subtitle {
+    padding-left: 10px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
 
 
   .right_content_side .container{ padding: 0px; }

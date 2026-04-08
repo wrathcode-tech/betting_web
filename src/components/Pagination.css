@@ -10,17 +10,18 @@
 .history_pagination_btn {
   padding: 8px 20px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(249, 122, 49, 0.35);
+  background: linear-gradient(180deg, rgba(249, 122, 49, 0.22), rgba(172, 84, 34, 0.22));
   color: #fff;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .history_pagination_btn:hover:not(:disabled) {
-  background: linear-gradient(180deg, #c96528 0.8%, #f97a31 100%);
+  background: linear-gradient(180deg, rgba(249, 122, 49, 0.34), rgba(172, 84, 34, 0.3));
+  box-shadow: 0 6px 16px rgba(249, 122, 49, 0.2);
 }
 
 .history_pagination_btn:disabled {

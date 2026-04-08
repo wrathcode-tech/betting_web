@@ -266,7 +266,10 @@ export default function MyBets() {
         <div className="container-fluid">
           <div className="profile_transactions_section">
             <div className="transactions_header">
-              <h1>My Bets (Open)</h1>
+              <div className="transactions_heading_block mybets_heading_block" role="banner" aria-label="My Bets heading">
+                <h1>My Bets (Open)</h1>
+                <p>Live open bets with real-time status and potential win overview</p>
+              </div>
               <div className="transactions_header_right">
                 <input
                   type="text"

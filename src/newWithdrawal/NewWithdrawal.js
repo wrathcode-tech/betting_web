@@ -169,14 +169,17 @@ function NewWithdrawal() {
             </div>
           ) : (
             <>
-              <div className="top_bar_hd">
+              <div className="top_bar_hd withdrawal_heading_block">
                 <div className="d-flex align-items-center gap-2 flex-wrap">
                   <Link to="/my-wallet" className="back_link_btn withdrawal_back_option" aria-label="Back to My Wallet">
                     <i className="ri-arrow-left-s-line" aria-hidden />
                   </Link>
                   <div>
-                    <h2>Withdrawal</h2>
-                    <p>Following payment withdrawal information:: <span>Cashable Amount : {balance != null ? Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span></p>
+                    <h1>Withdrawal</h1>
+                    <p className="withdrawal_subtitle">
+                      Following payment withdrawal information:
+                      <span> Cashable Amount: {balance != null ? Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span>
+                    </p>
                   </div>
                 </div>
               </div>

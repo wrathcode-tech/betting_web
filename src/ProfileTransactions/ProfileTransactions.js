@@ -281,7 +281,10 @@ function ProfileTransactions() {
         <div className='container-fluid'>
           <div className='profile_transactions_section'>
             <div className='transactions_header'>
-              <h1>My Transactions</h1>
+              <div className='transactions_heading_block' role='banner' aria-label='Transactions heading'>
+                <h1>My Transactions</h1>
+                <p>Track deposits, withdrawals, and account movement in one place</p>
+              </div>
               <div className='transactions_header_right mytransactions_header_bl'>
                 <input
                   type="text"

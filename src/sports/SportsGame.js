@@ -95,12 +95,14 @@ function toDisplayRow(m, sport) {
             ? rawTime
             : resolveEventTimeForIndiaDisplay(rawTime)
     const timeOnly = eventTime != null ? formatTimeOnlyIST(eventTime) : ''
+    const mo = Array.isArray(m.matchOdds) ? m.matchOdds : Array.isArray(m.matchOddsResponseDTO) ? m.matchOddsResponseDTO : []
+    const hasOpenMarket = mo.some((market) => String(market?.mstatus ?? market?.status ?? '').toUpperCase() === 'OPEN')
     const inPlay = !!(
         m.inPlay ||
         (m.status && String(m.status).toLowerCase() === 'live') ||
-        (m.matchStatus && String(m.matchStatus).toLowerCase().includes('live'))
+        (m.matchStatus && String(m.matchStatus).toLowerCase().includes('live')) ||
+        hasOpenMarket
     )
-    const mo = Array.isArray(m.matchOdds) ? m.matchOdds : Array.isArray(m.matchOddsResponseDTO) ? m.matchOddsResponseDTO : []
     const title = m.eventName ?? '—'
     return {
         tournament: m.seriesName ?? ui.title,
@@ -405,8 +407,13 @@ function SportsGame() {
                                             className="view_match sports_card_bl6_cell"
                                             onClick={(e) => e.stopPropagation()}
                                         >
-                                            {pair.back.price != null ? pair.back.price : '—'}{' '}
-                                            <span>{pair.back.sizeFormatted}</span>
+                                            {pair.back.price != null ? (
+                                                <>
+                                                    {pair.back.price} <span>{pair.back.sizeFormatted}</span>
+                                                </>
+                                            ) : (
+                                                <i className="ri-lock-line" aria-hidden />
+                                            )}
                             </button>
                                     ))}
                                 </div>
@@ -418,8 +425,13 @@ function SportsGame() {
                                             className="like_match sports_card_bl6_cell"
                                             onClick={(e) => e.stopPropagation()}
                                         >
-                                            {pair.lay.price != null ? pair.lay.price : '—'}{' '}
-                                            <span>{pair.lay.sizeFormatted}</span>
+                                            {pair.lay.price != null ? (
+                                                <>
+                                                    {pair.lay.price} <span>{pair.lay.sizeFormatted}</span>
+                                                </>
+                                            ) : (
+                                                <i className="ri-lock-line" aria-hidden />
+                                            )}
                             </button>
                                     ))}
                                 </div>
@@ -619,8 +631,7 @@ function SportsGame() {
                                                                                             </button>
                                                                                         ) : (
                                                                                                                     <span className="sports_grid_odds_dash sports_grid_bl6_dash_cell">
-                                                                                                                        <span className="sports_grid_odds_val">—</span>
-                                                                                                                        <span className="sports_grid_odds_size">—</span>
+                                                                                                                        <i className="ri-lock-line" aria-hidden />
                                                                                                                     </span>
                                                                                                                 )}
                                                                                                             </div>
@@ -632,8 +643,7 @@ function SportsGame() {
                                                                                             </button>
                                                                                         ) : (
                                                                                                                     <span className="sports_grid_odds_dash sports_grid_bl6_dash_cell">
-                                                                                                                        <span className="sports_grid_odds_val">—</span>
-                                                                                                                        <span className="sports_grid_odds_size">—</span>
+                                                                                                                        <i className="ri-lock-line" aria-hidden />
                                                                                                                     </span>
                                                                                         )}
                                                                                                             </div>

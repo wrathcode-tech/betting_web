@@ -10,11 +10,39 @@
     margin-bottom: 20px;
 }
 
+.transactions_heading_block {
+    position: relative;
+    margin-right: 12px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(135deg, rgba(249, 122, 49, 0.18), rgba(44, 61, 85, 0.35));
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.transactions_heading_block::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #f97a31, rgba(249, 122, 49, 0));
+}
+
 .profile_transactions_section h1 {
     color: #fff;
-    font-size: 20px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
     margin: 0;
+}
+
+.transactions_heading_block p {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
 }
 
 .transactions_header_right {
@@ -391,6 +419,10 @@
 .transactions_table_wrapper {
     width: 100%;
     overflow-x: auto;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(22, 32, 44, 0.95), rgba(13, 20, 30, 0.95));
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
 }
 
 .transactions_table {
@@ -400,31 +432,35 @@
 }
 
 .transactions_table thead {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
 }
 
 .transactions_table th {
     padding: 15px 10px;
     text-align: left;
-    font-size: 14px;
-    font-weight: 400;
-    color: #ffffffab;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
     white-space: nowrap;
 }
 
 .transactions_table tbody tr {
-    border-bottom: 1px solid rgb(255 255 255 / 14%);
-    transition: background-color 0.2s ease;
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .transactions_table tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(249, 122, 49, 0.08);
+    box-shadow: inset 3px 0 0 #f97a31;
 }
 
 .transactions_table td {
     padding: 15px 10px;
     font-size: 14px;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.95);
     white-space: nowrap;
 }
 
@@ -440,7 +476,14 @@
     height: 48px;
     object-fit: cover;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.transaction_payment_proof_link:hover .transaction_payment_proof_thumb {
+    transform: scale(1.04);
+    box-shadow: 0 6px 14px rgba(249, 122, 49, 0.28);
 }
 
 .transaction_card_row_proof .transaction_payment_proof_thumb {
@@ -512,12 +555,14 @@
     padding: 5px 12px;
     border-radius: 20px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
 .status_approved {
-    background-color: rgba(76, 175, 80, 0.2);
-    color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.18);
+    border: 1px solid rgba(76, 175, 80, 0.38);
+    color: #6dde74;
 }
 
 .view_btn {
@@ -550,6 +595,13 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
+    }
+
+    .transactions_heading_block {
+        width: 100%;
+        margin-right: 0;
+        padding: 12px 14px;
+        border-radius: 12px;
     }
 
     .transactions_header_right {
@@ -622,7 +674,11 @@
     }
 
     .profile_transactions_section h1 {
-        font-size: 24px;
+        font-size: 20px;
+    }
+
+    .transactions_heading_block p {
+        font-size: 11px;
     }
 }
 
@@ -645,16 +701,18 @@
 }
 
 .transaction_card {
-    background-color: #16202c;
+    background: linear-gradient(180deg, rgba(24, 35, 49, 0.95), rgba(17, 26, 38, 0.95));
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 16px;
     transition: all 0.3s ease;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
 }
 
 .transaction_card:hover {
-    border-color: rgba(249, 122, 49, 0.3);
-    box-shadow: 0 4px 12px rgba(249, 122, 49, 0.1);
+    border-color: rgba(249, 122, 49, 0.45);
+    box-shadow: 0 12px 26px rgba(249, 122, 49, 0.16);
+    transform: translateY(-2px);
 }
 
 .transaction_card_header {
@@ -663,7 +721,7 @@
     justify-content: space-between;
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .transaction_card_title {
@@ -730,7 +788,7 @@
 }
 
 .transaction_label {
-    color: #ffffffab;
+    color: rgba(255, 255, 255, 0.68);
     font-size: 13px;
     font-weight: 400;
     flex-shrink: 0;
@@ -820,6 +878,8 @@
     gap: 16px;
     margin-top: 24px;
     flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 
@@ -827,18 +887,19 @@
 .pagination_btn {
     padding: 8px 20px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(249, 122, 49, 0.35);
+    background: linear-gradient(180deg, rgba(249, 122, 49, 0.22), rgba(172, 84, 34, 0.22));
     color: #fff;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .pagination_btn:hover:not(:disabled) {
-    background: rgba(249, 122, 49, 0.3);
+    background: linear-gradient(180deg, rgba(249, 122, 49, 0.34), rgba(172, 84, 34, 0.3));
     border-color: #F97A31;
+    box-shadow: 0 6px 16px rgba(249, 122, 49, 0.2);
 }
 
 .pagination_btn:disabled {

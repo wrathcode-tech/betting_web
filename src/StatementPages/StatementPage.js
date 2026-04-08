@@ -47,6 +47,7 @@ function exportToPDF(columns, data, title, filename = 'export') {
 
 function StatementPage({
   title,
+  subtitle = '',
   columns,
   data,
   emptyMessage = 'No data to display.',
@@ -123,7 +124,10 @@ function StatementPage({
         <div className="container-fluid">
           <div className="profile_transactions_section">
             <div className="transactions_header">
-              <h1>{title}</h1>
+              <div className="transactions_heading_block" role="banner" aria-label={`${title} heading`}>
+                <h1>{title}</h1>
+                {subtitle ? <p>{subtitle}</p> : null}
+              </div>
               <div className={`transactions_header_right ${headerRightClassName || ''}`.trim()}>
                 {headerExtra}
                 <div className="transactions_header_filters">

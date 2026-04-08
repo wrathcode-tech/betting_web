@@ -198,7 +198,10 @@ export default function BetHistoryPage() {
       <div className="dashboard_page">
         <div className="container-fluid">
           <div className="profile_transactions_section">
-            <h1>Bet History</h1>
+            <div className="transactions_heading_block" role="banner" aria-label="Bet History heading">
+              <h1>Bet History</h1>
+              <p>Review settled bets, outcomes, and profit/loss at a glance</p>
+            </div>
             <FilterBar
               filters={[
                 { key: 'sport', label: 'Sport', options: SPORT_OPTIONS },

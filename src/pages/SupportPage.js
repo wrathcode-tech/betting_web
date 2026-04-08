@@ -436,7 +436,10 @@ const SupportPage = () => {
           {platformConfig.supportServiceStatus && (
             <div className="profile_transactions_section">
               <div className="transactions_header">
-                <h1>Help / Support</h1>
+                <div className="transactions_heading_block" role="banner" aria-label="Support heading">
+                  <h1>Help / Support</h1>
+                  <p>Raise tickets, track updates, and chat directly with support</p>
+                </div>
               </div>
 
               <div className="support_form_section">

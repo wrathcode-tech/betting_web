@@ -207,6 +207,7 @@ export default function MyWallet() {
       <>
         <StatementPage
           title={title}
+      subtitle="See wallet movement, balances, and transaction activity in one place"
           columns={COLUMNS}
           data={[]}
           emptyMessage="Loading..."
@@ -222,6 +223,7 @@ export default function MyWallet() {
   return (
     <StatementPage
       title={title}
+      subtitle="See wallet movement, balances, and transaction activity in one place"
       columns={COLUMNS}
       data={data}
       emptyMessage="No wallet transactions yet."

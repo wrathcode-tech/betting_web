@@ -77,9 +77,9 @@ function NotificationsPage() {
         <div className='container-fluid'>
           <div className='profile_transactions_section notifications_section'>
             <div className='transactions_header notifications_header'>
-              <div>
+              <div className='transactions_heading_block' role='banner' aria-label='Notifications heading'>
                 <h1 style={{ color: 'white' }}>Notifications</h1>
-                <p className='notifications_subtitle'>Find your notifications settings and choose your preferences.</p>
+                <p className='notifications_subtitle'>Stay updated with account alerts, offers, and important activity.</p>
               </div>
             </div>
 
@@ -115,13 +115,16 @@ function NotificationsPage() {
               </div>
             ) : (
               <div className='notifications_no_data d-flex justify-content-center'>
-                <div className='no_data_outer'>
-                  <div className='table-responsive'>
-                    <div className='no_data_vector'>
-                      <img src='/images/no_data_vector.svg' className='dark_img' alt='no-data' />
-                      <img src='/images/no_data_vector_light.png' className='light_img' width='96' height='96' alt='no-data' />
-                    </div>
-                  </div>
+                <div className='notifications_no_data_card'>
+                  <img
+                    src='/images/no_data_vector.svg'
+                    width='120'
+                    height='120'
+                    alt='No notifications'
+                    className='notifications_no_data_img'
+                  />
+                  <h4>No notifications yet</h4>
+                  <p>You are all caught up. New updates will appear here.</p>
                 </div>
               </div>
             )}

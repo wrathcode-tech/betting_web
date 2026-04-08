@@ -1,9 +1,25 @@
 .history_table_wrap { width: 100%; margin-top: 12px; }
-.history_table_scroll { overflow-x: auto; }
+.history_table_scroll {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(22, 32, 44, 0.95), rgba(13, 20, 30, 0.95));
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+}
 .history_table { width: 100%; border-collapse: collapse; color: #fff; font-size: 14px; }
 .history_table th, .history_table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.history_table th { font-weight: 600; color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.04); }
-.history_table tbody tr:hover { background: rgba(255,255,255,0.03); }
+.history_table th {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.history_table tbody tr:hover {
+  background: rgba(249, 122, 49, 0.08);
+  box-shadow: inset 3px 0 0 #f97a31;
+}
 .history_table_loading, .history_table_empty { padding: 40px 20px; text-align: center; color: rgba(255,255,255,0.7); }
 .history_spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.2); border-top-color: #f97a31; border-radius: 50%; animation: history_spin 0.8s linear infinite; margin-right: 10px; vertical-align: middle; }
 @keyframes history_spin { to { transform: rotate(360deg); } }
@@ -17,16 +33,18 @@
 }
 
 .history_card {
-  background: #16202c;
+  background: linear-gradient(180deg, rgba(24, 35, 49, 0.95), rgba(17, 26, 38, 0.95));
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 14px 16px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
 }
 
 .history_card:hover {
-  border-color: rgba(249, 122, 49, 0.25);
-  box-shadow: 0 4px 12px rgba(249, 122, 49, 0.08);
+  border-color: rgba(249, 122, 49, 0.42);
+  box-shadow: 0 12px 26px rgba(249, 122, 49, 0.14);
+  transform: translateY(-2px);
 }
 
 .history_card_row {

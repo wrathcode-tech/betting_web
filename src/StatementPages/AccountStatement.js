@@ -153,6 +153,7 @@ export default function AccountStatement() {
     return (
       <StatementPage
         title="Account Statement"
+        subtitle="Monitor every account entry with timestamps, references, and balances"
         columns={COLUMNS}
         data={[]}
         emptyMessage="Loading..."
@@ -166,6 +167,7 @@ export default function AccountStatement() {
   return (
     <StatementPage
       title="Account Statement"
+      subtitle="Monitor every account entry with timestamps, references, and balances"
       columns={COLUMNS}
       data={data}
       emptyMessage="No account statement entries yet."
