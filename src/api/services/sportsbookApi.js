@@ -93,7 +93,7 @@ export async function getScore(eventId) {
 
 /**
  * POST /api/v1/sportsbook/place-bet
- * @param {object} body - { sport, gameId, eventName, seriesName?, eventTime?, marketType, marketId, marketName?, selectionId, selectionName, betType, odds, stake, isLive?, requestId? } — user from Authorization Bearer
+ * @param {object} body - { sport, gameId, eventName, seriesName?, eventTime?, marketType, marketId, marketName?, selectionId, selectionName, betType, odds, stake, isLive?, requestId?, rate? } — user from Authorization Bearer; rate = fancy ladder size (e.g. bs1/ls1) for chosen price
  * @param {string} body.sport - cricket | soccer | tennis
  * @param {string} body.betType - back | lay
  * @param {string} body.marketType - match_odds | bookmaker | fancy

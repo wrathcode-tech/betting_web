@@ -690,7 +690,7 @@ const AuthService = {
     return ApiCallGet(url, headers);
   },
 
-  /** POST /api/v1/sportsbook/place-bet — Headers: Authorization: Bearer (access token), Content-Type: application/json. Body: sport, gameId, eventName, seriesName?, eventTime?, marketType, marketId, marketName?, selectionId, selectionName, betType, odds, stake, isLive?, requestId? */
+  /** POST /api/v1/sportsbook/place-bet — Headers: Authorization: Bearer (access token), Content-Type: application/json. Body: sport, gameId, eventName, seriesName?, eventTime?, marketType, marketId, marketName?, selectionId, selectionName, betType, odds, stake, isLive?, requestId?, rate? (fancy), type? (MATCH_ODDS|BOOKMAKER|ODD_EVEN|DECIMAL|...) */
   sportsbookPlaceBet: async (body) => {
     const raw = sessionStorage.getItem("token");
     if (!raw) return { success: false, message: "Login required" };

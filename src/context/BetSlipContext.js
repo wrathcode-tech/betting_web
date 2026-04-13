@@ -43,6 +43,7 @@ export function BetSlipProvider({ children }) {
   const placingRef = useRef(false);
 
   const addSelection = useCallback((selection) => {
+    console.log("🚀 ~ BetSlipProvider ~ selection:", selection)
     const s = {
       id: selection.id ?? `slip-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
       sport: selection.sport || 'cricket',
@@ -58,6 +59,8 @@ export function BetSlipProvider({ children }) {
       ...(selection.eventTime ? { eventTime: selection.eventTime } : {}),
       ...(selection.marketName ? { marketName: selection.marketName } : {}),
       ...(selection.isLive != null ? { isLive: selection.isLive } : {}),
+      ...(String(selection.marketType || '').toLowerCase() === 'fancy' ? { rate: String(selection.rate ?? '') } : {}),
+      ...(selection.type != null && String(selection.type) !== '' ? { type: String(selection.type) } : {}),
     };
     setSlip((prev) => {
       const exists = prev.selections.some((x) => x.id === s.id);
@@ -116,6 +119,8 @@ export function BetSlipProvider({ children }) {
         betType: sel.betType,
         odds: sel.odds,
         stake: stakeNum,
+        ...(String(sel.marketType || '').toLowerCase() === 'fancy' ? { rate: String(sel.rate ?? '') } : {}),
+        ...(sel.type != null && String(sel.type) !== '' ? { type: String(sel.type) } : {}),
         ...(sel.isLive != null ? { isLive: sel.isLive } : {}),
         requestId:
           typeof crypto !== 'undefined' && crypto.randomUUID

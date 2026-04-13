@@ -25,6 +25,11 @@ import {
     extractStakeLimitFields,
     getNumericStakeLimitsFromPayload,
 } from '../utils/marketMinMax'
+import {
+    enrichNormalizedOddsData,
+    inferFancySelectionType,
+    resolveSelectionTypeForPayload,
+} from '../utils/marketSelectionType'
 import BookSummary from './BookSummary'
 import { collectBookBetsFromOpenAndSlip } from './bookSummaryUtils'
 
@@ -211,6 +216,17 @@ function ladderColumnFromElementId(elementId, side) {
     return m ? parseInt(m[1], 10) : null
 }
 
+/** Attach standardized selection `type` for place-bet (socket refresh). */
+function attachPlaceBetSelectionType(placePayload, oddRow, base) {
+    if (!base || !placePayload) return base
+    const mt = String(placePayload.marketType || '').toLowerCase()
+    let type
+    if (mt === 'match_odds') type = 'MATCH_ODDS'
+    else if (mt === 'bookmaker') type = 'BOOKMAKER'
+    else type = oddRow?.type ? String(oddRow.type) : inferFancySelectionType(oddRow || {})
+    return { ...base, type }
+}
+
 /**
  * Live socket odds → same selection’s current ladder price for betslip (match odds, bookmaker, fancy ladders).
  * `isCellLocked` must match component `isOddsLocked`.
@@ -230,12 +246,17 @@ function resolveSlipOddsFromOddsData(oddsData, bet, isOddsTableCompact, isCellLo
     const oddList =
         Array.isArray(market.runners) && market.runners.length > 0 ? market.runners : oddDatasToArray(market.oddDatas)
 
-    const finalize = (rawVal) => {
+    const isFancyMarket = String(pp.marketType || '').toLowerCase() === 'fancy'
+    const finalize = (rawVal, rawSize) => {
         if (isCellLocked(rawVal)) return null
         const s = String(rawVal ?? '').trim()
         const n = parseFloat(s)
         if (Number.isNaN(n) || n < 1.01) return null
-        return { oddsNum: n, oddsStr: s }
+        const out = { oddsNum: n, oddsStr: s }
+        if (isFancyMarket) {
+            out.rate = rawSize != null ? String(rawSize) : ''
+        }
+        return out
     }
 
     if (oddList.length === 2 && isPairedNoYesOddList(oddList)) {
@@ -245,11 +266,11 @@ function resolveSlipOddsFromOddsData(oddsData, bet, isOddsTableCompact, isCellLo
         const noSid = pickSelectionId(noSel)
         if (!isLay && wantSid === String(yesSid)) {
             if (selectionStatusRowLabel(yesSel?.status)) return null
-            return finalize(yesSel.b1)
+            return attachPlaceBetSelectionType(pp, yesSel, finalize(yesSel.b1, yesSel.bs1))
         }
         if (isLay && wantSid === String(noSid)) {
             if (selectionStatusRowLabel(noSel?.status)) return null
-            return finalize(noSel.l1 ?? noSel.b1)
+            return attachPlaceBetSelectionType(pp, noSel, finalize(noSel.l1 ?? noSel.b1, noSel.ls1 ?? noSel.bs1))
         }
     }
 
@@ -279,18 +300,18 @@ function resolveSlipOddsFromOddsData(oddsData, bet, isOddsTableCompact, isCellLo
     if (isOddsTableCompact) {
         const cells = pickBest(rawSide, isCellLocked)
         if (!cells.length) return null
-        return finalize(cells[0].odds)
+        return attachPlaceBetSelectionType(pp, odd, finalize(cells[0].odds, cells[0].size))
     }
 
     const cells = [...rawSide].sort(sortOddsCellsAsc)
     let cIdx = ladderColumnFromElementId(bet.elementId, isLay ? 'lay' : 'back')
     if (cIdx != null && cIdx >= 0 && cIdx < cells.length) {
         const cell = cells[cIdx]
-        if (cell && !isCellLocked(cell.odds)) return finalize(cell.odds)
+        if (cell && !isCellLocked(cell.odds)) return attachPlaceBetSelectionType(pp, odd, finalize(cell.odds, cell.size))
     }
     const best = pickBest(rawSide, isCellLocked)
     if (!best.length) return null
-    return finalize(best[0].odds)
+    return attachPlaceBetSelectionType(pp, odd, finalize(best[0].odds, best[0].size))
 }
 
 function isOddsValueLocked(val) {
@@ -854,7 +875,7 @@ function CricketDetail() {
             if (pSport !== wantSport || pGid !== wantId) return
             const match = payload?.match
             if (!match || typeof match !== 'object') return
-            setOddsData(normalizeOdds(match))
+            setOddsData(enrichNormalizedOddsData(normalizeOdds(match)))
             setOddsLoading(false)
             const ls = match?.liveScore ?? match?.live_score
             if (ls != null) setLiveScore(ls)
@@ -1055,6 +1076,8 @@ function CricketDetail() {
                     odds: Number(oddsNum),
                     stake: stakeNum,
                     isLive,
+                    ...(String(p.marketType || '').toLowerCase() === 'fancy' ? { rate: String(p.rate ?? '') } : {}),
+                    ...(p.type != null && String(p.type) !== '' ? { type: String(p.type) } : {}),
                     requestId: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-${bet.elementId}-${Date.now()}`,
                     ...(priceVersion != null && priceVersion !== '' ? { priceVersion } : {}),
                 }
@@ -1603,6 +1626,8 @@ function CricketDetail() {
                                     selectedBets[0]?.betName === name &&
                                     selectedBets[0]?.market === market.market
 
+                                const selectionTypeTag = resolveSelectionTypeForPayload({ marketType: marketTypeApi }, odd)
+
                                 return (
                                     <React.Fragment key={odd.sid ?? odd.selectionId ?? oIdx}>
                                         <tr>
@@ -1634,7 +1659,7 @@ function CricketDetail() {
                                             {backCells.map((cell, cIdx) => {
                                                 const locked = isOddsLocked(cell.odds)
                                                 const oddsStr = String(cell.odds ?? '')
-                                                const placePayload = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), marketName: marketTitle, selectionId: String(selId), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0, ...(swapMiniBookmakerBl ? { swapMiniBookMakerBl: true } : {}) } : null
+                                                const placePayload = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), marketName: marketTitle, selectionId: String(selId), selectionName: name, betType: 'back', odds: parseFloat(oddsStr) || 0, ...(String(marketTypeApi).toLowerCase() === 'fancy' ? { rate: String(cell.size ?? '') } : {}), ...(selectionTypeTag ? { type: selectionTypeTag } : {}), ...(swapMiniBookmakerBl ? { swapMiniBookMakerBl: true } : {}) } : null
                                                 const elId = `odds-${sectionKey}-${oIdx}-back-${cIdx}`
                                                 return (
                                                     <BackPriceCell
@@ -1652,7 +1677,7 @@ function CricketDetail() {
                                             {layCells.map((cell, cIdx) => {
                                                 const locked = isOddsLocked(cell.odds)
                                                 const oddsStr = String(cell.odds ?? '')
-                                                const placePayloadLay = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), marketName: marketTitle, selectionId: String(selId), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0, ...(swapMiniBookmakerBl ? { swapMiniBookMakerBl: true } : {}) } : null
+                                                const placePayloadLay = !locked && isOpen && gameId && marketId && selId ? { sport: sportName, gameId, eventName: eventNameForBets, marketType: marketTypeApi, marketId: String(marketId), marketName: marketTitle, selectionId: String(selId), selectionName: name, betType: 'lay', odds: parseFloat(oddsStr) || 0, ...(String(marketTypeApi).toLowerCase() === 'fancy' ? { rate: String(cell.size ?? '') } : {}), ...(selectionTypeTag ? { type: selectionTypeTag } : {}), ...(swapMiniBookmakerBl ? { swapMiniBookMakerBl: true } : {}) } : null
                                                 const elId = `odds-${sectionKey}-${oIdx}-lay-${cIdx}`
                                                 return (
                                                     <LayPriceCell
@@ -1917,7 +1942,12 @@ function CricketDetail() {
                 ...bet,
                 odds: r.oddsNum,
                 oddsDisplay: r.oddsStr,
-                placePayload: { ...bet.placePayload, odds: r.oddsNum },
+                placePayload: {
+                    ...bet.placePayload,
+                    odds: r.oddsNum,
+                    ...(r.rate !== undefined ? { rate: r.rate } : {}),
+                    ...(r.type !== undefined ? { type: r.type } : {}),
+                },
             }]
         })
     }, [oddsData, isOddsTableCompact])
@@ -1943,6 +1973,8 @@ function CricketDetail() {
                     marketType,
                     noSid: pickSelectionId(o),
                     yesSid: pickSelectionId(o),
+                    yesType: o.type,
+                    noType: o.type,
                     rowStatusText: selectionStatusRowLabel(o?.status),
                 })
             }
@@ -1975,6 +2007,8 @@ function CricketDetail() {
                         marketType,
                         noSid: pickSelectionId(noSel),
                         yesSid: pickSelectionId(yesSel),
+                        yesType: yesSel.type,
+                        noType: noSel.type,
                         rowStatusText:
                             selectionStatusRowLabel(noSel?.status) ||
                             selectionStatusRowLabel(yesSel?.status),
@@ -2012,6 +2046,7 @@ function CricketDetail() {
                 backOdds: o.b1 ?? '—',
                 backSize: o.bs1 ?? '—',
                 selectionId: pickSelectionId(o),
+                selectionType: o.type,
                 rowStatusText: selectionStatusRowLabel(o?.status),
             }))
             const allLocked = rows.every((r) => isOddsLocked(r.backOdds))
@@ -2068,6 +2103,8 @@ function CricketDetail() {
                             selectionName: row.label,
                             betType: 'back',
                             odds: parseFloat(yesOddsStr) || 0,
+                            rate: String(row.yesSize ?? ''),
+                            type: String(row.yesType ?? inferFancySelectionType({ rname: row.label, b1: row.yesOdds })),
                         } : null
                         const noPayload = canPlaceNo ? {
                             sport: sportName,
@@ -2080,6 +2117,8 @@ function CricketDetail() {
                             selectionName: row.label,
                             betType: 'lay',
                             odds: parseFloat(noOddsStr) || 0,
+                            rate: String(row.noSize ?? ''),
+                            type: String(row.noType ?? inferFancySelectionType({ rname: row.label, b1: row.noOdds })),
                         } : null
                         return (
                             <div key={rIdx} className="market_no_yes_row">
@@ -2240,6 +2279,8 @@ function CricketDetail() {
                             selectionName: row.label,
                             betType: 'back',
                             odds: parseFloat(backOddsStr) || 0,
+                            rate: String(row.backSize ?? ''),
+                            type: String(row.selectionType ?? inferFancySelectionType({ rname: row.label, b1: row.backOdds })),
                         } : null
                         if (row.rowStatusText) {
                             return (
@@ -2966,8 +3007,8 @@ function CricketDetail() {
                                                                     const elIdBack = `api-mo-${marketId}-${mIdx}-${oIdx}-back`
                                                                     const elIdLay = `api-mo-${marketId}-${mIdx}-${oIdx}-lay`
                                                                     const sidMo = pickSelectionId(odd)
-                                                                    const placeBack = !backLocked && gameId && marketId && sidMo ? { sport: 'cricket', gameId, eventName: eventNameForBets, marketType: 'match_odds', marketId: String(marketId), selectionId: String(sidMo), selectionName: name, betType: 'back', odds: parseFloat(backOdds) || 0 } : null
-                                                                    const placeLay = !layLocked && gameId && marketId && sidMo ? { sport: 'cricket', gameId, eventName: eventNameForBets, marketType: 'match_odds', marketId: String(marketId), selectionId: String(sidMo), selectionName: name, betType: 'lay', odds: parseFloat(layOdds) || 0 } : null
+                                                                    const placeBack = !backLocked && gameId && marketId && sidMo ? { sport: 'cricket', gameId, eventName: eventNameForBets, marketType: 'match_odds', marketId: String(marketId), selectionId: String(sidMo), selectionName: name, betType: 'back', odds: parseFloat(backOdds) || 0, type: 'MATCH_ODDS' } : null
+                                                                    const placeLay = !layLocked && gameId && marketId && sidMo ? { sport: 'cricket', gameId, eventName: eventNameForBets, marketType: 'match_odds', marketId: String(marketId), selectionId: String(sidMo), selectionName: name, betType: 'lay', odds: parseFloat(layOdds) || 0, type: 'MATCH_ODDS' } : null
                                                                     return (
                                                                         <div key={odd.sid ?? oIdx} className='d-flex align-items-center mt-2 justify-content-between gap-2' style={{ width: '100%' }}>
                                                                             <div className={`team_cricket_bl_name ${backLocked ? 'locked' : ''} ${isBetSelected(name, market.market, backOdds, elIdBack) ? 'selected' : ''}`} onClick={() => !backLocked && handleBetClick(name, market.market, backOdds, elIdBack, placeBack)}>
